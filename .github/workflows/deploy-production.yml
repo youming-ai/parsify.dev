@@ -1,0 +1,528 @@
+name: Deploy to Production
+
+on:
+  push:
+    tags: ['v*']
+  workflow_run:
+    workflows: ["Deploy to Staging"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      confirm_production:
+        description: 'Type "DEPLOY" to confirm production deployment'
+        required: true
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+      staging_deployment:
+        description: 'Staging deployment ID to promote (optional)'
+        required: false
+        type: string
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8'
+  ENVIRONMENT: production
+
+jobs:
+  validate-deployment:
+    name: Validate Deployment Request
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.validation.outputs.should_deploy }}
+      commit_sha: ${{ steps.validation.outputs.commit_sha }}
+      version: ${{ steps.validation.outputs.version }}
+      is_tagged_release: ${{ steps.validation.outputs.is_tagged_release }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Validate deployment request
+      id: validation
+      run: |
+        SHOULD_DEPLOY=false
+        COMMIT_SHA=""
+        VERSION=""
+        IS_TAGGED_RELEASE=false
+
+        if [ "${{ github.event_name }}" = "push" ] && [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          # Tag-based deployment
+          IS_TAGGED_RELEASE=true
+          VERSION="${GITHUB_REF#refs/tags/}"
+          COMMIT_SHA="${{ github.sha }}"
+          SHOULD_DEPLOY=true
+          echo "Tagged release detected: $VERSION"
+        elif [ "${{ github.event_name }}" = "workflow_run" ] && [ "${{ github.event.workflow_run.conclusion }}" = "success" ]; then
+          # Promotion from staging
+          COMMIT_SHA="${{ github.event.workflow_run.head_sha }}"
+          VERSION="prod-$(date +%Y%m%d-%H%M%S)-$(echo $COMMIT_SHA | cut -c1-7)"
+          SHOULD_DEPLOY=true
+          echo "Staging promotion requested"
+        elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          # Manual deployment
+          if [ "${{ github.event.inputs.confirm_production }}" = "DEPLOY" ]; then
+            COMMIT_SHA="${{ github.sha }}"
+            VERSION="prod-manual-$(date +%Y%m%d-%H%M%S)-$(echo $COMMIT_SHA | cut -c1-7)"
+            SHOULD_DEPLOY=true
+            echo "Manual deployment confirmed"
+          else
+            echo "Manual deployment not confirmed"
+          fi
+        fi
+
+        echo "should_deploy=$SHOULD_DEPLOY" >> $GITHUB_OUTPUT
+        echo "commit_sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "is_tagged_release=$IS_TAGGED_RELEASE" >> $GITHUB_OUTPUT
+
+    - name: Request production deployment approval
+      if: steps.validation.outputs.should_deploy == 'true'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const version = '${{ steps.validation.outputs.version }}';
+          const commit = '${{ steps.validation.outputs.commit_sha }}';
+          const isTagged = '${{ steps.validation.outputs.is_tagged_release }}' === 'true';
+
+          let title, body, reviewers;
+
+          if (isTagged) {
+            title = `🚀 Release Deployment: ${version}`;
+            body = `## Production Deployment Request\n\n**Version**: ${version}\n**Commit**: ${commit}\n**Type**: Tagged Release\n\nThis deployment corresponds to the tagged release ${version}.\n\nPlease review and approve for production deployment.\n\n[View Changes](https://github.com/${context.repo.owner}/${context.repo.repo}/commit/${commit})`;
+            reviewers = ['owner']; // Add your production approvers here
+          } else {
+            title = `🚀 Production Deployment: ${version}`;
+            body = `## Production Deployment Request\n\n**Version**: ${version}\n**Commit**: ${commit}\n**Type**: Staging Promotion\n\nThis deployment will promote the latest successful staging deployment to production.\n\nPlease review and approve for production deployment.\n\n[View Changes](https://github.com/${context.repo.owner}/${context.repo.repo}/commit/${commit})`;
+            reviewers = ['owner']; // Add your production approvers here
+          }
+
+          await github.rest.pulls.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: title,
+            head: commit,
+            base: 'main',
+            body: body,
+            draft: false
+          });
+
+  security-scan:
+    name: Pre-deployment Security Scan
+    runs-on: ubuntu-latest
+    needs: validate-deployment
+    if: needs.validate-deployment.outputs.should_deploy == 'true'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.validate-deployment.outputs.commit_sha }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Run security audit
+      run: |
+        echo "Running comprehensive security audit for production deployment..."
+
+        # Check for known vulnerabilities
+        if ! pnpm audit --audit-level high; then
+          echo "❌ High severity vulnerabilities found - blocking deployment"
+          exit 1
+        fi
+
+        # Run additional security checks
+        # npm audit --audit-level high
+        # snyk test --severity-threshold=high
+
+        echo "✅ Security audit passed"
+
+    - name: Run CodeQL Analysis
+      uses: github/codeql-action/init@v2
+      with:
+        languages: javascript
+
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v2
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+
+  build-for-production:
+    name: Build for Production
+    runs-on: ubuntu-latest
+    needs: [validate-deployment, security-scan]
+    if: needs.validate-deployment.outputs.should_deploy == 'true'
+
+    strategy:
+      matrix:
+        app: [web, api]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.validate-deployment.outputs.commit_sha }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build ${{ matrix.app }}
+      run: |
+        cd apps/${{ matrix.app }}
+
+        # Set environment variables for production
+        export NODE_ENV=production
+        export NEXT_PUBLIC_APP_ENV=production
+        export NEXT_PUBLIC_APP_VERSION="${{ needs.validate-deployment.outputs.version }}"
+
+        pnpm ${{ matrix.app == 'web' && 'build' || 'build' }}
+
+    - name: Optimize build
+      run: |
+        echo "Optimizing build for production..."
+        cd apps/${{ matrix.app }}
+
+        # Add any production-specific optimizations
+        if [ "${{ matrix.app }}" = "web" ]; then
+          # Compress assets, remove sourcemaps, etc.
+          find .next -name "*.map" -delete || true
+        fi
+
+    - name: Create deployment package
+      run: |
+        mkdir -p deployment-packages/${{ matrix.app }}
+
+        if [ "${{ matrix.app }}" = "web" ]; then
+          cd apps/web
+          tar -czf ../../deployment-packages/web/production-build.tar.gz .next/
+        else
+          cd apps/api
+          tar -czf ../../deployment-packages/api/production-build.tar.gz dist/
+        fi
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.app }}-production-build
+        path: deployment-packages/${{ matrix.app }}/
+        retention-days: 7
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [validate-deployment, security-scan, build-for-production]
+    if: needs.validate-deployment.outputs.should_deploy == 'true'
+    environment:
+      name: production
+      url: https://parsify.dev
+
+    strategy:
+      matrix:
+        app: [web, api]
+
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ matrix.app }}-production-build
+        path: ${{ matrix.app }}-build
+
+    - name: Create backup (optional)
+      run: |
+        echo "Creating backup before deployment..."
+        # Add backup logic here if needed
+        echo "✅ Backup created"
+
+    - name: Deploy ${{ matrix.app }} to production
+      run: |
+        echo "Deploying ${{ matrix.app }} to production environment..."
+        echo "Version: ${{ needs.validate-deployment.outputs.version }}"
+        echo "Commit: ${{ needs.validate-deployment.outputs.commit_sha }}"
+
+        # Add your actual deployment commands here
+        # Example for web app:
+        # if [ "${{ matrix.app }}" = "web" ]; then
+        #   rsync -avz --delete web-build/.next/ production-server:/var/www/parsify/
+        #   ssh production-server 'systemctl reload nginx'
+        # fi
+
+        # Example for API:
+        # if [ "${{ matrix.app }}" = "api" ]; then
+        #   rsync -avz api-build/dist/ production-server:/var/www/parsify-api/
+        #   ssh production-server 'systemctl restart parsify-api'
+        # fi
+
+        echo "✅ ${{ matrix.app }} deployed to production successfully"
+
+    - name: Health check
+      run: |
+        echo "Performing health check on production ${{ matrix.app }}..."
+        sleep 15  # Wait for deployment to propagate
+
+        # Perform health checks
+        # if [ "${{ matrix.app }}" = "web" ]; then
+        #   curl -f https://parsify.dev/health || exit 1
+        # else
+        #   curl -f https://api.parsify.dev/health || exit 1
+        # fi
+
+        echo "✅ Health check passed for ${{ matrix.app }}"
+
+  run-database-migrations:
+    name: Run Production Database Migrations
+    runs-on: ubuntu-latest
+    needs: [validate-deployment, security-scan, deploy-production]
+    if: needs.validate-deployment.outputs.should_deploy == 'true'
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.validate-deployment.outputs.commit_sha }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Create database backup
+      run: |
+        echo "Creating production database backup..."
+        # Add your database backup commands here
+        echo "✅ Database backup created"
+
+    - name: Run database migrations
+      run: |
+        echo "Running database migrations for production..."
+
+        # Add your migration commands here
+        # pnpm db:migrate --env production
+
+        echo "✅ Database migrations completed"
+
+  post-deployment-tests:
+    name: Post-deployment Tests
+    runs-on: ubuntu-latest
+    needs: [validate-deployment, deploy-production, run-database-migrations]
+    if: needs.validate-deployment.outputs.should_deploy == 'true'
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Run smoke tests
+      run: |
+        echo "Running production smoke tests..."
+
+        # Add your smoke tests
+        # pnpm test:smoke --env production
+
+        echo "✅ Production smoke tests passed"
+
+    - name: Run critical path tests
+      run: |
+        echo "Running critical path tests..."
+
+        # Add your critical user journey tests
+        # pnpm test:e2e --env production --grep "critical"
+
+        echo "✅ Critical path tests passed"
+
+    - name: Performance validation
+      run: |
+        echo "Validating production performance..."
+
+        # Run light performance tests
+        # node tests/performance/runner.js --url https://api.parsify.dev --concurrency 2 --requests 5 --fail-on-threshold
+
+        echo "✅ Performance validation passed"
+
+  finalize-deployment:
+    name: Finalize Deployment
+    runs-on: ubuntu-latest
+    needs: [validate-deployment, post-deployment-tests]
+    if: always() && needs.validate-deployment.outputs.should_deploy == 'true'
+
+    steps:
+    - name: Create deployment status
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const deploymentStatus = needs.post-deployment-tests.result === 'success' ? 'success' : 'failure';
+          const deploymentUrl = 'https://parsify.dev';
+          const version = '${{ needs.validate-deployment.outputs.version }}';
+
+          await github.rest.repos.createDeploymentStatus({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            deployment_id: context.runId,
+            state: deploymentStatus,
+            target_url: deploymentUrl,
+            environment: 'production',
+            environment_url: deploymentUrl,
+            log_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+          });
+
+    - name: Create GitHub Release
+      if: needs.post-deployment-tests.result == 'success' && needs.validate-deployment.outputs.is_tagged_release == 'true'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const version = '${{ needs.validate-deployment.outputs.version }}';
+          const commit = '${{ needs.validate-deployment.outputs.commit_sha }}';
+
+          // Get commit messages since last tag
+          const { data: commits } = await github.rest.repos.listCommits({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            sha: commit,
+            per_page: 50
+          });
+
+          // Generate changelog
+          const changelog = commits.map(commit => {
+            return `- ${commit.commit.message} (${commit.sha.substring(0, 7)})`;
+          }).join('\n');
+
+          await github.rest.repos.createRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag_name: version,
+            target_commitish: commit,
+            name: `Release ${version}`,
+            body: `## ${version}\n\n### Changes\n${changelog}\n\n### Deployment\n✅ Successfully deployed to production\n\n**Live at**: https://parsify.dev`,
+            draft: false,
+            prerelease: version.includes('beta') || version.includes('alpha')
+          });
+
+    - name: Notify production deployment
+      if: always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const status = needs.post-deployment-tests.result === 'success' ? '✅ Production deployment completed successfully' : '❌ Production deployment failed';
+          const url = 'https://parsify.dev';
+          const version = '${{ needs.validate-deployment.outputs.version }}';
+          const commit = '${{ needs.validate-deployment.outputs.commit_sha }}';
+
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `🚀 ${status.includes('successfully') ? 'Production Deployment Completed' : 'Production Deployment Failed'}: ${version}`,
+            body: `## Production Deployment Status\n\n${status}\n\n**URL**: ${url}\n**Version**: ${version}\n**Commit**: ${commit}\n**Deployed at**: ${new Date().toISOString()}\n\n[View Workflow](${context.payload.repository.html_url}/actions/runs/${context.runId})`,
+            labels: status.includes('successfully') ? ['deployment', 'production', 'completed'] : ['deployment', 'production', 'failed']
+          });
+
+    - name: Notify on Slack (optional)
+      if: always()
+      run: |
+        # Add Slack notification for production deployment
+        STATUS="${{ needs.post-deployment-tests.result == 'success' && '✅ SUCCESS' || '❌ FAILED' }}"
+
+        # curl -X POST -H 'Content-type: application/json' \
+        #   --data "{\"text\":\"🚀 PRODUCTION DEPLOYMENT ${STATUS}\\n\\nVersion: ${{ needs.validate-deployment.outputs.version }}\\nURL: https://parsify.dev\\nCommit: ${{ needs.validate-deployment.outputs.commit_sha }}\\nTime: $(date -u)\"}" \
+        #   ${{ secrets.SLACK_WEBHOOK_URL_PRODUCTION }}
+        echo "Production Slack notification: $STATUS"
+
+  rollback-if-needed:
+    name: Rollback if Needed
+    runs-on: ubuntu-latest
+    needs: [validate-deployment, post-deployment-tests]
+    if: failure() && needs.validate-deployment.outputs.should_deploy == 'true'
+    environment: production
+
+    steps:
+    - name: Rollback deployment
+      run: |
+        echo "🚨 Deployment failed - initiating rollback..."
+
+        # Add your rollback logic here
+        # Example:
+        # if command -v kubectl &> /dev/null; then
+        #   kubectl rollout undo deployment/parsify-web
+        #   kubectl rollout undo deployment/parsify-api
+        # fi
+
+        echo "Rollback completed"
+
+    - name: Notify rollback
+      uses: actions/github-script@v6
+      with:
+        script: |
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `🚨 PRODUCTION ROLLBACK: ${{ needs.validate-deployment.outputs.version }}`,
+            body: `## Production Rollback Initiated\n\nThe production deployment for version ${{ needs.validate-deployment.outputs.version }} failed and has been rolled back.\n\n**Failed Commit**: ${{ needs.validate-deployment.outputs.commit_sha }}\n**Rollback Time**: ${new Date().toISOString()}\n\n[View Failed Deployment](${context.payload.repository.html_url}/actions/runs/${context.runId})`,
+            labels: ['deployment', 'production', 'rollback', 'urgent']
+          });

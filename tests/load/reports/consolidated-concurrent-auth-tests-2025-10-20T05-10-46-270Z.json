@@ -1,0 +1,25 @@
+{
+  "scenario": "consolidated-small-team",
+  "timestamp": "2025-10-20T05:10:46.271Z",
+  "duration": 6,
+  "users": 1000,
+  "summary": {
+    "totalRequests": 0,
+    "successfulRequests": 0,
+    "failedRequests": 0,
+    "averageResponseTime": null,
+    "p95ResponseTime": 0,
+    "p99ResponseTime": 0,
+    "throughput": 0,
+    "errorRate": null
+  },
+  "endpoints": {},
+  "userBehavior": {},
+  "resources": [],
+  "bottlenecks": [],
+  "recommendations": [
+    "Review consolidated report for patterns across multiple test runs",
+    "Focus optimization efforts on frequently identified bottlenecks",
+    "Monitor resource usage trends over time"
+  ]
+}

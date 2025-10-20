@@ -1,0 +1,72 @@
+{
+  "scenario": "consolidated-json-format-concurrent",
+  "timestamp": "2025-10-20T05:11:02.635Z",
+  "duration": 0,
+  "users": 0,
+  "summary": {
+    "totalRequests": 5800,
+    "successfulRequests": 0,
+    "failedRequests": 5800,
+    "averageResponseTime": 0,
+    "p95ResponseTime": 0,
+    "p99ResponseTime": 0,
+    "throughput": 433.5415727414702,
+    "errorRate": 1
+  },
+  "endpoints": {
+    "tools-endpoint": {
+      "requests": 5800,
+      "responseTimes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "successes": 0,
+      "errors": [
+        {
+          "type": "HTTP 404",
+          "count": 1000
+        },
+        {
+          "type": "HTTP 404",
+          "count": 750
+        },
+        {
+          "type": "HTTP 404",
+          "count": 800
+        },
+        {
+          "type": "HTTP 404",
+          "count": 250
+        },
+        {
+          "type": "HTTP 404",
+          "count": 3000
+        }
+      ],
+      "averageResponseTime": 0,
+      "successRate": 0,
+      "p95ResponseTime": 0
+    }
+  },
+  "userBehavior": {},
+  "resources": [],
+  "bottlenecks": [
+    {
+      "type": "endpoint",
+      "target": "tools",
+      "metric": "execution",
+      "severity": "high",
+      "value": 0,
+      "threshold": 0,
+      "recommendation": "Frequent bottleneck"
+    }
+  ],
+  "recommendations": [
+    "Review consolidated report for patterns across multiple test runs",
+    "Focus optimization efforts on frequently identified bottlenecks",
+    "Monitor resource usage trends over time"
+  ]
+}

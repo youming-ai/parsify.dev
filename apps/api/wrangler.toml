@@ -1,0 +1,45 @@
+name = "parsify-api"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Development configuration
+[vars]
+ENVIRONMENT = "development"
+API_VERSION = "v1"
+ENABLE_METRICS = "true"
+LOG_LEVEL = "debug"
+ENABLE_HEALTH_CHECKS = "true"
+ENABLE_CORS = "true"
+MAX_REQUEST_SIZE = "10485760"
+REQUEST_TIMEOUT = "30000"
+JWT_SECRET = "development-jwt-secret-key-not-for-production"
+SENTRY_DSN = "https://placeholder@o0.ingest.sentry.io/0"
+
+# D1 Database (local)
+[[d1_databases]]
+binding = "DB"
+database_name = "parsify-dev"
+database_id = "local"
+
+# KV Namespaces (local)
+[[kv_namespaces]]
+binding = "CACHE"
+id = "local"
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "local"
+
+[[kv_namespaces]]
+binding = "UPLOADS"
+id = "local"
+
+[[kv_namespaces]]
+binding = "ANALYTICS"
+id = "local"
+
+# R2 Bucket (local)
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "parsify-files-dev"

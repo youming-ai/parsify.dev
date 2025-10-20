@@ -1,0 +1,348 @@
+name: Performance Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run performance tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of performance test to run'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+        - smoke
+        - full
+        - all
+
+env:
+  NODE_VERSION: '18'
+  API_BASE_URL: http://localhost:8787
+
+jobs:
+  performance-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        test-type: [smoke, tools, auth, users, jobs, upload, load]
+        include:
+          - test-type: smoke
+            concurrent-requests: 5
+            total-requests: 25
+            fail-on-threshold: false
+          - test-type: tools
+            concurrent-requests: 10
+            total-requests: 50
+            fail-on-threshold: false
+          - test-type: auth
+            concurrent-requests: 15
+            total-requests: 75
+            fail-on-threshold: false
+          - test-type: users
+            concurrent-requests: 10
+            total-requests: 50
+            fail-on-threshold: false
+          - test-type: jobs
+            concurrent-requests: 8
+            total-requests: 40
+            fail-on-threshold: false
+          - test-type: upload
+            concurrent-requests: 8
+            total-requests: 40
+            fail-on-threshold: false
+          - test-type: load
+            concurrent-requests: 20
+            total-requests: 100
+            fail-on-threshold: true
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build application
+      run: pnpm build
+
+    - name: Start application in background
+      run: |
+        pnpm dev &
+        echo "Waiting for application to start..."
+        sleep 30
+
+    - name: Wait for API to be ready
+      run: |
+        timeout 60 bash -c 'until curl -f $API_BASE_URL/health; do sleep 2; done'
+
+    - name: Run performance tests (${{ matrix.test-type }})
+      run: |
+        node tests/performance/runner.js \
+          --url $API_BASE_URL \
+          --concurrency ${{ matrix.concurrent-requests }} \
+          --requests ${{ matrix.total-requests }} \
+          --output ./performance-reports \
+          --format all \
+          ${{ matrix.fail-on-threshold && '--fail-on-threshold' || '' }}
+      continue-on-error: ${{ !matrix.fail-on-threshold }}
+
+    - name: Upload performance reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: performance-reports-${{ matrix.test-type }}
+        path: performance-reports/
+        retention-days: 30
+
+    - name: Upload performance test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: performance-results-${{ matrix.test-type }}
+        path: |
+          performance-reports/*.json
+          performance-reports/*.csv
+        retention-days: 90
+
+  performance-summary:
+    runs-on: ubuntu-latest
+    needs: performance-tests
+    if: always()
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: performance-artifacts
+
+    - name: Generate performance summary
+      run: |
+        mkdir -p performance-summary
+
+        # Create a summary markdown file
+        cat > performance-summary/SUMMARY.md << 'EOF'
+        # Performance Test Summary
+
+        ## Test Results
+
+        EOF
+
+        # Process each test type results
+        for artifact in performance-artifacts/performance-reports-*; do
+          if [ -d "$artifact" ]; then
+            test_type=$(basename "$artifact" | sed 's/performance-reports-//')
+
+            echo "## $test_type Tests" >> performance-summary/SUMMARY.md
+            echo "" >> performance-summary/SUMMARY.md
+
+            # Extract key metrics from JSON reports
+            if [ -f "$artifact"/*.json ]; then
+              for json_file in "$artifact"/*.json; do
+                if [ -f "$json_file" ]; then
+                  echo "### $(basename "$json_file" .json)" >> performance-summary/SUMMARY.md
+                  echo "" >> performance-summary/SUMMARY.md
+
+                  # Extract metrics using node (since we have node available)
+                  node -e "
+                    const data = JSON.parse(require('fs').readFileSync('$json_file', 'utf8'));
+                    if (data.summary) {
+                      console.log(\`- Total Requests: \${data.summary.totalRequests}\`);
+                      console.log(\`- Success Rate: \${(data.summary.averageSuccessRate * 100).toFixed(1)}%\`);
+                      console.log(\`- Average P95: \${data.summary.averageP95.toFixed(2)}ms\`);
+                      console.log(\`- Total Throughput: \${data.summary.totalThroughput.toFixed(2)} req/s\`);
+                    }
+                  " >> performance-summary/SUMMARY.md
+                  echo "" >> performance-summary/SUMMARY.md
+                fi
+              done
+            fi
+          fi
+        done
+
+        echo "## Performance Targets" >> performance-summary/SUMMARY.md
+        echo "" >> performance-summary/SUMMARY.md
+        echo "- ✅ P95 Response Time: < 200ms" >> performance-summary/SUMMARY.md
+        echo "- ✅ Success Rate: > 95%" >> performance-summary/SUMMARY.md
+        echo "- ✅ Throughput: > 10 req/s" >> performance-summary/SUMMARY.md
+        echo "" >> performance-summary/SUMMARY.md
+        echo "Generated on: $(date -u)" >> performance-summary/SUMMARY.md
+
+    - name: Upload performance summary
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-summary
+        path: performance-summary/
+        retention-days: 30
+
+    - name: Comment PR with performance results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+
+          try {
+            const summary = fs.readFileSync('performance-summary/SUMMARY.md', 'utf8');
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 Performance Test Results\n\n${summary}`
+            });
+          } catch (error) {
+            console.log('Could not read performance summary:', error.message);
+          }
+
+  performance-regression-check:
+    runs-on: ubuntu-latest
+    needs: performance-tests
+    if: github.event_name == 'pull_request' && needs.performance-tests.result == 'success'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Download current performance results
+      uses: actions/download-artifact@v3
+      with:
+        name: performance-results-load
+        path: current-results
+
+    - name: Download baseline performance results
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: performance-tests.yml
+        branch: main
+        name: performance-results-load
+        path: baseline-results
+        continue_downloads: true
+      continue-on-error: true
+
+    - name: Compare performance with baseline
+      run: |
+        mkdir -p comparison-results
+
+        if [ -f "baseline-results/performance-report-load.json" ] && [ -f "current-results/performance-report-load.json" ]; then
+          node -e "
+            const fs = require('fs');
+            const baseline = JSON.parse(fs.readFileSync('baseline-results/performance-report-load.json', 'utf8'));
+            const current = JSON.parse(fs.readFileSync('current-results/performance-report-load.json', 'utf8'));
+
+            console.log('## Performance Regression Analysis\\n');
+
+            if (baseline.summary && current.summary) {
+              const baselineP95 = baseline.summary.averageP95;
+              const currentP95 = current.summary.averageP95;
+              const p95Change = ((currentP95 - baselineP95) / baselineP95 * 100).toFixed(1);
+
+              const baselineSuccess = baseline.summary.averageSuccessRate;
+              const currentSuccess = current.summary.averageSuccessRate;
+              const successChange = ((currentSuccess - baselineSuccess) / baselineSuccess * 100).toFixed(1);
+
+              console.log('### Response Time (P95)');
+              console.log(\`- Baseline: \${baselineP95.toFixed(2)}ms\`);
+              console.log(\`- Current: \${currentP95.toFixed(2)}ms\`);
+              console.log(\`- Change: \${p95Change}%\${currentP95 > baselineP95 ? ' ⚠️' : ' ✅'}\\n\`);
+
+              console.log('### Success Rate');
+              console.log(\`- Baseline: \${(baselineSuccess * 100).toFixed(1)}%\`);
+              console.log(\`- Current: \${(currentSuccess * 100).toFixed(1)}%\`);
+              console.log(\`- Change: \${successChange}%\${currentSuccess < baselineSuccess ? ' ⚠️' : ' ✅'}\\n\`);
+
+              // Check for significant regressions
+              const regressionThreshold = 20; // 20% regression threshold
+
+              if (currentP95 > baselineP95 * (1 + regressionThreshold / 100)) {
+                console.log('🚨 **PERFORMANCE REGRESSION DETECTED**');
+                console.log(\`P95 response time increased by \${p95Change}% (threshold: \${regressionThreshold}%)\`);
+                process.exit(1);
+              }
+
+              if (currentSuccess < baselineSuccess * (1 - regressionThreshold / 100)) {
+                console.log('🚨 **PERFORMANCE REGRESSION DETECTED**');
+                console.log(\`Success rate decreased by \${Math.abs(parseFloat(successChange))}% (threshold: \${regressionThreshold}%)\`);
+                process.exit(1);
+              }
+
+              console.log('✅ No significant performance regressions detected');
+            }
+          " > comparison-results/regression-analysis.md
+        else
+          echo "No baseline data available for comparison" > comparison-results/regression-analysis.md
+        fi
+
+    - name: Upload regression analysis
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-regression-analysis
+        path: comparison-results/
+        retention-days: 30
+
+  notify-performance-failure:
+    runs-on: ubuntu-latest
+    needs: [performance-tests, performance-regression-check]
+    if: failure() && (needs.performance-tests.result == 'failure' || needs.performance-regression-check.result == 'failure')
+
+    steps:
+    - name: Notify on performance failure
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const failureReason = needs.performance-tests.result == 'failure' ? 'Performance tests failed' : 'Performance regression detected';
+
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `🚨 ${failureReason} - ${context.sha}`,
+            body: `
+            ## Performance Issue Detected
+
+            **Commit**: ${context.sha}
+            **Branch**: ${context.ref}
+            **Workflow**: ${context.workflow}
+            **Run ID**: ${context.runId}
+
+            ${failureReason}. Please review the performance test results and take appropriate action.
+
+            [View Workflow Run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            `,
+            labels: ['performance', 'bug', 'urgent']
+          });

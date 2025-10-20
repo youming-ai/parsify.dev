@@ -1,0 +1,780 @@
+openapi: 3.0.3
+info:
+  title: Online Developer Tools Platform API
+  description: API for the online developer tools platform providing JSON processing, code formatting, and execution capabilities
+  version: 1.0.0
+  contact:
+    name: Platform Team
+  license:
+    name: MIT
+
+servers:
+  - url: https://api.{domain}/v1
+    description: Production API
+  - url: https://api-staging.{domain}/v1
+    description: Staging API
+
+paths:
+  /tools:
+    get:
+      summary: Get available tools
+      description: Retrieve list of available tools with categories and configurations
+      tags:
+        - Tools
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [json, formatting, execution, text, image, network, crypto]
+          description: Filter tools by category
+        - name: enabled_only
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: Return only enabled tools
+      responses:
+        '200':
+          description: List of available tools
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tools:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tool'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /tools/{toolId}:
+    get:
+      summary: Get tool details
+      description: Retrieve detailed information about a specific tool
+      tags:
+        - Tools
+      parameters:
+        - name: toolId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Tool identifier
+      responses:
+        '200':
+          description: Tool details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tool'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /tools/json/format:
+    post:
+      summary: Format JSON
+      description: Format and validate JSON data
+      tags:
+        - JSON Tools
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: string
+                  description: JSON string to format
+                indent:
+                  type: integer
+                  default: 2
+                  minimum: 0
+                  maximum: 8
+                  description: Number of spaces for indentation
+                sort_keys:
+                  type: boolean
+                  default: false
+                  description: Sort object keys alphabetically
+              required:
+                - json
+      responses:
+        '200':
+          description: Formatted JSON
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  formatted:
+                    type: string
+                    description: Formatted JSON string
+                  valid:
+                    type: boolean
+                    description: Whether input was valid JSON
+                  size:
+                    type: integer
+                    description: Input size in bytes
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                    description: Validation errors if any
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /tools/json/validate:
+    post:
+      summary: Validate JSON
+      description: Validate JSON data against schema
+      tags:
+        - JSON Tools
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: string
+                  description: JSON string to validate
+                schema:
+                  type: object
+                  description: JSON Schema for validation
+              required:
+                - json
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    description: Validation result
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                        message:
+                          type: string
+                    description: Validation errors
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /tools/json/convert:
+    post:
+      summary: Convert JSON
+      description: Convert JSON to other formats
+      tags:
+        - JSON Tools
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: string
+                  description: JSON string to convert
+                target_format:
+                  type: string
+                  enum: [xml, yaml, csv, toml, properties]
+                  description: Target format
+                options:
+                  type: object
+                  description: Format-specific options
+              required:
+                - json
+                - target_format
+      responses:
+        '200':
+          description: Converted data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  converted:
+                    type: string
+                    description: Converted data
+                  format:
+                    type: string
+                    description: Target format
+                  size:
+                    type: integer
+                    description: Output size in bytes
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /tools/code/format:
+    post:
+      summary: Format code
+      description: Format source code in various languages
+      tags:
+        - Code Tools
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: Source code to format
+                language:
+                  type: string
+                  enum: [javascript, typescript, css, html, sql, json, xml, yaml]
+                  description: Programming language
+                options:
+                  type: object
+                  description: Language-specific formatting options
+              required:
+                - code
+                - language
+      responses:
+        '200':
+          description: Formatted code
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  formatted:
+                    type: string
+                    description: Formatted code
+                  language:
+                    type: string
+                    description: Programming language
+                  size:
+                    type: integer
+                    description: Output size in bytes
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /tools/code/execute:
+    post:
+      summary: Execute code
+      description: Execute code in a secure WASM sandbox
+      tags:
+        - Code Execution
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: Source code to execute
+                language:
+                  type: string
+                  enum: [javascript, typescript, python]
+                  description: Programming language
+                input:
+                  type: string
+                  description: Standard input for the program
+                timeout:
+                  type: integer
+                  default: 5000
+                  maximum: 30000
+                  description: Execution timeout in milliseconds
+              required:
+                - code
+                - language
+      responses:
+        '200':
+          description: Execution result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  output:
+                    type: string
+                    description: Program output
+                  error:
+                    type: string
+                    description: Error output if any
+                  exit_code:
+                    type: integer
+                    description: Program exit code
+                  execution_time:
+                    type: integer
+                    description: Execution time in milliseconds
+                  memory_usage:
+                    type: integer
+                    description: Memory usage in bytes
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /upload/sign:
+    post:
+      summary: Get upload signature
+      description: Get presigned URL for file upload
+      tags:
+        - File Management
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                  description: Original filename
+                content_type:
+                  type: string
+                  description: MIME type
+                size:
+                  type: integer
+                  description: File size in bytes
+              required:
+                - filename
+                - content_type
+      responses:
+        '200':
+          description: Upload signature
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  upload_url:
+                    type: string
+                    description: Presigned upload URL
+                  file_id:
+                    type: string
+                    description: File identifier
+                  expires_at:
+                    type: integer
+                    description: Expiration timestamp
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /jobs:
+    post:
+      summary: Create job
+      description: Create asynchronous job for long-running operations
+      tags:
+        - Jobs
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tool_id:
+                  type: string
+                  description: Tool identifier
+                input_data:
+                  type: object
+                  description: Job input parameters
+                async:
+                  type: boolean
+                  default: false
+                  description: Execute asynchronously
+              required:
+                - tool_id
+                - input_data
+      responses:
+        '201':
+          description: Job created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /jobs/{jobId}:
+    get:
+      summary: Get job status
+      description: Retrieve job status and results
+      tags:
+        - Jobs
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Job identifier
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /jobs/{jobId}/stream:
+    get:
+      summary: Stream job progress
+      description: Stream real-time job progress via Server-Sent Events
+      tags:
+        - Jobs
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Job identifier
+      responses:
+        '200':
+          description: Progress stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/login:
+    post:
+      summary: Authenticate user
+      description: Authenticate user with OAuth provider
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                provider:
+                  type: string
+                  enum: [google, github]
+                  description: OAuth provider
+                token:
+                  type: string
+                  description: OAuth access token
+              required:
+                - provider
+                - token
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  access_token:
+                    type: string
+                    description: JWT access token
+                  expires_at:
+                    type: integer
+                    description: Token expiration timestamp
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /me:
+    get:
+      summary: Get current user
+      description: Retrieve current user information
+      tags:
+        - User
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    Tool:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Tool identifier
+        slug:
+          type: string
+          description: URL-friendly identifier
+        name:
+          type: string
+          description: Display name
+        category:
+          type: string
+          enum: [json, formatting, execution, text, image, network, crypto]
+          description: Tool category
+        description:
+          type: string
+          description: Tool description
+        config:
+          type: object
+          description: Tool configuration
+        enabled:
+          type: boolean
+          description: Whether tool is enabled
+        beta:
+          type: boolean
+          description: Whether tool is in beta
+        created_at:
+          type: integer
+          description: Creation timestamp
+        updated_at:
+          type: integer
+          description: Last update timestamp
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: User identifier
+        email:
+          type: string
+          format: email
+          description: User email
+        name:
+          type: string
+          description: Display name
+        avatar_url:
+          type: string
+          description: Profile picture URL
+        subscription_tier:
+          type: string
+          enum: [free, pro, enterprise]
+          description: Subscription tier
+        preferences:
+          type: object
+          description: User preferences
+        created_at:
+          type: integer
+          description: Account creation timestamp
+        last_login_at:
+          type: integer
+          description: Last login timestamp
+
+    Job:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Job identifier
+        tool_id:
+          type: string
+          description: Tool identifier
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+          description: Job status
+        input_data:
+          type: object
+          description: Job input parameters
+        output_data:
+          type: object
+          description: Job results
+        input_ref:
+          type: string
+          description: R2 reference for input files
+        output_ref:
+          type: string
+          description: R2 reference for output files
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Progress percentage
+        error_message:
+          type: string
+          description: Error message if failed
+        started_at:
+          type: integer
+          description: Start timestamp
+        completed_at:
+          type: integer
+          description: Completion timestamp
+        created_at:
+          type: integer
+          description: Creation timestamp
+        updated_at:
+          type: integer
+          description: Last update timestamp
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error identifier
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details
+        timestamp:
+          type: integer
+          description: Error timestamp
+        request_id:
+          type: string
+          description: Request identifier for debugging
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for tool access
+
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token for authenticated users
+
+tags:
+  - name: Tools
+    description: Tool management and discovery
+  - name: JSON Tools
+    description: JSON processing tools
+  - name: Code Tools
+    description: Code formatting and processing
+  - name: Code Execution
+    description: Secure code execution
+  - name: File Management
+    description: File upload and management
+  - name: Jobs
+    description: Asynchronous job processing
+  - name: Authentication
+    description: User authentication
+  - name: User
+    description: User management

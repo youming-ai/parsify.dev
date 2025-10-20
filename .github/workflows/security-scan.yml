@@ -1,0 +1,614 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run security scan daily at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Type of security scan to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - dependencies
+        - code
+        - secrets
+        - containers
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8'
+
+jobs:
+  dependency-scan:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Run pnpm audit
+      run: |
+        echo "Running pnpm security audit..."
+        pnpm audit --audit-level moderate --json > audit-results.json || true
+
+        # Parse results and create summary
+        node -e "
+        const fs = require('fs');
+        try {
+          const audit = JSON.parse(fs.readFileSync('audit-results.json', 'utf8'));
+          const vulnerabilities = audit.metadata?.vulnerabilities || {};
+          const totalVulns = Object.values(vulnerabilities).reduce((sum, count) => sum + count, 0);
+
+          console.log('## Dependency Security Audit Results\\n');
+          console.log('**Total Vulnerabilities Found**: ' + totalVulns + '\\n');
+
+          if (totalVulns > 0) {
+            console.log('### Vulnerability Summary\\n');
+            Object.entries(vulnerabilities).forEach(([severity, count]) => {
+              const icon = severity === 'critical' ? '🚨' : severity === 'high' ? '⚠️' : severity === 'moderate' ? '⚡' : 'ℹ️';
+              console.log(\`- \${icon} \${severity.charAt(0).toUpperCase() + severity.slice(1)}: \${count}\`);
+            });
+            console.log('');
+          }
+
+          console.log('### Next Steps\\n');
+          console.log('- Review the full audit report below');
+          console.log('- Update vulnerable dependencies using \`pnpm update\`');
+          console.log('- For critical issues, consider immediate patches');
+
+        } catch (error) {
+          console.log('Could not parse audit results:', error.message);
+        }
+        " > audit-summary.md
+
+    - name: Run npm audit (additional check)
+      run: |
+        echo "Running npm audit for additional coverage..."
+        npm audit --audit-level moderate --json > npm-audit-results.json || true
+
+    - name: Run Snyk security scan (if token available)
+      if: secrets.SNYK_TOKEN != ''
+      run: |
+        echo "Running Snyk security scan..."
+        npm install -g snyk
+        snyk test --json > snyk-results.json || true
+        snyk monitor --org="${{ secrets.SNYK_ORG }}" || true
+
+    - name: Generate dependency report
+      run: |
+        echo "## Complete Dependency Security Report" > security-report.md
+        echo "" >> security-report.md
+        cat audit-summary.md >> security-report.md
+        echo "" >> security-report.md
+
+        if [ -f "npm-audit-results.json" ]; then
+          echo "### NPM Audit Results" >> security-report.md
+          echo "Additional security scan results from npm audit." >> security-report.md
+          echo "" >> security-report.md
+        fi
+
+        if [ -f "snyk-results.json" ]; then
+          echo "### Snyk Security Results" >> security-report.md
+          echo "Additional security analysis from Snyk." >> security-report.md
+          echo "" >> security-report.md
+        fi
+
+        echo "---" >> security-report.md
+        echo "*Generated on: $(date -u)*" >> security-report.md
+
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: dependency-security-report
+        path: |
+          security-report.md
+          audit-results.json
+          npm-audit-results.json
+          snyk-results.json
+        retention-days: 30
+
+    - name: Check for critical vulnerabilities
+      run: |
+        if [ -f "audit-results.json" ]; then
+          CRITICAL_COUNT=$(node -e "
+            const fs = require('fs');
+            try {
+              const audit = JSON.parse(fs.readFileSync('audit-results.json', 'utf8'));
+              console.log(audit.metadata?.vulnerabilities?.critical || 0);
+            } catch {
+              console.log(0);
+            }
+          ")
+
+          if [ "$CRITICAL_COUNT" -gt 0 ]; then
+            echo "🚨 Critical vulnerabilities found - failing build"
+            exit 1
+          fi
+        fi
+
+  code-security-scan:
+    name: Code Security Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: javascript
+        config-file: ./.github/codeql/codeql-config.yml
+        queries: security-and-quality
+
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v2
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+      with:
+        output: sarif-results/
+
+    - name: Run ESLint security rules
+      run: |
+        echo "Running ESLint with security rules..."
+        npm install -g eslint-plugin-security
+
+        # Create security ESLint config
+        cat > .eslintrc.security.js << 'EOF'
+        module.exports = {
+          extends: ['plugin:security/recommended'],
+          rules: {
+            'security/detect-object-injection': 'warn',
+            'security/detect-non-literal-fs-filename': 'warn',
+            'security/detect-possible-timing-attacks': 'warn',
+            'security/detect-new-buffer': 'error',
+            'security/detect-pseudoRandomBytes': 'error'
+          }
+        };
+        EOF
+
+        npx eslint --config .eslintrc.security.js --format=json apps/ packages/ src/ > eslint-security-results.json || true
+
+    - name: Run Semgrep security scan
+      uses: semgrep/semgrep-action@v1
+      with:
+        config: >-
+          p/security-audit
+          p/security
+          p/owasp-top-ten
+          p/secrets
+        output: semgrep-results.json
+        output_format: json
+
+    - name: Generate code security report
+      run: |
+        echo "## Code Security Analysis Report" > code-security-report.md
+        echo "" >> code-security-report.md
+
+        if [ -f "sarif-results/javascript.sarif" ]; then
+          echo "### CodeQL Analysis Results" >> code-security-report.md
+          node -e "
+            const fs = require('fs');
+            try {
+              const sarif = JSON.parse(fs.readFileSync('sarif-results/javascript.sarif', 'utf8'));
+              const results = sarif.runs?.[0]?.results || [];
+              console.log('Found ' + results.length + ' potential security issues');
+              console.log('');
+
+              if (results.length > 0) {
+                results.slice(0, 10).forEach((result, index) => {
+                  const level = result.level || 'note';
+                  const icon = level === 'error' ? '🚨' : level === 'warning' ? '⚠️' : 'ℹ️';
+                  const message = result.message?.text || 'No message';
+                  const file = result.locations?.[0]?.physicalLocation?.artifactLocation?.uri || 'Unknown file';
+
+                  console.log(\`\${index + 1}. \${icon} **\${level.toUpperCase()}**: \${message}\`);
+                  console.log(\`   - File: \${file}\`);
+                  console.log('');
+                });
+
+                if (results.length > 10) {
+                  console.log(\`... and \${results.length - 10} more issues\`);
+                }
+              }
+            } catch (error) {
+              console.log('Could not parse CodeQL results:', error.message);
+            }
+          " >> code-security-report.md
+          echo "" >> code-security-report.md
+        fi
+
+        if [ -f "eslint-security-results.json" ]; then
+          echo "### ESLint Security Analysis" >> code-security-report.md
+          node -e "
+            const fs = require('fs');
+            try {
+              const results = JSON.parse(fs.readFileSync('eslint-security-results.json', 'utf8'));
+              const totalIssues = results.reduce((sum, file) => sum + file.messages.length, 0);
+              console.log('Found ' + totalIssues + ' ESLint security issues');
+              console.log('');
+            } catch (error) {
+              console.log('Could not parse ESLint results:', error.message);
+            }
+          " >> code-security-report.md
+          echo "" >> code-security-report.md
+        fi
+
+        if [ -f "semgrep-results.json" ]; then
+          echo "### Semgrep Security Analysis" >> code-security-report.md
+          node -e "
+            const fs = require('fs');
+            try {
+              const results = JSON.parse(fs.readFileSync('semgrep-results.json', 'utf8'));
+              const findings = results.results || [];
+              console.log('Found ' + findings.length + ' Semgrep security findings');
+              console.log('');
+
+              if (findings.length > 0) {
+                findings.slice(0, 5).forEach((finding, index) => {
+                  const message = finding.message || 'No message';
+                  const file = finding.path || 'Unknown file';
+                  const rule = finding.check_id || 'Unknown rule';
+
+                  console.log(\`\${index + 1}. **\${rule}**: \${message}\`);
+                  console.log(\`   - File: \${file}\`);
+                  console.log('');
+                });
+              }
+            } catch (error) {
+              console.log('Could not parse Semgrep results:', error.message);
+            }
+          " >> code-security-report.md
+          echo "" >> code-security-report.md
+        fi
+
+        echo "---" >> code-security-report.md
+        echo "*Generated on: $(date -u)*" >> code-security-report.md
+
+    - name: Upload code security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: code-security-report
+        path: |
+          code-security-report.md
+          sarif-results/
+          eslint-security-results.json
+          semgrep-results.json
+        retention-days: 30
+
+  secrets-scan:
+    name: Secrets Detection Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for better secrets detection
+
+    - name: Run TruffleHog OSS
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+        extra_args: --debug --json
+
+    - name: Run gitleaks
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+    - name: Run GitGuardian scan
+      if: secrets.GITGUARDIAN_API_KEY != ''
+      uses: GitGuardian/ggshield-action@v1
+      env:
+        GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
+        GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
+        GITHUB_DEFAULT_BRANCH: main
+        GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
+
+    - name: Generate secrets report
+      run: |
+        echo "## Secrets Detection Report" > secrets-report.md
+        echo "" >> secrets-report.md
+
+        if [ -f "trufflehog-output.json" ]; then
+          echo "### TruffleHog Results" >> secrets-report.md
+          SECRETS_FOUND=$(jq '. | length' trufflehog-output.json 2>/dev/null || echo "0")
+          echo "Found $SECRETS_FOUND potential secrets" >> secrets-report.md
+          echo "" >> secrets-report.md
+        fi
+
+        if [ -f "gitleaks-report.json" ]; then
+          echo "### Gitleaks Results" >> secrets-report.md
+          LEAKS_FOUND=$(jq '. | length' gitleaks-report.json 2>/dev/null || echo "0")
+          echo "Found $LEAKS_FOUND potential leaks" >> secrets-report.md
+          echo "" >> secrets-report.md
+        fi
+
+        echo "### Scan Summary" >> secrets-report.md
+        echo "- Repository scanned: ${{ github.repository }}" >> secrets-report.md
+        echo "- Commit: ${{ github.sha }}" >> secrets-report.md
+        echo "- Branch: ${{ github.ref_name }}" >> secrets-report.md
+        echo "- Scan time: $(date -u)" >> secrets-report.md
+        echo "" >> secrets-report.md
+
+        echo "---" >> secrets-report.md
+        echo "*Generated on: $(date -u)*" >> secrets-report.md
+
+    - name: Upload secrets report
+      uses: actions/upload-artifact@v3
+      with:
+        name: secrets-scan-report
+        path: |
+          secrets-report.md
+          trufflehog-output.json
+          gitleaks-report.json
+        retention-days: 30
+
+    - name: Fail on secrets found
+      run: |
+        TOTAL_SECRETS=0
+
+        if [ -f "trufflehog-output.json" ]; then
+          SECRETS_FOUND=$(jq '. | length' trufflehog-output.json 2>/dev/null || echo "0")
+          TOTAL_SECRETS=$((TOTAL_SECRETS + SECRETS_FOUND))
+        fi
+
+        if [ -f "gitleaks-report.json" ]; then
+          LEAKS_FOUND=$(jq '. | length' gitleaks-report.json 2>/dev/null || echo "0")
+          TOTAL_SECRETS=$((TOTAL_SECRETS + LEAKS_FOUND))
+        fi
+
+        if [ $TOTAL_SECRETS -gt 0 ]; then
+          echo "🚨 Found $TOTAL_SECRETS potential secrets - failing scan"
+          exit 1
+        else
+          echo "✅ No secrets detected"
+        fi
+
+  container-security-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    if: contains(github.event.inputs.scan_type, 'containers') || github.event.inputs.scan_type == 'all' || github.event_name == 'schedule'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build container images
+      run: |
+        # Build your container images here
+        echo "Building container images for security scanning..."
+
+        # Example builds (modify as needed)
+        # docker build -t parsify-web:latest -f apps/web/Dockerfile .
+        # docker build -t parsify-api:latest -f apps/api/Dockerfile .
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'parsify-web:latest'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Run Trivy on API image
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'parsify-api:latest'
+        format: 'sarif'
+        output: 'trivy-api-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Generate container security report
+      run: |
+        echo "## Container Security Scan Report" > container-security-report.md
+        echo "" >> container-security-report.md
+
+        if [ -f "trivy-results.sarif" ]; then
+          echo "### Web Container Security" >> container-security-report.md
+          node -e "
+            const fs = require('fs');
+            try {
+              const sarif = JSON.parse(fs.readFileSync('trivy-results.sarif', 'utf8'));
+              const results = sarif.runs?.[0]?.results || [];
+              console.log('Found ' + results.length + ' container vulnerabilities');
+
+              const vulnerabilities = {};
+              results.forEach(result => {
+                const severity = result.level || 'unknown';
+                vulnerabilities[severity] = (vulnerabilities[severity] || 0) + 1;
+              });
+
+              console.log('\\n**Vulnerability Summary:**');
+              Object.entries(vulnerabilities).forEach(([severity, count]) => {
+                const icon = severity === 'error' ? '🚨' : severity === 'warning' ? '⚠️' : 'ℹ️';
+                console.log(\`- \${icon} \${severity.charAt(0).toUpperCase() + severity.slice(1)}: \${count}\`);
+              });
+            } catch (error) {
+              console.log('Could not parse Trivy results:', error.message);
+            }
+          " >> container-security-report.md
+          echo "" >> container-security-report.md
+        fi
+
+        echo "---" >> container-security-report.md
+        echo "*Generated on: $(date -u)*" >> container-security-report.md
+
+    - name: Upload container security report
+      uses: actions/upload-artifact@v3
+      with:
+        name: container-security-report
+        path: |
+          container-security-report.md
+          trivy-results.sarif
+          trivy-api-results.sarif
+        retention-days: 30
+
+  security-summary:
+    name: Security Scan Summary
+    runs-on: ubuntu-latest
+    needs: [dependency-scan, code-security-scan, secrets-scan, container-security-scan]
+    if: always()
+
+    steps:
+    - name: Download all security reports
+      uses: actions/download-artifact@v3
+      with:
+        path: security-artifacts
+
+    - name: Generate comprehensive security summary
+      run: |
+        echo "## 🔒 Comprehensive Security Scan Summary" > security-summary.md
+        echo "" >> security-summary.md
+
+        echo "### Scan Results Overview" >> security-summary.md
+        echo "" >> security-summary.md
+        echo "| Scan Type | Status | Issues Found |" >> security-summary.md
+        echo "|-----------|--------|--------------|" >> security-summary.md
+
+        # Dependency scan
+        DEP_STATUS="${{ needs.dependency-scan.result }}"
+        DEP_ICON="$([ "$DEP_STATUS" = "success" ] && echo "✅" || echo "❌")"
+        echo "| Dependencies | $DEP_ICON $DEP_STATUS | Check report |" >> security-summary.md
+
+        # Code security scan
+        CODE_STATUS="${{ needs.code-security-scan.result }}"
+        CODE_ICON="$([ "$CODE_STATUS" = "success" ] && echo "✅" || echo "❌")"
+        echo "| Code Analysis | $CODE_ICON $CODE_STATUS | Check report |" >> security-summary.md
+
+        # Secrets scan
+        SECRETS_STATUS="${{ needs.secrets-scan.result }}"
+        SECRETS_ICON="$([ "$SECRETS_STATUS" = "success" ] && echo "✅" || echo "❌")"
+        echo "| Secrets Detection | $SECRETS_ICON $SECRETS_STATUS | Check report |" >> security-summary.md
+
+        # Container scan
+        CONTAINER_STATUS="${{ needs.container-security-scan.result }}"
+        if [ "$CONTAINER_STATUS" != "skipped" ]; then
+          CONTAINER_ICON="$([ "$CONTAINER_STATUS" = "success" ] && echo "✅" || echo "❌")"
+          echo "| Container Security | $CONTAINER_ICON $CONTAINER_STATUS | Check report |" >> security-summary.md
+        fi
+
+        echo "" >> security-summary.md
+        echo "### Scan Details" >> security-summary.md
+        echo "" >> security-summary.md
+
+        # Add summary from each report
+        for report in security-artifacts/*/security-report.md security-artifacts/*/code-security-report.md security-artifacts/*/secrets-report.md security-artifacts/*/container-security-report.md; do
+          if [ -f "$report" ]; then
+            echo "#### $(basename $(dirname $report))" >> security-summary.md
+            echo "" >> security-summary.md
+            head -20 "$report" >> security-summary.md
+            echo "" >> security-summary.md
+          fi
+        done
+
+        echo "---" >> security-summary.md
+        echo "**Repository**: ${{ github.repository }}" >> security-summary.md
+        echo "**Commit**: ${{ github.sha }}" >> security-summary.md
+        echo "**Branch**: ${{ github.ref_name }}" >> security-summary.md
+        echo "**Scan Time**: $(date -u)" >> security-summary.md
+
+    - name: Upload security summary
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-scan-summary
+        path: security-summary.md
+        retention-days: 30
+
+    - name: Comment PR with security results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+
+          try {
+            const summary = fs.readFileSync('security-summary.md', 'utf8');
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔒 Security Scan Results\n\n${summary}`
+            });
+          } catch (error) {
+            console.log('Could not read security summary:', error.message);
+          }
+
+    - name: Create security issue on critical findings
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🚨 Security Issues Detected',
+            body: `
+            ## Security Scan Results
+
+            **Commit**: ${{ github.sha }}
+            **Branch**: ${{ github.ref }}
+            **Workflow**: ${{ context.workflow }}
+            **Run ID**: ${{ context.runId }}
+
+            Security scans have detected issues that require immediate attention.
+
+            Please review the detailed security reports and address the findings.
+
+            [View Security Reports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ context.runId }})
+            `,
+            labels: ['security', 'bug', 'urgent']
+          });

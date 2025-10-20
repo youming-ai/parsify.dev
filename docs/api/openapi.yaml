@@ -1,0 +1,1909 @@
+openapi: 3.0.3
+info:
+  title: Parsify API
+  description: |
+    Powerful API for JSON processing, code execution, file management, and more.
+
+    ## Features
+
+    - **JSON Tools**: Format, validate, and convert JSON data
+    - **Code Execution**: Execute JavaScript and Python code in a secure sandbox
+    - **File Management**: Upload and process files with ease
+    - **Job Processing**: Handle long-running operations asynchronously
+    - **Rate Limiting**: Fair usage limits with tier-based pricing
+
+    ## Authentication
+
+    The API supports both anonymous and authenticated access. Some features require authentication and higher subscription tiers.
+
+    ## Rate Limiting
+
+    Rate limits vary by subscription tier:
+    - **Anonymous**: 100 requests/hour
+    - **Free**: 1,000 requests/hour
+    - **Pro**: 5,000 requests/hour
+    - **Enterprise**: 50,000 requests/hour
+
+    ## Getting Started
+
+    1. Check out the [API documentation](https://docs.parsify.dev/api)
+    2. Create an account at [parsify.dev](https://parsify.dev)
+    3. Get your API key from the dashboard
+    4. Start making requests!
+
+    ## Support
+
+    - [API Status](https://status.parsify.dev)
+    - [Documentation](https://docs.parsify.dev)
+    - [Support](mailto:support@parsify.dev)
+  version: 1.0.0
+  contact:
+    name: Parsify Support
+    email: support@parsify.dev
+    url: https://parsify.dev/support
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: https://api.parsify.dev
+    description: Production server
+  - url: https://api-staging.parsify.dev
+    description: Staging server
+paths:
+  /:
+    get:
+      tags:
+        - Root
+      summary: API Root
+      description: Get API information and available endpoints
+      operationId: getRoot
+      responses:
+        '200':
+          description: API information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RootResponse'
+              example:
+                name: Parsify API
+                version: 1.0.0
+                environment: production
+                status: operational
+                timestamp: 2023-12-01T12:00:00Z
+                endpoints:
+                  health: /health
+                  metrics: /metrics
+                  api: /api/v1
+                  docs: /api/v1/docs
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health Check
+      description: Check API health status
+      operationId: getHealth
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /metrics:
+    get:
+      tags:
+        - Health
+      summary: System Metrics
+      description: Get system performance metrics (admin only)
+      operationId: getMetrics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: X-Admin-Key
+          in: header
+          description: Admin authentication key
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: System metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1:
+    get:
+      tags:
+        - Root
+      summary: API v1 Root
+      description: Get v1 API information
+      operationId: getAPIV1Root
+      responses:
+        '200':
+          description: API v1 information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIV1RootResponse'
+
+  /api/v1/tools:
+    get:
+      tags:
+        - Tools
+      summary: List Available Tools
+      description: Get a list of all available tools and their configurations
+      operationId: listTools
+      parameters:
+        - name: category
+          in: query
+          description: Filter tools by category
+          schema:
+            type: string
+            enum: [json, code]
+        - name: enabled_only
+          in: query
+          description: Return only enabled tools
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: List of available tools
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolsListResponse'
+
+  /api/v1/tools/json/format:
+    post:
+      tags:
+        - JSON Tools
+      summary: Format JSON
+      description: Format and beautify JSON data with custom indentation and optional key sorting
+      operationId: formatJSON
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JSONFormatRequest'
+      responses:
+        '200':
+          description: JSON formatted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JSONFormatResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/tools/json/validate:
+    post:
+      tags:
+        - JSON Tools
+      summary: Validate JSON
+      description: Validate JSON syntax and optionally against a JSON schema
+      operationId: validateJSON
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JSONValidateRequest'
+      responses:
+        '200':
+          description: JSON validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JSONValidateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/tools/json/convert:
+    post:
+      tags:
+        - JSON Tools
+      summary: Convert JSON
+      description: Convert JSON to other formats (CSV, XML)
+      operationId: convertJSON
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JSONConvertRequest'
+      responses:
+        '200':
+          description: JSON converted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JSONConvertResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/tools/code/execute:
+    post:
+      tags:
+        - Code Tools
+      summary: Execute Code
+      description: Execute code in a secure sandboxed environment
+      operationId: executeCode
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodeExecuteRequest'
+      responses:
+        '200':
+          description: Code executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeExecuteResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/tools/code/format:
+    post:
+      tags:
+        - Code Tools
+      summary: Format Code
+      description: Format and beautify code in various languages
+      operationId: formatCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodeFormatRequest'
+      responses:
+        '200':
+          description: Code formatted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeFormatResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/upload/sign:
+    post:
+      tags:
+        - File Upload
+      summary: Get Upload URL
+      description: Get a presigned URL for file upload
+      operationId: signUpload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadSignRequest'
+      responses:
+        '200':
+          description: Upload URL generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadSignResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/upload/status/{fileId}:
+    get:
+      tags:
+        - File Upload
+      summary: Get Upload Status
+      description: Check the status of a file upload
+      operationId: getUploadStatus
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          description: File ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Upload status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadStatusResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/upload/confirm/{fileId}:
+    post:
+      tags:
+        - File Upload
+      summary: Confirm Upload
+      description: Confirm that a file upload is complete
+      operationId: confirmUpload
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          description: File ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                checksum:
+                  type: string
+                  description: SHA-256 checksum of the uploaded file
+      responses:
+        '200':
+          description: Upload confirmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadConfirmResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/jobs:
+    get:
+      tags:
+        - Jobs
+      summary: List Jobs
+      description: Get a list of jobs (admin/debug endpoint)
+      operationId: listJobs
+      parameters:
+        - name: status
+          in: query
+          description: Filter by job status
+          schema:
+            type: string
+            enum: [pending, running, completed, failed]
+        - name: tool_id
+          in: query
+          description: Filter by tool ID
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum number of jobs to return
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: Number of jobs to skip
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: List of jobs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobsListResponse'
+
+    post:
+      tags:
+        - Jobs
+      summary: Create Job
+      description: Create a new job for asynchronous processing
+      operationId: createJob
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobCreateRequest'
+      responses:
+        '201':
+          description: Job created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/jobs/{jobId}:
+    get:
+      tags:
+        - Jobs
+      summary: Get Job
+      description: Get job details and status
+      operationId: getJob
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Job details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - Jobs
+      summary: Update Job
+      description: Update job status and progress (internal use)
+      operationId: updateJob
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobUpdateRequest'
+      responses:
+        '200':
+          description: Job updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Jobs
+      summary: Delete Job
+      description: Delete a job
+      operationId: deleteJob
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Job deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Job deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/users/profile:
+    get:
+      tags:
+        - Users
+      summary: Get User Profile
+      description: Get current user profile information
+      operationId: getUserProfile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Users
+      summary: Update User Profile
+      description: Update current user profile
+      operationId: updateUserProfile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileUpdateRequest'
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileUpdateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/users/stats:
+    get:
+      tags:
+        - Users
+      summary: Get User Statistics
+      description: Get user usage statistics (premium only)
+      operationId: getUserStats
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStatsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/users/subscription:
+    post:
+      tags:
+        - Users
+      summary: Update Subscription
+      description: Change subscription tier
+      operationId: updateSubscription
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tier
+              properties:
+                tier:
+                  type: string
+                  enum: [free, pro, enterprise]
+                  description: New subscription tier
+      responses:
+        '200':
+          description: Subscription updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionUpdateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/users/{userId}:
+    get:
+      tags:
+        - Users
+      summary: Get Public User Info
+      description: Get public user information
+      operationId: getPublicUserInfo
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Public user information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicUserInfoResponse'
+
+  /api/v1/users/admin/dashboard:
+    get:
+      tags:
+        - Users
+      summary: Admin Dashboard
+      description: Get admin dashboard data (enterprise only)
+      operationId: getAdminDashboard
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Admin dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminDashboardResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/auth/session:
+    post:
+      tags:
+        - Authentication
+      summary: Create Session
+      description: Create a new authentication session
+      operationId: createSession
+      responses:
+        '501':
+          description: Not implemented yet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/validate:
+    get:
+      tags:
+        - Authentication
+      summary: Validate Session
+      description: Validate current session and get user info
+      operationId: validateSession
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Session valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionValidateResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh Token
+      description: Refresh authentication token
+      operationId: refreshToken
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefreshResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout
+      description: End current session
+      operationId: logout
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Logged out successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RootResponse:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Parsify API
+        version:
+          type: string
+          example: 1.0.0
+        environment:
+          type: string
+          example: production
+        status:
+          type: string
+          example: operational
+        timestamp:
+          type: string
+          format: date-time
+        endpoints:
+          type: object
+          properties:
+            health:
+              type: string
+              example: /health
+            metrics:
+              type: string
+              example: /metrics
+            api:
+              type: string
+              example: /api/v1
+            docs:
+              type: string
+              example: /api/v1/docs
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+          example: healthy
+        timestamp:
+          type: string
+          format: date-time
+        environment:
+          type: string
+          example: production
+        version:
+          type: string
+          example: v1
+        services:
+          type: object
+          properties:
+            database:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: healthy
+                responseTime:
+                  type: number
+                  example: 45
+                uptime:
+                  type: number
+                  example: 86400
+            cache:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: healthy
+                responseTime:
+                  type: number
+                  example: 12
+        metrics:
+          type: object
+          properties:
+            uptime:
+              type: number
+              example: 86400
+            memory:
+              type: number
+              example: 134217728
+            requestCount:
+              type: number
+              example: 1500
+        requestId:
+          type: string
+          format: uuid
+
+    MetricsResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        environment:
+          type: string
+          example: production
+        metrics:
+          type: object
+          properties:
+            requests:
+              type: object
+              properties:
+                total:
+                  type: number
+                  example: 10000
+                success:
+                  type: number
+                  example: 9850
+                error:
+                  type: number
+                  example: 150
+                averageResponseTime:
+                  type: number
+                  example: 245
+            database:
+              type: object
+              properties:
+                connections:
+                  type: object
+                  properties:
+                    active:
+                      type: number
+                      example: 15
+                    idle:
+                      type: number
+                      example: 85
+                queries:
+                  type: object
+                  properties:
+                    total:
+                      type: number
+                      example: 50000
+                    successful:
+                      type: number
+                      example: 49900
+                    failed:
+                      type: number
+                      example: 100
+        health:
+          type: object
+          properties:
+            overall:
+              type: string
+              example: healthy
+            services:
+              type: object
+              additionalProperties: true
+        system:
+          type: object
+          properties:
+            uptime:
+              type: number
+              example: 86400
+            memory:
+              type: object
+              properties:
+                used:
+                  type: number
+                  example: 134217728
+                total:
+                  type: number
+                  example: 536870912
+            cpu:
+              type: number
+              example: 45.2
+
+    APIV1RootResponse:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Parsify API
+        version:
+          type: string
+          example: 1.0.0
+        status:
+          type: string
+          example: operational
+        timestamp:
+          type: string
+          format: date-time
+        endpoints:
+          type: object
+          properties:
+            tools:
+              type: string
+              example: /tools
+            upload:
+              type: string
+              example: /upload
+            jobs:
+              type: string
+              example: /jobs
+            users:
+              type: string
+              example: /users
+            auth:
+              type: string
+              example: /auth
+
+    ToolsListResponse:
+      type: object
+      properties:
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tool'
+
+    Tool:
+      type: object
+      properties:
+        id:
+          type: string
+          example: json-format
+        slug:
+          type: string
+          example: json-format
+        name:
+          type: string
+          example: JSON Formatter
+        category:
+          type: string
+          enum: [json, code]
+          example: json
+        description:
+          type: string
+          example: Format and beautify JSON files with custom indentation
+        config:
+          type: object
+          properties:
+            inputSchema:
+              type: object
+              description: JSON schema for input validation
+            outputSchema:
+              type: object
+              description: JSON schema for output
+            executionMode:
+              type: string
+              enum: [sync, async]
+              example: sync
+            quotas:
+              type: object
+              properties:
+                maxInputSize:
+                  type: number
+                  description: Maximum input size in bytes
+                  example: 10485760
+                maxExecutionTime:
+                  type: number
+                  description: Maximum execution time in milliseconds
+                  example: 1000
+                requiresAuth:
+                  type: boolean
+                  example: false
+        enabled:
+          type: boolean
+          example: true
+        beta:
+          type: boolean
+          example: false
+        sort_order:
+          type: number
+          example: 1
+
+    JSONFormatRequest:
+      type: object
+      required:
+        - json
+      properties:
+        json:
+          type: string
+          description: JSON string to format
+          example: '{"name":"John","age":30}'
+        indent:
+          type: integer
+          minimum: 0
+          maximum: 8
+          default: 2
+          description: Number of spaces for indentation
+          example: 2
+        sort_keys:
+          type: boolean
+          default: false
+          description: Whether to sort object keys alphabetically
+          example: true
+
+    JSONFormatResponse:
+      type: object
+      properties:
+        formatted:
+          type: string
+          description: Formatted JSON string
+          example: "{\n  \"age\": 30,\n  \"name\": \"John\"\n}"
+        valid:
+          type: boolean
+          description: Whether input JSON was valid
+          example: true
+        size:
+          type: integer
+          description: Size of formatted output in bytes
+          example: 42
+        errors:
+          type: array
+          description: Array of validation errors (null if valid)
+          items:
+            type: object
+            properties:
+              line:
+                type: integer
+                example: 1
+              column:
+                type: integer
+                example: 15
+              message:
+                type: string
+                example: Expected property name or '}' in JSON at position 15
+          nullable: true
+
+    JSONValidateRequest:
+      type: object
+      required:
+        - json
+      properties:
+        json:
+          type: string
+          description: JSON string to validate
+          example: '{"name":"John","age":30}'
+        schema:
+          type: object
+          description: JSON schema for validation (optional)
+          example:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
+                minLength: 1
+              age:
+                type: number
+                minimum: 0
+
+    JSONValidateResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+          description: Whether JSON is valid
+          example: true
+        errors:
+          type: array
+          description: Array of validation errors
+          items:
+            type: object
+            properties:
+              line:
+                type: integer
+                example: 1
+              column:
+                type: integer
+                example: 1
+              message:
+                type: string
+                example: name: Required property missing
+
+    JSONConvertRequest:
+      type: object
+      required:
+        - json
+        - target_format
+      properties:
+        json:
+          type: string
+          description: JSON string to convert
+          example: '[{"name":"John","age":30},{"name":"Jane","age":25}]'
+        target_format:
+          type: string
+          enum: [csv, xml]
+          description: Target format
+          example: csv
+        options:
+          type: object
+          description: Conversion options
+          properties:
+            delimiter:
+              type: string
+              description: CSV delimiter (for CSV format)
+              example: ","
+            header:
+              type: boolean
+              description: Include header row (for CSV format)
+              example: true
+
+    JSONConvertResponse:
+      type: object
+      properties:
+        converted:
+          type: string
+          description: Converted data
+          example: "name,age\nJohn,30\nJane,25"
+        format:
+          type: string
+          description: Output format
+          example: csv
+
+    CodeExecuteRequest:
+      type: object
+      required:
+        - code
+        - language
+      properties:
+        code:
+          type: string
+          description: Code to execute
+          example: "print('Hello, World!')"
+        language:
+          type: string
+          enum: [javascript, typescript, python]
+          description: Programming language
+          example: python
+        input:
+          type: string
+          description: Standard input for the code
+          example: "Alice"
+        timeout:
+          type: integer
+          minimum: 1000
+          maximum: 30000
+          default: 5000
+          description: Execution timeout in milliseconds
+          example: 5000
+
+    CodeExecuteResponse:
+      type: object
+      properties:
+        output:
+          type: string
+          description: Code execution output
+          example: "Hello, World!\n"
+        exit_code:
+          type: integer
+          description: Process exit code
+          example: 0
+        execution_time:
+          type: number
+          description: Execution time in milliseconds
+          example: 245
+        memory_usage:
+          type: number
+          description: Memory usage in bytes
+          example: 2048000
+        error:
+          type: string
+          description: Error message (null if successful)
+          nullable: true
+
+    CodeFormatRequest:
+      type: object
+      required:
+        - code
+        - language
+      properties:
+        code:
+          type: string
+          description: Code to format
+          example: "function hello(){console.log('Hello');}"
+        language:
+          type: string
+          enum: [javascript, typescript, python]
+          description: Programming language
+          example: javascript
+        options:
+          type: object
+          description: Formatting options
+          properties:
+            indent_size:
+              type: integer
+              minimum: 1
+              maximum: 8
+              description: Indentation size
+              example: 2
+            use_tabs:
+              type: boolean
+              description: Use tabs instead of spaces
+              example: false
+            max_line_length:
+              type: integer
+              description: Maximum line length (for Python)
+              example: 79
+
+    CodeFormatResponse:
+      type: object
+      properties:
+        formatted:
+          type: string
+          description: Formatted code
+          example: "function hello() {\n  console.log('Hello');\n}"
+        language:
+          type: string
+          description: Programming language
+          example: javascript
+        options:
+          type: object
+          description: Formatting options used
+          example:
+            indent_size: 2
+            use_tabs: false
+
+    UploadSignRequest:
+      type: object
+      required:
+        - filename
+        - content_type
+        - size
+      properties:
+        filename:
+          type: string
+          description: Name of the file to upload
+          example: data.json
+        content_type:
+          type: string
+          description: MIME type of the file
+          enum: [application/json, text/csv, application/xml, text/xml, text/plain]
+          example: application/json
+        size:
+          type: integer
+          description: File size in bytes
+          example: 1024000
+
+    UploadSignResponse:
+      type: object
+      properties:
+        upload_url:
+          type: string
+          description: Presigned upload URL
+          example: https://mock-r2-upload.example.com/uploads/uuid/data.json
+        file_id:
+          type: string
+          format: uuid
+          description: File ID for reference
+          example: 550e8400-e29b-41d4-a716-446655440000
+        expires_at:
+          type: integer
+          description: URL expiration timestamp
+          example: 1701388800
+        headers:
+          type: object
+          description: Headers to include with upload request
+          properties:
+            Content-Type:
+              type: string
+              example: application/json
+            Authorization:
+              type: string
+              example: AWS4-HMAC-SHA256 Credential=mock/20231201/us-east-1/s3/aws4_request,SignedHeaders=content-type;host;x-amz-date,Signature=mock-signature
+            X-Amz-Date:
+              type: string
+              example: 20231201T120000Z
+            X-Amz-Expires:
+              type: string
+              example: "3600"
+
+    UploadStatusResponse:
+      type: object
+      properties:
+        file_id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        filename:
+          type: string
+          example: data.json
+        status:
+          type: string
+          enum: [uploading, completed, failed, expired]
+          example: completed
+        size_bytes:
+          type: integer
+          example: 1024000
+        created_at:
+          type: integer
+          description: Creation timestamp
+          example: 1701388800
+        expires_at:
+          type: integer
+          description: Expiration timestamp
+          example: 1701475200
+
+    UploadConfirmResponse:
+      type: object
+      properties:
+        file_id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        status:
+          type: string
+          example: completed
+        message:
+          type: string
+          example: File upload confirmed successfully
+
+    JobCreateRequest:
+      type: object
+      required:
+        - tool_id
+      properties:
+        tool_id:
+          type: string
+          enum: [json-format, json-validate, json-convert, code-execute, code-format]
+          description: Tool ID to execute
+          example: json-format
+        input_data:
+          type: object
+          description: Input data for the job
+          example:
+            json: '{"name":"John"}'
+            indent: 2
+        input_ref:
+          type: string
+          description: Reference to uploaded file (alternative to input_data)
+          example: 550e8400-e29b-41d4-a716-446655440000
+
+    JobUpdateRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+          description: Job status
+        output_data:
+          type: object
+          description: Job output data
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Job progress percentage
+        error_message:
+          type: string
+          description: Error message (if failed)
+        started_at:
+          type: integer
+          description: Start timestamp
+        completed_at:
+          type: integer
+          description: Completion timestamp
+
+    JobResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        user_id:
+          type: string
+          format: uuid
+          nullable: true
+        tool_id:
+          type: string
+          example: json-format
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+          example: completed
+        input_data:
+          type: object
+          nullable: true
+        input_ref:
+          type: string
+          nullable: true
+        output_data:
+          type: object
+          nullable: true
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 100
+        error_message:
+          type: string
+          nullable: true
+        retry_count:
+          type: integer
+          example: 0
+        started_at:
+          type: integer
+          nullable: true
+        completed_at:
+          type: integer
+          nullable: true
+        created_at:
+          type: integer
+          example: 1701388800
+        updated_at:
+          type: integer
+          example: 1701388860
+
+    JobsListResponse:
+      type: object
+      properties:
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobResponse'
+        total:
+          type: integer
+          example: 25
+        limit:
+          type: integer
+          example: 10
+        offset:
+          type: integer
+          example: 0
+
+    UserProfileResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        name:
+          type: string
+          example: John Doe
+        avatar_url:
+          type: string
+          nullable: true
+        subscription_tier:
+          type: string
+          enum: [free, pro, enterprise]
+          example: pro
+        preferences:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: integer
+          example: 1640995200
+        last_login_at:
+          type: integer
+          nullable: true
+        quotas:
+          type: object
+          properties:
+            daily_api_limit:
+              type: integer
+              example: 5000
+            max_file_size:
+              type: integer
+              example: 52428800
+            max_execution_time:
+              type: integer
+              example: 15000
+            file_retention_hours:
+              type: integer
+              example: 168
+
+    UserProfileUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: User display name
+        avatar_url:
+          type: string
+          description: Avatar URL
+        preferences:
+          type: object
+          description: User preferences
+          additionalProperties: true
+
+    UserProfileUpdateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Profile updated successfully
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            email:
+              type: string
+            name:
+              type: string
+            avatar_url:
+              type: string
+              nullable: true
+            preferences:
+              type: object
+              additionalProperties: true
+
+    UserStatsResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        api_usage:
+          type: object
+          properties:
+            daily_requests:
+              type: integer
+              example: 45
+            daily_limit:
+              type: integer
+              example: 5000
+            monthly_requests:
+              type: integer
+              example: 1250
+        files:
+          type: object
+          properties:
+            total_uploaded:
+              type: integer
+              example: 23
+            total_size:
+              type: integer
+              example: 1024000
+            storage_used:
+              type: integer
+              example: 512000
+        jobs:
+          type: object
+          properties:
+            total_completed:
+              type: integer
+              example: 89
+            total_failed:
+              type: integer
+              example: 3
+            average_execution_time:
+              type: integer
+              example: 1250
+        quota_remaining:
+          type: integer
+          example: 4955
+
+    SubscriptionUpdateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Subscription updated to pro
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            email:
+              type: string
+            subscription_tier:
+              type: string
+              example: pro
+            new_quotas:
+              type: object
+              properties:
+                daily_api_limit:
+                  type: integer
+                  example: 5000
+                max_file_size:
+                  type: integer
+                  example: 52428800
+                max_execution_time:
+                  type: integer
+                  example: 15000
+
+    PublicUserInfoResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        name:
+          type: string
+          example: John Doe
+        avatar_url:
+          type: string
+          nullable: true
+        subscription_tier:
+          type: string
+          enum: [free, pro, enterprise]
+          example: free
+        created_at:
+          type: integer
+          example: 1640995200
+
+    AdminDashboardResponse:
+      type: object
+      properties:
+        dashboard:
+          type: object
+          properties:
+            total_users:
+              type: integer
+              example: 1250
+            active_sessions:
+              type: integer
+              example: 342
+            daily_requests:
+              type: integer
+              example: 15420
+            system_health:
+              type: string
+              example: operational
+            revenue:
+              type: object
+              properties:
+                monthly:
+                  type: number
+                  example: 12500
+                yearly:
+                  type: number
+                  example: 150000
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            email:
+              type: string
+            role:
+              type: string
+              example: administrator
+
+    SessionValidateResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+          example: true
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            email:
+              type: string
+            name:
+              type: string
+            subscription_tier:
+              type: string
+        session_id:
+          type: string
+          format: uuid
+
+    TokenRefreshResponse:
+      type: object
+      properties:
+        refreshed:
+          type: boolean
+          example: true
+        session_id:
+          type: string
+          format: uuid
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            email:
+              type: string
+            name:
+              type: string
+            subscription_tier:
+              type: string
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - timestamp
+      properties:
+        error:
+          type: string
+          description: Error type identifier
+          example: Bad Request
+        message:
+          type: string
+          description: Human-readable error message
+          example: Invalid request format
+        code:
+          type: string
+          description: Machine-readable error code
+          example: INVALID_PARAMETER
+        requestId:
+          type: string
+          format: uuid
+          description: Request ID for debugging
+        timestamp:
+          type: string
+          format: date-time
+          example: 2023-12-01T12:00:00Z
+        path:
+          type: string
+          description: Request path
+          example: /api/v1/tools/json/format
+        method:
+          type: string
+          description: HTTP method
+          example: POST
+        validation_errors:
+          type: array
+          description: Detailed validation errors
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: json
+              message:
+                type: string
+                example: This field is required
+              code:
+                type: string
+                example: required
+              value:
+                description: The invalid value that was provided
+        retryAfter:
+          type: integer
+          description: Seconds to wait before retrying (for rate limiting)
+          example: 300
+        limit:
+          type: integer
+          description: Rate limit total (for rate limiting)
+          example: 1000
+        remaining:
+          type: integer
+          description: Rate limit remaining (for rate limiting)
+          example: 0
+        resetTime:
+          type: integer
+          description: Rate limit reset timestamp (for rate limiting)
+          example: 1701388800
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: Bad Request
+            message: Missing required parameter: json
+            code: MISSING_PARAMETER
+            requestId: 550e8400-e29b-41d4-a716-446655440000
+            timestamp: 2023-12-01T12:00:00Z
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: Authentication Required
+            message: Authorization header with Bearer token is required
+            code: MISSING_TOKEN
+            requestId: 550e8400-e29b-41d4-a716-446655440000
+            timestamp: 2023-12-01T12:00:00Z
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: Insufficient Permissions
+            message: You do not have the required permissions to access this resource
+            code: INSUFFICIENT_PERMISSIONS
+            requestId: 550e8400-e29b-41d4-a716-446655440000
+            timestamp: 2023-12-01T12:00:00Z
+
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: Not Found
+            message: The requested resource was not found
+            requestId: 550e8400-e29b-41d4-a716-446655440000
+            timestamp: 2023-12-01T12:00:00Z
+
+    TooManyRequests:
+      description: Too Many Requests
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: Rate Limit Exceeded
+            message: Too many requests. Please try again later.
+            retryAfter: 300
+            limit: 1000
+            remaining: 0
+            resetTime: 1701388800
+            requestId: 550e8400-e29b-41d4-a716-446655440000
+            timestamp: 2023-12-01T12:00:00Z
+
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: Internal Server Error
+            message: An unexpected error occurred
+            requestId: 550e8400-e29b-41d4-a716-446655440000
+            timestamp: 2023-12-01T12:00:00Z
+
+tags:
+  - name: Root
+    description: API root and information endpoints
+  - name: Health
+    description: Health check and monitoring endpoints
+  - name: Tools
+    description: JSON and code processing tools
+  - name: JSON Tools
+    description: JSON-specific processing tools
+  - name: Code Tools
+    description: Code execution and formatting tools
+  - name: File Upload
+    description: File upload and management
+  - name: Jobs
+    description: Asynchronous job processing
+  - name: Users
+    description: User management and profiles
+  - name: Authentication
+    description: Authentication and session management

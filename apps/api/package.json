@@ -1,0 +1,30 @@
+{
+  "name": "@parsify/api",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev src/index.ts",
+    "deploy": "wrangler deploy",
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "sentry:release": "node ../../scripts/sentry-release.js release",
+    "sentry:sourcemaps": "node ../../scripts/sentry-release.js sourcemaps",
+    "sentry:deploy": "node ../../scripts/sentry-release.js deploy",
+    "sentry:all": "node ../../scripts/sentry-release.js all"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20231218.0",
+    "@sentry/cloudflare": "^7.84.0",
+    "@sentry/hono": "^7.84.0",
+    "hono": "^3.11.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "wrangler": "^3.0.0"
+  }
+}

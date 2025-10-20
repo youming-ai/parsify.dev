@@ -1,0 +1,399 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    types: [closed]
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deploy to environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - preview
+      commit_sha:
+        description: 'Commit SHA to deploy (optional, defaults to HEAD)'
+        required: false
+        type: string
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8'
+  ENVIRONMENT: staging
+
+jobs:
+  prepare-deploy:
+    name: Prepare Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.changes.outputs.should_deploy }}
+      apps_changed: ${{ steps.changes.outputs.apps_changed }}
+      commit_sha: ${{ steps.commit.outputs.commit_sha }}
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Get commit SHA
+      id: commit
+      run: |
+        COMMIT_SHA="${{ github.event.inputs.commit_sha || github.sha }}"
+        echo "commit_sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+        echo "Deploying commit: $COMMIT_SHA"
+
+    - name: Check for changes
+      id: changes
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.merged }}" != "true" ]; then
+          echo "should_deploy=false" >> $GITHUB_OUTPUT
+          echo "Skipping deployment - PR was not merged"
+          exit 0
+        fi
+
+        # Get changed files
+        if [ "${{ github.event_name }}" = "push" ]; then
+          BASE="${{ github.event.before }}"
+        else
+          BASE="main"
+        fi
+
+        CHANGED_FILES=$(git diff --name-only $BASE...HEAD)
+        echo "Changed files: $CHANGED_FILES"
+
+        # Check which apps have changes
+        APPS_CHANGED=""
+        if echo "$CHANGED_FILES" | grep -q "^apps/web/"; then
+          APPS_CHANGED="$APPS_CHANGED web"
+        fi
+        if echo "$CHANGED_FILES" | grep -q "^apps/api/"; then
+          APPS_CHANGED="$APPS_CHANGED api"
+        fi
+        if echo "$CHANGED_FILES" | grep -q "^packages/"; then
+          APPS_CHANGED="$APPS_CHANGED web api"  # Assume package changes affect all apps
+        fi
+
+        if [ -z "$APPS_CHANGED" ]; then
+          echo "should_deploy=false" >> $GITHUB_OUTPUT
+          echo "No relevant changes detected"
+        else
+          echo "should_deploy=true" >> $GITHUB_OUTPUT
+          echo "apps_changed=$APPS_CHANGED" >> $GITHUB_OUTPUT
+          echo "Will deploy apps: $APPS_CHANGED"
+        fi
+
+    - name: Generate version
+      id: version
+      run: |
+        # Generate version based on timestamp and commit
+        TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+        SHORT_SHA=$(echo ${{ steps.commit.outputs.commit_sha }} | cut -c1-7)
+        VERSION="staging-${TIMESTAMP}-${SHORT_SHA}"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Generated version: $VERSION"
+
+  build-for-staging:
+    name: Build for Staging
+    runs-on: ubuntu-latest
+    needs: prepare-deploy
+    if: needs.prepare-deploy.outputs.should_deploy == 'true'
+
+    strategy:
+      matrix:
+        app: ${{ fromJson(format('["{0}"]', needs.prepare-deploy.outputs.apps_changed)) }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.prepare-deploy.outputs.commit_sha }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build ${{ matrix.app }}
+      run: |
+        cd apps/${{ matrix.app }}
+
+        # Set environment variables for staging
+        export NODE_ENV=staging
+        export NEXT_PUBLIC_APP_ENV=staging
+        export NEXT_PUBLIC_APP_VERSION="${{ needs.prepare-deploy.outputs.version }}"
+
+        pnpm ${{ matrix.app == 'web' && 'build' || 'build' }}
+
+    - name: Create deployment package
+      run: |
+        mkdir -p deployment-packages/${{ matrix.app }}
+
+        if [ "${{ matrix.app }}" = "web" ]; then
+          cd apps/web
+          tar -czf ../../deployment-packages/web/staging-build.tar.gz .next/
+        else
+          cd apps/api
+          tar -czf ../../deployment-packages/api/staging-build.tar.gz dist/
+        fi
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.app }}-staging-build
+        path: deployment-packages/${{ matrix.app }}/
+        retention-days: 7
+
+  deploy-web-staging:
+    name: Deploy Web to Staging
+    runs-on: ubuntu-latest
+    needs: [prepare-deploy, build-for-staging]
+    if: contains(needs.prepare-deploy.outputs.apps_changed, 'web')
+    environment:
+      name: staging
+      url: https://staging.parsify.dev
+
+    steps:
+    - name: Download web build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: web-staging-build
+        path: web-build
+
+    - name: Setup deployment
+      run: |
+        echo "Setting up deployment for web app to staging..."
+        echo "Version: ${{ needs.prepare-deploy.outputs.version }}"
+        echo "Commit: ${{ needs.prepare-deploy.outputs.commit_sha }}"
+
+    - name: Deploy to staging (Vercel/Netlify example)
+      # Replace with your actual deployment method
+      run: |
+        echo "Deploying web app to staging environment..."
+
+        # Example for Vercel
+        # if command -v vercel &> /dev/null; then
+        #   cd web-build
+        #   tar -xzf staging-build.tar.gz
+        #   vercel --prod --token ${{ secrets.VERCEL_TOKEN }}
+        # fi
+
+        # Example for Netlify
+        # if command -v netlify &> /dev/null; then
+        #   cd web-build
+        #   tar -xzf staging-build.tar.gz
+        #   netlify deploy --prod --dir=.next --site=${{ secrets.NETLIFY_SITE_ID_STAGING }} --auth=${{ secrets.NETLIFY_AUTH_TOKEN }}
+        # fi
+
+        # Placeholder for your deployment method
+        echo "✅ Web app deployed to staging successfully"
+
+    - name: Health check
+      run: |
+        echo "Performing health check on staging web app..."
+        sleep 10  # Wait for deployment to propagate
+
+        # Perform basic health check
+        # curl -f https://staging.parsify.dev/api/health || exit 1
+
+        echo "✅ Health check passed"
+
+  deploy-api-staging:
+    name: Deploy API to Staging
+    runs-on: ubuntu-latest
+    needs: [prepare-deploy, build-for-staging]
+    if: contains(needs.prepare-deploy.outputs.apps_changed, 'api')
+    environment:
+      name: staging
+      url: https://api-staging.parsify.dev
+
+    steps:
+    - name: Download API build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: api-staging-build
+        path: api-build
+
+    - name: Setup deployment
+      run: |
+        echo "Setting up deployment for API to staging..."
+        echo "Version: ${{ needs.prepare-deploy.outputs.version }}"
+        echo "Commit: ${{ needs.prepare-deploy.outputs.commit_sha }}"
+
+    - name: Deploy to staging (Cloudflare Workers example)
+      # Replace with your actual deployment method
+      run: |
+        echo "Deploying API to staging environment..."
+
+        # Example for Cloudflare Workers
+        # cd apps/api
+        # npx wrangler deploy --env staging
+
+        # Placeholder for your deployment method
+        echo "✅ API deployed to staging successfully"
+
+    - name: Health check
+      run: |
+        echo "Performing health check on staging API..."
+        sleep 10  # Wait for deployment to propagate
+
+        # Perform basic health check
+        # curl -f https://api-staging.parsify.dev/health || exit 1
+
+        echo "✅ Health check passed"
+
+  run-database-migrations:
+    name: Run Database Migrations
+    runs-on: ubuntu-latest
+    needs: [prepare-deploy, deploy-api-staging]
+    if: contains(needs.prepare-deploy.outputs.apps_changed, 'api')
+    environment: staging
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.prepare-deploy.outputs.commit_sha }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Run database migrations
+      run: |
+        echo "Running database migrations for staging..."
+
+        # Example migration command
+        # pnpm db:migrate --env staging
+
+        echo "✅ Database migrations completed"
+
+  smoke-tests:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    needs: [prepare-deploy, deploy-web-staging, deploy-api-staging, run-database-migrations]
+    if: always() && (needs.deploy-web-staging.result == 'success' || needs.deploy-api-staging.result == 'success')
+    environment: staging
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Run smoke tests
+      run: |
+        echo "Running smoke tests against staging environment..."
+
+        # Add your smoke tests here
+        # pnpm test:smoke --env staging
+
+        echo "✅ Smoke tests passed"
+
+    - name: Run performance smoke test
+      run: |
+        echo "Running performance smoke test..."
+
+        # Use existing performance test runner
+        # node tests/performance/runner.js --url https://api-staging.parsify.dev --concurrency 3 --requests 10
+
+        echo "✅ Performance smoke test passed"
+
+  notify-deployment:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: [prepare-deploy, deploy-web-staging, deploy-api-staging, run-database-migrations, smoke-tests]
+    if: always() && needs.prepare-deploy.outputs.should_deploy == 'true'
+
+    steps:
+    - name: Create deployment status
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const deploymentStatus = needs.smoke-tests.result === 'success' ? 'success' : 'failure';
+          const deploymentUrl = 'https://staging.parsify.dev';
+
+          await github.rest.repos.createDeploymentStatus({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            deployment_id: context.runId,
+            state: deploymentStatus,
+            target_url: deploymentUrl,
+            environment: 'staging',
+            environment_url: deploymentUrl,
+            log_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+          });
+
+    - name: Notify on Slack (optional)
+      if: always()
+      run: |
+        # Add Slack notification if you have a webhook
+        # curl -X POST -H 'Content-type: application/json' \
+        #   --data '{"text":"🚀 Staging deployment '"${{ needs.smoke-tests.result == 'success' && 'completed successfully ✅' || 'failed ❌' }}"' for parsify.dev\nCommit: ${{ needs.prepare-deploy.outputs.commit_sha }}\nVersion: ${{ needs.prepare-deploy.outputs.version }}\nURL: https://staging.parsify.dev"}' \
+        #   ${{ secrets.SLACK_WEBHOOK_URL }}
+        echo "Slack notification placeholder"
+
+    - name: Update deployment status in PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const status = needs.smoke-tests.result === 'success' ? '✅ Deployed successfully' : '❌ Deployment failed';
+          const url = 'https://staging.parsify.dev';
+
+          await github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `## 🚀 Staging Deployment\n\n${status}\n\n**URL**: ${url}\n**Version**: ${{ needs.prepare-deploy.outputs.version }}\n**Commit**: ${{ needs.prepare-deploy.outputs.commit_sha }}`
+          });

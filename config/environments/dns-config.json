@@ -1,0 +1,322 @@
+{
+  "development": {
+    "domain": "localhost",
+    "subdomains": {
+      "api": "api.localhost",
+      "cdn": "cdn.localhost",
+      "app": "app.localhost",
+      "blog": "blog.localhost",
+      "docs": "docs.localhost"
+    },
+    "records": [
+      {
+        "type": "A",
+        "name": "localhost",
+        "content": "127.0.0.1",
+        "ttl": 300
+      }
+    ],
+    "cloudflare": {
+      "enabled": false,
+      "zoneId": null,
+      "proxyEnabled": false,
+      "sslMode": "off"
+    }
+  },
+  "staging": {
+    "domain": "staging.parsify.dev",
+    "subdomains": {
+      "api": "api-staging.parsify.dev",
+      "cdn": "cdn-staging.parsify.dev",
+      "app": "app-staging.parsify.dev",
+      "blog": "blog-staging.parsify.dev",
+      "docs": "docs-staging.parsify.dev"
+    },
+    "records": [
+      {
+        "type": "A",
+        "name": "@",
+        "content": "192.0.2.1",
+        "ttl": 300,
+        "proxied": true
+      },
+      {
+        "type": "A",
+        "name": "api",
+        "content": "192.0.2.2",
+        "ttl": 300,
+        "proxied": true
+      },
+      {
+        "type": "CNAME",
+        "name": "cdn",
+        "content": "cdn-staging.parsify.dev.pages.dev",
+        "ttl": 300,
+        "proxied": true
+      },
+      {
+        "type": "CNAME",
+        "name": "app",
+        "content": "app-staging.parsify.dev.pages.dev",
+        "ttl": 300,
+        "proxied": true
+      },
+      {
+        "type": "A",
+        "name": "blog",
+        "content": "192.0.2.3",
+        "ttl": 300,
+        "proxied": true
+      },
+      {
+        "type": "A",
+        "name": "docs",
+        "content": "192.0.2.4",
+        "ttl": 300,
+        "proxied": true
+      }
+    ],
+    "cloudflare": {
+      "enabled": true,
+      "zoneId": "${STAGING_CLOUDFLARE_ZONE_ID}",
+      "proxyEnabled": true,
+      "sslMode": "full",
+      "alwaysUseHttps": true,
+      "http2": true,
+      "http3": true,
+      "caching": {
+        "level": "standard",
+        "browserCacheTtl": 3600,
+        "edgeCacheTtl": 86400,
+        "respectStrongEtags": true
+      },
+      "security": {
+        "ssl": "full",
+        "minTlsVersion": "1.2",
+        "hsts": {
+          "enabled": true,
+          "maxAge": 31536000,
+          "includeSubdomains": true,
+          "preload": true
+        },
+        "challengeTtl": 3600,
+        "bypassSecurityChallenge": false
+      },
+      "performance": {
+        "webp": true,
+        "brotli": true,
+        "earlyHints": true,
+        "imageResize": true,
+        "mirage": false
+      }
+    }
+  },
+  "production": {
+    "domain": "parsify.dev",
+    "subdomains": {
+      "api": "api.parsify.dev",
+      "cdn": "cdn.parsify.dev",
+      "app": "app.parsify.dev",
+      "blog": "blog.parsify.dev",
+      "docs": "docs.parsify.dev",
+      "status": "status.parsify.dev"
+    },
+    "records": [
+      {
+        "type": "A",
+        "name": "@",
+        "content": "192.0.2.10",
+        "ttl": 300,
+        "proxied": true,
+        "failover": {
+          "enabled": true,
+          "backupContent": "192.0.2.11"
+        }
+      },
+      {
+        "type": "A",
+        "name": "api",
+        "content": "192.0.2.20",
+        "ttl": 300,
+        "proxied": true,
+        "failover": {
+          "enabled": true,
+          "backupContent": "192.0.2.21"
+        }
+      },
+      {
+        "type": "CNAME",
+        "name": "cdn",
+        "content": "cdn.parsify.dev.pages.dev",
+        "ttl": 300,
+        "proxied": true
+      },
+      {
+        "type": "CNAME",
+        "name": "app",
+        "content": "app.parsify.dev.pages.dev",
+        "ttl": 300,
+        "proxied": true
+      },
+      {
+        "type": "A",
+        "name": "blog",
+        "content": "192.0.2.30",
+        "ttl": 300,
+        "proxied": true
+      },
+      {
+        "type": "A",
+        "name": "docs",
+        "content": "192.0.2.40",
+        "ttl": 300,
+        "proxied": true
+      },
+      {
+        "type": "CNAME",
+        "name": "status",
+        "content": "status-page.parsify.dev.pages.dev",
+        "ttl": 300,
+        "proxied": true
+      }
+    ],
+    "cloudflare": {
+      "enabled": true,
+      "zoneId": "${PROD_CLOUDFLARE_ZONE_ID}",
+      "proxyEnabled": true,
+      "sslMode": "full_strict",
+      "alwaysUseHttps": true,
+      "http2": true,
+      "http3": true,
+      "caching": {
+        "level": "aggressive",
+        "browserCacheTtl": 7200,
+        "edgeCacheTtl": 604800,
+        "respectStrongEtags": true,
+        "cacheEverything": false,
+        "cacheByDeviceType": true,
+        "cacheByCountry": true
+      },
+      "security": {
+        "ssl": "full_strict",
+        "minTlsVersion": "1.3",
+        "hsts": {
+          "enabled": true,
+          "maxAge": 31536000,
+          "includeSubdomains": true,
+          "preload": true
+        },
+        "challengeTtl": 7200,
+        "bypassSecurityChallenge": false,
+        "securityLevel": "high",
+        "waf": {
+          "enabled": true,
+          "rulesetId": "prod_waf_ruleset"
+        }
+      },
+      "performance": {
+        "webp": true,
+        "brotli": true,
+        "earlyHints": true,
+        "imageResize": true,
+        "mirage": true,
+        "polish": "lossy",
+        "autoMinify": {
+          "html": true,
+          "css": true,
+          "js": true
+        },
+        "prefetchPreload": true,
+        "originErrorPagePassthru": false
+      },
+      "loadBalancing": {
+        "enabled": true,
+        "pools": [
+          {
+            "name": "primary_pool",
+            "origins": [
+              {
+                "name": "origin1",
+                "address": "192.0.2.10",
+                "weight": 1,
+                "header": {
+                  "Host": ["parsify.dev"]
+                }
+              },
+              {
+                "name": "origin2",
+                "address": "192.0.2.11",
+                "weight": 1,
+                "header": {
+                  "Host": ["parsify.dev"]
+                }
+              }
+            ],
+            "monitor": "health_check_production",
+            "enabled": true
+          }
+        ],
+        "monitor": {
+          "type": "https",
+          "resource": "/health",
+          "expectedBody": "OK",
+          "expectedCodes": [200],
+          "interval": 60,
+          "timeout": 5,
+          "retries": 2,
+          "followRedirects": true
+        }
+      },
+      "ddosProtection": {
+        "enabled": true,
+        "protectionLevel": "high"
+      }
+    }
+  },
+  "shared": {
+    "dnsRecords": [
+      {
+        "type": "TXT",
+        "name": "_dmarc",
+        "content": "v=DMARC1; p=quarantine; rua=mailto:dmarc@parsify.dev",
+        "ttl": 3600
+      },
+      {
+        "type": "TXT",
+        "name": "parsify.dev",
+        "content": "v=spf1 include:_spf.google.com include:sendgrid.net ~all",
+        "ttl": 3600
+      }
+    ],
+    "email": {
+      "mxRecords": [
+        {
+          "preference": 10,
+          "exchange": "mx1.parsify.dev",
+          "ttl": 300
+        },
+        {
+          "preference": 20,
+          "exchange": "mx2.parsify.dev",
+          "ttl": 300
+        }
+      ],
+      "dkim": {
+        "selector": "k1",
+        "domain": "parsify.dev",
+        "value": "your-dkim-record-here"
+      },
+      "spf": "v=spf1 include:_spf.google.com include:sendgrid.net ~all",
+      "dmarc": "v=DMARC1; p=quarantine; rua=mailto:dmarc@parsify.dev"
+    },
+    "analytics": {
+      "cloudflareAnalytics": true,
+      "sentryDns": "${SENTRY_DSN}",
+      "plausibleDomain": {
+        "development": "localhost",
+        "staging": "staging.parsify.dev",
+        "production": "parsify.dev"
+      }
+    }
+  }
+}

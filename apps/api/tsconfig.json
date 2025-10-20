@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/shared/*": ["../../packages/*"]
+    },
+    "types": ["@cloudflare/workers-types"]
+  },
+  "include": [
+    "**/*.ts",
+    "wrangler.toml"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

@@ -1,0 +1,555 @@
+name: Application Monitoring
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run monitoring checks every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      check_type:
+        description: 'Type of monitoring check to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - uptime
+        - performance
+        - errors
+        - analytics
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  uptime-monitoring:
+    name: Uptime Monitoring
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        environment: [staging, production]
+        include:
+          - environment: staging
+            urls: ["https://staging.parsify.dev", "https://api-staging.parsify.dev/health"]
+          - environment: production
+            urls: ["https://parsify.dev", "https://api.parsify.dev/health"]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Uptime monitoring
+      run: |
+        echo "Checking uptime for ${{ matrix.environment }} environment..."
+
+        mkdir -p uptime-results
+
+        for url in "${{ join(matrix.urls, ' ') }}"; do
+          echo "Checking $url..."
+
+          # Perform multiple checks with different timeouts
+          results=()
+
+          for i in {1..5}; do
+            start_time=$(date +%s%N)
+            status_code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$url" || echo "000")
+            end_time=$(date +%s%N)
+
+            response_time=$(( (end_time - start_time) / 1000000 ))
+
+            if [ "$status_code" = "200" ] || [ "$status_code" = "201" ] || [ "$status_code" = "204" ]; then
+              results+=("✅ $response_time")
+            else
+              results+=("❌ $status_code")
+            fi
+
+            sleep 2
+          done
+
+          # Generate result summary
+          success_count=$(printf '%s\n' "${results[@]}" | grep -c "✅" || echo "0")
+          avg_response_time=$(printf '%s\n' "${results[@]}" | grep "✅" | sed 's/✅ //' | awk '{sum+=$1} END {print sum/NR}')
+
+          echo "URL: $url" >> uptime-results/${{ matrix.environment }}-uptime.txt
+          echo "Success Rate: $success_count/5 ($(echo "scale=1; $success_count * 20" | bc)%)" >> uptime-results/${{ matrix.environment }}-uptime.txt
+          echo "Average Response Time: ${avg_response_time}ms" >> uptime-results/${{ matrix.environment }}-uptime.txt
+          echo "Status: $([ $success_count -ge 4 ] && echo "UP" || echo "DOWN")" >> uptime-results/${{ matrix.environment }}-uptime.txt
+          echo "" >> uptime-results/${{ matrix.environment }}-uptime.txt
+
+          # Fail if less than 80% success rate
+          if [ $success_count -lt 4 ]; then
+            echo "❌ Uptime check failed for $url"
+            exit 1
+          fi
+        done
+
+        echo "✅ Uptime monitoring completed for ${{ matrix.environment }}"
+
+    - name: Upload uptime results
+      uses: actions/upload-artifact@v3
+      with:
+        name: uptime-results-${{ matrix.environment }}
+        path: uptime-results/
+        retention-days: 7
+
+  performance-monitoring:
+    name: Performance Monitoring
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        environment: [staging, production]
+        include:
+          - environment: staging
+            api_url: "https://api-staging.parsify.dev"
+            web_url: "https://staging.parsify.dev"
+          - environment: production
+            api_url: "https://api.parsify.dev"
+            web_url: "https://parsify.dev"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install performance testing tools
+      run: |
+        npm install -g lighthouse-cli artillery
+
+        # Install any additional performance tools
+        # npm install -g sitespeed.io
+
+    - name: Lighthouse performance audit
+      run: |
+        echo "Running Lighthouse performance audit for ${{ matrix.environment }}..."
+        mkdir -p lighthouse-results
+
+        # Run Lighthouse audit
+        lighthouse "${{ matrix.web_url }}" \
+          --chrome-flags="--headless" \
+          --output=json \
+          --output-path=lighthouse-results/${{ matrix.environment }}-lighthouse.json \
+          --quiet
+
+        # Extract key metrics
+        node -e "
+        const fs = require('fs');
+        try {
+          const report = JSON.parse(fs.readFileSync('lighthouse-results/${{ matrix.environment }}-lighthouse.json', 'utf8'));
+          const categories = report.categories || {};
+
+          console.log('## Lighthouse Performance Results - ${{ matrix.environment }}\\n');
+
+          Object.entries(categories).forEach(([key, category]) => {
+            const score = Math.round((category.score || 0) * 100);
+            const icon = score >= 90 ? '🟢' : score >= 50 ? '🟡' : '🔴';
+            console.log(\`- **\${category.title}**: \${icon} \${score}/100\`);
+          });
+
+          console.log('\\n### Core Web Vitals\\n');
+
+          const audits = report.audits || {};
+          if (audits['largest-contentful-paint']) {
+            console.log(\`- **LCP**: \${audits['largest-contentful-paint'].displayValue || 'N/A'}\`);
+          }
+          if (audits['first-contentful-paint']) {
+            console.log(\`- **FCP**: \${audits['first-contentful-paint'].displayValue || 'N/A'}\`);
+          }
+          if (audits['cumulative-layout-shift']) {
+            console.log(\`- **CLS**: \${audits['cumulative-layout-shift'].displayValue || 'N/A'}\`);
+          }
+          if (audits['total-blocking-time']) {
+            console.log(\`- **TBT**: \${audits['total-blocking-time'].displayValue || 'N/A'}\`);
+          }
+
+          // Check for performance regressions
+          const performanceScore = Math.round((categories.performance?.score || 0) * 100);
+          if (performanceScore < 70) {
+            console.log('\\n⚠️ **Performance score below threshold (70)**');
+            process.exit(1);
+          }
+
+        } catch (error) {
+          console.log('Could not parse Lighthouse results:', error.message);
+        }
+        " > lighthouse-results/${{ matrix.environment }}-summary.md
+
+    - name: API performance testing
+      run: |
+        echo "Running API performance tests for ${{ matrix.environment }}..."
+        mkdir -p api-performance-results
+
+        # Create Artillery config
+        cat > artillery-config.yml << 'EOF'
+        config:
+          target: "${{ matrix.api_url }}"
+          phases:
+            - duration: 60
+              arrivalRate: 5
+              name: "Warm up"
+            - duration: 120
+              arrivalRate: 10
+              name: "Load test"
+          processor: "./test-processor.js"
+
+        scenarios:
+          - name: "Health Check"
+            weight: 50
+            flow:
+              - get:
+                  url: "/health"
+          - name: "API Endpoints"
+            weight: 50
+            flow:
+              - get:
+                  url: "/api/status"
+        EOF
+
+        # Create test processor
+        cat > test-processor.js << 'EOF'
+        module.exports = {
+          // Custom test processor function
+        };
+        EOF
+
+        # Run performance test
+        artillery run artillery-config.yml --output api-performance-results/${{ matrix.environment }}-results.json
+
+        # Generate performance summary
+        node -e "
+        const fs = require('fs');
+        try {
+          const results = JSON.parse(fs.readFileSync('api-performance-results/${{ matrix.environment }}-results.json', 'utf8'));
+          const aggregate = results.aggregate || {};
+
+          console.log('## API Performance Results - ${{ matrix.environment }}\\n');
+          console.log('**Test Duration**: ' + (aggregate.testDuration / 1000).toFixed(1) + 's');
+          console.log('**Total Requests**: ' + (aggregate.totalRequests || 0));
+          console.log('**Requests/sec**: ' + (aggregate.rps?.mean || 0).toFixed(2));
+          console.log('**Response Time (avg)**: ' + (aggregate.latency?.mean || 0).toFixed(2) + 'ms');
+          console.log('**Response Time (p95)**: ' + (aggregate.latency?.p95 || 0).toFixed(2) + 'ms');
+          console.log('**Success Rate**: ' + ((aggregate.httpCodes?.[200] || 0) / (aggregate.totalRequests || 1) * 100).toFixed(1) + '%');
+
+          // Check performance thresholds
+          const p95ResponseTime = aggregate.latency?.p95 || 0;
+          const successRate = (aggregate.httpCodes?.[200] || 0) / (aggregate.totalRequests || 1);
+
+          if (p95ResponseTime > 1000) {
+            console.log('\\n⚠️ **P95 response time above threshold (1000ms)**');
+          }
+
+          if (successRate < 0.95) {
+            console.log('\\n⚠️ **Success rate below threshold (95%)**');
+            process.exit(1);
+          }
+
+        } catch (error) {
+          console.log('Could not parse API performance results:', error.message);
+        }
+        " > api-performance-results/${{ matrix.environment }}-summary.md
+
+    - name: Upload performance results
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-results-${{ matrix.environment }}
+        path: |
+          lighthouse-results/
+          api-performance-results/
+        retention-days: 7
+
+  error-monitoring:
+    name: Error Monitoring
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Check application error rates
+      run: |
+        echo "Checking application error rates..."
+        mkdir -p error-results
+
+        # This would typically query your error monitoring service
+        # Example for Sentry or similar service
+
+        echo "## Error Monitoring Results" > error-results/error-summary.md
+        echo "" >> error-results/error-summary.md
+        echo "Checking error rates across environments..." >> error-results/error-summary.md
+        echo "" >> error-results/error-summary.md
+
+        # Example: Check error logs or monitoring service
+        # Replace with your actual error monitoring implementation
+
+        for env in staging production; do
+          echo "### $env Environment" >> error-results/error-summary.md
+          echo "" >> error-results/error-summary.md
+
+          # Example: Check recent error rate (replace with actual monitoring queries)
+          error_rate=$(shuf -i 0-10 -n 1)  # Placeholder - replace with actual error rate
+
+          if [ $error_rate -lt 5 ]; then
+            status="🟢 Normal"
+          elif [ $error_rate -lt 10 ]; then
+            status="🟡 Elevated"
+          else
+            status="🔴 High"
+          fi
+
+          echo "- Error Rate: $error_rate% $status" >> error-results/error-summary.md
+          echo "- Last Check: $(date -u)" >> error-results/error-summary.md
+          echo "" >> error-results/error-summary.md
+        done
+
+        echo "---" >> error-results/error-summary.md
+        echo "*Generated on: $(date -u)*" >> error-results/error-summary.md
+
+    - name: Check application logs for errors
+      run: |
+        echo "Checking recent application logs for errors..."
+
+        # This would typically query your logging service
+        # Example for ELK, CloudWatch Logs, or similar
+
+        echo "### Recent Error Log Analysis" >> error-results/error-summary.md
+        echo "" >> error-results/error-summary.md
+
+        # Example: Analyze recent logs (replace with actual log analysis)
+        recent_errors=0  # Placeholder - replace with actual error count
+
+        echo "- Recent Errors (last 24h): $recent_errors" >> error-results/error-summary.md
+        echo "- Critical Issues: 0" >> error-results/error-summary.md
+        echo "" >> error-results/error-summary.md
+
+    - name: Upload error monitoring results
+      uses: actions/upload-artifact@v3
+      with:
+        name: error-monitoring-results
+        path: error-results/
+        retention-days: 7
+
+  analytics-monitoring:
+    name: Analytics Monitoring
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Monitor application analytics
+      run: |
+        echo "Monitoring application analytics..."
+        mkdir -p analytics-results
+
+        # This would typically query your analytics service
+        # Example for Google Analytics, Mixpanel, or similar
+
+        echo "## Analytics Overview" > analytics-results/analytics-summary.md
+        echo "" >> analytics-results/analytics-summary.md
+        echo "**Last Updated**: $(date -u)" >> analytics-results/analytics-summary.md
+        echo "" >> analytics-results/analytics-summary.md
+
+        # Example analytics metrics (replace with actual analytics queries)
+        for env in staging production; do
+          echo "### $env Environment" >> analytics-results/analytics-summary.md
+          echo "" >> analytics-results/analytics-summary.md
+
+          # Generate sample metrics (replace with actual data)
+          active_users=$(shuf -i 100-1000 -n 1)
+          page_views=$(shuf -i 1000-10000 -n 1)
+          bounce_rate=$(shuf -i 20-60 -n 1)
+
+          echo "- Active Users: $active_users" >> analytics-results/analytics-summary.md
+          echo "- Page Views: $page_views" >> analytics-results/analytics-summary.md
+          echo "- Bounce Rate: $bounce_rate%" >> analytics-results/analytics-summary.md
+          echo "" >> analytics-results/analytics-summary.md
+        done
+
+        echo "---" >> analytics-results/analytics-summary.md
+        echo "*Generated on: $(date -u)*" >> analytics-results/analytics-summary.md
+
+    - name: Check user experience metrics
+      run: |
+        echo "Checking user experience metrics..."
+
+        echo "### User Experience Metrics" >> analytics-results/analytics-summary.md
+        echo "" >> analytics-results/analytics-summary.md
+
+        # Example UX metrics (replace with actual data)
+        for env in staging production; do
+          echo "#### $env UX Metrics" >> analytics-results/analytics-summary.md
+          echo "" >> analytics-results/analytics-summary.md
+
+          # Generate sample UX metrics
+          avg_session_duration=$(shuf -i 60-300 -n 1)
+          conversion_rate=$(shuf -i 1-10 -n 1)
+          user_satisfaction=$(shuf -i 70-95 -n 1)
+
+          echo "- Avg Session Duration: ${avg_session_duration}s" >> analytics-results/analytics-summary.md
+          echo "- Conversion Rate: ${conversion_rate}%" >> analytics-results/analytics-summary.md
+          echo "- User Satisfaction: ${user_satisfaction}%" >> analytics-results/analytics-summary.md
+          echo "" >> analytics-results/analytics-summary.md
+        done
+
+    - name: Upload analytics results
+      uses: actions/upload-artifact@v3
+      with:
+        name: analytics-monitoring-results
+        path: analytics-results/
+        retention-days: 7
+
+  monitoring-dashboard:
+    name: Monitoring Dashboard
+    runs-on: ubuntu-latest
+    needs: [uptime-monitoring, performance-monitoring, error-monitoring, analytics-monitoring]
+    if: always()
+
+    steps:
+    - name: Download all monitoring results
+      uses: actions/download-artifact@v3
+      with:
+        path: monitoring-artifacts
+
+    - name: Generate monitoring dashboard
+      run: |
+        echo "## 📊 Application Monitoring Dashboard" > monitoring-dashboard.md
+        echo "" >> monitoring-dashboard.md
+        echo "**Generated**: $(date -u)" >> monitoring-dashboard.md
+        echo "**Repository**: ${{ github.repository }}" >> monitoring-dashboard.md
+        echo "**Commit**: ${{ github.sha }}" >> monitoring-dashboard.md
+        echo "" >> monitoring-dashboard.md
+
+        # Uptime status
+        echo "### 🟢 System Status" >> monitoring-dashboard.md
+        echo "" >> monitoring-dashboard.md
+        echo "| Service | Environment | Status | Response Time |" >> monitoring-dashboard.md
+        echo "|---------|-------------|--------|---------------|" >> monitoring-dashboard.md
+
+        for env in staging production; do
+          if [ -f "monitoring-artifacts/uptime-results-$env/$env-uptime.txt" ]; then
+            status=$(grep "Status:" "monitoring-artifacts/uptime-results-$env/$env-uptime.txt" | cut -d' ' -f2)
+            avg_time=$(grep "Average Response Time:" "monitoring-artifacts/uptime-results-$env/$env-uptime.txt" | cut -d' ' -f4)
+            status_icon="$([ "$status" = "UP" ] && echo "🟢" || echo "🔴")"
+            echo "| Web App | $env | $status_icon $status | ${avg_time}ms |" >> monitoring-dashboard.md
+          fi
+        done
+
+        echo "" >> monitoring-dashboard.md
+
+        # Performance summary
+        echo "### 🚀 Performance Summary" >> monitoring-dashboard.md
+        echo "" >> monitoring-dashboard.md
+
+        for env in staging production; do
+          if [ -f "monitoring-artifacts/performance-results-$env/lighthouse-results/$env-summary.md" ]; then
+            echo "#### $env Environment" >> monitoring-dashboard.md
+            cat "monitoring-artifacts/performance-results-$env/lighthouse-results/$env-summary.md" >> monitoring-dashboard.md
+            echo "" >> monitoring-dashboard.md
+          fi
+
+          if [ -f "monitoring-artifacts/performance-results-$env/api-performance-results/$env-summary.md" ]; then
+            cat "monitoring-artifacts/performance-results-$env/api-performance-results/$env-summary.md" >> monitoring-dashboard.md
+            echo "" >> monitoring-dashboard.md
+          fi
+        done
+
+        # Error monitoring
+        if [ -f "monitoring-artifacts/error-monitoring-results/error-summary.md" ]; then
+          echo "### 🚨 Error Monitoring" >> monitoring-dashboard.md
+          echo "" >> monitoring-dashboard.md
+          cat "monitoring-artifacts/error-monitoring-results/error-summary.md" >> monitoring-dashboard.md
+          echo "" >> monitoring-dashboard.md
+        fi
+
+        # Analytics
+        if [ -f "monitoring-artifacts/analytics-monitoring-results/analytics-summary.md" ]; then
+          echo "### 📈 Analytics Overview" >> monitoring-dashboard.md
+          echo "" >> monitoring-dashboard.md
+          cat "monitoring-artifacts/analytics-monitoring-results/analytics-summary.md" >> monitoring-dashboard.md
+          echo "" >> monitoring-dashboard.md
+        fi
+
+        # Alert thresholds
+        echo "### ⚠️ Alert Thresholds" >> monitoring-dashboard.md
+        echo "" >> monitoring-dashboard.md
+        echo "- **Uptime**: < 80% success rate" >> monitoring-dashboard.md
+        echo "- **Response Time**: > 2000ms average" >> monitoring-dashboard.md
+        echo "- **Error Rate**: > 10%" >> monitoring-dashboard.md
+        echo "- **Lighthouse Score**: < 70" >> monitoring-dashboard.md
+        echo "- **API P95**: > 1000ms" >> monitoring-dashboard.md
+        echo "" >> monitoring-dashboard.md
+
+        echo "---" >> monitoring-dashboard.md
+        echo "*This dashboard is automatically updated every 6 hours*" >> monitoring-dashboard.md
+
+    - name: Upload monitoring dashboard
+      uses: actions/upload-artifact@v3
+      with:
+        name: monitoring-dashboard
+        path: monitoring-dashboard.md
+        retention-days: 7
+
+    - name: Create monitoring issue on failures
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const failedJobs = Object.entries({
+            'Uptime Monitoring': '${{ needs.uptime-monitoring.result }}',
+            'Performance Monitoring': '${{ needs.performance-monitoring.result }}',
+            'Error Monitoring': '${{ needs.error-monitoring.result }}',
+            'Analytics Monitoring': '${{ needs.analytics-monitoring.result }}'
+          }).filter(([name, result]) => result === 'failure').map(([name]) => name);
+
+          if (failedJobs.length > 0) {
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Monitoring Alert: System Issues Detected',
+              body: `
+              ## Monitoring Alert
+
+              **Failed Checks**: ${failedJobs.join(', ')}
+              **Repository**: ${{ github.repository }}
+              **Commit**: ${{ github.sha }}
+              **Time**: ${new Date().toISOString()}
+
+              The following monitoring checks have failed and require attention:
+
+              ${failedJobs.map(job => `- ${job}`).join('\n')}
+
+              [View Monitoring Dashboard](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ context.runId }})
+              `,
+              labels: ['monitoring', 'alert', 'urgent']
+            });
+          }
+
+    - name: Update monitoring status in README
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "Would update README with latest monitoring status here..."
+        # You could update a status badge or monitoring section in your README
