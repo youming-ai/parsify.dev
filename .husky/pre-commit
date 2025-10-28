@@ -1,7 +1,0 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-echo "🔍 Running Biome checks..."
-npx @biomejs/biome check --write .
-
-echo "✅ Pre-commit checks passed!"

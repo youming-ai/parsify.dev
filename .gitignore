@@ -1,37 +1,22 @@
 # Dependencies
 node_modules/
-.pnp
-.pnpm.js
-.yarn-integrity
+.pnpm-store/
 
-# Production builds
+# Build outputs
 dist/
+out/
+.next/
 build/
 
-# Environment variables
+# Environment files
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# IDE and editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
 # Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -54,20 +39,11 @@ coverage/
 # Dependency directories
 jspm_packages/
 
-# TypeScript cache
-*.tsbuildinfo
-
 # Optional npm cache directory
 .npm
 
 # Optional eslint cache
 .eslintcache
-
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
 
 # Optional REPL history
 .node_repl_history
@@ -78,54 +54,24 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
-.env.test
-.env.production
-
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
 
 # Next.js build output
 .next
-out
 
 # Nuxt.js build / generate output
 .nuxt
 dist
 
-# Gatsby files
-.cache/
-public
+# Storybook build outputs
+.out
+.storybook-out
 
-# Vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless/
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS cache
-.tern-port
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-
-# yarn v2
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-.pnp.*
-
-# Vite
-dist-ssr
-*.local
+# Temporary folders
+tmp/
+temp/
 
 # Editor directories and files
 .vscode/*
@@ -138,19 +84,16 @@ dist-ssr
 *.sln
 *.sw?
 
-# Local Netlify folder
-.netlify
+# OS generated files
+Thumbs.db
 
-# Compile-time caches
-.next/cache/
+# Wrangler
+.wrangler/
 
-# Temporary and backup files
-*.tmp
-*.temp
-*.bak
-*.backup
-*.old
-simple-api-server.cjs
+# Test results
+test-results/
+playwright-report/
+playwright/.cache/
 
-# Wrangler (duplicate in apps/api/)
-.wrangler.toml
+# Turborepo
+.turbo/

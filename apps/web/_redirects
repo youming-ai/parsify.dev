@@ -1,0 +1,6 @@
+# Next.js redirects
+/api/*  /api/:splat  200
+
+# Handle Next.js routes
+/        /index.html   200
+/*       /index.html   200

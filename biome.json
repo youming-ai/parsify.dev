@@ -1,129 +1,38 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.1/schema.json",
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true
-  },
-  "files": {
-    "ignoreUnknown": false
-  },
-  "formatter": {
-    "enabled": true,
-    "formatWithErrors": true,
-    "indentStyle": "space",
-    "indentWidth": 2,
-    "lineEnding": "lf",
-    "lineWidth": 100,
-    "bracketSpacing": true,
-    "bracketSameLine": false,
-    "attributePosition": "auto"
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
-      "complexity": {
-        "noExtraBooleanCast": "error",
-        "noUselessCatch": "error",
-        "noVoid": "error",
-        "useArrowFunction": "warn"
-      },
-      "correctness": {
-        "noConstAssign": "error",
-        "noConstantCondition": "warn",
-        "noEmptyCharacterClassInRegex": "error",
-        "noEmptyPattern": "error",
-        "noGlobalObjectCalls": "error",
-        "noInvalidConstructorSuper": "error",
-        "noInvalidUseBeforeDeclaration": "error",
-        "noSelfAssign": "error",
-        "noSetterReturn": "error",
-        "noUndeclaredVariables": "error",
-        "noUnreachable": "error",
-        "noUnreachableSuper": "error"
-      },
-      "security": {
-        "noDangerouslySetInnerHtml": "warn",
-        "noGlobalEval": "error"
-      },
-      "style": {
-        "noNegationElse": "error",
-        "useConst": "error",
-        "useShorthandFunctionType": "error",
-        "useTemplate": "error",
-        "useSingleVarDeclarator": "error"
-      },
-      "suspicious": {
-        "noAsyncPromiseExecutor": "error",
-        "noCatchAssign": "error",
-        "noClassAssign": "error",
-        "noCompareNegZero": "error",
-        "noControlCharactersInRegex": "error",
-        "noDebugger": "error",
-        "noDuplicateCase": "error",
-        "noDuplicateClassMembers": "error",
-        "noDuplicateObjectKeys": "error",
-        "noDuplicateParameters": "error",
-        "noEmptyBlockStatements": "warn",
-        "noExplicitAny": "warn",
-        "noFunctionAssign": "error",
-        "noGlobalIsNan": "error",
-        "noImportAssign": "error",
-        "noMisleadingCharacterClass": "error",
-        "noPrototypeBuiltins": "error",
-        "noRedeclare": "error",
-        "noShadowRestrictedNames": "error",
-        "noSparseArray": "warn",
-        "noUnsafeNegation": "error",
-        "useGetterReturn": "error"
-      },
-      "nursery": {
-        "useSortedClasses": {
-          "level": "warn",
-          "options": {
-            "attributes": ["class", "className"],
-            "functions": ["clsx", "cva", "cn"]
-          }
-        }
-      }
-    }
-  },
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "single",
-      "semicolons": "asNeeded",
-      "trailingCommas": "es5",
-      "arrowParentheses": "asNeeded",
-      "bracketSpacing": true,
-      "bracketSameLine": false,
-      "jsxQuoteStyle": "double",
-      "quoteProperties": "asNeeded"
-    }
-  },
-  "json": {
-    "formatter": {
-      "trailingCommas": "none",
-      "indentStyle": "space",
-      "indentWidth": 2
-    },
-    "linter": {
-      "enabled": true
-    }
-  },
-  "css": {
-    "formatter": {
-      "enabled": true,
-      "indentStyle": "space",
-      "indentWidth": 2
-    },
-    "linter": {
-      "enabled": true
-    },
-    "parser": {
-      "allowWrongLineComments": false,
-      "cssModules": false,
-      "tailwindDirectives": true
-    }
-  }
+	"organizeImports": {
+		"enabled": true
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"trailingCommas": "es5",
+			"semicolons": "always"
+		}
+	},
+	"files": {
+		"ignore": [
+			"node_modules/**",
+			"dist/**",
+			"out/**",
+			".next/**",
+			"coverage/**",
+			"*.min.js",
+			"*.d.ts",
+			"*.config.*",
+			"**/*.test.*",
+			"**/*.spec.*",
+			"pnpm-lock.yaml",
+			"*.toml",
+			"*.jsonc",
+			"*.sh",
+			"*.md",
+			".env*"
+		]
+	}
 }

@@ -1,2 +1,0 @@
-Scenario,Timestamp,Users,Duration,Total Requests,Successful Requests,Failed Requests,Success Rate,Average Response Time,P50 Response Time,P90 Response Time,P95 Response Time,P99 Response Time,Throughput,Error Rate
-endurance-test,2025-10-20T05:10:46.206Z,100,0,0,0,0,,NaN,,,0,0,0,NaN

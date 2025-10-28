@@ -1,65 +1,32 @@
 {
-  "name": "parsify-dev",
-  "version": "1.0.0",
-  "description": "Online Developer Tools Platform",
-  "private": true,
-  "type": "module",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "scripts": {
-    "dev": "pnpm run --parallel dev",
-    "build": "pnpm run --recursive build",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage",
-    "test:e2e": "playwright test",
-    "test:performance": "node tests/performance/runner.js",
-    "test:performance:smoke": "node tests/performance/runner.js --url http://localhost:8787 --concurrency 5 --requests 25",
-    "test:performance:full": "node tests/performance/runner.js --url http://localhost:8787 --concurrency 20 --requests 100 --fail-on-threshold",
-    "test:performance:ci": "node tests/performance/runner.js --url $API_BASE_URL --concurrency 10 --requests 50 --output ./performance-reports --fail-on-threshold",
-    "test:load": "vitest run tests/load/comprehensive-load-test.test.ts",
-    "test:load:smoke": "vitest run tests/load/scenarios/concurrent-auth-load.test.ts --testNamePattern='small team'",
-    "test:load:quick": "vitest run tests/load/comprehensive-load-test.test.ts --testNamePattern='small team|medium team|developer workflow'",
-    "test:load:full": "vitest run tests/load/comprehensive-load-test.test.ts",
-    "test:load:stress": "vitest run tests/load/comprehensive-load-test.test.ts --testNamePattern='stress test|endurance test'",
-    "test:load:tools": "vitest run tests/load/scenarios/simultaneous-tools-load.test.ts",
-    "test:load:auth": "vitest run tests/load/scenarios/concurrent-auth-load.test.ts",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "format": "biome format --write .",
-    "format:check": "biome format .",
-    "type-check": "tsc --noEmit",
-    "clean": "rm -rf coverage dist build .next **/*.tsbuildinfo",
-    "clean:all": "pnpm clean && find . -name '.DS_Store' -delete && find . -name '*.old' -delete && find . -name '*.tmp' -delete && find . -name '*.bak' -delete",
-    "db:migrate": "wrangler d1 execute parsify-dev --file=./migrations/001_initial.sql",
-    "db:seed": "wrangler d1 execute parsify-dev --file=./migrations/seed.sql"
-  },
-  "dependencies": {
-    "@tanstack/react-query": "^5.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "uuid": "^9.0.0"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^2.3.1",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^20.0.0",
-    "@vitejs/plugin-react": "^4.0.0",
-    "@vitest/coverage-v8": "^1.0.0",
-    "@vitest/ui": "^1.0.0",
-    "commander": "^12.0.0",
-    "jsdom": "^23.2.0",
-    "playwright": "^1.40.0",
-    "typescript": "^5.0.0",
-    "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^1.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
-  }
+	"name": "parsify-dev",
+	"version": "1.0.0",
+	"description": "Online Developer Tools Platform",
+	"private": true,
+	"type": "module",
+	"workspaces": ["apps/*"],
+	"scripts": {
+		"dev": "pnpm run --parallel dev",
+		"dev:unified": "./scripts/dev-unified.sh",
+		"dev:web": "cd apps/web && pnpm dev",
+		"build": "./scripts/build-unified.sh",
+		"deploy": "./scripts/build-unified.sh && npx wrangler pages deploy dist --project-name parsify-dev",
+		"clean": "find . -name 'node_modules' -exec rm -rf {} + 2>/dev/null; rm -rf dist/ out/ .next/",
+		"setup": "pnpm install",
+		"postinstall": "chmod +x scripts/*.sh",
+		"lint": "biome check .",
+		"lint:fix": "biome check . --write",
+		"format": "biome format .",
+		"format:write": "biome format . --write"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"typescript": "^5.6.3",
+		"wrangler": "^4.45.1"
+	},
+	"engines": {
+		"node": ">=20",
+		"pnpm": ">=9"
+	},
+	"packageManager": "pnpm@10.18.3"
 }
