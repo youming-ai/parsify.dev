@@ -17,7 +17,10 @@ program
 program
   .command('run')
   .description('Run comprehensive load tests')
-  .option('-s, --scenario <scenario>', 'Specific scenario to run (small-team, medium-team, large-team, stress-test, etc.)')
+  .option(
+    '-s, --scenario <scenario>',
+    'Specific scenario to run (small-team, medium-team, large-team, stress-test, etc.)'
+  )
   .option('-u, --users <number>', 'Number of concurrent users')
   .option('-d, --duration <seconds>', 'Test duration in seconds')
   .option('-o, --output <directory>', 'Output directory for reports', './tests/load/reports')
@@ -25,7 +28,7 @@ program
   .option('--skip-endurance', 'Skip endurance tests (long running)')
   .option('--skip-stress', 'Skip stress tests (high load)')
   .option('--report-format <format>', 'Report format: json, html, csv, all', 'all')
-  .action(async (options) => {
+  .action(async options => {
     console.log('🚀 Starting Load Test Runner')
     console.log(`API URL: ${options.url}`)
     console.log(`Output Directory: ${options.output}`)
@@ -35,11 +38,7 @@ program
     process.env.LOAD_TEST_OUTPUT_DIR = options.output
 
     // Build vitest command
-    const vitestArgs = [
-      'run',
-      './tests/load/comprehensive-load-test.test.ts',
-      '--reporter=verbose'
-    ]
+    const vitestArgs = ['run', './tests/load/comprehensive-load-test.test.ts', '--reporter=verbose']
 
     // Add test name pattern if specific scenario
     if (options.scenario) {
@@ -74,7 +73,9 @@ program
       console.log(`   Duration: ${(scenario.duration / 1000 / 60).toFixed(1)} minutes`)
       console.log(`   Requirements:`)
       console.log(`     - Max P95: ${scenario.requirements.maxP95ResponseTime}ms`)
-      console.log(`     - Min Success Rate: ${(scenario.requirements.minSuccessRate * 100).toFixed(1)}%`)
+      console.log(
+        `     - Min Success Rate: ${(scenario.requirements.minSuccessRate * 100).toFixed(1)}%`
+      )
       console.log(`     - Min Throughput: ${scenario.requirements.minThroughput} req/s`)
       console.log('')
     })
@@ -85,7 +86,7 @@ program
   .description('Run a quick smoke test (small team scenario)')
   .option('-u, --url <url>', 'API base URL', process.env.API_BASE_URL || 'http://localhost:8787')
   .option('-o, --output <directory>', 'Output directory for reports', './tests/load/reports')
-  .action(async (options) => {
+  .action(async options => {
     console.log('🚀 Running Quick Load Test (Smoke Test)')
 
     process.env.API_BASE_URL = options.url
@@ -94,9 +95,11 @@ program
     const vitestArgs = [
       'run',
       './tests/load/comprehensive-load-test.test.ts',
-      '-t', 'small team',
+      '-t',
+      'small team',
       '--reporter=verbose',
-      '--test-timeout', '300000' // 5 minutes
+      '--test-timeout',
+      '300000', // 5 minutes
     ]
 
     try {
@@ -113,7 +116,7 @@ program
   .description('Run authentication-focused load tests')
   .option('-u, --url <url>', 'API base URL', process.env.API_BASE_URL || 'http://localhost:8787')
   .option('-o, --output <directory>', 'Output directory for reports', './tests/load/reports')
-  .action(async (options) => {
+  .action(async options => {
     console.log('🔐 Running Authentication Load Tests')
 
     process.env.API_BASE_URL = options.url
@@ -123,7 +126,8 @@ program
       'run',
       './tests/load/scenarios/concurrent-auth-load.test.ts',
       '--reporter=verbose',
-      '--test-timeout', '1800000' // 30 minutes
+      '--test-timeout',
+      '1800000', // 30 minutes
     ]
 
     try {
@@ -140,7 +144,7 @@ program
   .description('Run tools-focused load tests')
   .option('-u, --url <url>', 'API base URL', process.env.API_BASE_URL || 'http://localhost:8787')
   .option('-o, --output <directory>', 'Output directory for reports', './tests/load/reports')
-  .action(async (options) => {
+  .action(async options => {
     console.log('🔧 Running Tools Load Tests')
 
     process.env.API_BASE_URL = options.url
@@ -150,7 +154,8 @@ program
       'run',
       './tests/load/scenarios/simultaneous-tools-load.test.ts',
       '--reporter=verbose',
-      '--test-timeout', '1800000' // 30 minutes
+      '--test-timeout',
+      '1800000', // 30 minutes
     ]
 
     try {
@@ -166,7 +171,7 @@ program
   .command('validate')
   .description('Validate API server health and basic performance')
   .option('-u, --url <url>', 'API base URL', process.env.API_BASE_URL || 'http://localhost:8787')
-  .action(async (options) => {
+  .action(async options => {
     console.log('🔍 Validating API server...')
 
     try {
@@ -188,7 +193,7 @@ program
       const formatResponse = await fetch(`${options.url}/tools/json/format`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ json: '{"test": "data"}', indent: 2 })
+        body: JSON.stringify({ json: '{"test": "data"}', indent: 2 }),
       })
       if (!formatResponse.ok) {
         throw new Error(`JSON format endpoint failed: ${formatResponse.status}`)
@@ -196,10 +201,11 @@ program
       console.log('✅ Tool execution working correctly')
 
       console.log('✅ API server validation passed - ready for load testing')
-
     } catch (error) {
       console.error('❌ API server validation failed:', error)
-      console.log('Please ensure the API server is running and accessible before running load tests')
+      console.log(
+        'Please ensure the API server is running and accessible before running load tests'
+      )
       process.exit(1)
     }
   })

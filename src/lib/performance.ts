@@ -28,7 +28,7 @@ export class PerformanceMonitor {
       const measurement: PerformanceMeasurement = {
         operation,
         duration: endTime - startTime,
-        memoryUsage: endMemory ? endMemory - startMemory : undefined
+        memoryUsage: endMemory ? endMemory - startMemory : undefined,
       }
 
       this.measurements.push(measurement)
@@ -41,7 +41,7 @@ export class PerformanceMonitor {
       const measurement: PerformanceMeasurement = {
         operation,
         duration: endTime - startTime,
-        memoryUsage: endMemory ? endMemory - startMemory : undefined
+        memoryUsage: endMemory ? endMemory - startMemory : undefined,
       }
 
       this.measurements.push(measurement)
@@ -106,21 +106,27 @@ export class PerformanceMonitor {
     averageDuration: number
     maxDuration: number
     minDuration: number
-    byOperation: Record<string, {
-      count: number
-      averageDuration: number
-      maxDuration: number
-      minDuration: number
-      totalMemoryDelta: number
-    }>
+    byOperation: Record<
+      string,
+      {
+        count: number
+        averageDuration: number
+        maxDuration: number
+        minDuration: number
+        totalMemoryDelta: number
+      }
+    >
   } {
-    const byOperation: Record<string, {
-      count: number
-      averageDuration: number
-      maxDuration: number
-      minDuration: number
-      totalMemoryDelta: number
-    }> = {}
+    const byOperation: Record<
+      string,
+      {
+        count: number
+        averageDuration: number
+        maxDuration: number
+        minDuration: number
+        totalMemoryDelta: number
+      }
+    > = {}
 
     this.measurements.forEach(measurement => {
       if (!byOperation[measurement.operation]) {
@@ -129,7 +135,7 @@ export class PerformanceMonitor {
           averageDuration: 0,
           maxDuration: 0,
           minDuration: Infinity,
-          totalMemoryDelta: 0
+          totalMemoryDelta: 0,
         }
       }
 
@@ -154,16 +160,17 @@ export class PerformanceMonitor {
     })
 
     const allDurations = this.measurements.map(m => m.duration)
-    const averageDuration = allDurations.length > 0
-      ? allDurations.reduce((sum, duration) => sum + duration, 0) / allDurations.length
-      : 0
+    const averageDuration =
+      allDurations.length > 0
+        ? allDurations.reduce((sum, duration) => sum + duration, 0) / allDurations.length
+        : 0
 
     return {
       totalOperations: this.measurements.length,
       averageDuration,
       maxDuration: Math.max(...allDurations, 0),
       minDuration: Math.min(...allDurations, 0),
-      byOperation
+      byOperation,
     }
   }
 
@@ -172,7 +179,11 @@ export class PerformanceMonitor {
     passed: boolean
     failed: Array<{ operation: string; threshold: number; actual: number }>
   } {
-    const failed: Array<{ operation: string; threshold: number; actual: number }> = []
+    const failed: Array<{
+      operation: string
+      threshold: number
+      actual: number
+    }> = []
 
     Object.entries(thresholds).forEach(([operation, threshold]) => {
       const averageDuration = this.getAverageDuration(operation)
@@ -180,24 +191,28 @@ export class PerformanceMonitor {
         failed.push({
           operation,
           threshold,
-          actual: averageDuration
+          actual: averageDuration,
         })
       }
     })
 
     return {
       passed: failed.length === 0,
-      failed
+      failed,
     }
   }
 
   // Export measurements for analysis
   exportMeasurements(): string {
-    return JSON.stringify({
-      measurements: this.measurements,
-      report: this.getPerformanceReport(),
-      timestamp: new Date().toISOString()
-    }, null, 2)
+    return JSON.stringify(
+      {
+        measurements: this.measurements,
+        report: this.getPerformanceReport(),
+        timestamp: new Date().toISOString(),
+      },
+      null,
+      2
+    )
   }
 
   // Create performance mark for manual timing
@@ -222,7 +237,7 @@ export class PerformanceMonitor {
           const measurement: PerformanceMeasurement = {
             operation,
             duration,
-            memoryUsage: this.getMemoryUsage()
+            memoryUsage: this.getMemoryUsage(),
           }
 
           this.measurements.push(measurement)
@@ -262,5 +277,5 @@ export const PERFORMANCE_THRESHOLDS = {
   'file-processing': 50, // 50ms for file processing
   'json-rendering': 100, // 100ms for JSON rendering
   'file-upload': 500, // 500ms for file upload
-  'search': 50 // 50ms for search operations
+  search: 50, // 50ms for search operations
 } as const

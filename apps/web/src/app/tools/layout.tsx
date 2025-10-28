@@ -1,5 +1,5 @@
-import { MainLayout } from '@/components/layout/main-layout'
 import type { Metadata } from 'next'
+import { MainLayout } from '@/components/layout/main-layout'
 
 export const metadata: Metadata = {
   title: 'Developer Tools - Parsify.dev',
@@ -28,10 +28,6 @@ export const metadata: Metadata = {
   },
 }
 
-export default function ToolsLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function ToolsLayout({ children }: { children: React.ReactNode }) {
   return <MainLayout>{children}</MainLayout>
 }

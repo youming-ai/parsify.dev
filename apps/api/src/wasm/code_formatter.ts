@@ -47,45 +47,39 @@ export const BaseFormattingOptionsSchema = z.object({
 })
 
 // Language-specific formatting options
-export const JavaScriptFormattingOptionsSchema =
-  BaseFormattingOptionsSchema.extend({
-    semicolons: z.boolean().default(true),
-    quotes: z.enum(['single', 'double', 'preserve']).default('single'),
-    trailingCommas: z.enum(['none', 'es5', 'all']).default('es5'),
-    bracketSameLine: z.boolean().default(false),
-    arrowParens: z.enum(['always', 'avoid']).default('always'),
-    printWidth: z.number().int().min(40).max(200).default(80),
-    jsxSingleQuote: z.boolean().default(false),
-    quoteProps: z
-      .enum(['as-needed', 'consistent', 'preserve'])
-      .default('as-needed'),
-    jsxBracketSameLine: z.boolean().default(false),
-  })
+export const JavaScriptFormattingOptionsSchema = BaseFormattingOptionsSchema.extend({
+  semicolons: z.boolean().default(true),
+  quotes: z.enum(['single', 'double', 'preserve']).default('single'),
+  trailingCommas: z.enum(['none', 'es5', 'all']).default('es5'),
+  bracketSameLine: z.boolean().default(false),
+  arrowParens: z.enum(['always', 'avoid']).default('always'),
+  printWidth: z.number().int().min(40).max(200).default(80),
+  jsxSingleQuote: z.boolean().default(false),
+  quoteProps: z.enum(['as-needed', 'consistent', 'preserve']).default('as-needed'),
+  jsxBracketSameLine: z.boolean().default(false),
+})
 
-export const TypeScriptFormattingOptionsSchema =
-  JavaScriptFormattingOptionsSchema.extend({
-    strict: z.boolean().default(true),
-    noImplicitAny: z.boolean().default(true),
-    noImplicitReturns: z.boolean().default(true),
-    noImplicitThis: z.boolean().default(true),
-    noUnusedLocals: z.boolean().default(false),
-    noUnusedParameters: z.boolean().default(false),
-    exactOptionalPropertyTypes: z.boolean().default(false),
-  })
+export const TypeScriptFormattingOptionsSchema = JavaScriptFormattingOptionsSchema.extend({
+  strict: z.boolean().default(true),
+  noImplicitAny: z.boolean().default(true),
+  noImplicitReturns: z.boolean().default(true),
+  noImplicitThis: z.boolean().default(true),
+  noUnusedLocals: z.boolean().default(false),
+  noUnusedParameters: z.boolean().default(false),
+  exactOptionalPropertyTypes: z.boolean().default(false),
+})
 
-export const PythonFormattingOptionsSchema = BaseFormattingOptionsSchema.extend(
-  {
-    lineLength: z.number().int().min(40).max(200).default(88),
-    targetVersion: z
-      .enum(['py36', 'py37', 'py38', 'py39', 'py310', 'py311', 'py312'])
-      .default('py311'),
-    skipStringNormalization: z.boolean().default(false),
-    skipMagicComma: z.boolean().default(false),
-    diff: z.boolean().default(false),
-    color: z.boolean().default(false),
-    fast: z.boolean().default(false),
-  }
-)
+export const PythonFormattingOptionsSchema = BaseFormattingOptionsSchema.extend({
+  lineLength: z.number().int().min(40).max(200).default(88),
+  targetVersion: z
+    .enum(['py36', 'py37', 'py38', 'py39', 'py310', 'py311', 'py312'])
+    .default('py311'),
+  skipStringNormalization: z.boolean().default(false),
+  skipMagicComma: z.boolean().default(false),
+  diff: z.boolean().default(false),
+  color: z.boolean().default(false),
+  fast: z.boolean().default(false),
+})
 
 export const JavaFormattingOptionsSchema = BaseFormattingOptionsSchema.extend({
   indentSize: z.number().int().min(0).max(20).default(4),
@@ -161,9 +155,7 @@ export const HtmlFormattingOptionsSchema = BaseFormattingOptionsSchema.extend({
     ])
     .default('auto'),
   wrapAttributesMinAttrs: z.number().int().min(1).max(10).default(2),
-  unformatted: z
-    .array(z.string())
-    .default(['pre', 'code', 'textarea', 'script', 'style']),
+  unformatted: z.array(z.string()).default(['pre', 'code', 'textarea', 'script', 'style']),
   contentUnformatted: z.array(z.string()).default(['pre', 'textarea']),
   voidElements: z
     .array(z.string())
@@ -309,11 +301,7 @@ export class CodeSizeError extends CodeFormattingError {
 
 export class UnsupportedLanguageError extends CodeFormattingError {
   constructor(language: string) {
-    super(
-      `Language '${language}' is not supported`,
-      'UNSUPPORTED_LANGUAGE',
-      language
-    )
+    super(`Language '${language}' is not supported`, 'UNSUPPORTED_LANGUAGE', language)
     this.name = 'UnsupportedLanguageError'
   }
 }
@@ -362,12 +350,8 @@ export class CodeFormatter {
   private isInitialized = false
   private maxInputSize = 10 * 1024 * 1024 // 10MB
   private maxOutputSize = 50 * 1024 * 1024 // 50MB
-  private languageFormatters: Map<SupportedLanguage, LanguageFormatter> =
-    new Map()
-  private fallbackFormatters: Map<
-    SupportedLanguage,
-    (code: string) => Promise<string>
-  > = new Map()
+  private languageFormatters: Map<SupportedLanguage, LanguageFormatter> = new Map()
+  private fallbackFormatters: Map<SupportedLanguage, (code: string) => Promise<string>> = new Map()
 
   constructor() {
     this.initializeFallbackFormatters()
@@ -441,9 +425,7 @@ export class CodeFormatter {
       }
 
       // Generate diff if requested
-      const diff = diffConfig
-        ? await this.generateDiff(code, formatted, diffConfig)
-        : null
+      const diff = diffConfig ? await this.generateDiff(code, formatted, diffConfig) : null
 
       return {
         success: true,
@@ -471,7 +453,7 @@ export class CodeFormatter {
         },
       }
     } catch (error) {
-      const totalTime = performance.now() - startTime
+      const _totalTime = performance.now() - startTime
 
       if (error instanceof CodeFormattingError) {
         throw error
@@ -585,11 +567,7 @@ export class CodeFormatter {
   async detectLanguage(code: string): Promise<SupportedLanguage | null> {
     // Simple heuristic-based language detection
     const patterns: { [key: string]: RegExp[] } = {
-      javascript: [
-        /^(?:import|export|const|let|var|function|class)\s/m,
-        /=>\s*{?/,
-        /\.jsx?$/,
-      ],
+      javascript: [/^(?:import|export|const|let|var|function|class)\s/m, /=>\s*{?/, /\.jsx?$/],
       typescript: [
         /^(?:import|export|interface|type|enum|declare)\s/m,
         /:\s*(string|number|boolean|void|any)/,
@@ -600,22 +578,10 @@ export class CodeFormatter {
         /:\s*$/m,
         /\.py$/,
       ],
-      java: [
-        /^(?:package|import|public|private|protected|class|interface)\s/m,
-        /;\s*$/,
-        /\.java$/,
-      ],
+      java: [/^(?:package|import|public|private|protected|class|interface)\s/m, /;\s*$/, /\.java$/],
       rust: [/^(?:use|mod|fn|struct|enum|impl|trait)\s/m, /->\s*\w+/, /\.rs$/],
-      go: [
-        /^(?:package|import|func|type|struct|interface)\s/m,
-        /\s*{\s*$/,
-        /\.go$/,
-      ],
-      cpp: [
-        /^#\s*include\s*[<"]/,
-        /#(?:define|ifdef|ifndef|endif)/,
-        /\.(cpp|cc|cxx|h|hpp)$/,
-      ],
+      go: [/^(?:package|import|func|type|struct|interface)\s/m, /\s*{\s*$/, /\.go$/],
+      cpp: [/^#\s*include\s*[<"]/, /#(?:define|ifdef|ifndef|endif)/, /\.(cpp|cc|cxx|h|hpp)$/],
       c: [/^#\s*include\s*[<"]/, /main\s*\(/, /\.(c|h)$/],
       php: [/^<\?php/, /\$\w+/, /\.php$/],
       ruby: [/^(?:require|class|def|module)\s/m, /end\s*$/, /\.rb$/],
@@ -624,11 +590,7 @@ export class CodeFormatter {
       html: [/^<!DOCTYPE\s+html>/i, /<[^>]+>/, /\.html?$/],
       json: [/^\s*{/, /^\s*\[/, /\.json$/],
       yaml: [/^[a-zA-Z-]+:\s*\w+/, /^\s*-/, /\.(yaml|yml)$/],
-      sql: [
-        /^(?:SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER)\s/i,
-        /;\s*$/,
-        /\.sql$/,
-      ],
+      sql: [/^(?:SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER)\s/i, /;\s*$/, /\.sql$/],
       markdown: [/^#+\s/, /\[.*\]\(.*\)/, /\.md$/],
       dockerfile: [/^FROM\s+/, /^RUN\s+/, /^Dockerfile$/i],
       bash: [/^#!\/bin\/bash/, /^export\s+\w+/, /\.(sh|bash)$/],
@@ -776,10 +738,7 @@ export class CodeFormatter {
   /**
    * Analyze code and gather statistics
    */
-  private async analyzeCode(
-    code: string,
-    language: SupportedLanguage
-  ): Promise<CodeStatistics> {
+  private async analyzeCode(code: string, language: SupportedLanguage): Promise<CodeStatistics> {
     const lines = code.split('\n')
     const words = code.split(/\s+/).filter(word => word.length > 0)
 
@@ -794,9 +753,7 @@ export class CodeFormatter {
       case 'javascript':
       case 'typescript':
         functionCount = (
-          code.match(
-            /function\s+\w+|=>\s*{|const\s+\w+\s*=\s*\([^)]*\)\s*=>/g
-          ) || []
+          code.match(/function\s+\w+|=>\s*{|const\s+\w+\s*=\s*\([^)]*\)\s*=>/g) || []
         ).length
         classCount = (code.match(/class\s+\w+/g) || []).length
         importCount = (code.match(/^(?:import|export)\s+/gm) || []).length
@@ -864,11 +821,7 @@ export class CodeFormatter {
     diff.push('--- original')
     diff.push('+++ formatted')
 
-    for (
-      let i = 0, j = 0;
-      i < originalLines.length || j < formattedLines.length;
-
-    ) {
+    for (let i = 0, j = 0; i < originalLines.length || j < formattedLines.length; ) {
       const originalLine = originalLines[i] || ''
       const formattedLine = formattedLines[j] || ''
 
@@ -943,24 +896,13 @@ export class CodeFormatter {
     formattedLines: string[],
     originalIndex: number,
     formattedIndex: number,
-    contextLines: number
+    _contextLines: number
   ): { found: boolean; originalIndex: number; formattedIndex: number } {
     const maxSearch = 10
 
-    for (
-      let i = 0;
-      i < maxSearch && originalIndex + i < originalLines.length;
-      i++
-    ) {
-      for (
-        let j = 0;
-        j < maxSearch && formattedIndex + j < formattedLines.length;
-        j++
-      ) {
-        if (
-          originalLines[originalIndex + i] ===
-          formattedLines[formattedIndex + j]
-        ) {
+    for (let i = 0; i < maxSearch && originalIndex + i < originalLines.length; i++) {
+      for (let j = 0; j < maxSearch && formattedIndex + j < formattedLines.length; j++) {
+        if (originalLines[originalIndex + i] === formattedLines[formattedIndex + j]) {
           return {
             found: true,
             originalIndex: originalIndex + i,
@@ -978,7 +920,7 @@ export class CodeFormatter {
    */
   private parseSyntaxError(
     message: string,
-    language: SupportedLanguage
+    _language: SupportedLanguage
   ): {
     message: string
     line?: number
@@ -996,9 +938,9 @@ export class CodeFormatter {
         .replace(/line\s+\d+/i, '')
         .replace(/column\s+\d+/i, '')
         .trim(),
-      line: lineMatch ? parseInt(lineMatch[1]) : undefined,
-      column: columnMatch ? parseInt(columnMatch[1]) : undefined,
-      position: positionMatch ? parseInt(positionMatch[1]) : undefined,
+      line: lineMatch ? parseInt(lineMatch[1], 10) : undefined,
+      column: columnMatch ? parseInt(columnMatch[1], 10) : undefined,
+      position: positionMatch ? parseInt(positionMatch[1], 10) : undefined,
     }
   }
 
@@ -1178,9 +1120,7 @@ export class CodeFormatter {
   /**
    * Get formatter version for a language
    */
-  private async getFormatterVersion(
-    language: SupportedLanguage
-  ): Promise<string> {
+  private async getFormatterVersion(language: SupportedLanguage): Promise<string> {
     const formatter = this.languageFormatters.get(language)
     return formatter?.version || '1.0.0'
   }
@@ -1254,8 +1194,6 @@ export async function formatMultiple(
   return codeFormatter.formatMultiple(files)
 }
 
-export async function detectLanguage(
-  code: string
-): Promise<SupportedLanguage | null> {
+export async function detectLanguage(code: string): Promise<SupportedLanguage | null> {
   return codeFormatter.detectLanguage(code)
 }

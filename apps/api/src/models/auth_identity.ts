@@ -11,7 +11,7 @@ export const AuthIdentitySchema = z.object({
   provider: OAuthProviderSchema,
   provider_uid: z.string(),
   provider_data: z.record(z.any()).nullable(),
-  created_at: z.number()
+  created_at: z.number(),
 })
 
 export type AuthIdentity = z.infer<typeof AuthIdentitySchema>
@@ -19,7 +19,7 @@ export type AuthIdentity = z.infer<typeof AuthIdentitySchema>
 // Auth identity creation schema
 export const CreateAuthIdentitySchema = AuthIdentitySchema.partial({
   id: true,
-  created_at: true
+  created_at: true,
 })
 
 export type CreateAuthIdentity = z.infer<typeof CreateAuthIdentitySchema>
@@ -31,7 +31,7 @@ export const GoogleProviderDataSchema = z.object({
   name: z.string(),
   picture: z.string().url(),
   email_verified: z.boolean(),
-  locale: z.string().optional()
+  locale: z.string().optional(),
 })
 
 export const GitHubProviderDataSchema = z.object({
@@ -49,7 +49,7 @@ export const GitHubProviderDataSchema = z.object({
   followers: z.number(),
   following: z.number(),
   created_at: z.string(),
-  updated_at: z.string()
+  updated_at: z.string(),
 })
 
 export const OAuth2ProviderDataSchema = z.object({
@@ -60,7 +60,7 @@ export const OAuth2ProviderDataSchema = z.object({
   email_verified: z.boolean().optional(),
   locale: z.string().optional(),
   provider: z.string(),
-  raw_data: z.record(z.any())
+  raw_data: z.record(z.any()),
 })
 
 export type GoogleProviderData = z.infer<typeof GoogleProviderDataSchema>
@@ -90,7 +90,7 @@ export class AuthIdentity {
     return new AuthIdentity({
       id: crypto.randomUUID(),
       created_at: Math.floor(Date.now() / 1000),
-      ...data
+      ...data,
     })
   }
 
@@ -99,7 +99,7 @@ export class AuthIdentity {
       user_id: userId,
       provider: 'google',
       provider_uid: data.sub,
-      provider_data: data
+      provider_data: data,
     })
   }
 
@@ -108,7 +108,7 @@ export class AuthIdentity {
       user_id: userId,
       provider: 'github',
       provider_uid: data.id.toString(),
-      provider_data: data
+      provider_data: data,
     })
   }
 
@@ -117,14 +117,14 @@ export class AuthIdentity {
       user_id: userId,
       provider: 'oauth2',
       provider_uid: data.sub,
-      provider_data: data
+      provider_data: data,
     })
   }
 
   static fromRow(row: any): AuthIdentity {
     const parsed = AuthIdentitySchema.parse({
       ...row,
-      provider_data: row.provider_data ? JSON.parse(row.provider_data) : null
+      provider_data: row.provider_data ? JSON.parse(row.provider_data) : null,
     })
     return new AuthIdentity(parsed)
   }
@@ -136,7 +136,7 @@ export class AuthIdentity {
       provider: this.provider,
       provider_uid: this.provider_uid,
       provider_data: this.provider_data ? JSON.stringify(this.provider_data) : null,
-      created_at: this.created_at
+      created_at: this.created_at,
     }
   }
 
@@ -233,7 +233,7 @@ export const AUTH_IDENTITY_QUERIES = {
 
   CREATE_INDEXES: [
     'CREATE INDEX IF NOT EXISTS idx_auth_identities_user_id ON auth_identities(user_id);',
-    'CREATE INDEX IF NOT EXISTS idx_auth_identities_provider ON auth_identities(provider);'
+    'CREATE INDEX IF NOT EXISTS idx_auth_identities_provider ON auth_identities(provider);',
   ],
 
   INSERT: `
@@ -282,5 +282,5 @@ export const AUTH_IDENTITY_QUERIES = {
     WHERE ai.provider = ?
     ORDER BY ai.created_at DESC
     LIMIT ? OFFSET ?;
-  `
+  `,
 } as const

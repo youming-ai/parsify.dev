@@ -1,8 +1,8 @@
-import {
+import type {
   IWasmModule,
   IWasmModuleRegistry,
+  ModuleUpdate,
   WasmModuleMetadata,
-  ModuleUpdate
 } from '../interfaces/wasm-module.interface'
 
 /**
@@ -32,7 +32,9 @@ export class WasmModuleRegistry implements IWasmModuleRegistry {
       this.initialized = true
     } catch (error) {
       console.error('Failed to initialize WASM module registry:', error)
-      throw new Error(`Registry initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Registry initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -74,11 +76,13 @@ export class WasmModuleRegistry implements IWasmModuleRegistry {
       if (!this.categories.has(metadata.category)) {
         this.categories.set(metadata.category, new Set())
       }
-      this.categories.get(metadata.category)!.add(moduleId)
+      this.categories.get(metadata.category)?.add(moduleId)
 
       console.log(`Registered WASM module: ${moduleId} (${metadata.name} v${metadata.version})`)
     } catch (error) {
-      throw new Error(`Failed to register module '${moduleId}': ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to register module '${moduleId}': ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -112,7 +116,9 @@ export class WasmModuleRegistry implements IWasmModuleRegistry {
 
       console.log(`Unregistered WASM module: ${moduleId}`)
     } catch (error) {
-      throw new Error(`Failed to unregister module '${moduleId}': ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to unregister module '${moduleId}': ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -201,7 +207,7 @@ export class WasmModuleRegistry implements IWasmModuleRegistry {
 
     for (const [moduleId, module] of this.modules) {
       try {
-        const metadata = module.getMetadata()
+        const _metadata = module.getMetadata()
 
         // In a real implementation, this would check against a remote registry
         // For now, we'll just return no updates
@@ -237,7 +243,7 @@ export class WasmModuleRegistry implements IWasmModuleRegistry {
 
     try {
       const currentModule = this.modules.get(moduleId)!
-      const currentMetadata = currentModule.getMetadata()
+      const _currentMetadata = currentModule.getMetadata()
 
       // In a real implementation, this would download and install the new version
       // For now, we'll just dispose and reinitialize the module
@@ -250,7 +256,9 @@ export class WasmModuleRegistry implements IWasmModuleRegistry {
 
       console.log(`Module '${moduleId}' would be updated to version ${version || 'latest'}`)
     } catch (error) {
-      throw new Error(`Failed to update module '${moduleId}': ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to update module '${moduleId}': ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -309,60 +317,8 @@ export class WasmModuleRegistry implements IWasmModuleRegistry {
    * Check if version string follows semantic versioning
    */
   private isValidVersion(version: string): boolean {
-    const semanticVersionRegex = /^\d+\.\d+\.\d+(-[a-zA-Z0-9\-\.]+)?(\+[a-zA-Z0-9\-\.]+)?$/
+    const semanticVersionRegex = /^\d+\.\d+\.\d+(-[a-zA-Z0-9\-.]+)?(\+[a-zA-Z0-9\-.]+)?$/
     return semanticVersionRegex.test(version)
-  }
-
-  /**
-   * Check if a version is newer than another
-   */
-  private isNewerVersion(newVersion: string, currentVersion: string): boolean {
-    const parseVersion = (version: string) => {
-      const [main, prerelease] = version.split('-')
-      const [major, minor, patch] = main.split('.').map(Number)
-      return { major, minor, patch, prerelease }
-    }
-
-    const newVer = parseVersion(newVersion)
-    const currentVer = parseVersion(currentVersion)
-
-    // Compare major version
-    if (newVer.major > currentVer.major) return true
-    if (newVer.major < currentVer.major) return false
-
-    // Compare minor version
-    if (newVer.minor > currentVer.minor) return true
-    if (newVer.minor < currentVer.minor) return false
-
-    // Compare patch version
-    if (newVer.patch > currentVer.patch) return true
-    if (newVer.patch < currentVer.patch) return false
-
-    // For same version, consider prerelease
-    if (!newVer.prerelease && currentVer.prerelease) return true
-    if (newVer.prerelease && !currentVer.prerelease) return false
-
-    return false
-  }
-
-  /**
-   * Determine update type based on version difference
-   */
-  private getUpdateType(currentVersion: string, newVersion: string): ModuleUpdate['updateType'] {
-    const current = currentVersion.split('.').map(Number)
-    const newVer = newVersion.split('.').map(Number)
-
-    if (newVer[0] > current[0]) return 'major'
-    if (newVer[1] > current[1]) return 'minor'
-    return 'patch'
-  }
-
-  /**
-   * Check if update has breaking changes
-   */
-  private hasBreakingChanges(currentVersion: string, newVersion: string): boolean {
-    const updateType = this.getUpdateType(currentVersion, newVersion)
-    return updateType === 'major'
   }
 
   /**
@@ -381,7 +337,7 @@ export class WasmModuleRegistry implements IWasmModuleRegistry {
 
     for (const [moduleId, metadata] of this.moduleMetadata) {
       const module = this.modules.get(moduleId)
-      if (module && module.isInitialized()) {
+      if (module?.isInitialized()) {
         initializedModules++
       }
       totalExecutions += metadata.executionCount
@@ -393,7 +349,7 @@ export class WasmModuleRegistry implements IWasmModuleRegistry {
       totalCategories: this.categories.size,
       initializedModules,
       totalExecutions,
-      memoryUsage
+      memoryUsage,
     }
   }
 
@@ -426,14 +382,14 @@ export class WasmModuleRegistry implements IWasmModuleRegistry {
     return {
       modules: Array.from(this.moduleMetadata.values()),
       categories: Array.from(this.categories.keys()),
-      exportedAt: new Date().toISOString()
+      exportedAt: new Date().toISOString(),
     }
   }
 
   /**
    * Import registry configuration
    */
-  async importRegistry(config: {
+  async importRegistry(_config: {
     modules: WasmModuleMetadata[]
     categories: string[]
   }): Promise<void> {

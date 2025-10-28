@@ -57,14 +57,11 @@ export function getD1Config(environment?: string): D1Config {
   const env = environment || process.env.ENVIRONMENT || 'development'
 
   if (env === 'production' && !D1_ENVIRONMENT_CONFIG.production.databaseId) {
-    throw new Error(
-      'Cloudflare D1 database ID is required for production environment'
-    )
+    throw new Error('Cloudflare D1 database ID is required for production environment')
   }
 
   return (
-    D1_ENVIRONMENT_CONFIG[env as keyof D1EnvironmentConfig] ||
-    D1_ENVIRONMENT_CONFIG.development
+    D1_ENVIRONMENT_CONFIG[env as keyof D1EnvironmentConfig] || D1_ENVIRONMENT_CONFIG.development
   )
 }
 
@@ -121,7 +118,7 @@ export class D1HealthMonitor {
 
     try {
       // Simple health check query
-      const result = await db.prepare('SELECT 1 as health_check').first()
+      const _result = await db.prepare('SELECT 1 as health_check').first()
       const responseTime = Date.now() - startTime
 
       const healthCheck: D1HealthCheck = {
@@ -179,7 +176,6 @@ export interface D1ConnectionPool {
 }
 
 export class SimpleD1Pool implements D1ConnectionPool {
-  private config: D1Config
   private connections: D1Database[] = []
   private activeConnections = new Set<D1Database>()
 
@@ -216,10 +212,7 @@ export class SimpleD1Pool implements D1ConnectionPool {
   }
 }
 
-export function createD1Pool(
-  config: D1Config,
-  db: D1Database
-): D1ConnectionPool {
+export function createD1Pool(config: D1Config, db: D1Database): D1ConnectionPool {
   return new SimpleD1Pool(config, db)
 }
 
@@ -230,13 +223,13 @@ export interface QueryOptions {
   retryDelay?: number
 }
 
-export async function executeQuery<T = any>(
+export async function executeQuery<T = unknown>(
   db: D1Database,
   query: string,
-  params?: any[],
+  params?: unknown[],
   options: QueryOptions = {}
 ): Promise<D1Result<T>> {
-  const { timeout = 10000, retries = 3, retryDelay = 1000 } = options
+  const { retries = 3, retryDelay = 1000 } = options
 
   let lastError: Error | null = null
 
@@ -270,9 +263,7 @@ export async function executeQuery<T = any>(
 
       // Wait before retrying
       if (attempt < retries) {
-        await new Promise(resolve =>
-          setTimeout(resolve, retryDelay * (attempt + 1))
-        )
+        await new Promise(resolve => setTimeout(resolve, retryDelay * (attempt + 1)))
       }
     }
   }
@@ -318,17 +309,15 @@ export class D1Migrator {
     const executedVersions = new Set(
       Array.isArray(executedResult.results)
         ? executedResult.results.map(r => r.version)
-        : (executedResult as any).version
-          ? [(executedResult as any).version]
+        : (executedResult as { version?: string }).version
+          ? [(executedResult as { version: string }).version]
           : []
     )
 
     // Run pending migrations
     for (const migration of this.migrations) {
       if (!executedVersions.has(migration.version)) {
-        console.log(
-          `Running migration ${migration.version}: ${migration.description}`
-        )
+        console.log(`Running migration ${migration.version}: ${migration.description}`)
 
         try {
           await migration.up(db)
@@ -339,11 +328,7 @@ export class D1Migrator {
             INSERT INTO schema_migrations (version, description, executed_at)
             VALUES (?, ?, ?)
           `,
-            [
-              migration.version,
-              migration.description,
-              Math.floor(Date.now() / 1000),
-            ]
+            [migration.version, migration.description, Math.floor(Date.now() / 1000)]
           )
 
           console.log(`Migration ${migration.version} completed successfully`)
@@ -365,8 +350,8 @@ export class D1Migrator {
     )
     const executedVersions = Array.isArray(executedResult.results)
       ? executedResult.results.map(r => r.version)
-      : (executedResult as any).version
-        ? [(executedResult as any).version]
+      : (executedResult as { version?: string }).version
+        ? [(executedResult as { version: string }).version]
         : []
 
     // Find migrations to rollback
@@ -378,9 +363,7 @@ export class D1Migrator {
     // Rollback migrations
     for (const migration of migrationsToRollback) {
       if (migration.down) {
-        console.log(
-          `Rolling back migration ${migration.version}: ${migration.description}`
-        )
+        console.log(`Rolling back migration ${migration.version}: ${migration.description}`)
 
         try {
           await migration.down(db)
@@ -395,10 +378,7 @@ export class D1Migrator {
 
           console.log(`Migration ${migration.version} rolled back successfully`)
         } catch (error) {
-          console.error(
-            `Rollback of migration ${migration.version} failed:`,
-            error
-          )
+          console.error(`Rollback of migration ${migration.version} failed:`, error)
           throw error
         }
       }

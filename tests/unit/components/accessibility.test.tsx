@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { screen, fireEvent } from '@testing-library/react'
-import { render, createMockUser } from '../test-utils'
-import { Button } from '@/web/components/ui/button'
-import { Input } from '@/web/components/ui/input'
-import { Card, CardHeader, CardTitle, CardContent } from '@/web/components/ui/card'
-import { Alert, AlertTitle, AlertDescription } from '@/web/components/ui/alert'
+import { fireEvent, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { LoginForm } from '@/web/components/auth/login-form'
 import { FileDropZone } from '@/web/components/file-upload/file-drop-zone'
 import { MainLayout } from '@/web/components/layout/main-layout'
+import { Alert, AlertDescription, AlertTitle } from '@/web/components/ui/alert'
+import { Button } from '@/web/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/web/components/ui/card'
+import { Input } from '@/web/components/ui/input'
+import { render } from '../test-utils'
 
 describe('Component Accessibility Tests', () => {
   beforeEach(() => {
@@ -138,7 +138,10 @@ describe('Component Accessibility Tests', () => {
         </Card>
       )
 
-      const title = screen.getByRole('heading', { level: 3, name: 'Card Title' })
+      const title = screen.getByRole('heading', {
+        level: 3,
+        name: 'Card Title',
+      })
       expect(title).toBeInTheDocument()
     })
 
@@ -174,7 +177,10 @@ describe('Component Accessibility Tests', () => {
       const alert = screen.getByRole('alert')
       expect(alert).toBeInTheDocument()
 
-      const title = screen.getByRole('heading', { level: 5, name: 'Important Notice' })
+      const title = screen.getByRole('heading', {
+        level: 5,
+        name: 'Important Notice',
+      })
       expect(title).toBeInTheDocument()
 
       expect(screen.getByText('This is an important message')).toBeInTheDocument()
@@ -226,9 +232,15 @@ describe('Component Accessibility Tests', () => {
     it('supports keyboard navigation through OAuth options', async () => {
       render(<LoginForm />)
 
-      const googleButton = screen.getByRole('button', { name: /continue with google/i })
-      const githubButton = screen.getByRole('button', { name: /continue with github/i })
-      const emailButton = screen.getByRole('button', { name: /continue with email/i })
+      const googleButton = screen.getByRole('button', {
+        name: /continue with google/i,
+      })
+      const githubButton = screen.getByRole('button', {
+        name: /continue with github/i,
+      })
+      const emailButton = screen.getByRole('button', {
+        name: /continue with email/i,
+      })
 
       // Should be able to focus all buttons
       googleButton.focus()
@@ -245,7 +257,9 @@ describe('Component Accessibility Tests', () => {
       render(<LoginForm />)
 
       // Click to show email form
-      const emailButton = screen.getByRole('button', { name: /continue with email/i })
+      const emailButton = screen.getByRole('button', {
+        name: /continue with email/i,
+      })
       fireEvent.click(emailButton)
 
       // Should have properly labeled inputs
@@ -262,8 +276,8 @@ describe('Component Accessibility Tests', () => {
           clearError: vi.fn(),
           user: null,
           isLoading: false,
-          logout: vi.fn()
-        })
+          logout: vi.fn(),
+        }),
       }))
 
       render(<LoginForm />)
@@ -276,7 +290,9 @@ describe('Component Accessibility Tests', () => {
     it('has proper button semantics', () => {
       render(<FileDropZone />)
 
-      const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+      const dropZone = screen.getByRole('button', {
+        name: 'File upload drop zone',
+      })
       expect(dropZone).toBeInTheDocument()
       expect(dropZone).toHaveAttribute('tabIndex', '0')
       expect(dropZone).toHaveAttribute('aria-label', 'File upload drop zone')
@@ -285,7 +301,9 @@ describe('Component Accessibility Tests', () => {
     it('supports keyboard navigation', async () => {
       render(<FileDropZone />)
 
-      const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+      const dropZone = screen.getByRole('button', {
+        name: 'File upload drop zone',
+      })
       dropZone.focus()
       expect(dropZone).toHaveFocus()
 
@@ -299,7 +317,9 @@ describe('Component Accessibility Tests', () => {
     it('handles disabled state accessibly', () => {
       render(<FileDropZone disabled />)
 
-      const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+      const dropZone = screen.getByRole('button', {
+        name: 'File upload drop zone',
+      })
       expect(dropZone).toHaveAttribute('aria-disabled', 'true')
       expect(dropZone).toHaveAttribute('tabIndex', '-1')
       expect(dropZone).toHaveClass('opacity-50', 'cursor-not-allowed')
@@ -316,7 +336,9 @@ describe('Component Accessibility Tests', () => {
     it('announces drag state changes', () => {
       render(<FileDropZone />)
 
-      const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+      const dropZone = screen.getByRole('button', {
+        name: 'File upload drop zone',
+      })
 
       // Should announce drag over state
       fireEvent.dragOver(dropZone)
@@ -328,7 +350,7 @@ describe('Component Accessibility Tests', () => {
     it('has proper landmark elements', () => {
       render(
         <MainLayout>
-          <main role="main">Main content</main>
+          <main>Main content</main>
         </MainLayout>
       )
 
@@ -374,7 +396,9 @@ describe('Component Accessibility Tests', () => {
     it('manages focus properly in forms', async () => {
       render(<LoginForm />)
 
-      const emailButton = screen.getByRole('button', { name: /continue with email/i })
+      const emailButton = screen.getByRole('button', {
+        name: /continue with email/i,
+      })
       fireEvent.click(emailButton)
 
       const emailInput = screen.getByLabelText(/email/i)
@@ -437,9 +461,7 @@ describe('Component Accessibility Tests', () => {
     })
 
     it('provides descriptive text for complex interactions', () => {
-      render(
-        <FileDropZone accept={['.json', '.txt']} maxSize={5 * 1024 * 1024} />
-      )
+      render(<FileDropZone accept={['.json', '.txt']} maxSize={5 * 1024 * 1024} />)
 
       expect(screen.getByText('Accepted formats: .json, .txt')).toBeInTheDocument()
       expect(screen.getByText('Max file size: 5 MB')).toBeInTheDocument()
@@ -486,7 +508,9 @@ describe('Component Accessibility Tests', () => {
       render(<LoginForm />)
 
       // Show email form
-      const emailButton = screen.getByRole('button', { name: /continue with email/i })
+      const emailButton = screen.getByRole('button', {
+        name: /continue with email/i,
+      })
       fireEvent.click(emailButton)
 
       const cancelButton = screen.getByRole('button', { name: /cancel/i })

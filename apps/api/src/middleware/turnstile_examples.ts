@@ -6,22 +6,21 @@
  */
 
 import { Hono } from 'hono'
+import { authMiddleware } from './auth'
+import { errorMiddleware } from './error'
+import { rateLimitMiddleware } from './rate_limit'
 import {
-  turnstileMiddleware,
-  TurnstilePresets,
-  requireTurnstile,
-  optionalTurnstile,
-  createLowProtection,
-  createMediumProtection,
   createHighProtection,
+  createLowProtection,
   createMaximumProtection,
+  createMediumProtection,
+  getBotRiskScore,
   getTurnstileContext,
   isBotDetected,
-  getBotRiskScore,
+  optionalTurnstile,
+  requireTurnstile,
+  turnstileMiddleware,
 } from './turnstile'
-import { authMiddleware } from './auth'
-import { rateLimitMiddleware } from './rate_limit'
-import { errorMiddleware } from './error'
 
 // Create Hono app
 const app = new Hono()
@@ -136,7 +135,7 @@ app.post(
       secretKey: process.env.TURNSTILE_SECRET_KEY!,
       protectionLevel: 'high',
     },
-    customValidation: async (token, context) => {
+    customValidation: async (_token, _context) => {
       // Custom validation logic
       const auth = c.get('auth')
 
@@ -213,7 +212,7 @@ app.post(
       siteKey: process.env.TURNSTILE_SITE_KEY!,
       secretKey: process.env.TURNSTILE_SECRET_KEY!,
     },
-    onError: (c, error, validationResult) => {
+    onError: (c, error, _validationResult) => {
       // Custom error handling
       switch (error) {
         case 'MISSING_TOKEN':
@@ -232,8 +231,7 @@ app.post(
           return c.json(
             {
               error: 'Security check failed',
-              message:
-                'The security check could not be verified. Please try again.',
+              message: 'The security check could not be verified. Please try again.',
               retry: true,
             },
             403
@@ -253,8 +251,7 @@ app.post(
           return c.json(
             {
               error: 'Security service unavailable',
-              message:
-                'We are unable to verify your request at this time. Please try again later.',
+              message: 'We are unable to verify your request at this time. Please try again later.',
               retry: true,
             },
             503
@@ -281,7 +278,7 @@ app.post(
     },
     onSuccess: async (c, result) => {
       // Log successful validation
-      const turnstileContext = getTurnstileContext(c)
+      const _turnstileContext = getTurnstileContext(c)
 
       await logSecurityEvent({
         event: 'turnstile_success',
@@ -364,7 +361,7 @@ app.post(
 )
 
 // Helper functions for examples
-async function checkRecentActivity(userId?: string) {
+async function checkRecentActivity(_userId?: string) {
   // Mock implementation
   return { suspiciousCount: 0 }
 }
@@ -374,7 +371,7 @@ async function logSecurityEvent(event: any) {
   console.log('Security event logged:', event)
 }
 
-function analyzeRiskFactors(ip?: string, userAgent?: string) {
+function analyzeRiskFactors(_ip?: string, _userAgent?: string) {
   // Mock implementation
   return { score: 0.3 }
 }
@@ -386,7 +383,7 @@ function analyzeRiskFactors(ip?: string, userAgent?: string) {
  */
 
 // Frontend JavaScript example for adding Turnstile to a form
-const frontendExample = `
+const _frontendExample = `
 <!-- Add Turnstile script to your HTML -->
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
@@ -438,7 +435,7 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
 `
 
 // Programmatic Turnstile token generation
-const programmaticExample = `
+const _programmaticExample = `
 // For AJAX requests or single-page applications
 function getTurnstileToken() {
   return new Promise((resolve, reject) => {

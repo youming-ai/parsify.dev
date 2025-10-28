@@ -1,16 +1,9 @@
-import * as React from 'react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
-import { ToolWrapperProps } from './tool-types'
 import { cn } from '@/lib/utils'
+import type { ToolWrapperProps } from './tool-types'
 
 export function ToolWrapper({
   children,
@@ -54,7 +47,7 @@ export function ToolWrapper({
   return (
     <div className={cn('container mx-auto py-6', className)}>
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-2">
+        <div className="mb-2 flex items-center gap-2">
           <Badge variant="secondary">{category}</Badge>
           {status && (
             <Badge variant={statusBadge.variant}>
@@ -64,8 +57,8 @@ export function ToolWrapper({
           )}
           {version && <Badge variant="outline">v{version}</Badge>}
         </div>
-        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-        <p className="text-gray-600 mt-2">{description}</p>
+        <h1 className="font-bold text-3xl tracking-tight">{title}</h1>
+        <p className="mt-2 text-gray-600">{description}</p>
 
         {features.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">

@@ -1,6 +1,7 @@
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
 import { AuthProvider } from '@/components/auth/auth-context'
+import { MicrosoftClarityProvider } from '@/components/analytics/microsoft-clarity-provider'
 
 export const metadata: Metadata = {
   title: 'Parsify.dev - Online Developer Tools',
@@ -36,15 +37,15 @@ export const viewport: Viewport = {
   maximumScale: 1,
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className="min-h-screen bg-background font-sans antialiased">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <MicrosoftClarityProvider>
+            {children}
+          </MicrosoftClarityProvider>
+        </AuthProvider>
       </body>
     </html>
   )

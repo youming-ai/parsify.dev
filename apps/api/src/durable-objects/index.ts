@@ -5,58 +5,52 @@
  * for session management and real-time collaboration.
  */
 
-// Durable Object implementations
-export {
-  SessionManagerDurableObject,
-  createSessionManagerDurableObject,
-} from './session-manager'
-export {
-  CollaborationRoomDurableObject,
-  createCollaborationRoomDurableObject,
-} from './collaboration-room'
-
-// WebSocket message handlers
-export {
-  MessageHandlerManager,
-  SessionMessageHandler,
-  CollaborationMessageHandler,
-  SystemMessageHandler,
-  RoomMessageHandler,
-  type WebSocketMessage,
-  type HandlerContext,
-  type HandlerResult,
-  type MessageHandler,
-} from './websocket-handlers'
-
-// Types and interfaces
+// Re-export configuration types
 export type {
-  EnhancedSessionData,
-  EnhancedConnection,
-  CollaborationRoom,
-  SessionEvent,
-  SessionMessage as SessionMessageType,
-} from './session-manager'
-
+  DurableObjectConfig,
+  DurableObjectHealthCheck,
+  SessionData,
+} from '../config/cloudflare/durable-objects-config'
+// Utility functions
+export * from '../services/session_service'
 export type {
-  Participant,
-  Operation,
   DocumentState,
+  Operation,
+  Participant,
   RoomConfig,
   RoomEvent,
   RoomMessage as RoomMessageType,
 } from './collaboration-room'
-
-// Re-export configuration types
+export {
+  CollaborationRoomDurableObject,
+  createCollaborationRoomDurableObject,
+  default as CollaborationRoom,
+} from './collaboration-room'
+// Types and interfaces
 export type {
-  DurableObjectConfig,
-  SessionData,
-  DurableObjectHealthCheck,
-} from '../config/cloudflare/durable-objects-config'
-
-// Utility functions
-export * from '../services/session_service'
-
+  CollaborationRoom,
+  EnhancedConnection,
+  EnhancedSessionData,
+  SessionEvent,
+  SessionMessage as SessionMessageType,
+} from './session-manager'
+// Durable Object implementations
 // Default exports
-export { default as SessionManager } from './session-manager'
-export { default as CollaborationRoom } from './collaboration-room'
-export { default as MessageHandlerManager } from './websocket-handlers'
+export {
+  createSessionManagerDurableObject,
+  default as SessionManager,
+  SessionManagerDurableObject,
+} from './session-manager'
+// WebSocket message handlers
+export {
+  CollaborationMessageHandler,
+  default as MessageHandlerManager,
+  type HandlerContext,
+  type HandlerResult,
+  type MessageHandler,
+  MessageHandlerManager,
+  RoomMessageHandler,
+  SessionMessageHandler,
+  SystemMessageHandler,
+  type WebSocketMessage,
+} from './websocket-handlers'

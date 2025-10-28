@@ -7,17 +7,17 @@
  * KV namespaces, R2 storage, and other Cloudflare services.
  */
 
-const { execSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
-const crypto = require('crypto')
+const { execSync } = require('node:child_process')
+const fs = require('node:fs')
+const path = require('node:path')
+const _crypto = require('node:crypto')
 
 // Configuration
 const PROJECT_ROOT = path.resolve(__dirname, '..')
 const BUILD_DIR = path.join(PROJECT_ROOT, 'dist')
 const ENV_DIR = path.join(PROJECT_ROOT, '.env')
 const API_DIR = path.join(PROJECT_ROOT, 'apps/api')
-const WEB_DIR = path.join(PROJECT_ROOT, 'apps/web')
+const _WEB_DIR = path.join(PROJECT_ROOT, 'apps/web')
 
 // Colors for console output
 const colors = {
@@ -26,7 +26,7 @@ const colors = {
   warning: '\x1b[33m',
   info: '\x1b[34m',
   dim: '\x1b[2m',
-  reset: '\x1b[0m'
+  reset: '\x1b[0m',
 }
 
 function log(level, message) {
@@ -42,7 +42,7 @@ function exec(command, options = {}) {
       cwd,
       stdio: silent ? 'pipe' : 'inherit',
       encoding: 'utf8',
-      env
+      env,
     })
     return result
   } catch (error) {
@@ -60,7 +60,7 @@ function checkWrangler() {
     const version = exec('npx wrangler --version', { silent: true })
     log('success', `Wrangler CLI available: ${version.trim()}`)
     return true
-  } catch (error) {
+  } catch (_error) {
     log('error', 'Wrangler CLI not found. Please install it with: npm install -g wrangler')
     return false
   }
@@ -101,7 +101,7 @@ function checkBuildArtifacts() {
   }
 
   const apiBuild = path.join(BUILD_DIR, 'api')
-  const webBuild = path.join(BUILD_DIR, 'web')
+  const _webBuild = path.join(BUILD_DIR, 'web')
 
   if (!fs.existsSync(apiBuild)) {
     log('error', 'API build not found')
@@ -148,14 +148,13 @@ function deployAPI(env) {
     return {
       success: true,
       url: workerUrl,
-      environment: env
+      environment: env,
     }
-
   } catch (error) {
     log('error', `API deployment failed: ${error.message}`)
     return {
       success: false,
-      error: error.message
+      error: error.message,
     }
   }
 }
@@ -172,26 +171,27 @@ function setupD1Database(env) {
     try {
       exec(`npx wrangler d1 create ${databaseName}`, { silent: true })
       log('success', `D1 database created: ${databaseName}`)
-    } catch (error) {
+    } catch (_error) {
       // Database might already exist
       log('info', `D1 database ${databaseName} may already exist`)
     }
 
     // Get database info
-    const result = exec(`npx wrangler d1 info ${databaseName}`, { silent: true })
+    const result = exec(`npx wrangler d1 info ${databaseName}`, {
+      silent: true,
+    })
     log('success', `D1 database info retrieved`)
 
     return {
       success: true,
       databaseName,
-      info: result
+      info: result,
     }
-
   } catch (error) {
     log('error', `D1 database setup failed: ${error.message}`)
     return {
       success: false,
-      error: error.message
+      error: error.message,
     }
   }
 }
@@ -203,7 +203,7 @@ function setupKVNamespaces(env) {
     { binding: 'CACHE', name: `parsify-cache-${env}` },
     { binding: 'SESSIONS', name: `parsify-sessions-${env}` },
     { binding: 'UPLOADS', name: `parsify-uploads-${env}` },
-    { binding: 'ANALYTICS', name: `parsify-analytics-${env}` }
+    { binding: 'ANALYTICS', name: `parsify-analytics-${env}` },
   ]
 
   const results = {}
@@ -213,27 +213,30 @@ function setupKVNamespaces(env) {
       log('info', `Creating KV namespace: ${namespace.name}`)
 
       try {
-        exec(`npx wrangler kv:namespace create ${namespace.name}`, { silent: true })
+        exec(`npx wrangler kv:namespace create ${namespace.name}`, {
+          silent: true,
+        })
         log('success', `KV namespace created: ${namespace.name}`)
-      } catch (error) {
+      } catch (_error) {
         // Namespace might already exist
         log('info', `KV namespace ${namespace.name} may already exist`)
       }
 
       // Get namespace info
-      const result = exec(`npx wrangler kv:namespace info ${namespace.name}`, { silent: true })
+      const result = exec(`npx wrangler kv:namespace info ${namespace.name}`, {
+        silent: true,
+      })
 
       results[namespace.binding] = {
         success: true,
         name: namespace.name,
-        info: result
+        info: result,
       }
-
     } catch (error) {
       log('error', `KV namespace setup failed for ${namespace.name}: ${error.message}`)
       results[namespace.binding] = {
         success: false,
-        error: error.message
+        error: error.message,
       }
     }
   }
@@ -253,26 +256,27 @@ function setupR2Bucket(env) {
     try {
       exec(`npx wrangler r2 bucket create ${bucketName}`, { silent: true })
       log('success', `R2 bucket created: ${bucketName}`)
-    } catch (error) {
+    } catch (_error) {
       // Bucket might already exist
       log('info', `R2 bucket ${bucketName} may already exist`)
     }
 
     // Get bucket info
-    const result = exec(`npx wrangler r2 bucket info ${bucketName}`, { silent: true })
+    const result = exec(`npx wrangler r2 bucket info ${bucketName}`, {
+      silent: true,
+    })
     log('success', `R2 bucket info retrieved`)
 
     return {
       success: true,
       bucketName,
-      info: result
+      info: result,
     }
-
   } catch (error) {
     log('error', `R2 bucket setup failed: ${error.message}`)
     return {
       success: false,
-      error: error.message
+      error: error.message,
     }
   }
 }
@@ -303,12 +307,11 @@ function setupDurableObjects(env) {
       log('info', 'No Durable Objects configuration found')
       return { success: true, hasDurableObjects: false }
     }
-
   } catch (error) {
     log('error', `Durable Objects validation failed: ${error.message}`)
     return {
       success: false,
-      error: error.message
+      error: error.message,
     }
   }
 }
@@ -341,14 +344,13 @@ function deployWebApp(env) {
     return {
       success: true,
       packagePath,
-      environment: env
+      environment: env,
     }
-
   } catch (error) {
     log('error', `Web application deployment failed: ${error.message}`)
     return {
       success: false,
-      error: error.message
+      error: error.message,
     }
   }
 }
@@ -367,7 +369,7 @@ function runDatabaseMigrations(env) {
   }
 }
 
-function configureCustomDomain(env, domain) {
+function configureCustomDomain(_env, domain) {
   if (!domain) {
     log('info', 'No custom domain specified, skipping domain configuration')
     return { success: true, message: 'No custom domain configured' }
@@ -377,7 +379,7 @@ function configureCustomDomain(env, domain) {
 
   try {
     // Add custom domain to worker
-    const workerName = process.env.CLOUDFLARE_WORKER_NAME || 'parsify-api'
+    const _workerName = process.env.CLOUDFLARE_WORKER_NAME || 'parsify-api'
 
     exec(`npx wrangler custom-domains add ${domain}`, { silent: true })
     log('success', `Custom domain configured: ${domain}`)
@@ -385,14 +387,13 @@ function configureCustomDomain(env, domain) {
     return {
       success: true,
       domain,
-      url: `https://${domain}`
+      url: `https://${domain}`,
     }
-
   } catch (error) {
     log('error', `Custom domain configuration failed: ${error.message}`)
     return {
       success: false,
-      error: error.message
+      error: error.message,
     }
   }
 }
@@ -414,7 +415,6 @@ function performHealthCheck(deploymentUrl) {
       log('info', `Response: ${result}`)
       return false
     }
-
   } catch (error) {
     log('error', `Health check failed: ${error.message}`)
     return false
@@ -433,14 +433,14 @@ function generateDeploymentReport(deploymentResults) {
       database: deploymentResults.database,
       kv: deploymentResults.kv,
       r2: deploymentResults.r2,
-      durableObjects: deploymentResults.durableObjects
+      durableObjects: deploymentResults.durableObjects,
     },
     urls: {
       api: deploymentResults.api?.url,
-      web: deploymentResults.web?.url
+      web: deploymentResults.web?.url,
     },
     health: deploymentResults.health,
-    duration: deploymentResults.duration
+    duration: deploymentResults.duration,
   }
 
   const reportPath = path.join(BUILD_DIR, `deployment-report-${deploymentResults.environment}.json`)
@@ -472,12 +472,7 @@ function generateDeploymentReport(deploymentResults) {
 // Main deployment function
 async function deploy(env, options = {}) {
   const startTime = Date.now()
-  const {
-    skipBuild = false,
-    skipMigrations = false,
-    domain = null,
-    healthCheck = true
-  } = options
+  const { skipBuild = false, skipMigrations = false, domain = null, healthCheck = true } = options
 
   log('info', `Starting deployment to ${env} environment...`)
 
@@ -490,7 +485,7 @@ async function deploy(env, options = {}) {
     r2: null,
     durableObjects: null,
     health: false,
-    duration: 0
+    duration: 0,
   }
 
   try {
@@ -544,7 +539,6 @@ async function deploy(env, options = {}) {
     log('success', `Deployment to ${env} completed successfully!`)
 
     return results
-
   } catch (error) {
     log('error', `Deployment to ${env} failed: ${error.message}`)
     results.duration = Math.round((Date.now() - startTime) / 1000)
@@ -560,11 +554,11 @@ async function main() {
   const env = args[1] || 'development'
 
   switch (command) {
-    case 'deploy':
+    case 'deploy': {
       const options = {
         skipBuild: args.includes('--skip-build'),
         skipMigrations: args.includes('--skip-migrations'),
-        healthCheck: !args.includes('--no-health-check')
+        healthCheck: !args.includes('--no-health-check'),
       }
 
       const domainIndex = args.indexOf('--domain')
@@ -574,6 +568,7 @@ async function main() {
 
       await deploy(env, options)
       break
+    }
 
     case 'api':
       if (loadEnvironment(env)) {
@@ -604,7 +599,7 @@ async function main() {
       }
       break
 
-    case 'domain':
+    case 'domain': {
       const domain = args[2]
       if (!domain) {
         log('error', 'Domain name is required')
@@ -615,8 +610,9 @@ async function main() {
         configureCustomDomain(env, domain)
       }
       break
+    }
 
-    case 'health':
+    case 'health': {
       const url = args[2]
       if (!url) {
         log('error', 'URL is required for health check')
@@ -625,6 +621,7 @@ async function main() {
       }
       performHealthCheck(url)
       break
+    }
 
     case 'help':
       console.log(`
@@ -678,7 +675,7 @@ module.exports = {
   setupKVNamespaces,
   setupR2Bucket,
   performHealthCheck,
-  generateDeploymentReport
+  generateDeploymentReport,
 }
 
 // Run the script if called directly

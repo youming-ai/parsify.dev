@@ -21,96 +21,152 @@ export class WasmError extends Error {
 
 export class WasmCompilationError extends WasmError {
   constructor(message: string, module?: string, details?: any) {
-    super(message, 'COMPILATION_ERROR', module, false, [
-      'Check if the WASM file is valid',
-      'Verify the WASM format is correct',
-      'Ensure the module was compiled for the target platform',
-      'Check for missing dependencies or imports'
-    ], details)
+    super(
+      message,
+      'COMPILATION_ERROR',
+      module,
+      false,
+      [
+        'Check if the WASM file is valid',
+        'Verify the WASM format is correct',
+        'Ensure the module was compiled for the target platform',
+        'Check for missing dependencies or imports',
+      ],
+      details
+    )
     this.name = 'WasmCompilationError'
   }
 }
 
 export class WasmInstantiationError extends WasmError {
   constructor(message: string, module?: string, details?: any) {
-    super(message, 'INSTANTIATION_ERROR', module, false, [
-      'Verify all required imports are provided',
-      'Check memory limits and configuration',
-      'Ensure compatibility with the current environment',
-      'Validate module imports match the provided import object'
-    ], details)
+    super(
+      message,
+      'INSTANTIATION_ERROR',
+      module,
+      false,
+      [
+        'Verify all required imports are provided',
+        'Check memory limits and configuration',
+        'Ensure compatibility with the current environment',
+        'Validate module imports match the provided import object',
+      ],
+      details
+    )
     this.name = 'WasmInstantiationError'
   }
 }
 
 export class WasmRuntimeError extends WasmError {
   constructor(message: string, module?: string, recoverable = true, details?: any) {
-    super(message, 'RUNTIME_ERROR', module, recoverable, [
-      'Check input data format and values',
-      'Verify module configuration',
-      'Review execution logs for details',
-      'Ensure sufficient memory is available'
-    ], details)
+    super(
+      message,
+      'RUNTIME_ERROR',
+      module,
+      recoverable,
+      [
+        'Check input data format and values',
+        'Verify module configuration',
+        'Review execution logs for details',
+        'Ensure sufficient memory is available',
+      ],
+      details
+    )
     this.name = 'WasmRuntimeError'
   }
 }
 
 export class WasmMemoryError extends WasmError {
   constructor(message: string, module?: string, details?: any) {
-    super(message, 'MEMORY_ERROR', module, true, [
-      'Increase memory limits in module configuration',
-      'Check for memory leaks in the module',
-      'Optimize input data size',
-      'Consider processing data in chunks'
-    ], details)
+    super(
+      message,
+      'MEMORY_ERROR',
+      module,
+      true,
+      [
+        'Increase memory limits in module configuration',
+        'Check for memory leaks in the module',
+        'Optimize input data size',
+        'Consider processing data in chunks',
+      ],
+      details
+    )
     this.name = 'WasmMemoryError'
   }
 }
 
 export class WasmTimeoutError extends WasmError {
   constructor(message: string, module?: string, timeout?: number, details?: any) {
-    super(message, 'TIMEOUT_ERROR', module, true, [
-      'Increase timeout configuration',
-      'Optimize module performance',
-      'Process smaller data chunks',
-      'Check for infinite loops or blocking operations'
-    ], { timeout, ...details })
+    super(
+      message,
+      'TIMEOUT_ERROR',
+      module,
+      true,
+      [
+        'Increase timeout configuration',
+        'Optimize module performance',
+        'Process smaller data chunks',
+        'Check for infinite loops or blocking operations',
+      ],
+      { timeout, ...details }
+    )
     this.name = 'WasmTimeoutError'
   }
 }
 
 export class WasmCompatibilityError extends WasmError {
   constructor(message: string, module?: string, details?: any) {
-    super(message, 'COMPATIBILITY_ERROR', module, false, [
-      'Check API version compatibility',
-      'Verify module requirements',
-      'Update runtime environment if needed',
-      'Use a different module version'
-    ], details)
+    super(
+      message,
+      'COMPATIBILITY_ERROR',
+      module,
+      false,
+      [
+        'Check API version compatibility',
+        'Verify module requirements',
+        'Update runtime environment if needed',
+        'Use a different module version',
+      ],
+      details
+    )
     this.name = 'WasmCompatibilityError'
   }
 }
 
 export class WasmNetworkError extends WasmError {
   constructor(message: string, module?: string, url?: string, details?: any) {
-    super(message, 'NETWORK_ERROR', module, true, [
-      'Check network connectivity',
-      'Verify module URL is correct',
-      'Check for firewall or CORS issues',
-      'Try again later or use cached version'
-    ], { url, ...details })
+    super(
+      message,
+      'NETWORK_ERROR',
+      module,
+      true,
+      [
+        'Check network connectivity',
+        'Verify module URL is correct',
+        'Check for firewall or CORS issues',
+        'Try again later or use cached version',
+      ],
+      { url, ...details }
+    )
     this.name = 'WasmNetworkError'
   }
 }
 
 export class WasmSecurityError extends WasmError {
   constructor(message: string, module?: string, details?: any) {
-    super(message, 'SECURITY_ERROR', module, false, [
-      'Verify module source and integrity',
-      'Check security policies',
-      'Ensure module is from trusted source',
-      'Review module permissions'
-    ], details)
+    super(
+      message,
+      'SECURITY_ERROR',
+      module,
+      false,
+      [
+        'Verify module source and integrity',
+        'Check security policies',
+        'Ensure module is from trusted source',
+        'Review module permissions',
+      ],
+      details
+    )
     this.name = 'WasmSecurityError'
   }
 }
@@ -125,7 +181,14 @@ export type ErrorSeverity = 'low' | 'medium' | 'high' | 'critical'
  */
 export interface ErrorClassification {
   severity: ErrorSeverity
-  category: 'compilation' | 'instantiation' | 'runtime' | 'memory' | 'network' | 'security' | 'compatibility'
+  category:
+    | 'compilation'
+    | 'instantiation'
+    | 'runtime'
+    | 'memory'
+    | 'network'
+    | 'security'
+    | 'compatibility'
   recoverable: boolean
   impact: 'module' | 'system' | 'user'
   frequency: 'once' | 'occasional' | 'frequent' | 'persistent'
@@ -182,7 +245,7 @@ export class WasmErrorHandler {
       context,
       resolution: this.generateResolution(wasmError, classification),
       prevention: this.generatePrevention(wasmError, classification),
-      relatedErrors: this.findRelatedErrors(wasmError, context.moduleId)
+      relatedErrors: this.findRelatedErrors(wasmError, context.moduleId),
     }
 
     // Record error
@@ -206,35 +269,51 @@ export class WasmErrorHandler {
     const message = error.message.toLowerCase()
 
     if (message.includes('compile') || message.includes('WebAssembly.compile')) {
-      return new WasmCompilationError(error.message, moduleId, { originalError: error })
+      return new WasmCompilationError(error.message, moduleId, {
+        originalError: error,
+      })
     }
 
     if (message.includes('instantiate') || message.includes('WebAssembly.instantiate')) {
-      return new WasmInstantiationError(error.message, moduleId, { originalError: error })
+      return new WasmInstantiationError(error.message, moduleId, {
+        originalError: error,
+      })
     }
 
     if (message.includes('memory') || message.includes('out of memory')) {
-      return new WasmMemoryError(error.message, moduleId, { originalError: error })
+      return new WasmMemoryError(error.message, moduleId, {
+        originalError: error,
+      })
     }
 
     if (message.includes('timeout') || message.includes('timed out')) {
-      return new WasmTimeoutError(error.message, moduleId, undefined, { originalError: error })
+      return new WasmTimeoutError(error.message, moduleId, undefined, {
+        originalError: error,
+      })
     }
 
     if (message.includes('network') || message.includes('fetch') || message.includes('http')) {
-      return new WasmNetworkError(error.message, moduleId, undefined, { originalError: error })
+      return new WasmNetworkError(error.message, moduleId, undefined, {
+        originalError: error,
+      })
     }
 
     if (message.includes('security') || message.includes('cors') || message.includes('policy')) {
-      return new WasmSecurityError(error.message, moduleId, { originalError: error })
+      return new WasmSecurityError(error.message, moduleId, {
+        originalError: error,
+      })
     }
 
     if (message.includes('compatible') || message.includes('version')) {
-      return new WasmCompatibilityError(error.message, moduleId, { originalError: error })
+      return new WasmCompatibilityError(error.message, moduleId, {
+        originalError: error,
+      })
     }
 
     // Default to runtime error
-    return new WasmRuntimeError(error.message, moduleId, true, { originalError: error })
+    return new WasmRuntimeError(error.message, moduleId, true, {
+      originalError: error,
+    })
   }
 
   /**
@@ -301,7 +380,7 @@ export class WasmErrorHandler {
       category,
       recoverable,
       impact,
-      frequency
+      frequency,
     }
   }
 
@@ -337,7 +416,7 @@ export class WasmErrorHandler {
   /**
    * Generate prevention measures
    */
-  private generatePrevention(error: WasmError, classification: ErrorClassification): string[] {
+  private generatePrevention(_error: WasmError, classification: ErrorClassification): string[] {
     const prevention: string[] = []
 
     // General prevention measures
@@ -399,9 +478,12 @@ export class WasmErrorHandler {
     const related: string[] = []
 
     // Find similar errors from history
-    for (const errorInfo of history.slice(-10)) { // Last 10 errors
+    for (const errorInfo of history.slice(-10)) {
+      // Last 10 errors
       if (errorInfo.error.code === error.code) {
-        related.push(`Similar error occurred ${this.formatTimeAgo(errorInfo.context.environment.timestamp)}`)
+        related.push(
+          `Similar error occurred ${this.formatTimeAgo(errorInfo.context.environment.timestamp)}`
+        )
       }
     }
 
@@ -450,7 +532,7 @@ export class WasmErrorHandler {
       operation: context.operation,
       severity: classification.severity,
       recoverable: classification.recoverable,
-      suggestions: error.suggestions
+      suggestions: error.suggestions,
     }
 
     switch (classification.severity) {
@@ -475,7 +557,7 @@ export class WasmErrorHandler {
         classification: errorInfo.classification,
         context: errorInfo.context,
         resolution: errorInfo.resolution,
-        prevention: errorInfo.prevention
+        prevention: errorInfo.prevention,
       })
     }
   }
@@ -516,12 +598,20 @@ export class WasmErrorHandler {
     errorsByModule: Record<string, number>
     errorsByType: Record<string, number>
     errorsBySeverity: Record<string, number>
-    frequentErrors: Array<{ error: string; count: number; lastOccurrence: Date }>
+    frequentErrors: Array<{
+      error: string
+      count: number
+      lastOccurrence: Date
+    }>
   } {
     const errorsByModule: Record<string, number> = {}
     const errorsByType: Record<string, number> = {}
     const errorsBySeverity: Record<string, number> = {}
-    const frequentErrors: Array<{ error: string; count: number; lastOccurrence: Date }> = []
+    const frequentErrors: Array<{
+      error: string
+      count: number
+      lastOccurrence: Date
+    }> = []
 
     let totalErrors = 0
 
@@ -537,7 +627,8 @@ export class WasmErrorHandler {
         errorsByType[error.code] = (errorsByType[error.code] || 0) + 1
 
         // Count by severity
-        errorsBySeverity[classification.severity] = (errorsBySeverity[classification.severity] || 0) + 1
+        errorsBySeverity[classification.severity] =
+          (errorsBySeverity[classification.severity] || 0) + 1
       }
     }
 
@@ -559,7 +650,7 @@ export class WasmErrorHandler {
         frequentErrors.push({
           error: errorKey,
           count,
-          lastOccurrence
+          lastOccurrence,
         })
       }
     }
@@ -572,7 +663,7 @@ export class WasmErrorHandler {
       errorsByModule,
       errorsByType,
       errorsBySeverity,
-      frequentErrors
+      frequentErrors,
     }
   }
 
@@ -607,7 +698,7 @@ export class WasmErrorHandler {
     return {
       exportedAt: new Date().toISOString(),
       statistics: this.getErrorStatistics(),
-      errors
+      errors,
     }
   }
 }
@@ -624,9 +715,9 @@ export function handleWasmError(error: Error, context: Partial<ErrorContext> = {
     environment: {
       platform: typeof window !== 'undefined' ? 'browser' : 'node',
       memoryUsage: 0, // This would be calculated
-      timestamp: new Date()
+      timestamp: new Date(),
     },
-    ...context
+    ...context,
   }
 
   return wasmErrorHandler.handleError(error, fullContext)
@@ -654,6 +745,6 @@ export function createFallbackResult(
     code: error.error.code,
     recoverable: error.classification.recoverable,
     suggestions: error.error.suggestions,
-    data: fallbackData
+    data: fallbackData,
   }
 }

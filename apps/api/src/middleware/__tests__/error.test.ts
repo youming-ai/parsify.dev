@@ -1,24 +1,22 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
-import { ZodError } from 'zod'
-import { z } from 'zod'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ZodError, z } from 'zod'
 import {
-  errorMiddleware,
-  ValidationError,
   AuthenticationError,
-  DatabaseError,
-  RateLimitError,
-  TimeoutError,
   ConfigurationError,
-  ExternalServiceError,
-  createValidationError,
   createAuthenticationError,
   createDatabaseError,
   createRateLimitError,
-  ApiError,
+  createValidationError,
+  DatabaseError,
+  ExternalServiceError,
+  errorMiddleware,
   getErrorHandler,
-  getErrorMetrics
+  getErrorMetrics,
+  RateLimitError,
+  TimeoutError,
+  ValidationError,
 } from '../error'
 
 // Mock environment
@@ -40,7 +38,7 @@ const mockEnv = {
   ENABLE_HEALTH_CHECKS: 'true',
   ENABLE_CORS: 'true',
   MAX_REQUEST_SIZE: '1048576',
-  REQUEST_TIMEOUT: '30000'
+  REQUEST_TIMEOUT: '30000',
 }
 
 // Mock Cloudflare service
@@ -49,13 +47,13 @@ vi.mock('../../services/cloudflare', () => ({
     cacheGet: vi.fn(),
     cacheSet: vi.fn(),
     getHealthStatus: vi.fn(),
-    getMetrics: vi.fn()
-  }))
+    getMetrics: vi.fn(),
+  })),
 }))
 
 describe('Error Middleware', () => {
   let app: Hono
-  let errorHandler: any
+  let _errorHandler: any
 
   beforeEach(() => {
     // Reset error handler metrics
@@ -67,9 +65,11 @@ describe('Error Middleware', () => {
     app.use('*', errorMiddleware())
 
     // Add test routes
-    app.get('/success', (c) => c.json({ success: true }))
+    app.get('/success', c => c.json({ success: true }))
     app.get('/validation-error', () => {
-      throw new ValidationError('Invalid input', 'email', { value: 'invalid-email' })
+      throw new ValidationError('Invalid input', 'email', {
+        value: 'invalid-email',
+      })
     })
     app.get('/auth-error', () => {
       throw new AuthenticationError('Invalid token')
@@ -93,14 +93,14 @@ describe('Error Middleware', () => {
       throw new HTTPException(404, { message: 'Not found' })
     })
     app.get('/zod-error', () => {
-      const schema = z.object({ email: z.string().email() })
+      const _schema = z.object({ email: z.string().email() })
       throw new ZodError([
         {
           code: z.ZodIssueCode.invalid_string,
           validation: 'email',
           path: ['email'],
-          message: 'Invalid email'
-        }
+          message: 'Invalid email',
+        },
       ])
     })
     app.get('/generic-error', () => {
@@ -355,7 +355,9 @@ describe('Error Middleware', () => {
 
   describe('Utility functions', () => {
     it('should create validation errors with utility function', () => {
-      const error = createValidationError('Invalid email', 'email', { value: 'test' })
+      const error = createValidationError('Invalid email', 'email', {
+        value: 'test',
+      })
       expect(error).toBeInstanceOf(ValidationError)
       expect(error.message).toBe('Invalid email')
       expect(error.field).toBe('email')

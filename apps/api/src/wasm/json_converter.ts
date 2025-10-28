@@ -29,7 +29,9 @@ export const JsonConversionOptionsSchema = z.object({
   // YAML-specific options
   yamlIndent: z.number().int().min(1).max(10).default(2),
   yamlFlowStyle: z.boolean().default(false),
-  yamlScalarStyle: z.enum(['plain', 'single-quoted', 'double-quoted', 'literal', 'folded']).default('plain'),
+  yamlScalarStyle: z
+    .enum(['plain', 'single-quoted', 'double-quoted', 'literal', 'folded'])
+    .default('plain'),
   yamlExplicitTypes: z.boolean().default(false),
   yamlAnchorReferences: z.boolean().default(true),
   yamlMinimizeQuotes: z.boolean().default(true),
@@ -81,19 +83,27 @@ export const JsonConversionResultSchema = z.object({
   originalSize: z.number(),
   convertedSize: z.number(),
   compressionRatio: z.number(),
-  errors: z.array(z.object({
-    code: z.string(),
-    message: z.string(),
-    line: z.number().optional(),
-    column: z.number().optional(),
-    position: z.number().optional(),
-    path: z.string().optional(),
-  })).nullable(),
-  warnings: z.array(z.object({
-    code: z.string(),
-    message: z.string(),
-    path: z.string().optional(),
-  })).nullable(),
+  errors: z
+    .array(
+      z.object({
+        code: z.string(),
+        message: z.string(),
+        line: z.number().optional(),
+        column: z.number().optional(),
+        position: z.number().optional(),
+        path: z.string().optional(),
+      })
+    )
+    .nullable(),
+  warnings: z
+    .array(
+      z.object({
+        code: z.string(),
+        message: z.string(),
+        path: z.string().optional(),
+      })
+    )
+    .nullable(),
   metadata: z.object({
     parsingTime: z.number(),
     conversionTime: z.number(),
@@ -119,11 +129,15 @@ export const StreamingConversionResultSchema = z.object({
   progress: z.number().min(0).max(1),
   chunkIndex: z.number(),
   totalChunks: z.number(),
-  errors: z.array(z.object({
-    code: z.string(),
-    message: z.string(),
-    chunkIndex: z.number(),
-  })).nullable(),
+  errors: z
+    .array(
+      z.object({
+        code: z.string(),
+        message: z.string(),
+        chunkIndex: z.number(),
+      })
+    )
+    .nullable(),
 })
 
 export type StreamingConversionResult = z.infer<typeof StreamingConversionResultSchema>
@@ -206,9 +220,7 @@ export interface FormatDetectionResult {
 export class JsonConverter {
   private wasmModules: Map<string, any> = new Map()
   private isInitialized = false
-  private maxInputSize = 10 * 1024 * 1024 // 10MB
   private maxOutputSize = 50 * 1024 * 1024 // 50MB
-  private memoryLimit = 64 * 1024 * 1024 // 64MB
   private timeout = 30000 // 30 seconds
 
   /**
@@ -314,8 +326,7 @@ export class JsonConverter {
         targetFormat,
         originalSize: inputData.length,
         convertedSize: convertedData.length,
-        compressionRatio:
-          inputData.length > 0 ? convertedData.length / inputData.length : 1,
+        compressionRatio: inputData.length > 0 ? convertedData.length / inputData.length : 1,
         errors: null,
         warnings: null,
         metadata: {
@@ -329,7 +340,7 @@ export class JsonConverter {
         },
       }
     } catch (error) {
-      const totalTime = performance.now() - startTime
+      const _totalTime = performance.now() - startTime
 
       if (error instanceof JsonConversionError) {
         throw error
@@ -389,8 +400,10 @@ export class JsonConverter {
     const trimmed = inputData.trim()
 
     // JSON detection
-    if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
-        (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+    if (
+      (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+      (trimmed.startsWith('[') && trimmed.endsWith(']'))
+    ) {
       try {
         JSON.parse(trimmed)
         return { format: 'json', confidence: 0.95 }
@@ -433,9 +446,11 @@ export class JsonConverter {
    * Check if WASM support is available for a format
    */
   hasWasmSupport(format: string): boolean {
-    return this.wasmModules.has(format) &&
-           this.wasmModules.get(format) !== null &&
-           this.wasmModules.get(format) !== undefined
+    return (
+      this.wasmModules.has(format) &&
+      this.wasmModules.get(format) !== null &&
+      this.wasmModules.get(format) !== undefined
+    )
   }
 
   /**
@@ -471,7 +486,10 @@ export class JsonConverter {
 
     // Check for suspicious content
     if (this.containsSuspiciousContent(inputData)) {
-      throw new JsonConversionError('Input contains potentially malicious content', 'SUSPICIOUS_CONTENT')
+      throw new JsonConversionError(
+        'Input contains potentially malicious content',
+        'SUSPICIOUS_CONTENT'
+      )
     }
   }
 
@@ -537,7 +555,7 @@ export class JsonConverter {
    */
   private async convertData(
     parsedData: any,
-    sourceFormat: string,
+    _sourceFormat: string,
     targetFormat: string,
     options: JsonConversionOptions
   ): Promise<string> {
@@ -615,7 +633,7 @@ export class JsonConverter {
       throw new MalformedDataError('Invalid XML structure')
     }
 
-    const [, tagName, attributes, content] = rootMatch
+    const [, _tagName, attributes, content] = rootMatch
     result[options.xmlRoot || 'root'] = {}
 
     // Parse attributes
@@ -623,7 +641,8 @@ export class JsonConverter {
       const attrRegex = /(\w+)="([^"]*)"/g
       let attrMatch
       while ((attrMatch = attrRegex.exec(attributes)) !== null) {
-        result[options.xmlRoot || 'root'][`${options.xmlAttributePrefix}${attrMatch[1]}`] = attrMatch[2]
+        result[options.xmlRoot || 'root'][`${options.xmlAttributePrefix}${attrMatch[1]}`] =
+          attrMatch[2]
       }
     }
 
@@ -631,7 +650,10 @@ export class JsonConverter {
     if (content.trim()) {
       if (content.startsWith('<') && content.endsWith('>')) {
         // Nested XML
-        result[options.xmlRoot || 'root'][options.xmlContentKey || '#text'] = this.parseXmlNative(content, options)
+        result[options.xmlRoot || 'root'][options.xmlContentKey || '#text'] = this.parseXmlNative(
+          content,
+          options
+        )
       } else {
         result[options.xmlRoot || 'root'][options.xmlContentKey || '#text'] = content.trim()
       }
@@ -654,7 +676,7 @@ export class JsonConverter {
   /**
    * Native YAML parsing implementation
    */
-  private parseYamlNative(inputData: string, options: JsonConversionOptions): any {
+  private parseYamlNative(inputData: string, _options: JsonConversionOptions): any {
     // Simplified YAML parsing - in a real implementation, use a proper YAML parser
     try {
       // Try to parse as JSON first (YAML is a superset)
@@ -787,7 +809,7 @@ export class JsonConverter {
   /**
    * Native TOML parsing implementation
    */
-  private parseTomlNative(inputData: string, options: JsonConversionOptions): any {
+  private parseTomlNative(inputData: string, _options: JsonConversionOptions): any {
     // Simplified TOML parsing - in a real implementation, use a proper TOML parser
     const result: any = {}
     const lines = inputData.split('\n')
@@ -833,7 +855,7 @@ export class JsonConverter {
     const indent = options.prettyPrint ? options.indent : 0
 
     const replacer = options.sortKeys
-      ? (key: string, value: any) => {
+      ? (_key: string, value: any) => {
           if (value && typeof value === 'object' && !Array.isArray(value)) {
             const sortedKeys = Object.keys(value).sort()
             const sortedObj: any = {}
@@ -891,8 +913,6 @@ export class JsonConverter {
 
         for (const [key, val] of Object.entries(value)) {
           if (key.startsWith(options.xmlAttributePrefix)) {
-            // Handle attributes (simplified)
-            continue
           } else if (key === options.xmlContentKey) {
             // Handle text content
             result += `${currentIndent}${indent}${val}\n`
@@ -1027,7 +1047,7 @@ export class JsonConverter {
     // Add header
     if (options.csvHeader && data.length > 0) {
       const headers = options.csvColumns || Object.keys(data[0])
-      csv += headers.map(header => this.escapeCsvField(header, quote)).join(delimiter) + '\n'
+      csv += `${headers.map(header => this.escapeCsvField(header, quote)).join(delimiter)}\n`
     }
 
     // Add data rows
@@ -1038,9 +1058,9 @@ export class JsonConverter {
           const value = row[header]
           return value !== undefined ? String(value) : ''
         })
-        csv += values.map(v => this.escapeCsvField(v, quote)).join(delimiter) + '\n'
+        csv += `${values.map(v => this.escapeCsvField(v, quote)).join(delimiter)}\n`
       } else {
-        csv += this.escapeCsvField(String(row), quote) + '\n'
+        csv += `${this.escapeCsvField(String(row), quote)}\n`
       }
     }
 
@@ -1051,7 +1071,12 @@ export class JsonConverter {
    * Escape a CSV field
    */
   private escapeCsvField(field: string, quote: string): string {
-    if (field.includes(',') || field.includes('\n') || field.includes('\r') || field.includes(quote)) {
+    if (
+      field.includes(',') ||
+      field.includes('\n') ||
+      field.includes('\r') ||
+      field.includes(quote)
+    ) {
       return `${quote}${field.replace(new RegExp(quote, 'g'), quote + quote)}${quote}`
     }
     return field
@@ -1071,7 +1096,7 @@ export class JsonConverter {
   /**
    * Native TOML stringification implementation
    */
-  private stringifyTomlNative(data: any, options: JsonConversionOptions): string {
+  private stringifyTomlNative(data: any, _options: JsonConversionOptions): string {
     let toml = ''
 
     const convertValue = (value: any): string => {
@@ -1140,7 +1165,7 @@ export class JsonConverter {
       analysis.objectCount++
       analysis.valueCount++
 
-      for (const [key, value] of Object.entries(data)) {
+      for (const [_key, value] of Object.entries(data)) {
         analysis.keyCount++
         const valueAnalysis = this.analyzeData(value, currentDepth + 1)
         analysis.depth = Math.max(analysis.depth, valueAnalysis.depth)
@@ -1231,7 +1256,12 @@ export class JsonConverter {
   /**
    * Configure limits
    */
-  setLimits(maxInputSize: number, maxOutputSize: number, memoryLimit: number, timeout: number): void {
+  setLimits(
+    maxInputSize: number,
+    maxOutputSize: number,
+    memoryLimit: number,
+    timeout: number
+  ): void {
     this.maxInputSize = maxInputSize
     this.maxOutputSize = maxOutputSize
     this.memoryLimit = memoryLimit

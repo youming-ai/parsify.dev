@@ -1,14 +1,7 @@
-import {
-  Job,
-  JobSchema,
-  CreateJobSchema,
-  UpdateJobSchema,
-  JOB_QUERIES,
-} from '../models/job'
-import { Tool, TOOL_QUERIES } from '../models/tool'
-import { ToolUsage, TOOL_USAGE_QUERIES } from '../models/tool_usage'
-import { AuditLog, AUDIT_LOG_QUERIES } from '../models/audit_log'
-import { DatabaseClient, createDatabaseClient } from '../database'
+import { createDatabaseClient, type DatabaseClient } from '../database'
+import { AUDIT_LOG_QUERIES, AuditLog } from '../models/audit_log'
+import { JOB_QUERIES, Job, UpdateJobSchema } from '../models/job'
+import { TOOL_QUERIES, Tool } from '../models/tool'
 
 export interface JobServiceOptions {
   db: D1Database
@@ -151,9 +144,7 @@ export class JobService {
 
   async getJobById(jobId: string): Promise<Job | null> {
     try {
-      const result = await this.client.queryFirst(JOB_QUERIES.SELECT_BY_ID, [
-        jobId,
-      ])
+      const result = await this.client.queryFirst(JOB_QUERIES.SELECT_BY_ID, [jobId])
 
       if (!result) {
         return null
@@ -165,10 +156,7 @@ export class JobService {
     }
   }
 
-  async updateJob(
-    jobId: string,
-    updates: Partial<UpdateJobSchema>
-  ): Promise<Job> {
+  async updateJob(jobId: string, updates: Partial<UpdateJobSchema>): Promise<Job> {
     const existingJob = await this.getJobById(jobId)
     if (!existingJob) {
       throw new Error(`Job with ID ${jobId} not found`)
@@ -236,26 +224,17 @@ export class JobService {
       if (filter.userId && filter.status) {
         stmt = this.db.prepare(JOB_QUERIES.SELECT_BY_USER_AND_STATUS)
         result = await stmt
-          .bind(
-            filter.userId,
-            filter.status,
-            filter.limit || 50,
-            filter.offset || 0
-          )
+          .bind(filter.userId, filter.status, filter.limit || 50, filter.offset || 0)
           .all()
       } else if (filter.userId) {
         stmt = this.db.prepare(JOB_QUERIES.SELECT_BY_USER)
-        result = await stmt
-          .bind(filter.userId, filter.limit || 50, filter.offset || 0)
-          .all()
+        result = await stmt.bind(filter.userId, filter.limit || 50, filter.offset || 0).all()
       } else if (filter.status) {
         stmt = this.db.prepare(JOB_QUERIES.SELECT_BY_STATUS)
         result = await stmt.bind(filter.status, filter.limit || 50).all()
       } else if (filter.toolId) {
         stmt = this.db.prepare(JOB_QUERIES.SELECT_BY_TOOL)
-        result = await stmt
-          .bind(filter.toolId, filter.limit || 50, filter.offset || 0)
-          .all()
+        result = await stmt.bind(filter.toolId, filter.limit || 50, filter.offset || 0).all()
       } else if (filter.dateFrom && filter.dateTo) {
         stmt = this.db.prepare(JOB_QUERIES.SELECT_BY_DATE_RANGE)
         result = await stmt.bind(filter.dateFrom, filter.dateTo).all()
@@ -305,8 +284,7 @@ export class JobService {
   }
 
   async getStaleJobs(): Promise<Job[]> {
-    const staleTime =
-      Math.floor(Date.now() / 1000) - this.jobTimeoutMinutes * 60
+    const staleTime = Math.floor(Date.now() / 1000) - this.jobTimeoutMinutes * 60
 
     try {
       const stmt = this.db.prepare(JOB_QUERIES.SELECT_STALE_RUNNING_JOBS)
@@ -458,11 +436,7 @@ export class JobService {
     }
   }
 
-  async updateJobProgress(
-    jobId: string,
-    progress: number,
-    message?: string
-  ): Promise<Job> {
+  async updateJobProgress(jobId: string, progress: number, message?: string): Promise<Job> {
     const job = await this.getJobById(jobId)
     if (!job) {
       throw new Error(`Job with ID ${jobId} not found`)
@@ -548,16 +522,16 @@ export class JobService {
         }
       }
 
-      const totalJobs = parseInt(stats.total_jobs)
+      const totalJobs = parseInt(stats.total_jobs, 10)
       const successRate =
-        totalJobs > 0 ? (parseInt(stats.successful_jobs) / totalJobs) * 100 : 0
+        totalJobs > 0 ? (parseInt(stats.successful_jobs, 10) / totalJobs) * 100 : 0
 
       return {
         totalJobs,
-        pendingJobs: parseInt(stats.pending_jobs),
-        runningJobs: parseInt(stats.running_jobs),
-        completedJobs: parseInt(stats.successful_jobs),
-        failedJobs: parseInt(stats.failed_jobs),
+        pendingJobs: parseInt(stats.pending_jobs, 10),
+        runningJobs: parseInt(stats.running_jobs, 10),
+        completedJobs: parseInt(stats.successful_jobs, 10),
+        failedJobs: parseInt(stats.failed_jobs, 10),
         avgExecutionTime: Math.round(parseFloat(stats.avg_duration) || 0),
         successRate: Math.round(successRate * 100) / 100,
       }
@@ -568,9 +542,7 @@ export class JobService {
 
   async getJobThroughput(
     days = 7
-  ): Promise<
-    Array<{ date: string; total: number; successful: number; failed: number }>
-  > {
+  ): Promise<Array<{ date: string; total: number; successful: number; failed: number }>> {
     try {
       const startDate = Math.floor(Date.now() / 1000) - days * 24 * 60 * 60
       const stmt = this.db.prepare(JOB_QUERIES.THROUGHPUT_ANALYTICS)
@@ -578,9 +550,9 @@ export class JobService {
 
       return result.results.map(row => ({
         date: row.date,
-        total: parseInt(row.total_jobs),
-        successful: parseInt(row.completed_jobs),
-        failed: parseInt(row.failed_jobs),
+        total: parseInt(row.total_jobs, 10),
+        successful: parseInt(row.completed_jobs, 10),
+        failed: parseInt(row.failed_jobs, 10),
       }))
     } catch (error) {
       throw new Error(`Failed to get job throughput: ${error}`)
@@ -589,8 +561,7 @@ export class JobService {
 
   // Cleanup operations
   async cleanupOldJobs(olderThanDays = 30): Promise<number> {
-    const cutoffTime =
-      Math.floor(Date.now() / 1000) - olderThanDays * 24 * 60 * 60
+    const cutoffTime = Math.floor(Date.now() / 1000) - olderThanDays * 24 * 60 * 60
 
     try {
       // Delete completed jobs
@@ -628,7 +599,7 @@ export class JobService {
     try {
       const priority = job.input_data?._priority || 'normal'
       const queueKey = `job_queue:${priority}`
-      const score = job.created_at
+      const _score = job.created_at
 
       // Use KV sorted list emulation (in production, use proper queue service)
       await this.kv.put(

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../../apps/api/src/index'
 
 describe('GET /api/v1/jobs/{id}', () => {
@@ -17,29 +17,37 @@ describe('GET /api/v1/jobs/{id}', () => {
       tool_id: 'json-format',
       input_data: {
         json: '{"name":"John","age":30}',
-        indent: 2
-      }
+        indent: 2,
+      },
     }
 
-    const createRes = await app.request('/api/v1/jobs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const createRes = await app.request(
+      '/api/v1/jobs',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(createJobData),
       },
-      body: JSON.stringify(createJobData)
-    }, testEnv)
+      testEnv
+    )
 
     expect(createRes.status).toBe(201)
     const createdJob = await createRes.json()
     createdJobId = createdJob.id
 
     // Now retrieve the job
-    const res = await app.request(`/api/v1/jobs/${createdJobId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    }, testEnv)
+    const res = await app.request(
+      `/api/v1/jobs/${createdJobId}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -56,12 +64,16 @@ describe('GET /api/v1/jobs/{id}', () => {
   it('should return 404 for non-existent job ID', async () => {
     const fakeJobId = '00000000-0000-0000-0000-000000000000'
 
-    const res = await app.request(`/api/v1/jobs/${fakeJobId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    }, testEnv)
+    const res = await app.request(
+      `/api/v1/jobs/${fakeJobId}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+      testEnv
+    )
 
     expect(res.status).toBe(404)
 
@@ -73,12 +85,16 @@ describe('GET /api/v1/jobs/{id}', () => {
   it('should validate job ID format', async () => {
     const invalidJobId = 'invalid-job-id-format'
 
-    const res = await app.request(`/api/v1/jobs/${invalidJobId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    }, testEnv)
+    const res = await app.request(
+      `/api/v1/jobs/${invalidJobId}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+      testEnv
+    )
 
     expect(res.status).toBe(400)
 
@@ -93,45 +109,57 @@ describe('GET /api/v1/jobs/{id}', () => {
       tool_id: 'code-execute',
       input_data: {
         code: 'console.log("test");',
-        language: 'javascript'
-      }
+        language: 'javascript',
+      },
     }
 
-    const createRes = await app.request('/api/v1/jobs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const createRes = await app.request(
+      '/api/v1/jobs',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(jobData),
       },
-      body: JSON.stringify(jobData)
-    }, testEnv)
+      testEnv
+    )
 
     const createdJob = await createRes.json()
 
     // Simulate job completion by updating status in test environment
     // In real implementation, this would be handled by background workers
-    const updatedRes = await app.request(`/api/v1/jobs/${createdJob.id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        status: 'completed',
-        output_data: {
-          output: 'test\n',
-          exit_code: 0,
-          execution_time: 45
+    const _updatedRes = await app.request(
+      `/api/v1/jobs/${createdJob.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        progress: 100
-      })
-    }, testEnv)
+        body: JSON.stringify({
+          status: 'completed',
+          output_data: {
+            output: 'test\n',
+            exit_code: 0,
+            execution_time: 45,
+          },
+          progress: 100,
+        }),
+      },
+      testEnv
+    )
 
     // Retrieve the completed job
-    const res = await app.request(`/api/v1/jobs/${createdJob.id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    }, testEnv)
+    const res = await app.request(
+      `/api/v1/jobs/${createdJob.id}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -150,39 +178,51 @@ describe('GET /api/v1/jobs/{id}', () => {
       tool_id: 'json-validate',
       input_data: {
         json: '{"invalid": json}', // Invalid JSON
-      }
+      },
     }
 
-    const createRes = await app.request('/api/v1/jobs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const createRes = await app.request(
+      '/api/v1/jobs',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(jobData),
       },
-      body: JSON.stringify(jobData)
-    }, testEnv)
+      testEnv
+    )
 
     const createdJob = await createRes.json()
 
     // Simulate job failure
-    const updatedRes = await app.request(`/api/v1/jobs/${createdJob.id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
+    const _updatedRes = await app.request(
+      `/api/v1/jobs/${createdJob.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'failed',
+          error_message: 'Invalid JSON syntax',
+          progress: 0,
+        }),
       },
-      body: JSON.stringify({
-        status: 'failed',
-        error_message: 'Invalid JSON syntax',
-        progress: 0
-      })
-    }, testEnv)
+      testEnv
+    )
 
     // Retrieve the failed job
-    const res = await app.request(`/api/v1/jobs/${createdJob.id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    }, testEnv)
+    const res = await app.request(
+      `/api/v1/jobs/${createdJob.id}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -199,40 +239,52 @@ describe('GET /api/v1/jobs/{id}', () => {
       tool_id: 'code-execute',
       input_data: {
         code: '// Simulate long running process\nfor(let i = 0; i < 1000000; i++) {}',
-        language: 'javascript'
-      }
+        language: 'javascript',
+      },
     }
 
-    const createRes = await app.request('/api/v1/jobs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const createRes = await app.request(
+      '/api/v1/jobs',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(jobData),
       },
-      body: JSON.stringify(jobData)
-    }, testEnv)
+      testEnv
+    )
 
     const createdJob = await createRes.json()
 
     // Simulate job in progress
-    const updatedRes = await app.request(`/api/v1/jobs/${createdJob.id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
+    const _updatedRes = await app.request(
+      `/api/v1/jobs/${createdJob.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'running',
+          progress: 45,
+          started_at: Math.floor(Date.now() / 1000),
+        }),
       },
-      body: JSON.stringify({
-        status: 'running',
-        progress: 45,
-        started_at: Math.floor(Date.now() / 1000)
-      })
-    }, testEnv)
+      testEnv
+    )
 
     // Retrieve the running job
-    const res = await app.request(`/api/v1/jobs/${createdJob.id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    }, testEnv)
+    const res = await app.request(
+      `/api/v1/jobs/${createdJob.id}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -249,27 +301,35 @@ describe('GET /api/v1/jobs/{id}', () => {
       tool_id: 'json-format',
       input_ref: 'file-uuid-string',
       input_data: {
-        indent: 2
-      }
+        indent: 2,
+      },
     }
 
-    const createRes = await app.request('/api/v1/jobs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const createRes = await app.request(
+      '/api/v1/jobs',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(jobData),
       },
-      body: JSON.stringify(jobData)
-    }, testEnv)
+      testEnv
+    )
 
     const createdJob = await createRes.json()
 
     // Retrieve the job with file reference
-    const res = await app.request(`/api/v1/jobs/${createdJob.id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    }, testEnv)
+    const res = await app.request(
+      `/api/v1/jobs/${createdJob.id}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -283,12 +343,16 @@ describe('GET /api/v1/jobs/{id}', () => {
 
     // Make multiple rapid requests to check rate limiting
     const requests = Array.from({ length: 20 }, () =>
-      app.request(`/api/v1/jobs/${createdJobId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      }, testEnv)
+      app.request(
+        `/api/v1/jobs/${createdJobId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        testEnv
+      )
     )
 
     const responses = await Promise.allSettled(requests)

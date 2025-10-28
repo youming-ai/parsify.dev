@@ -1,13 +1,18 @@
 import { Hono } from 'hono'
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { turnstileMiddleware, TurnstileError, TurnstilePresets, getTurnstileContext, isBotDetected } from '../turnstile'
-import { AuthContext } from '../auth'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { AuthContext } from '../auth'
+import {
+  getTurnstileContext,
+  TurnstileError,
+  TurnstilePresets,
+  turnstileMiddleware,
+} from '../turnstile'
 
 // Mock Cloudflare service
 const mockCloudflareService = {
   cacheGet: vi.fn(),
   cacheSet: vi.fn(),
-  query: vi.fn()
+  query: vi.fn(),
 }
 
 // Mock fetch
@@ -15,21 +20,21 @@ global.fetch = vi.fn()
 
 // Mock crypto.randomUUID
 global.crypto = {
-  randomUUID: vi.fn(() => 'test-request-id')
+  randomUUID: vi.fn(() => 'test-request-id'),
 } as any
 
 describe('Turnstile Middleware', () => {
   let app: Hono
-  let mockEnv: any
+  let _mockEnv: any
 
   beforeEach(() => {
     vi.clearAllMocks()
 
     app = new Hono()
-    mockEnv = {
+    _mockEnv = {
       TURNSTILE_SITE_KEY: 'test-site-key',
       TURNSTILE_SECRET_KEY: 'test-secret-key',
-      ENVIRONMENT: 'test'
+      ENVIRONMENT: 'test',
     }
 
     // Set up Cloudflare service mock
@@ -46,10 +51,13 @@ describe('Turnstile Middleware', () => {
 
   describe('Basic functionality', () => {
     it('should pass through when Turnstile is disabled', async () => {
-      app.use('*', turnstileMiddleware({
-        config: { enabled: false }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          config: { enabled: false },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       const res = await app.request('/')
       expect(res.status).toBe(200)
@@ -58,13 +66,16 @@ describe('Turnstile Middleware', () => {
     })
 
     it('should skip validation for configured paths', async () => {
-      app.use('*', turnstileMiddleware({
-        config: {
-          enabled: true,
-          skipPaths: ['/health', '/metrics']
-        }
-      }))
-      app.get('/health', (c) => c.json({ status: 'healthy' }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          config: {
+            enabled: true,
+            skipPaths: ['/health', '/metrics'],
+          },
+        })
+      )
+      app.get('/health', c => c.json({ status: 'healthy' }))
 
       const res = await app.request('/health')
       expect(res.status).toBe(200)
@@ -73,20 +84,26 @@ describe('Turnstile Middleware', () => {
     })
 
     it('should proceed when validation is optional and no token provided', async () => {
-      app.use('*', turnstileMiddleware({
-        required: false
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: false,
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       const res = await app.request('/')
       expect(res.status).toBe(200)
     })
 
     it('should return error when validation is required and no token provided', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       const res = await app.request('/')
       expect(res.status).toBe(403)
@@ -97,25 +114,28 @@ describe('Turnstile Middleware', () => {
 
   describe('Token extraction', () => {
     it('should extract token from X-Turnstile-Token header', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site'
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       // Mock successful validation
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true })
+        json: async () => ({ success: true }),
       })
 
       const res = await app.request('/', {
         headers: {
-          'X-Turnstile-Token': 'test-token'
-        }
+          'X-Turnstile-Token': 'test-token',
+        },
       })
 
       expect(res.status).toBe(200)
@@ -123,52 +143,58 @@ describe('Turnstile Middleware', () => {
         'https://challenges.cloudflare.com/turnstile/v0/siteverify',
         expect.objectContaining({
           method: 'POST',
-          body: expect.stringContaining('test-token')
+          body: expect.stringContaining('test-token'),
         })
       )
     })
 
     it('should extract token from JSON body', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site'
-        }
-      }))
-      app.post('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+          },
+        })
+      )
+      app.post('/', c => c.json({ success: true }))
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true })
+        json: async () => ({ success: true }),
       })
 
       const res = await app.request('/', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          'cf-turnstile-response': 'test-token'
-        })
+          'cf-turnstile-response': 'test-token',
+        }),
       })
 
       expect(res.status).toBe(200)
     })
 
     it('should extract token from query parameters', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site'
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true })
+        json: async () => ({ success: true }),
       })
 
       const res = await app.request('/?cf-turnstile-response=test-token')
@@ -178,28 +204,31 @@ describe('Turnstile Middleware', () => {
 
   describe('Token validation', () => {
     it('should successfully validate a valid token', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site'
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           success: true,
           challenge_ts: '2023-01-01T00:00:00Z',
-          hostname: 'example.com'
-        })
+          hostname: 'example.com',
+        }),
       })
 
       const res = await app.request('/', {
         headers: {
-          'X-Turnstile-Token': 'valid-token'
-        }
+          'X-Turnstile-Token': 'valid-token',
+        },
       })
 
       expect(res.status).toBe(200)
@@ -208,27 +237,30 @@ describe('Turnstile Middleware', () => {
     })
 
     it('should handle invalid token response', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site'
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           success: false,
-          'error-codes': ['invalid-input-response']
-        })
+          'error-codes': ['invalid-input-response'],
+        }),
       })
 
       const res = await app.request('/', {
         headers: {
-          'X-Turnstile-Token': 'invalid-token'
-        }
+          'X-Turnstile-Token': 'invalid-token',
+        },
       })
 
       expect(res.status).toBe(403)
@@ -237,28 +269,31 @@ describe('Turnstile Middleware', () => {
     })
 
     it('should handle network errors with retry', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site',
-          retryAttempts: 2
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+            retryAttempts: 2,
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       // First attempt fails
       vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'))
       // Second attempt succeeds
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true })
+        json: async () => ({ success: true }),
       })
 
       const res = await app.request('/', {
         headers: {
-          'X-Turnstile-Token': 'test-token'
-        }
+          'X-Turnstile-Token': 'test-token',
+        },
       })
 
       expect(res.status).toBe(200)
@@ -266,22 +301,25 @@ describe('Turnstile Middleware', () => {
     })
 
     it('should fail after max retry attempts', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site',
-          retryAttempts: 2
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+            retryAttempts: 2,
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       vi.mocked(fetch).mockRejectedValue(new Error('Network error'))
 
       const res = await app.request('/', {
         headers: {
-          'X-Turnstile-Token': 'test-token'
-        }
+          'X-Turnstile-Token': 'test-token',
+        },
       })
 
       expect(res.status).toBe(500)
@@ -292,26 +330,29 @@ describe('Turnstile Middleware', () => {
 
   describe('Caching', () => {
     it('should use cached validation result when available', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site',
-          cachingEnabled: true
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+            cachingEnabled: true,
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       // Mock cached result
       mockCloudflareService.cacheGet.mockResolvedValueOnce({
         success: true,
-        challenge_ts: '2023-01-01T00:00:00Z'
+        challenge_ts: '2023-01-01T00:00:00Z',
       })
 
       const res = await app.request('/', {
         headers: {
-          'X-Turnstile-Token': 'cached-token'
-        }
+          'X-Turnstile-Token': 'cached-token',
+        },
       })
 
       expect(res.status).toBe(200)
@@ -323,29 +364,32 @@ describe('Turnstile Middleware', () => {
     })
 
     it('should cache successful validation results', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site',
-          cachingEnabled: true,
-          cacheTTL: 300
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+            cachingEnabled: true,
+            cacheTTL: 300,
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           success: true,
-          challenge_ts: '2023-01-01T00:00:00Z'
-        })
+          challenge_ts: '2023-01-01T00:00:00Z',
+        }),
       })
 
       const res = await app.request('/', {
         headers: {
-          'X-Turnstile-Token': 'test-token'
-        }
+          'X-Turnstile-Token': 'test-token',
+        },
       })
 
       expect(res.status).toBe(200)
@@ -360,37 +404,40 @@ describe('Turnstile Middleware', () => {
 
   describe('Bot detection', () => {
     it('should detect suspicious IP addresses', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site',
-          ipBasedValidation: true,
-          protectionLevel: 'low'
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+            ipBasedValidation: true,
+            protectionLevel: 'low',
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true })
+        json: async () => ({ success: true }),
       })
 
       // Create a mock request with Cloudflare data indicating high threat
       const mockRequest = new Request('http://localhost', {
         headers: {
           'X-Turnstile-Token': 'test-token',
-          'CF-Connecting-IP': '192.168.1.1'
-        }
+          'CF-Connecting-IP': '192.168.1.1',
+        },
       })
 
       // Mock Cloudflare request data
       Object.defineProperty(mockRequest, 'cf', {
         value: {
           threat_level: 'high',
-          bot_management: { score: 80 }
+          bot_management: { score: 80 },
         },
-        writable: true
+        writable: true,
       })
 
       const res = await app.request(mockRequest)
@@ -401,56 +448,62 @@ describe('Turnstile Middleware', () => {
     })
 
     it('should detect suspicious user agents', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site',
-          userAgentBasedValidation: true,
-          protectionLevel: 'low'
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+            userAgentBasedValidation: true,
+            protectionLevel: 'low',
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true })
+        json: async () => ({ success: true }),
       })
 
       const res = await app.request('/', {
         headers: {
           'X-Turnstile-Token': 'test-token',
-          'User-Agent': 'curl/7.68.0'
-        }
+          'User-Agent': 'curl/7.68.0',
+        },
       })
 
       expect(res.status).toBe(200)
     })
 
     it('should block high-risk requests with high protection', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site',
-          ipBasedValidation: true,
-          userAgentBasedValidation: true,
-          protectionLevel: 'high',
-          scoreThreshold: { low: 0.1, medium: 0.1, high: 0.1 }
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+            ipBasedValidation: true,
+            userAgentBasedValidation: true,
+            protectionLevel: 'high',
+            scoreThreshold: { low: 0.1, medium: 0.1, high: 0.1 },
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true })
+        json: async () => ({ success: true }),
       })
 
       const res = await app.request('/', {
         headers: {
           'X-Turnstile-Token': 'test-token',
-          'User-Agent': 'BadBot/1.0'
-        }
+          'User-Agent': 'BadBot/1.0',
+        },
       })
 
       expect(res.status).toBe(403)
@@ -463,25 +516,28 @@ describe('Turnstile Middleware', () => {
     it('should use custom validation function when provided', async () => {
       const customValidation = vi.fn().mockResolvedValue(false)
 
-      app.use('*', turnstileMiddleware({
-        required: true,
-        customValidation,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site'
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          customValidation,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true })
+        json: async () => ({ success: true }),
       })
 
       const res = await app.request('/', {
         headers: {
-          'X-Turnstile-Token': 'test-token'
-        }
+          'X-Turnstile-Token': 'test-token',
+        },
       })
 
       expect(res.status).toBe(403)
@@ -490,7 +546,7 @@ describe('Turnstile Middleware', () => {
         expect.objectContaining({
           ip: expect.any(String),
           userAgent: expect.any(String),
-          requestId: 'test-request-id'
+          requestId: 'test-request-id',
         })
       )
     })
@@ -498,19 +554,20 @@ describe('Turnstile Middleware', () => {
 
   describe('Error handling', () => {
     it('should use custom error handler when provided', async () => {
-      const customErrorHandler = vi.fn().mockImplementation((c) =>
-        c.json({ customError: true }, 418)
-      )
+      const customErrorHandler = vi.fn().mockImplementation(c => c.json({ customError: true }, 418))
 
-      app.use('*', turnstileMiddleware({
-        required: true,
-        onError: customErrorHandler,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site'
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          onError: customErrorHandler,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       const res = await app.request('/')
       expect(res.status).toBe(418)
@@ -520,27 +577,30 @@ describe('Turnstile Middleware', () => {
     })
 
     it('should log validation failures', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site'
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           success: false,
-          'error-codes': ['invalid-input-response']
-        })
+          'error-codes': ['invalid-input-response'],
+        }),
       })
 
       const res = await app.request('/', {
         headers: {
-          'X-Turnstile-Token': 'invalid-token'
-        }
+          'X-Turnstile-Token': 'invalid-token',
+        },
       })
 
       expect(res.status).toBe(403)
@@ -549,7 +609,7 @@ describe('Turnstile Middleware', () => {
         'turnstile_event:test-request-id',
         expect.objectContaining({
           event: 'validation_failed',
-          errorCodes: ['invalid-input-response']
+          errorCodes: ['invalid-input-response'],
         }),
         { ttl: 86400 }
       )
@@ -561,7 +621,7 @@ describe('Turnstile Middleware', () => {
       const mockAuthContext: AuthContext = {
         user: { id: 'user-123', subscription_tier: 'pro' },
         sessionId: 'session-456',
-        isAuthenticated: true
+        isAuthenticated: true,
       }
 
       app.use('*', async (c, next) => {
@@ -569,25 +629,28 @@ describe('Turnstile Middleware', () => {
         await next()
       })
 
-      app.use('*', turnstileMiddleware({
-        required: true,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site',
-          sessionBasedValidation: true
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+            sessionBasedValidation: true,
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true })
+        json: async () => ({ success: true }),
       })
 
       const res = await app.request('/', {
         headers: {
-          'X-Turnstile-Token': 'test-token'
-        }
+          'X-Turnstile-Token': 'test-token',
+        },
       })
 
       expect(res.status).toBe(200)
@@ -596,50 +659,56 @@ describe('Turnstile Middleware', () => {
 
   describe('Preset configurations', () => {
     it('should apply low protection preset', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        ...TurnstilePresets.LOW_PROTECTION,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site'
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          ...TurnstilePresets.LOW_PROTECTION,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true })
+        json: async () => ({ success: true }),
       })
 
       const res = await app.request('/', {
         headers: {
-          'X-Turnstile-Token': 'test-token'
-        }
+          'X-Turnstile-Token': 'test-token',
+        },
       })
 
       expect(res.status).toBe(200)
     })
 
     it('should apply medium protection preset', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        ...TurnstilePresets.MEDIUM_PROTECTION,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site'
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          ...TurnstilePresets.MEDIUM_PROTECTION,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true })
+        json: async () => ({ success: true }),
       })
 
       const res = await app.request('/', {
         headers: {
-          'X-Turnstile-Token': 'test-token'
-        }
+          'X-Turnstile-Token': 'test-token',
+        },
       })
 
       expect(res.status).toBe(200)
@@ -648,27 +717,30 @@ describe('Turnstile Middleware', () => {
 
   describe('Helper functions', () => {
     it('should detect bot from context', async () => {
-      app.use('*', turnstileMiddleware({
-        required: true,
-        config: {
-          secretKey: 'test-secret',
-          siteKey: 'test-site',
-          protectionLevel: 'high',
-          scoreThreshold: { low: 0.1, medium: 0.1, high: 0.1 }
-        }
-      }))
-      app.get('/', (c) => c.json({ success: true }))
+      app.use(
+        '*',
+        turnstileMiddleware({
+          required: true,
+          config: {
+            secretKey: 'test-secret',
+            siteKey: 'test-site',
+            protectionLevel: 'high',
+            scoreThreshold: { low: 0.1, medium: 0.1, high: 0.1 },
+          },
+        })
+      )
+      app.get('/', c => c.json({ success: true }))
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true })
+        json: async () => ({ success: true }),
       })
 
       const res = await app.request('/', {
         headers: {
           'X-Turnstile-Token': 'test-token',
-          'User-Agent': 'BotAgent/1.0'
-        }
+          'User-Agent': 'BotAgent/1.0',
+        },
       })
 
       expect(res.status).toBe(403) // Should be blocked due to bot detection

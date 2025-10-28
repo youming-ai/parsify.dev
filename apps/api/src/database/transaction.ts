@@ -1,5 +1,5 @@
-import { DatabaseConnection } from './connection'
-import { randomUUID } from 'crypto'
+import { randomUUID } from 'node:crypto'
+import type { DatabaseConnection } from './connection'
 
 export interface TransactionConfig {
   isolationLevel?: IsolationLevel
@@ -51,7 +51,7 @@ export enum IsolationLevel {
   READ_UNCOMMITTED = 'READ UNCOMMITTED',
   READ_COMMITTED = 'READ COMMITTED',
   REPEATABLE_READ = 'REPEATABLE READ',
-  SERIALIZABLE = 'SERIALIZABLE'
+  SERIALIZABLE = 'SERIALIZABLE',
 }
 
 export enum TransactionStatus {
@@ -60,7 +60,7 @@ export enum TransactionStatus {
   ROLLED_BACK = 'ROLLED_BACK',
   FAILED = 'FAILED',
   DEADLOCKED = 'DEADLOCKED',
-  TIMEOUT = 'TIMEOUT'
+  TIMEOUT = 'TIMEOUT',
 }
 
 export enum TransactionError {
@@ -69,7 +69,7 @@ export enum TransactionError {
   CONSTRAINT_VIOLATION = 'Constraint violation',
   ROLLBACK_REQUESTED = 'Rollback requested',
   CONNECTION_LOST = 'Connection lost',
-  UNKNOWN = 'Unknown error'
+  UNKNOWN = 'Unknown error',
 }
 
 /**
@@ -88,13 +88,15 @@ export class EnhancedTransaction {
   private retryCount: number = 0
   private lockWaitTime: number = 0
   private metrics: TransactionMetrics
-  private queryHistory: Array<{ sql: string; params?: any[]; timestamp: number; duration: number }> = []
+  private queryHistory: Array<{
+    sql: string
+    params?: any[]
+    timestamp: number
+    duration: number
+  }> = []
   private rollbackReason?: string
 
-  constructor(
-    connection: DatabaseConnection,
-    config: TransactionConfig = {}
-  ) {
+  constructor(connection: DatabaseConnection, config: TransactionConfig = {}) {
     this.connection = connection
     this.transactionId = randomUUID()
     this.config = {
@@ -106,7 +108,7 @@ export class EnhancedTransaction {
       deferrable: config.deferrable ?? false,
       deadlockDetection: config.deadlockDetection ?? true,
       enableMetrics: config.enableMetrics ?? true,
-      enableLogging: config.enableLogging ?? true
+      enableLogging: config.enableLogging ?? true,
     }
 
     this.metrics = {
@@ -115,21 +117,20 @@ export class EnhancedTransaction {
       queryCount: 0,
       status: this.status,
       isolationLevel: this.config.isolationLevel,
-      retryCount: 0
+      retryCount: 0,
     }
 
     if (this.config.enableLogging) {
-      console.log(`[Transaction:${this.transactionId}] Started with isolation level: ${this.config.isolationLevel}`)
+      console.log(
+        `[Transaction:${this.transactionId}] Started with isolation level: ${this.config.isolationLevel}`
+      )
     }
   }
 
   /**
    * Execute a query within the transaction
    */
-  async query<T = any>(
-    sql: string,
-    params?: any[]
-  ): Promise<T[]> {
+  async query<T = any>(sql: string, params?: any[]): Promise<T[]> {
     this.ensureActive()
     const queryStartTime = Date.now()
 
@@ -139,7 +140,7 @@ export class EnhancedTransaction {
 
       const result = await this.connection.execute<T[]>(sql, params, {
         timeout: this.config.timeout,
-        retries: 0 // No retries within transactions
+        retries: 0, // No retries within transactions
       })
 
       if (!result.success) {
@@ -159,10 +160,7 @@ export class EnhancedTransaction {
   /**
    * Execute a query and return the first result
    */
-  async queryFirst<T = any>(
-    sql: string,
-    params?: any[]
-  ): Promise<T | null> {
+  async queryFirst<T = any>(sql: string, params?: any[]): Promise<T | null> {
     this.ensureActive()
     const queryStartTime = Date.now()
 
@@ -172,7 +170,7 @@ export class EnhancedTransaction {
 
       const result = await this.connection.first<T>(sql, params, {
         timeout: this.config.timeout,
-        retries: 0
+        retries: 0,
       })
 
       if (!result.success) {
@@ -192,10 +190,7 @@ export class EnhancedTransaction {
   /**
    * Execute a statement within the transaction
    */
-  async execute(
-    sql: string,
-    params?: any[]
-  ): Promise<{ changes: number; lastRowId?: number }> {
+  async execute(sql: string, params?: any[]): Promise<{ changes: number; lastRowId?: number }> {
     this.ensureActive()
     const queryStartTime = Date.now()
 
@@ -205,7 +200,7 @@ export class EnhancedTransaction {
 
       const result = await this.connection.run(sql, params, {
         timeout: this.config.timeout,
-        retries: 0
+        retries: 0,
       })
 
       if (!result.success) {
@@ -242,18 +237,21 @@ export class EnhancedTransaction {
       return {
         success: true,
         savepointName,
-        timestamp
+        timestamp,
       }
     } catch (error) {
       if (this.config.enableLogging) {
-        console.error(`[Transaction:${this.transactionId}] Failed to create savepoint ${savepointName}:`, error)
+        console.error(
+          `[Transaction:${this.transactionId}] Failed to create savepoint ${savepointName}:`,
+          error
+        )
       }
 
       return {
         success: false,
         savepointName,
         error: (error as Error).message,
-        timestamp
+        timestamp,
       }
     }
   }
@@ -280,13 +278,18 @@ export class EnhancedTransaction {
       }
 
       if (this.config.enableLogging) {
-        console.log(`[Transaction:${this.transactionId}] Rolled back to savepoint: ${savepointName}`)
+        console.log(
+          `[Transaction:${this.transactionId}] Rolled back to savepoint: ${savepointName}`
+        )
       }
 
       return true
     } catch (error) {
       if (this.config.enableLogging) {
-        console.error(`[Transaction:${this.transactionId}] Failed to rollback to savepoint ${savepointName}:`, error)
+        console.error(
+          `[Transaction:${this.transactionId}] Failed to rollback to savepoint ${savepointName}:`,
+          error
+        )
       }
       return false
     }
@@ -313,7 +316,10 @@ export class EnhancedTransaction {
       return true
     } catch (error) {
       if (this.config.enableLogging) {
-        console.error(`[Transaction:${this.transactionId}] Failed to release savepoint ${savepointName}:`, error)
+        console.error(
+          `[Transaction:${this.transactionId}] Failed to release savepoint ${savepointName}:`,
+          error
+        )
       }
       return false
     }
@@ -395,7 +401,12 @@ export class EnhancedTransaction {
   /**
    * Get transaction query history
    */
-  getQueryHistory(): Array<{ sql: string; params?: any[]; timestamp: number; duration: number }> {
+  getQueryHistory(): Array<{
+    sql: string
+    params?: any[]
+    timestamp: number
+    duration: number
+  }> {
     return [...this.queryHistory]
   }
 
@@ -452,19 +463,26 @@ export class EnhancedTransaction {
   private logQuery(sql: string, params?: any[], startTime?: number): void {
     if (!this.config.enableLogging) return
 
-    const timestamp = startTime || Date.now()
-    const truncatedSql = sql.length > 100 ? sql.substring(0, 100) + '...' : sql
+    const _timestamp = startTime || Date.now()
+    const truncatedSql = sql.length > 100 ? `${sql.substring(0, 100)}...` : sql
 
-    console.log(`[Transaction:${this.transactionId}] Query ${this.queryCount}: ${truncatedSql}`,
-      params ? { params } : '')
+    console.log(
+      `[Transaction:${this.transactionId}] Query ${this.queryCount}: ${truncatedSql}`,
+      params ? { params } : ''
+    )
   }
 
-  private updateQueryHistory(sql: string, params: any[] | undefined, startTime: number, duration: number): void {
+  private updateQueryHistory(
+    sql: string,
+    params: any[] | undefined,
+    startTime: number,
+    duration: number
+  ): void {
     this.queryHistory.push({
       sql,
       params,
       timestamp: startTime,
-      duration
+      duration,
     })
 
     // Keep only recent queries
@@ -473,7 +491,7 @@ export class EnhancedTransaction {
     }
   }
 
-  private async handleError(error: Error, sql?: string, params?: any[]): Promise<void> {
+  private async handleError(error: Error, _sql?: string, _params?: any[]): Promise<void> {
     const errorMessage = error.message.toLowerCase()
 
     // Check for deadlock
@@ -488,8 +506,7 @@ export class EnhancedTransaction {
     // Check for constraint violation
     else if (errorMessage.includes('constraint') || errorMessage.includes('unique')) {
       this.rollbackReason = TransactionError.CONSTRAINT_VIOLATION
-    }
-    else {
+    } else {
       this.rollbackReason = TransactionError.UNKNOWN
     }
 
@@ -536,9 +553,14 @@ export class TransactionManager {
   /**
    * Create a new transaction
    */
-  createTransaction(connection: DatabaseConnection, config?: TransactionConfig): EnhancedTransaction {
+  createTransaction(
+    connection: DatabaseConnection,
+    config?: TransactionConfig
+  ): EnhancedTransaction {
     if (this.activeTransactions.size >= this.maxConcurrentTransactions) {
-      throw new Error(`Maximum concurrent transactions (${this.maxConcurrentTransactions}) exceeded`)
+      throw new Error(
+        `Maximum concurrent transactions (${this.maxConcurrentTransactions}) exceeded`
+      )
     }
 
     const mergedConfig = { ...this.defaultConfig, ...config }
@@ -587,7 +609,7 @@ export class TransactionManager {
    */
   cleanup(): number {
     let cleanedCount = 0
-    const now = Date.now()
+    const _now = Date.now()
 
     for (const [id, transaction] of this.activeTransactions.entries()) {
       if (!transaction.isActive || transaction.hasTimedOut()) {
@@ -617,7 +639,7 @@ export class TransactionManager {
    * Force rollback all active transactions
    */
   async rollbackAll(reason = 'System shutdown'): Promise<void> {
-    const rollbackPromises = this.getActiveTransactions().map(async (transaction) => {
+    const rollbackPromises = this.getActiveTransactions().map(async transaction => {
       try {
         await transaction.rollback(reason)
       } catch (error) {
@@ -679,22 +701,23 @@ export class TransactionUtils {
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        return await this.withTransaction(connection, callback, config)
+        return await TransactionUtils.withTransaction(connection, callback, config)
       } catch (error) {
         lastError = error as Error
 
         // Only retry on deadlock or timeout
         const errorMessage = (error as Error).message.toLowerCase()
-        const isRetryable = errorMessage.includes('deadlock') ||
-                          errorMessage.includes('lock wait timeout') ||
-                          errorMessage.includes('timeout')
+        const isRetryable =
+          errorMessage.includes('deadlock') ||
+          errorMessage.includes('lock wait timeout') ||
+          errorMessage.includes('timeout')
 
         if (!isRetryable || attempt === maxRetries) {
           throw error
         }
 
         // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, attempt)))
+        await new Promise(resolve => setTimeout(resolve, retryDelay * 2 ** attempt))
       }
     }
 
@@ -739,14 +762,16 @@ export class TransactionUtils {
 
     // Check isolation level
     if (metrics.isolationLevel === IsolationLevel.SERIALIZABLE) {
-      recommendations.push('Consider using a lower isolation level if serializable consistency is not required')
+      recommendations.push(
+        'Consider using a lower isolation level if serializable consistency is not required'
+      )
       score -= 5
     }
 
     return {
       issues,
       recommendations,
-      score: Math.max(0, score)
+      score: Math.max(0, score),
     }
   }
 
@@ -762,18 +787,24 @@ export class TransactionUtils {
     averageQueriesPerTransaction: number
     isolationLevelDistribution: Record<IsolationLevel, number>
   } {
-    const completed = transactions.filter(tx =>
-      tx.currentStatus === TransactionStatus.COMMITTED ||
-      tx.currentStatus === TransactionStatus.ROLLED_BACK ||
-      tx.currentStatus === TransactionStatus.FAILED
+    const completed = transactions.filter(
+      tx =>
+        tx.currentStatus === TransactionStatus.COMMITTED ||
+        tx.currentStatus === TransactionStatus.ROLLED_BACK ||
+        tx.currentStatus === TransactionStatus.FAILED
     )
 
     const totalTransactions = completed.length
     const durations = completed.map(tx => tx.getDuration()).filter(d => d > 0)
-    const averageDuration = durations.length > 0 ? durations.reduce((a, b) => a + b) / durations.length : 0
+    const averageDuration =
+      durations.length > 0 ? durations.reduce((a, b) => a + b) / durations.length : 0
 
-    const successful = completed.filter(tx => tx.currentStatus === TransactionStatus.COMMITTED).length
-    const deadlocked = completed.filter(tx => tx.currentStatus === TransactionStatus.DEADLOCKED).length
+    const successful = completed.filter(
+      tx => tx.currentStatus === TransactionStatus.COMMITTED
+    ).length
+    const deadlocked = completed.filter(
+      tx => tx.currentStatus === TransactionStatus.DEADLOCKED
+    ).length
     const timedOut = completed.filter(tx => tx.currentStatus === TransactionStatus.TIMEOUT).length
 
     const successRate = totalTransactions > 0 ? (successful / totalTransactions) * 100 : 0
@@ -781,13 +812,17 @@ export class TransactionUtils {
     const timeoutRate = totalTransactions > 0 ? (timedOut / totalTransactions) * 100 : 0
 
     const totalQueries = completed.reduce((sum, tx) => sum + tx.getMetrics().queryCount, 0)
-    const averageQueriesPerTransaction = totalTransactions > 0 ? totalQueries / totalTransactions : 0
+    const averageQueriesPerTransaction =
+      totalTransactions > 0 ? totalQueries / totalTransactions : 0
 
-    const isolationLevelDistribution = completed.reduce((acc, tx) => {
-      const level = tx.getMetrics().isolationLevel
-      acc[level] = (acc[level] || 0) + 1
-      return acc
-    }, {} as Record<IsolationLevel, number>)
+    const isolationLevelDistribution = completed.reduce(
+      (acc, tx) => {
+        const level = tx.getMetrics().isolationLevel
+        acc[level] = (acc[level] || 0) + 1
+        return acc
+      },
+      {} as Record<IsolationLevel, number>
+    )
 
     return {
       totalTransactions,
@@ -796,7 +831,7 @@ export class TransactionUtils {
       deadlockRate,
       timeoutRate,
       averageQueriesPerTransaction,
-      isolationLevelDistribution
+      isolationLevelDistribution,
     }
   }
 }

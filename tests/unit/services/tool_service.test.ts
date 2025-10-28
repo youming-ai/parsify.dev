@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ToolService } from '@/api/src/services/tool_service'
 import {
-  createTestDatabase,
+  cleanupTestEnvironment,
+  createMockAuditLog,
+  createMockJob,
   createMockTool,
   createMockToolUsage,
-  createMockJob,
   createMockUser,
-  createMockAuditLog,
-  setupTestEnvironment,
-  cleanupTestEnvironment,
+  createTestDatabase,
   type MockD1Database,
+  setupTestEnvironment,
 } from '../models/database.mock'
 
 // Mock the database client module
@@ -258,22 +258,19 @@ describe('ToolService', () => {
         expect(result).toEqual(mockTool)
         expect(CreateToolSchema.parse).toHaveBeenCalledWith(toolData)
         expect(Tool.create).toHaveBeenCalledWith(toolData)
-        expect(mockDbClient.execute).toHaveBeenCalledWith(
-          'INSERT INTO tools...',
-          [
-            mockTool.id,
-            mockTool.slug,
-            mockTool.name,
-            mockTool.category,
-            mockTool.description,
-            JSON.stringify(mockTool.config),
-            mockTool.enabled,
-            mockTool.beta,
-            mockTool.sort_order,
-            mockTool.created_at,
-            mockTool.updated_at,
-          ]
-        )
+        expect(mockDbClient.execute).toHaveBeenCalledWith('INSERT INTO tools...', [
+          mockTool.id,
+          mockTool.slug,
+          mockTool.name,
+          mockTool.category,
+          mockTool.description,
+          JSON.stringify(mockTool.config),
+          mockTool.enabled,
+          mockTool.beta,
+          mockTool.sort_order,
+          mockTool.created_at,
+          mockTool.updated_at,
+        ])
       })
 
       it('should handle database errors', async () => {
@@ -289,8 +286,9 @@ describe('ToolService', () => {
 
         mockDbClient.execute.mockRejectedValue(new Error('Database error'))
 
-        await expect(toolService.createTool(toolData))
-          .rejects.toThrow('Failed to create tool: Error: Database error')
+        await expect(toolService.createTool(toolData)).rejects.toThrow(
+          'Failed to create tool: Error: Database error'
+        )
       })
     })
 
@@ -299,7 +297,7 @@ describe('ToolService', () => {
         const toolId = 'tool-123'
         const mockTool = createMockTool({ id: toolId })
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
@@ -334,10 +332,7 @@ describe('ToolService', () => {
 
         // Manually add tool to local cache
         ;(serviceWithoutAdvancedCache as any).toolCache.set(toolId, mockTool)
-        ;(serviceWithoutAdvancedCache as any).cacheExpiry.set(
-          toolId,
-          Date.now() + 5 * 60 * 1000
-        )
+        ;(serviceWithoutAdvancedCache as any).cacheExpiry.set(toolId, Date.now() + 5 * 60 * 1000)
 
         const result = await serviceWithoutAdvancedCache.getToolById(toolId)
 
@@ -347,7 +342,7 @@ describe('ToolService', () => {
       it('should return null when tool not found', async () => {
         const toolId = 'nonexistent-tool'
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
@@ -361,14 +356,15 @@ describe('ToolService', () => {
       it('should handle database errors', async () => {
         const toolId = 'tool-123'
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
         mockDbClient.queryFirst.mockRejectedValue(new Error('Database error'))
 
-        await expect(toolService.getToolById(toolId))
-          .rejects.toThrow('Failed to get tool: Error: Database error')
+        await expect(toolService.getToolById(toolId)).rejects.toThrow(
+          'Failed to get tool: Error: Database error'
+        )
       })
     })
 
@@ -377,7 +373,7 @@ describe('ToolService', () => {
         const slug = 'json-format'
         const mockTool = createMockTool({ slug })
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
@@ -401,7 +397,7 @@ describe('ToolService', () => {
       it('should return null when tool not found by slug', async () => {
         const slug = 'nonexistent-tool'
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
@@ -420,7 +416,7 @@ describe('ToolService', () => {
         const updateData = { name: 'New Name' }
         const updatedTool = createMockTool({ id: toolId, name: 'New Name' })
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
@@ -441,34 +437,32 @@ describe('ToolService', () => {
 
         expect(result).toEqual(updatedTool)
         expect(UpdateToolSchema.parse).toHaveBeenCalledWith(updateData)
-        expect(mockDbClient.execute).toHaveBeenCalledWith(
-          'UPDATE tools SET...',
-          [
-            updatedTool.name,
-            updatedTool.category,
-            updatedTool.description,
-            JSON.stringify(updatedTool.config),
-            updatedTool.enabled,
-            updatedTool.beta,
-            updatedTool.sort_order,
-            updatedTool.updated_at,
-            updatedTool.id,
-          ]
-        )
+        expect(mockDbClient.execute).toHaveBeenCalledWith('UPDATE tools SET...', [
+          updatedTool.name,
+          updatedTool.category,
+          updatedTool.description,
+          JSON.stringify(updatedTool.config),
+          updatedTool.enabled,
+          updatedTool.beta,
+          updatedTool.sort_order,
+          updatedTool.updated_at,
+          updatedTool.id,
+        ])
       })
 
       it('should throw error when tool not found', async () => {
         const toolId = 'nonexistent-tool'
         const updateData = { name: 'New Name' }
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
         mockDbClient.queryFirst.mockResolvedValue(null)
 
-        await expect(toolService.updateTool(toolId, updateData))
-          .rejects.toThrow(`Tool with ID ${toolId} not found`)
+        await expect(toolService.updateTool(toolId, updateData)).rejects.toThrow(
+          `Tool with ID ${toolId} not found`
+        )
       })
     })
 
@@ -477,7 +471,7 @@ describe('ToolService', () => {
         const toolId = 'tool-123'
         const existingTool = createMockTool({ id: toolId })
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
@@ -489,23 +483,23 @@ describe('ToolService', () => {
 
         await toolService.deleteTool(toolId)
 
-        expect(mockDbClient.execute).toHaveBeenCalledWith(
-          'DELETE FROM tools WHERE id = ?',
-          [toolId]
-        )
+        expect(mockDbClient.execute).toHaveBeenCalledWith('DELETE FROM tools WHERE id = ?', [
+          toolId,
+        ])
       })
 
       it('should throw error when tool not found', async () => {
         const toolId = 'nonexistent-tool'
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
         mockDbClient.queryFirst.mockResolvedValue(null)
 
-        await expect(toolService.deleteTool(toolId))
-          .rejects.toThrow(`Tool with ID ${toolId} not found`)
+        await expect(toolService.deleteTool(toolId)).rejects.toThrow(
+          `Tool with ID ${toolId} not found`
+        )
       })
     })
   })
@@ -519,13 +513,13 @@ describe('ToolService', () => {
           createMockTool({ category, slug: 'json-validate' }),
         ]
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
         mockDbClient.query.mockResolvedValue(mockTools)
         const { Tool } = require('@/api/src/models/tool')
-        Tool.fromRow.mockImplementation((row) => row)
+        Tool.fromRow.mockImplementation(row => row)
 
         const result = await toolService.getTools(category, true)
 
@@ -547,13 +541,13 @@ describe('ToolService', () => {
           createMockTool({ category: 'code' }),
         ]
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
         mockDbClient.query.mockResolvedValue(mockTools)
         const { Tool } = require('@/api/src/models/tool')
-        Tool.fromRow.mockImplementation((row) => row)
+        Tool.fromRow.mockImplementation(row => row)
 
         const result = await toolService.getTools()
 
@@ -568,18 +562,15 @@ describe('ToolService', () => {
       })
 
       it('should filter out beta tools when disabled', async () => {
-        const mockTools = [
-          createMockTool({ beta: false }),
-          createMockTool({ beta: true }),
-        ]
+        const mockTools = [createMockTool({ beta: false }), createMockTool({ beta: true })]
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
         mockDbClient.query.mockResolvedValue(mockTools)
         const { Tool } = require('@/api/src/models/tool')
-        Tool.fromRow.mockImplementation((row) => row)
+        Tool.fromRow.mockImplementation(row => row)
 
         const result = await toolService.getTools(undefined, true)
 
@@ -593,14 +584,11 @@ describe('ToolService', () => {
           enableBetaFeatures: true,
         })
 
-        const mockTools = [
-          createMockTool({ beta: false }),
-          createMockTool({ beta: true }),
-        ]
+        const mockTools = [createMockTool({ beta: false }), createMockTool({ beta: true })]
 
         mockDbClient.query.mockResolvedValue(mockTools)
         const { Tool } = require('@/api/src/models/tool')
-        Tool.fromRow.mockImplementation((row) => row)
+        Tool.fromRow.mockImplementation(row => row)
 
         const result = await serviceWithBeta.getTools(undefined, true)
 
@@ -618,7 +606,7 @@ describe('ToolService', () => {
 
         mockDbClient.query.mockResolvedValue(mockTools)
         const { Tool } = require('@/api/src/models/tool')
-        Tool.fromRow.mockImplementation((row) => row)
+        Tool.fromRow.mockImplementation(row => row)
 
         const result = await toolService.searchTools(query)
 
@@ -649,7 +637,7 @@ describe('ToolService', () => {
           userAgent: 'test-agent',
         }
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
@@ -683,7 +671,7 @@ describe('ToolService', () => {
           userAgent: 'test-agent',
         }
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
@@ -705,7 +693,7 @@ describe('ToolService', () => {
           userAgent: 'test-agent',
         }
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
@@ -729,7 +717,7 @@ describe('ToolService', () => {
           userAgent: 'test-agent',
         }
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
@@ -768,7 +756,7 @@ describe('ToolService', () => {
           validateInput: true,
         }
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
@@ -803,7 +791,7 @@ describe('ToolService', () => {
           userAgent: 'test-agent',
         }
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
@@ -843,7 +831,7 @@ describe('ToolService', () => {
           userAgent: 'test-agent',
         }
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
@@ -875,7 +863,7 @@ describe('ToolService', () => {
         const toolId = 'tool-123'
         const mockTool = createMockTool({ id: toolId })
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
@@ -905,14 +893,15 @@ describe('ToolService', () => {
       it('should throw error when tool not found', async () => {
         const toolId = 'nonexistent-tool'
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
         mockDbClient.queryFirst.mockResolvedValue(null)
 
-        await expect(toolService.getToolStats(toolId))
-          .rejects.toThrow(`Tool with ID ${toolId} not found`)
+        await expect(toolService.getToolStats(toolId)).rejects.toThrow(
+          `Tool with ID ${toolId} not found`
+        )
       })
     })
 
@@ -929,7 +918,7 @@ describe('ToolService', () => {
           createMockTool({ id: 'tool-2', name: 'Tool 2' }),
         ]
 
-        mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+        mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
           return await fetchFn()
         })
 
@@ -1086,7 +1075,7 @@ describe('ToolService', () => {
 
         mockDbClient.query.mockResolvedValue(mockTools)
         const { Tool } = require('@/api/src/models/tool')
-        Tool.fromRow.mockImplementation((row) => row)
+        Tool.fromRow.mockImplementation(row => row)
 
         await toolService.warmupAdvancedCache()
 
@@ -1127,20 +1116,21 @@ describe('ToolService', () => {
     it('should handle database connection errors', async () => {
       const toolId = 'tool-123'
 
-      mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+      mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
         return await fetchFn()
       })
 
       mockDbClient.queryFirst.mockRejectedValue(new Error('Connection failed'))
 
-      await expect(toolService.getToolById(toolId))
-        .rejects.toThrow('Failed to get tool: Error: Connection failed')
+      await expect(toolService.getToolById(toolId)).rejects.toThrow(
+        'Failed to get tool: Error: Connection failed'
+      )
     })
 
     it('should handle malformed tool data', async () => {
       const toolId = 'tool-123'
 
-      mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+      mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
         return await fetchFn()
       })
 
@@ -1150,8 +1140,9 @@ describe('ToolService', () => {
         throw new Error('Invalid tool data')
       })
 
-      await expect(toolService.getToolById(toolId))
-        .rejects.toThrow('Failed to get tool: Error: Invalid tool data')
+      await expect(toolService.getToolById(toolId)).rejects.toThrow(
+        'Failed to get tool: Error: Invalid tool data'
+      )
     })
 
     it('should handle cache service errors gracefully', async () => {

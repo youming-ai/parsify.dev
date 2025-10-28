@@ -1,5 +1,5 @@
+import { Code, Github, Mail, Twitter } from 'lucide-react'
 import Link from 'next/link'
-import { Code, Github, Twitter, Mail } from 'lucide-react'
 
 const navigation = {
   tools: [
@@ -24,7 +24,11 @@ const navigation = {
 }
 
 const socialLinks = [
-  { name: 'GitHub', href: 'https://github.com/your-repo/parsify-dev', icon: Github },
+  {
+    name: 'GitHub',
+    href: 'https://github.com/your-repo/parsify-dev',
+    icon: Github,
+  },
   { name: 'Twitter', href: 'https://twitter.com/parsifydev', icon: Twitter },
   { name: 'Email', href: 'mailto:contact@parsify.dev', icon: Mail },
 ]
@@ -39,12 +43,12 @@ export function Footer() {
               <Code className="h-6 w-6" />
               <span className="font-bold">Parsify.dev</span>
             </Link>
-            <p className="mt-4 text-sm text-muted-foreground max-w-xs">
-              A comprehensive online platform for developers with JSON processing,
-              code formatting, and execution tools. Built with modern web technologies.
+            <p className="mt-4 max-w-xs text-muted-foreground text-sm">
+              A comprehensive online platform for developers with JSON processing, code formatting,
+              and execution tools. Built with modern web technologies.
             </p>
             <div className="mt-6 flex space-x-4">
-              {socialLinks.map((item) => (
+              {socialLinks.map(item => (
                 <Link
                   key={item.name}
                   href={item.href}
@@ -59,13 +63,13 @@ export function Footer() {
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-semibold">Tools</h3>
+            <h3 className="font-semibold text-sm">Tools</h3>
             <ul className="mt-4 space-y-3">
-              {navigation.tools.map((item) => (
+              {navigation.tools.map(item => (
                 <li key={item.name}>
                   <Link
                     href={item.href}
-                    className="text-sm text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground text-sm hover:text-foreground"
                   >
                     {item.name}
                   </Link>
@@ -74,13 +78,13 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold">Resources</h3>
+            <h3 className="font-semibold text-sm">Resources</h3>
             <ul className="mt-4 space-y-3">
-              {navigation.resources.map((item) => (
+              {navigation.resources.map(item => (
                 <li key={item.name}>
                   <Link
                     href={item.href}
-                    className="text-sm text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground text-sm hover:text-foreground"
                   >
                     {item.name}
                   </Link>
@@ -89,13 +93,13 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold">Company</h3>
+            <h3 className="font-semibold text-sm">Company</h3>
             <ul className="mt-4 space-y-3">
-              {navigation.company.map((item) => (
+              {navigation.company.map(item => (
                 <li key={item.name}>
                   <Link
                     href={item.href}
-                    className="text-sm text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground text-sm hover:text-foreground"
                   >
                     {item.name}
                   </Link>
@@ -104,13 +108,13 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold">Legal</h3>
+            <h3 className="font-semibold text-sm">Legal</h3>
             <ul className="mt-4 space-y-3">
-              {navigation.legal.map((item) => (
+              {navigation.legal.map(item => (
                 <li key={item.name}>
                   <Link
                     href={item.href}
-                    className="text-sm text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground text-sm hover:text-foreground"
                   >
                     {item.name}
                   </Link>
@@ -120,7 +124,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-12 border-t pt-8">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             &copy; {new Date().getFullYear()} Parsify.dev. All rights reserved.
           </p>
         </div>

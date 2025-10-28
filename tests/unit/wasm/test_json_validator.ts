@@ -1,19 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
-  JsonValidator,
-  JsonValidationOptions,
-  JsonValidationResult,
-  JsonValidationError,
-  JsonSchemaError,
-  JsonSizeError,
+  addCustomRule,
+  addSchema,
+  type CustomValidationRule,
   JsonDepthError,
+  JsonSizeError,
+  JsonValidationError,
+  JsonValidator,
   jsonValidator,
   validateJson,
   validateJsonSyntax,
   validateWithSchema,
-  addSchema,
-  addCustomRule,
-  CustomValidationRule
 } from '../../../apps/api/src/wasm/json_validator'
 
 describe('JsonValidator', () => {
@@ -58,9 +55,9 @@ describe('JsonValidator', () => {
         type: 'object',
         properties: {
           name: { type: 'string' },
-          age: { type: 'number' }
+          age: { type: 'number' },
         },
-        required: ['name', 'age']
+        required: ['name', 'age'],
       }
 
       const result = await validator.validate(data, schema)
@@ -76,7 +73,7 @@ describe('JsonValidator', () => {
       const data = [1, 2, 3, 'test']
       const schema = {
         type: 'array',
-        items: { type: ['number', 'string'] }
+        items: { type: ['number', 'string'] },
       }
 
       const result = await validator.validate(data, schema)
@@ -91,9 +88,9 @@ describe('JsonValidator', () => {
           name: 'John',
           address: {
             city: 'New York',
-            zip: '10001'
-          }
-        }
+            zip: '10001',
+          },
+        },
       }
       const schema = {
         type: 'object',
@@ -106,15 +103,15 @@ describe('JsonValidator', () => {
                 type: 'object',
                 properties: {
                   city: { type: 'string' },
-                  zip: { type: 'string' }
+                  zip: { type: 'string' },
                 },
-                required: ['city', 'zip']
-              }
+                required: ['city', 'zip'],
+              },
             },
-            required: ['name', 'address']
-          }
+            required: ['name', 'address'],
+          },
         },
-        required: ['user']
+        required: ['user'],
       }
 
       const result = await validator.validate(data, schema)
@@ -129,8 +126,8 @@ describe('JsonValidator', () => {
         type: 'object',
         properties: {
           name: { type: 'string' },
-          age: { type: 'number' }
-        }
+          age: { type: 'number' },
+        },
       }
 
       const result = await validator.validate(jsonString, schema)
@@ -145,16 +142,16 @@ describe('JsonValidator', () => {
         type: 'object',
         properties: {
           name: { type: 'string' },
-          age: { type: 'number' }
+          age: { type: 'number' },
         },
-        required: ['name', 'age']
+        required: ['name', 'age'],
       }
 
       const result = await validator.validate(data, schema)
 
       expect(result.valid).toBe(false)
       expect(result.errors).toBeDefined()
-      expect(result.errors!.length).toBeGreaterThan(0)
+      expect(result.errors?.length).toBeGreaterThan(0)
       expect(result.metadata.errorCount).toBeGreaterThan(0)
     })
 
@@ -164,16 +161,16 @@ describe('JsonValidator', () => {
         type: 'object',
         properties: {
           name: { type: 'string' },
-          age: { type: 'number' }
+          age: { type: 'number' },
         },
-        required: ['name', 'age']
+        required: ['name', 'age'],
       }
 
       const result = await validator.validate(data, schema)
 
       expect(result.valid).toBe(false)
       expect(result.errors).toBeDefined()
-      expect(result.errors!.some(error => error.keyword === 'required')).toBe(true)
+      expect(result.errors?.some(error => error.keyword === 'required')).toBe(true)
     })
 
     it('should handle type mismatches', async () => {
@@ -182,15 +179,15 @@ describe('JsonValidator', () => {
         type: 'object',
         properties: {
           name: { type: 'string' },
-          age: { type: 'number' }
-        }
+          age: { type: 'number' },
+        },
       }
 
       const result = await validator.validate(data, schema)
 
       expect(result.valid).toBe(false)
       expect(result.errors).toBeDefined()
-      expect(result.errors!.some(error => error.keyword === 'type')).toBe(true)
+      expect(result.errors?.some(error => error.keyword === 'type')).toBe(true)
     })
   })
 
@@ -200,13 +197,15 @@ describe('JsonValidator', () => {
       const schema = {
         type: 'object',
         properties: {
-          name: { type: 'string' }
+          name: { type: 'string' },
         },
         additionalProperties: false,
-        required: ['name']
+        required: ['name'],
       }
 
-      const result = await validator.validate(data, schema, { strictMode: true })
+      const result = await validator.validate(data, schema, {
+        strictMode: true,
+      })
 
       expect(result.valid).toBe(false)
       expect(result.errors).toBeDefined()
@@ -218,15 +217,15 @@ describe('JsonValidator', () => {
         type: 'object',
         properties: {
           name: { type: 'string' },
-          age: { type: 'number' }
+          age: { type: 'number' },
         },
-        required: ['name', 'age']
+        required: ['name', 'age'],
       }
 
       const result = await validator.validate(data, schema, { allErrors: true })
 
       expect(result.valid).toBe(false)
-      expect(result.errors!.length).toBeGreaterThan(1)
+      expect(result.errors?.length).toBeGreaterThan(1)
     })
 
     it('should validate with max errors limit', async () => {
@@ -235,16 +234,16 @@ describe('JsonValidator', () => {
         type: 'object',
         properties: {
           name: { type: 'string' },
-          age: { type: 'number' }
+          age: { type: 'number' },
         },
         required: ['name', 'age'],
-        additionalProperties: false
+        additionalProperties: false,
       }
 
       const result = await validator.validate(data, schema, { maxErrors: 2 })
 
       expect(result.valid).toBe(false)
-      expect(result.errors!.length).toBeLessThanOrEqual(2)
+      expect(result.errors?.length).toBeLessThanOrEqual(2)
     })
 
     it('should remove additional properties when requested', async () => {
@@ -252,11 +251,13 @@ describe('JsonValidator', () => {
       const schema = {
         type: 'object',
         properties: {
-          name: { type: 'string' }
-        }
+          name: { type: 'string' },
+        },
       }
 
-      const result = await validator.validate(data, schema, { removeAdditional: true })
+      const result = await validator.validate(data, schema, {
+        removeAdditional: true,
+      })
 
       expect(result.valid).toBe(true)
     })
@@ -267,12 +268,14 @@ describe('JsonValidator', () => {
         type: 'object',
         properties: {
           name: { type: 'string' },
-          age: { type: 'number', default: 25 }
+          age: { type: 'number', default: 25 },
         },
-        required: ['name']
+        required: ['name'],
       }
 
-      const result = await validator.validate(data, schema, { useDefaults: true })
+      const result = await validator.validate(data, schema, {
+        useDefaults: true,
+      })
 
       expect(result.valid).toBe(true)
     })
@@ -283,11 +286,13 @@ describe('JsonValidator', () => {
         type: 'object',
         properties: {
           name: { type: 'string' },
-          age: { type: 'number' }
-        }
+          age: { type: 'number' },
+        },
       }
 
-      const result = await validator.validate(data, schema, { coerceTypes: true })
+      const result = await validator.validate(data, schema, {
+        coerceTypes: true,
+      })
 
       expect(result.valid).toBe(true)
     })
@@ -326,10 +331,10 @@ describe('JsonValidator', () => {
         level1: {
           level2: {
             level3: {
-              data: 'value'
-            }
-          }
-        }
+              data: 'value',
+            },
+          },
+        },
       })
 
       const result = await validator.validateSyntax(deepJson)
@@ -362,7 +367,7 @@ describe('JsonValidator', () => {
           }
           return true
         },
-        errorMessage: 'String too long'
+        errorMessage: 'String too long',
       }
 
       await validator.addCustomRule(customRule)
@@ -371,8 +376,8 @@ describe('JsonValidator', () => {
       const schema = {
         type: 'object',
         properties: {
-          name: { type: 'string' }
-        }
+          name: { type: 'string' },
+        },
       }
 
       const result = await validator.validate(data, schema)
@@ -385,7 +390,7 @@ describe('JsonValidator', () => {
       const customRule: CustomValidationRule = {
         name: 'testRule',
         description: 'Test rule',
-        validator: () => true
+        validator: () => true,
       }
 
       validator.addCustomRule(customRule)
@@ -406,7 +411,7 @@ describe('JsonValidator', () => {
         description: 'Rule that throws error',
         validator: () => {
           throw new Error('Rule execution failed')
-        }
+        },
       }
 
       await validator.addCustomRule(errorRule)
@@ -415,8 +420,8 @@ describe('JsonValidator', () => {
       const schema = {
         type: 'object',
         properties: {
-          name: { type: 'string' }
-        }
+          name: { type: 'string' },
+        },
       }
 
       // Should handle rule errors gracefully
@@ -431,8 +436,8 @@ describe('JsonValidator', () => {
         $id: 'test-schema',
         type: 'object',
         properties: {
-          name: { type: 'string' }
-        }
+          name: { type: 'string' },
+        },
       }
 
       validator.addSchema(schema)
@@ -445,8 +450,8 @@ describe('JsonValidator', () => {
         $id: 'test-schema',
         type: 'object',
         properties: {
-          name: { type: 'string' }
-        }
+          name: { type: 'string' },
+        },
       }
 
       validator.addSchema(schema)
@@ -472,8 +477,8 @@ describe('JsonValidator', () => {
       const schemaWithoutId = {
         type: 'object',
         properties: {
-          name: { type: 'string' }
-        }
+          name: { type: 'string' },
+        },
       }
 
       expect(() => {
@@ -497,15 +502,16 @@ describe('JsonValidator', () => {
     it('should handle oversized input', async () => {
       const largeInput = 'x'.repeat(51 * 1024 * 1024) // 51MB
 
-      await expect(validator.validate(largeInput, { type: 'string' }))
-        .rejects.toThrow(JsonSizeError)
+      await expect(validator.validate(largeInput, { type: 'string' })).rejects.toThrow(
+        JsonSizeError
+      )
     })
 
     it('should handle oversized schema', async () => {
       const largeSchema = {
         $id: 'large-schema',
         type: 'object',
-        properties: {}
+        properties: {},
       }
 
       // Create large properties object
@@ -513,8 +519,7 @@ describe('JsonValidator', () => {
         largeSchema.properties[`prop${i}`] = { type: 'string' }
       }
 
-      await expect(validator.validate({}, largeSchema))
-        .rejects.toThrow(JsonSizeError)
+      await expect(validator.validate({}, largeSchema)).rejects.toThrow(JsonSizeError)
     })
 
     it('should handle excessive depth', async () => {
@@ -525,15 +530,15 @@ describe('JsonValidator', () => {
         current = current[0]
       }
 
-      await expect(validator.validate(deepData, { type: 'array' }))
-        .rejects.toThrow(JsonDepthError)
+      await expect(validator.validate(deepData, { type: 'array' })).rejects.toThrow(JsonDepthError)
     })
 
     it('should handle suspicious content', async () => {
       const maliciousInput = '{"script":"<script>alert(1)</script>"}'
 
-      await expect(validator.validate(maliciousInput, { type: 'object' }))
-        .rejects.toThrow(JsonValidationError)
+      await expect(validator.validate(maliciousInput, { type: 'object' })).rejects.toThrow(
+        JsonValidationError
+      )
     })
   })
 
@@ -557,8 +562,7 @@ describe('JsonValidator', () => {
       expect(result1.valid).toBe(true)
 
       // Should fail with large data
-      await expect(validator.validate(largeData, schema))
-        .rejects.toThrow(JsonSizeError)
+      await expect(validator.validate(largeData, schema)).rejects.toThrow(JsonSizeError)
     })
   })
 
@@ -568,20 +572,22 @@ describe('JsonValidator', () => {
         '{"script":"<script>alert(1)</script>"}',
         '{"code":"javascript:alert(1)"}',
         '{"payload":"eval(malicious())"}',
-        '{"callback":"setTimeout(function(){},0)"}'
+        '{"callback":"setTimeout(function(){},0)"}',
       ]
 
       for (const input of maliciousInputs) {
-        await expect(validator.validate(input, { type: 'object' }))
-          .rejects.toThrow(JsonValidationError)
+        await expect(validator.validate(input, { type: 'object' })).rejects.toThrow(
+          JsonValidationError
+        )
       }
     })
 
     it('should check for XSS patterns', async () => {
       const xssInput = '{"html":"<img src=x onerror=alert(1)>"}'
 
-      await expect(validator.validate(xssInput, { type: 'object' }))
-        .rejects.toThrow(JsonValidationError)
+      await expect(validator.validate(xssInput, { type: 'object' })).rejects.toThrow(
+        JsonValidationError
+      )
     })
   })
 
@@ -595,8 +601,8 @@ describe('JsonValidator', () => {
           tags: [`tag${i}`, `category${i % 10}`],
           metadata: {
             created: new Date().toISOString(),
-            active: i % 2 === 0
-          }
+            active: i % 2 === 0,
+          },
         }
       }
 
@@ -608,10 +614,10 @@ describe('JsonValidator', () => {
             properties: {
               id: { type: 'number' },
               name: { type: 'string' },
-              active: { type: 'boolean' }
-            }
-          }
-        }
+              active: { type: 'boolean' },
+            },
+          },
+        },
       }
 
       const startTime = performance.now()
@@ -623,7 +629,12 @@ describe('JsonValidator', () => {
     })
 
     it('should provide detailed metadata', async () => {
-      const data = { users: [{ name: 'John', age: 30 }, { name: 'Jane', age: 25 }] }
+      const data = {
+        users: [
+          { name: 'John', age: 30 },
+          { name: 'Jane', age: 25 },
+        ],
+      }
       const schema = {
         type: 'object',
         properties: {
@@ -633,13 +644,13 @@ describe('JsonValidator', () => {
               type: 'object',
               properties: {
                 name: { type: 'string' },
-                age: { type: 'number' }
+                age: { type: 'number' },
               },
-              required: ['name', 'age']
-            }
-          }
+              required: ['name', 'age'],
+            },
+          },
         },
-        required: ['users']
+        required: ['users'],
       }
 
       const result = await validator.validate(data, schema)
@@ -666,13 +677,13 @@ describe('JsonValidator', () => {
       const customRule: CustomValidationRule = {
         name: 'testRule',
         description: 'Test rule',
-        validator: () => true
+        validator: () => true,
       }
 
       const schema = {
         $id: 'test-schema',
         type: 'object',
-        properties: { name: { type: 'string' } }
+        properties: { name: { type: 'string' } },
       }
 
       await validator.addCustomRule(customRule)
@@ -700,9 +711,9 @@ describe('Utility functions', () => {
       type: 'object',
       properties: {
         name: { type: 'string' },
-        age: { type: 'number' }
+        age: { type: 'number' },
       },
-      required: ['name', 'age']
+      required: ['name', 'age'],
     }
 
     const result = await validateJson(data, schema)
@@ -730,9 +741,9 @@ describe('Utility functions', () => {
       type: 'object',
       properties: {
         name: { type: 'string' },
-        age: { type: 'number' }
+        age: { type: 'number' },
       },
-      required: ['name', 'age']
+      required: ['name', 'age'],
     }
 
     await addSchema(schema)
@@ -748,8 +759,8 @@ describe('Utility functions', () => {
       $id: 'test-schema',
       type: 'object',
       properties: {
-        name: { type: 'string' }
-      }
+        name: { type: 'string' },
+      },
     }
 
     await addSchema(schema)
@@ -762,8 +773,8 @@ describe('Utility functions', () => {
     const customRule: CustomValidationRule = {
       name: 'testRule',
       description: 'Test rule for unit testing',
-      validator: (data: any) => true,
-      errorMessage: 'Test rule failed'
+      validator: (_data: any) => true,
+      errorMessage: 'Test rule failed',
     }
 
     await addCustomRule(customRule)
@@ -775,8 +786,9 @@ describe('Utility functions', () => {
   it('should handle schema not found error', async () => {
     const data = { name: 'John' }
 
-    await expect(validateWithSchema(data, 'non-existent-schema'))
-      .rejects.toThrow('Schema with ID non-existent-schema not found')
+    await expect(validateWithSchema(data, 'non-existent-schema')).rejects.toThrow(
+      'Schema with ID non-existent-schema not found'
+    )
   })
 })
 
@@ -792,8 +804,8 @@ describe('Edge cases', () => {
       properties: {
         name: { type: ['null', 'string'] },
         age: { type: 'number' },
-        active: { type: 'boolean' }
-      }
+        active: { type: 'boolean' },
+      },
     }
 
     const result = await validateJson(data, schema)
@@ -805,8 +817,7 @@ describe('Edge cases', () => {
     obj.self = obj
 
     // JSON.stringify would throw, but we need to test our handling
-    await expect(validateJson(JSON.stringify(obj), { type: 'object' }))
-      .rejects.toThrow()
+    await expect(validateJson(JSON.stringify(obj), { type: 'object' })).rejects.toThrow()
   })
 
   it('should handle Unicode characters', async () => {
@@ -815,8 +826,8 @@ describe('Edge cases', () => {
       type: 'object',
       properties: {
         greeting: { type: 'string' },
-        emoji: { type: 'string' }
-      }
+        emoji: { type: 'string' },
+      },
     }
 
     const result = await validateJson(data, schema)
@@ -828,7 +839,7 @@ describe('Edge cases', () => {
       newline: 'line1\\nline2',
       tab: 'col1\\tcol2',
       quote: 'say \\"hello\\"',
-      backslash: 'path\\\\to\\\\file'
+      backslash: 'path\\\\to\\\\file',
     }
     const schema = {
       type: 'object',
@@ -836,8 +847,8 @@ describe('Edge cases', () => {
         newline: { type: 'string' },
         tab: { type: 'string' },
         quote: { type: 'string' },
-        backslash: { type: 'string' }
-      }
+        backslash: { type: 'string' },
+      },
     }
 
     const result = await validateJson(data, schema)
@@ -847,10 +858,10 @@ describe('Edge cases', () => {
   it('should handle very large numbers', async () => {
     const data = {
       bigInt: 9007199254740991, // Number max safe integer
-      scientific: 1.23e+10,
+      scientific: 1.23e10,
       negative: -42,
       zero: 0,
-      float: 3.14159
+      float: Math.PI,
     }
     const schema = {
       type: 'object',
@@ -859,8 +870,8 @@ describe('Edge cases', () => {
         scientific: { type: 'number' },
         negative: { type: 'number' },
         zero: { type: 'number' },
-        float: { type: 'number' }
-      }
+        float: { type: 'number' },
+      },
     }
 
     const result = await validateJson(data, schema)
@@ -871,15 +882,15 @@ describe('Edge cases', () => {
     const data = {
       infinity: Infinity,
       negInfinity: -Infinity,
-      nan: NaN
+      nan: NaN,
     }
     const schema = {
       type: 'object',
       properties: {
         infinity: { type: 'number' },
         negInfinity: { type: 'number' },
-        nan: { type: 'number' }
-      }
+        nan: { type: 'number' },
+      },
     }
 
     // JSON.stringify handles special values differently
@@ -895,7 +906,7 @@ describe('Edge cases', () => {
       empty: '',
       whitespace: '   ',
       newline: '\\n\\r\\n',
-      tab: '\\t\\t'
+      tab: '\\t\\t',
     }
     const schema = {
       type: 'object',
@@ -903,8 +914,8 @@ describe('Edge cases', () => {
         empty: { type: 'string' },
         whitespace: { type: 'string' },
         newline: { type: 'string' },
-        tab: { type: 'string' }
-      }
+        tab: { type: 'string' },
+      },
     }
 
     const result = await validateJson(data, schema)
@@ -940,18 +951,18 @@ describe('Performance benchmarks', () => {
                           type: 'object',
                           properties: {
                             type: { type: 'string' },
-                            value: { type: 'string' }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+                            value: { type: 'string' },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     }
 
     const data = {
@@ -963,12 +974,12 @@ describe('Performance benchmarks', () => {
               name: 'John Doe',
               contacts: [
                 { type: 'email', value: 'john@example.com' },
-                { type: 'phone', value: '+1234567890' }
-              ]
-            }
-          }
-        }
-      ]
+                { type: 'phone', value: '+1234567890' },
+              ],
+            },
+          },
+        },
+      ],
     }
 
     const startTime = performance.now()
@@ -988,8 +999,8 @@ describe('Performance benchmarks', () => {
         name: `rule${i}`,
         description: `Test rule ${i}`,
         priority: i,
-        validator: (data: any) => true,
-        errorMessage: `Rule ${i} failed`
+        validator: (_data: any) => true,
+        errorMessage: `Rule ${i} failed`,
       })
     }
 
@@ -1001,8 +1012,8 @@ describe('Performance benchmarks', () => {
     const schema = {
       type: 'object',
       properties: {
-        name: { type: 'string' }
-      }
+        name: { type: 'string' },
+      },
     }
 
     const startTime = performance.now()

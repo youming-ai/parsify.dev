@@ -1,36 +1,10 @@
-import { D1Database } from '@cloudflare/workers-types'
-import {
-  DatabaseClient,
-  DatabasePool,
-  createDatabaseClient,
-  createDatabasePool,
-  DEFAULT_DATABASE_CLIENT_CONFIG,
-} from './client'
-import {
-  EnhancedConnectionPool,
-  createEnhancedConnectionPool,
-  ConnectionPoolConfig,
-} from './pool'
-import {
-  ConnectionPoolMonitor,
-  createConnectionPoolMonitor,
-  PoolMonitoringConfig,
-} from './pool-monitoring'
-import {
-  ConnectionLifecycleManager,
-  createConnectionLifecycleManager,
-  ConnectionLifecycleConfig,
-} from './connection-lifecycle'
-import {
-  PoolHealthChecker,
-  createPoolHealthChecker,
-  HealthCheckConfig,
-} from './pool-health-checker'
-import {
-  AdaptivePoolSizer,
-  createAdaptivePoolSizer,
-  AdaptiveSizingConfig,
-} from './adaptive-pool-sizer'
+import type { D1Database } from '@cloudflare/workers-types'
+import type { AdaptiveSizingConfig } from './adaptive-pool-sizer'
+import { createDatabasePool, type DatabaseClient, type DatabasePool } from './client'
+import type { ConnectionLifecycleConfig } from './connection-lifecycle'
+import type { ConnectionPoolConfig } from './pool'
+import type { HealthCheckConfig } from './pool-health-checker'
+import type { PoolMonitoringConfig } from './pool-monitoring'
 
 export interface DatabaseServiceConfig {
   // Legacy compatibility
@@ -121,13 +95,6 @@ export class DatabaseService {
     attempts: number
   }> = []
 
-  // Enhanced pool components
-  private enhancedPool?: EnhancedConnectionPool
-  private poolMonitor?: ConnectionPoolMonitor
-  private lifecycleManager?: ConnectionLifecycleManager
-  private healthChecker?: PoolHealthChecker
-  private adaptiveSizer?: AdaptivePoolSizer
-
   constructor(db: D1Database, config: DatabaseServiceConfig = {}) {
     this.config = {
       poolSize: config.poolSize ?? 5,
@@ -190,7 +157,7 @@ export class DatabaseService {
 
       return result
     } catch (error) {
-      const executionTime = Date.now() - startTime
+      const _executionTime = Date.now() - startTime
       this.trackFailedQuery(sql, params, error as Error, 1)
       throw error
     }
@@ -216,7 +183,7 @@ export class DatabaseService {
 
       return result
     } catch (error) {
-      const executionTime = Date.now() - startTime
+      const _executionTime = Date.now() - startTime
       this.trackFailedQuery(sql, params, error as Error, 1)
       throw error
     }
@@ -242,7 +209,7 @@ export class DatabaseService {
 
       return result
     } catch (error) {
-      const executionTime = Date.now() - startTime
+      const _executionTime = Date.now() - startTime
       this.trackFailedQuery(sql, params, error as Error, 1)
       throw error
     }
@@ -282,7 +249,7 @@ export class DatabaseService {
 
       return result
     } catch (error) {
-      const executionTime = Date.now() - startTime
+      const _executionTime = Date.now() - startTime
       this.trackFailedQuery(
         `BATCH: ${queries.map(q => q.sql).join('; ')}`,
         queries.flatMap(q => q.params || []),
@@ -348,8 +315,7 @@ export class DatabaseService {
       },
       connections: {
         activeConnections: poolMetrics.connectionPoolSize,
-        idleConnections:
-          poolMetrics.totalConnections - poolMetrics.connectionPoolSize,
+        idleConnections: poolMetrics.totalConnections - poolMetrics.connectionPoolSize,
         poolUtilization:
           poolMetrics.totalConnections > 0
             ? poolMetrics.connectionPoolSize / poolMetrics.totalConnections
@@ -367,9 +333,7 @@ export class DatabaseService {
     executionTime: number
     timestamp: number
   }> {
-    return this.slowQueries
-      .sort((a, b) => b.executionTime - a.executionTime)
-      .slice(0, limit)
+    return this.slowQueries.sort((a, b) => b.executionTime - a.executionTime).slice(0, limit)
   }
 
   /**
@@ -382,9 +346,7 @@ export class DatabaseService {
     timestamp: number
     attempts: number
   }> {
-    return this.failedQueries
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, limit)
+    return this.failedQueries.sort((a, b) => b.timestamp - a.timestamp).slice(0, limit)
   }
 
   /**
@@ -425,11 +387,7 @@ export class DatabaseService {
     }, this.config.healthCheckIntervalMs)
   }
 
-  private trackSlowQuery(
-    sql: string,
-    params: any[] | undefined,
-    executionTime: number
-  ): void {
+  private trackSlowQuery(sql: string, params: any[] | undefined, executionTime: number): void {
     if (!this.config.logSlowQueries) return
 
     const slowQuery = {

@@ -16,13 +16,7 @@
   "endpoints": {
     "tools-endpoint": {
       "requests": 5800,
-      "responseTimes": [
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
+      "responseTimes": [0, 0, 0, 0, 0],
       "successes": 0,
       "errors": [
         {

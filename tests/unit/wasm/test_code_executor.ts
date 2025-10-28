@@ -1,24 +1,18 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
-  CodeExecutor,
-  ExecutionRequest,
-  ExecutionResult,
-  ExecutionLimits,
-  ExecutionEnvironment,
-  ExecutionStatistics,
   CodeExecutionError,
-  TimeoutError,
-  MemoryLimitError,
-  SecurityError,
-  UnsupportedLanguageError,
+  CodeExecutor,
   CodeSizeError,
   codeExecutor,
+  type ExecutionEnvironment,
+  type ExecutionLanguage,
+  type ExecutionLimits,
+  type ExecutionRequest,
   executeCode,
   executeJavaScript,
   executePython,
   executeTypeScript,
-  EXECUTION_LANGUAGES,
-  ExecutionLanguage
+  UnsupportedLanguageError,
 } from '../../../apps/api/src/wasm/code_executor'
 
 describe('CodeExecutor', () => {
@@ -94,7 +88,7 @@ describe('CodeExecutor', () => {
     it('should execute simple JavaScript code', async () => {
       const request: ExecutionRequest = {
         code: 'console.log("Hello, World!")',
-        language: 'javascript'
+        language: 'javascript',
       }
 
       const result = await executor.execute(request)
@@ -113,7 +107,7 @@ describe('CodeExecutor', () => {
     it('should execute JavaScript with return value', async () => {
       const request: ExecutionRequest = {
         code: 'function add(a, b) { return a + b; } add(2, 3);',
-        language: 'javascript'
+        language: 'javascript',
       }
 
       const result = await executor.execute(request)
@@ -126,7 +120,7 @@ describe('CodeExecutor', () => {
     it('should handle JavaScript with syntax errors', async () => {
       const request: ExecutionRequest = {
         code: 'function test( { console.log("missing parenthesis")',
-        language: 'javascript'
+        language: 'javascript',
       }
 
       const result = await executor.execute(request)
@@ -140,7 +134,7 @@ describe('CodeExecutor', () => {
     it('should handle JavaScript runtime errors', async () => {
       const request: ExecutionRequest = {
         code: 'console.log(undefinedVariable)',
-        language: 'javascript'
+        language: 'javascript',
       }
 
       const result = await executor.execute(request)
@@ -161,7 +155,7 @@ describe('CodeExecutor', () => {
           const product = x * y;
           console.log('Product:', product);
         `,
-        language: 'javascript'
+        language: 'javascript',
       }
 
       const result = await executor.execute(request)
@@ -181,7 +175,7 @@ describe('CodeExecutor', () => {
           }
           test();
         `,
-        language: 'javascript'
+        language: 'javascript',
       }
 
       const result = await executor.execute(request)
@@ -197,7 +191,7 @@ describe('CodeExecutor', () => {
             console.log('Iteration:', i);
           }
         `,
-        language: 'javascript'
+        language: 'javascript',
       }
 
       const result = await executor.execute(request)
@@ -216,7 +210,7 @@ describe('CodeExecutor', () => {
     it('should execute simple Python code', async () => {
       const request: ExecutionRequest = {
         code: 'print("Hello, World!")',
-        language: 'python'
+        language: 'python',
       }
 
       const result = await executor.execute(request)
@@ -236,7 +230,7 @@ describe('CodeExecutor', () => {
           sum = x + y
           print(f"Sum: {sum}")
         `,
-        language: 'python'
+        language: 'python',
       }
 
       const result = await executor.execute(request)
@@ -248,7 +242,7 @@ describe('CodeExecutor', () => {
     it('should handle Python with syntax errors', async () => {
       const request: ExecutionRequest = {
         code: 'print("missing quote',
-        language: 'python'
+        language: 'python',
       }
 
       const result = await executor.execute(request)
@@ -262,7 +256,7 @@ describe('CodeExecutor', () => {
     it('should handle Python runtime errors', async () => {
       const request: ExecutionRequest = {
         code: 'print(undefined_variable)',
-        language: 'python'
+        language: 'python',
       }
 
       const result = await executor.execute(request)
@@ -282,7 +276,7 @@ describe('CodeExecutor', () => {
           result = add(3, 4)
           print(f"Result: {result}")
         `,
-        language: 'python'
+        language: 'python',
       }
 
       const result = await executor.execute(request)
@@ -297,7 +291,7 @@ describe('CodeExecutor', () => {
           for i in range(5):
               print(f"Iteration: {i}")
         `,
-        language: 'python'
+        language: 'python',
       }
 
       const result = await executor.execute(request)
@@ -319,7 +313,7 @@ describe('CodeExecutor', () => {
           const message: string = "Hello, TypeScript!";
           console.log(message);
         `,
-        language: 'typescript'
+        language: 'typescript',
       }
 
       const result = await executor.execute(request)
@@ -341,7 +335,7 @@ describe('CodeExecutor', () => {
           const user: User = { name: "John", age: 30 };
           console.log(\`User: \${user.name}, Age: \${user.age}\`);
         `,
-        language: 'typescript'
+        language: 'typescript',
       }
 
       const result = await executor.execute(request)
@@ -356,7 +350,7 @@ describe('CodeExecutor', () => {
           const message: number = "hello";
           console.log(message);
         `,
-        language: 'typescript'
+        language: 'typescript',
       }
 
       const result = await executor.execute(request)
@@ -387,7 +381,7 @@ describe('CodeExecutor', () => {
           const result = calc.add(5).add(3).getResult();
           console.log(\`Result: \${result}\`);
         `,
-        language: 'typescript'
+        language: 'typescript',
       }
 
       const result = await executor.execute(request)
@@ -411,8 +405,8 @@ describe('CodeExecutor', () => {
         `,
         language: 'javascript',
         limits: {
-          timeoutMs: 100 // 100ms timeout
-        }
+          timeoutMs: 100, // 100ms timeout
+        },
       }
 
       const result = await executor.execute(request)
@@ -434,8 +428,8 @@ describe('CodeExecutor', () => {
         `,
         language: 'javascript',
         limits: {
-          maxMemoryMB: 16 // 16MB limit
-        }
+          maxMemoryMB: 16, // 16MB limit
+        },
       }
 
       const result = await executor.execute(request)
@@ -455,8 +449,8 @@ describe('CodeExecutor', () => {
         `,
         language: 'javascript',
         limits: {
-          allowNetwork: false
-        }
+          allowNetwork: false,
+        },
       }
 
       const result = await executor.execute(request)
@@ -474,8 +468,8 @@ describe('CodeExecutor', () => {
         `,
         language: 'javascript',
         limits: {
-          allowFileSystem: false
-        }
+          allowFileSystem: false,
+        },
       }
 
       const result = await executor.execute(request)
@@ -492,8 +486,8 @@ describe('CodeExecutor', () => {
         `,
         language: 'javascript',
         limits: {
-          allowEnv: false
-        }
+          allowEnv: false,
+        },
       }
 
       const result = await executor.execute(request)
@@ -515,8 +509,8 @@ describe('CodeExecutor', () => {
         `,
         language: 'javascript',
         limits: {
-          allowProcess: false
-        }
+          allowProcess: false,
+        },
       }
 
       const result = await executor.execute(request)
@@ -534,13 +528,13 @@ describe('CodeExecutor', () => {
         'eval("console.log(\\"eval executed\\")")',
         'Function("console.log(\\"Function executed\\")")()',
         'setTimeout(() => console.log("setTimeout executed"), 0)',
-        'setInterval(() => console.log("setInterval executed"), 100)'
+        'setInterval(() => console.log("setInterval executed"), 100)',
       ]
 
       for (const code of dangerousCodes) {
         const request: ExecutionRequest = {
           code,
-          language: 'javascript'
+          language: 'javascript',
         }
 
         const result = await executor.execute(request)
@@ -553,17 +547,16 @@ describe('CodeExecutor', () => {
     })
 
     it('should handle large input size', async () => {
-      const largeInput = 'x'.repeat(200000) // 200KB
+      const _largeInput = 'x'.repeat(200000) // 200KB
       const request: ExecutionRequest = {
         code: 'console.log(input.length)',
         language: 'javascript',
         limits: {
-          maxInputSize: 100000 // 100KB limit
-        }
+          maxInputSize: 100000, // 100KB limit
+        },
       }
 
-      await expect(executor.execute(request))
-        .rejects.toThrow(CodeSizeError)
+      await expect(executor.execute(request)).rejects.toThrow(CodeSizeError)
     })
 
     it('should handle large output size', async () => {
@@ -575,8 +568,8 @@ describe('CodeExecutor', () => {
         `,
         language: 'javascript',
         limits: {
-          maxOutputSize: 10000 // 10KB limit
-        }
+          maxOutputSize: 10000, // 10KB limit
+        },
       }
 
       const result = await executor.execute(request)
@@ -607,7 +600,7 @@ describe('CodeExecutor', () => {
           });
         `,
         language: 'javascript',
-        input: 'Hello from stdin'
+        input: 'Hello from stdin',
       }
 
       const result = await executor.execute(request)
@@ -622,7 +615,7 @@ describe('CodeExecutor', () => {
           console.log('Arguments:', process.argv.slice(2));
         `,
         language: 'javascript',
-        args: ['arg1', 'arg2', 'arg3']
+        args: ['arg1', 'arg2', 'arg3'],
       }
 
       const result = await executor.execute(request)
@@ -642,11 +635,11 @@ describe('CodeExecutor', () => {
         language: 'javascript',
         env: {
           TEST_VAR: 'test value',
-          NODE_ENV: 'test'
+          NODE_ENV: 'test',
         },
         limits: {
-          allowEnv: true
-        }
+          allowEnv: true,
+        },
       }
 
       const result = await executor.execute(request)
@@ -662,7 +655,7 @@ describe('CodeExecutor', () => {
           console.log('Working directory:', process.cwd());
         `,
         language: 'javascript',
-        workingDirectory: '/custom/workspace'
+        workingDirectory: '/custom/workspace',
       }
 
       const result = await executor.execute(request)
@@ -698,12 +691,12 @@ describe('CodeExecutor', () => {
 
       const jsResult = await executor.execute({
         code: factorialJS,
-        language: 'javascript'
+        language: 'javascript',
       })
 
       const pyResult = await executor.execute({
         code: factorialPY,
-        language: 'python'
+        language: 'python',
       })
 
       expect(jsResult.success).toBe(true)
@@ -727,12 +720,12 @@ describe('CodeExecutor', () => {
 
       const jsResult = await executor.execute({
         code: jsCode,
-        language: 'javascript'
+        language: 'javascript',
       })
 
       const pyResult = await executor.execute({
         code: pyCode,
-        language: 'python'
+        language: 'python',
       })
 
       expect(jsResult.success).toBe(true)
@@ -750,38 +743,35 @@ describe('CodeExecutor', () => {
     it('should handle unsupported language', async () => {
       const request: ExecutionRequest = {
         code: 'print("hello")',
-        language: 'ruby' as ExecutionLanguage
+        language: 'ruby' as ExecutionLanguage,
       }
 
-      await expect(executor.execute(request))
-        .rejects.toThrow(UnsupportedLanguageError)
+      await expect(executor.execute(request)).rejects.toThrow(UnsupportedLanguageError)
     })
 
     it('should handle empty code', async () => {
       const request: ExecutionRequest = {
         code: '',
-        language: 'javascript'
+        language: 'javascript',
       }
 
-      await expect(executor.execute(request))
-        .rejects.toThrow(CodeExecutionError)
+      await expect(executor.execute(request)).rejects.toThrow(CodeExecutionError)
     })
 
     it('should handle extremely long code', async () => {
       const longCode = 'console.log("x");'.repeat(10000)
       const request: ExecutionRequest = {
         code: longCode,
-        language: 'javascript'
+        language: 'javascript',
       }
 
-      await expect(executor.execute(request))
-        .rejects.toThrow(CodeSizeError)
+      await expect(executor.execute(request)).rejects.toThrow(CodeSizeError)
     })
 
     it('should handle code with special characters', async () => {
       const request: ExecutionRequest = {
         code: 'console.log("Special chars: \n\t\r\\"\\\'\\x00\\u1234");',
-        language: 'javascript'
+        language: 'javascript',
       }
 
       const result = await executor.execute(request)
@@ -793,7 +783,7 @@ describe('CodeExecutor', () => {
     it('should handle Unicode characters', async () => {
       const request: ExecutionRequest = {
         code: 'console.log("Unicode: 你好 🌍 🚀 é ü ñ");',
-        language: 'javascript'
+        language: 'javascript',
       }
 
       const result = await executor.execute(request)
@@ -810,8 +800,8 @@ describe('CodeExecutor', () => {
         language: 'javascript',
         limits: {
           timeoutMs: -1, // Invalid
-          maxMemoryMB: 0 // Invalid
-        }
+          maxMemoryMB: 0, // Invalid
+        },
       }
 
       // Should handle invalid limits gracefully
@@ -822,7 +812,7 @@ describe('CodeExecutor', () => {
     it('should provide detailed error information', async () => {
       const request: ExecutionRequest = {
         code: 'throw new Error("Custom error message");',
-        language: 'javascript'
+        language: 'javascript',
       }
 
       const result = await executor.execute(request)
@@ -847,17 +837,17 @@ describe('CodeExecutor', () => {
       // Execute several times
       await executor.execute({
         code: 'console.log("test 1");',
-        language: 'javascript'
+        language: 'javascript',
       })
 
       await executor.execute({
         code: 'console.log("test 2");',
-        language: 'javascript'
+        language: 'javascript',
       })
 
       await executor.execute({
         code: 'print("test 3")',
-        language: 'python'
+        language: 'python',
       })
 
       const updatedStats = executor.getStatistics()
@@ -880,7 +870,7 @@ describe('CodeExecutor', () => {
           const end = Date.now();
           console.log(\`Sum: \${sum}, Time: \${end - start}ms\`);
         `,
-        language: 'javascript'
+        language: 'javascript',
       }
 
       const result = await executor.execute(request)
@@ -898,7 +888,7 @@ describe('CodeExecutor', () => {
       const requests = Array.from({ length: 5 }, (_, i) =>
         executor.execute({
           code: `console.log("Concurrent execution ${i}");`,
-          language: 'javascript'
+          language: 'javascript',
         })
       )
 
@@ -922,8 +912,8 @@ describe('CodeExecutor', () => {
         `,
         language: 'javascript',
         limits: {
-          maxMemoryMB: 64
-        }
+          maxMemoryMB: 64,
+        },
       }
 
       const result = await executor.execute(request)
@@ -948,14 +938,14 @@ describe('CodeExecutor', () => {
         allowNetwork: false,
         allowFileSystem: false,
         allowEnv: false,
-        allowProcess: false
+        allowProcess: false,
       }
 
       executor.setDefaultLimits(customLimits)
 
       const request: ExecutionRequest = {
         code: 'console.log("test with custom limits");',
-        language: 'javascript'
+        language: 'javascript',
       }
 
       const result = await executor.execute(request)
@@ -976,15 +966,15 @@ describe('CodeExecutor', () => {
           network: false,
           fileSystem: false,
           environment: false,
-          processes: false
-        }
+          processes: false,
+        },
       }
 
       executor.setExecutionEnvironment('javascript', customEnv)
 
       const request: ExecutionRequest = {
         code: 'console.log("test with custom environment");',
-        language: 'javascript'
+        language: 'javascript',
       }
 
       const result = await executor.execute(request)
@@ -1001,12 +991,15 @@ describe('CodeExecutor', () => {
         { code: '', language: 'javascript' },
         { code: 'console.log("test")', language: null },
         { code: 'x'.repeat(200000), language: 'javascript' }, // Too long
-        { code: 'console.log("test")', language: 'javascript', args: Array(100).fill('arg') } // Too many args
+        {
+          code: 'console.log("test")',
+          language: 'javascript',
+          args: Array(100).fill('arg'),
+        }, // Too many args
       ]
 
       for (const request of invalidRequests) {
-        await expect(executor.execute(request as any))
-          .rejects.toThrow(CodeExecutionError)
+        await expect(executor.execute(request as any)).rejects.toThrow(CodeExecutionError)
       }
     })
   })
@@ -1026,7 +1019,7 @@ describe('CodeExecutor', () => {
           console.log('Before execution');
           // File should not persist after execution
         `,
-        language: 'javascript'
+        language: 'javascript',
       }
 
       const result = await executor.execute(request)
@@ -1041,7 +1034,7 @@ describe('CodeExecutor', () => {
       for (let i = 0; i < 50; i++) {
         await executor.execute({
           code: `console.log("Execution ${i}");`,
-          language: 'javascript'
+          language: 'javascript',
         })
       }
 
@@ -1065,7 +1058,7 @@ describe('Utility functions', () => {
   it('executeCode should execute code correctly', async () => {
     const request: ExecutionRequest = {
       code: 'console.log("Hello from utility function");',
-      language: 'javascript'
+      language: 'javascript',
     }
 
     const result = await executeCode(request)
@@ -1113,13 +1106,13 @@ describe('Security features', () => {
     const maliciousCodes = [
       'const fs = require("fs"); fs.readFile("/etc/passwd", (data) => console.log(data));',
       'import { exec } from "child_process"; exec("ls -la", (error, stdout) => console.log(stdout));',
-      'const { spawn } = require("child_process"); spawn("rm", ["-rf", "/"]);'
+      'const { spawn } = require("child_process"); spawn("rm", ["-rf", "/"]);',
     ]
 
     for (const code of maliciousCodes) {
       const result = await executeCode({
         code,
-        language: 'javascript'
+        language: 'javascript',
       })
 
       expect(result.success).toBe(false)
@@ -1131,13 +1124,13 @@ describe('Security features', () => {
     const injectionAttempts = [
       'require("child_process").execSync("echo HACKED").toString()',
       'global.process.mainModule.require("child_process").exec("echo HACKED")',
-      'process.binding("spawn_sync").spawn({ file: "echo", args: ["HACKED"] })'
+      'process.binding("spawn_sync").spawn({ file: "echo", args: ["HACKED"] })',
     ]
 
     for (const code of injectionAttempts) {
       const result = await executeCode({
         code,
-        language: 'javascript'
+        language: 'javascript',
       })
 
       expect(result.success).toBe(false)
@@ -1149,13 +1142,13 @@ describe('Security features', () => {
     const pollutionAttempts = [
       'Object.prototype.polluted = true; console.log("Polluted:", {}.polluted);',
       'JSON.parse(\'{"__proto__":{"polluted":true}}\'); console.log("Polluted:", {}.polluted);',
-      'const obj = {}; obj.__proto__.polluted = true; console.log("Polluted:", {}.polluted);'
+      'const obj = {}; obj.__proto__.polluted = true; console.log("Polluted:", {}.polluted);',
     ]
 
     for (const code of pollutionAttempts) {
       const result = await executeCode({
         code,
-        language: 'javascript'
+        language: 'javascript',
       })
 
       // Should either fail or not actually pollute
@@ -1175,8 +1168,8 @@ describe('Security features', () => {
       code,
       language: 'javascript',
       limits: {
-        timeoutMs: 1000
-      }
+        timeoutMs: 1000,
+      },
     })
 
     expect(result.success).toBe(false)
@@ -1237,7 +1230,7 @@ describe('Performance benchmarks', () => {
     `
 
     const result = await executeJavaScript(code, {
-      maxMemoryMB: 64
+      maxMemoryMB: 64,
     })
 
     expect(result.success).toBe(true)
@@ -1255,7 +1248,7 @@ describe('Performance benchmarks', () => {
     `
 
     const result = await executeJavaScript(code, {
-      maxOutputSize: 50000
+      maxOutputSize: 50000,
     })
 
     expect(result.success).toBe(true)
@@ -1272,20 +1265,20 @@ describe('Error handling and validation', () => {
     const testCases = [
       {
         code: 'undefinedVariable',
-        expectedError: 'undefinedVariable'
+        expectedError: 'undefinedVariable',
       },
       {
         code: 'function test( { console.log("missing paren")',
-        expectedError: 'SyntaxError'
+        expectedError: 'SyntaxError',
       },
       {
         code: 'throw new Error("Custom error")',
-        expectedError: 'Custom error'
+        expectedError: 'Custom error',
       },
       {
         code: 'JSON.parse("invalid json")',
-        expectedError: 'JSON'
-      }
+        expectedError: 'JSON',
+      },
     ]
 
     for (const testCase of testCases) {
@@ -1296,8 +1289,8 @@ describe('Error handling and validation', () => {
       expect(result.error).toBeDefined()
       if (testCase.expectedError) {
         expect(
-          result.stderr!.includes(testCase.expectedError) ||
-          result.error!.includes(testCase.expectedError)
+          result.stderr?.includes(testCase.expectedError) ||
+            result.error?.includes(testCase.expectedError)
         ).toBe(true)
       }
     }
@@ -1324,9 +1317,9 @@ describe('Error handling and validation', () => {
       input: 'Test input with unicode: 你好 🌍',
       args: ['--flag', 'value with spaces'],
       env: {
-        'TEST_VAR': 'value with unicode: é ü ñ',
-        'EMPTY_VAR': '',
-        'NUMERIC_VAR': '12345'
+        TEST_VAR: 'value with unicode: é ü ñ',
+        EMPTY_VAR: '',
+        NUMERIC_VAR: '12345',
       },
       workingDirectory: '/tmp/test workspace',
       limits: {
@@ -1337,8 +1330,8 @@ describe('Error handling and validation', () => {
         allowNetwork: false,
         allowFileSystem: false,
         allowEnv: true,
-        allowProcess: false
-      }
+        allowProcess: false,
+      },
     }
 
     const result = await executeCode(complexRequest)

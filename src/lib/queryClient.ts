@@ -21,7 +21,7 @@ export const queryClient = new QueryClient({
         // Retry up to 3 times for other errors
         return failureCount < 3
       },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
     mutations: {
       // Default retry behavior for mutations
@@ -54,15 +54,18 @@ export const mutationKeys = {
 export const invalidateQueries = {
   files: () => queryClient.invalidateQueries({ queryKey: queryKeys.files }),
   file: (id: string) => queryClient.invalidateQueries({ queryKey: queryKeys.file(id) }),
-  fileValidation: () => queryClient.invalidateQueries({
-    predicate: (query) => query.queryKey[0] === 'validation'
-  }),
-  jsonParsing: () => queryClient.invalidateQueries({
-    predicate: (query) => query.queryKey[0] === 'parsing'
-  }),
-  search: () => queryClient.invalidateQueries({
-    predicate: (query) => query.queryKey[0] === 'search'
-  }),
+  fileValidation: () =>
+    queryClient.invalidateQueries({
+      predicate: query => query.queryKey[0] === 'validation',
+    }),
+  jsonParsing: () =>
+    queryClient.invalidateQueries({
+      predicate: query => query.queryKey[0] === 'parsing',
+    }),
+  search: () =>
+    queryClient.invalidateQueries({
+      predicate: query => query.queryKey[0] === 'search',
+    }),
   all: () => queryClient.invalidateQueries(),
 } as const
 
@@ -73,7 +76,7 @@ export const prefetchQueries = {
     // For now, we'll just return a placeholder
     return Promise.resolve()
   },
-  file: async (id: string) => {
+  file: async (_id: string) => {
     // Prefetch specific file data
     return Promise.resolve()
   },

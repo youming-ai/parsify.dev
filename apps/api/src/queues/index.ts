@@ -1,24 +1,23 @@
 // Main queue system exports
-export { JobQueueSystem, WasmToolProcessor } from './job-queue'
-export { QueueManager } from './queue-manager'
-export { QueueMonitoringSystem } from './queue-monitoring'
 
+// Re-export job-related types
+export { JobPriority, JobStatus } from '../models/job'
 // Type exports
 export type {
-  QueueConfig,
   JobQueueMessage,
+  QueueConfig,
   QueueMetrics,
   QueueProcessor,
 } from './job-queue'
+export { JobQueueSystem, WasmToolProcessor } from './job-queue'
+export { QueueManager } from './queue-manager'
 
 export type {
-  QueueMonitoringMetrics,
-  QueueAlertConfig,
   QueueAlert,
+  QueueAlertConfig,
+  QueueMonitoringMetrics,
 } from './queue-monitoring'
-
-// Re-export job-related types
-export { JobStatus, JobPriority } from '../models/job'
+export { QueueMonitoringSystem } from './queue-monitoring'
 
 /**
  * Example usage in Cloudflare Workers:

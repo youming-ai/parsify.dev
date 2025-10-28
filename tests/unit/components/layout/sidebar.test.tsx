@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen, fireEvent } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { render } from '../test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Sidebar } from '@/web/components/layout/sidebar'
+import { render } from '../test-utils'
 
 // Mock Next.js components
 vi.mock('next/link', () => ({
@@ -19,15 +19,33 @@ vi.mock('next/navigation', () => ({
 
 // Mock Lucide React icons
 vi.mock('lucide-react', () => ({
-  FileJson: ({ className }: { className?: string }) => <div data-testid="file-json-icon" className={className} />,
-  Code: ({ className }: { className?: string }) => <div data-testid="code-icon" className={className} />,
-  Wrench: ({ className }: { className?: string }) => <div data-testid="wrench-icon" className={className} />,
-  Hash: ({ className }: { className?: string }) => <div data-testid="hash-icon" className={className} />,
-  FileText: ({ className }: { className?: string }) => <div data-testid="file-text-icon" className={className} />,
-  Clock: ({ className }: { className?: string }) => <div data-testid="clock-icon" className={className} />,
-  Star: ({ className }: { className?: string }) => <div data-testid="star-icon" className={className} />,
-  ChevronDown: ({ className }: { className?: string }) => <div data-testid="chevron-down-icon" className={className} />,
-  ChevronRight: ({ className }: { className?: string }) => <div data-testid="chevron-right-icon" className={className} />,
+  FileJson: ({ className }: { className?: string }) => (
+    <div data-testid="file-json-icon" className={className} />
+  ),
+  Code: ({ className }: { className?: string }) => (
+    <div data-testid="code-icon" className={className} />
+  ),
+  Wrench: ({ className }: { className?: string }) => (
+    <div data-testid="wrench-icon" className={className} />
+  ),
+  Hash: ({ className }: { className?: string }) => (
+    <div data-testid="hash-icon" className={className} />
+  ),
+  FileText: ({ className }: { className?: string }) => (
+    <div data-testid="file-text-icon" className={className} />
+  ),
+  Clock: ({ className }: { className?: string }) => (
+    <div data-testid="clock-icon" className={className} />
+  ),
+  Star: ({ className }: { className?: string }) => (
+    <div data-testid="star-icon" className={className} />
+  ),
+  ChevronDown: ({ className }: { className?: string }) => (
+    <div data-testid="chevron-down-icon" className={className} />
+  ),
+  ChevronRight: ({ className }: { className?: string }) => (
+    <div data-testid="chevron-right-icon" className={className} />
+  ),
 }))
 
 // Mock UI components
@@ -86,7 +104,10 @@ describe('Sidebar Component', () => {
     expect(screen.getByText('JSON Formatter')).toBeInTheDocument()
     expect(screen.getByText('JSON Validator')).toBeInTheDocument()
     expect(screen.getByText('JSON Converter')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'JSON Formatter' })).toHaveAttribute('href', '/tools/json/format')
+    expect(screen.getByRole('link', { name: 'JSON Formatter' })).toHaveAttribute(
+      'href',
+      '/tools/json/format'
+    )
   })
 
   it('collapses and expands categories when clicked', async () => {
@@ -131,11 +152,15 @@ describe('Sidebar Component', () => {
     render(<Sidebar />)
 
     // Should highlight JSON Formatter as active
-    const jsonFormatterLink = screen.getByRole('link', { name: 'JSON Formatter' })
+    const jsonFormatterLink = screen.getByRole('link', {
+      name: 'JSON Formatter',
+    })
     expect(jsonFormatterLink).toHaveClass('secondary')
 
     // Other tools should not be highlighted
-    const jsonValidatorLink = screen.getByRole('link', { name: 'JSON Validator' })
+    const jsonValidatorLink = screen.getByRole('link', {
+      name: 'JSON Validator',
+    })
     expect(jsonValidatorLink).not.toHaveClass('secondary')
   })
 
@@ -155,7 +180,9 @@ describe('Sidebar Component', () => {
     render(<Sidebar />)
 
     expect(screen.getByText('Pro Features')).toBeInTheDocument()
-    expect(screen.getByText('Unlock advanced tools and higher limits with our Pro plan.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Unlock advanced tools and higher limits with our Pro plan.')
+    ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Upgrade Now' })).toHaveAttribute('href', '/pricing')
     expect(screen.getByTestId('hash-icon')).toBeInTheDocument()
   })
@@ -173,7 +200,9 @@ describe('Sidebar Component', () => {
   it('shows tooltips on tool items', () => {
     render(<Sidebar />)
 
-    const jsonFormatterLink = screen.getByRole('link', { name: 'JSON Formatter' })
+    const jsonFormatterLink = screen.getByRole('link', {
+      name: 'JSON Formatter',
+    })
     expect(jsonFormatterLink).toHaveAttribute('title', 'Format and prettify JSON data')
   })
 
@@ -181,7 +210,9 @@ describe('Sidebar Component', () => {
     const user = userEvent.setup()
     render(<Sidebar />)
 
-    const jsonValidatorLink = screen.getByRole('link', { name: 'JSON Validator' })
+    const jsonValidatorLink = screen.getByRole('link', {
+      name: 'JSON Validator',
+    })
     await user.click(jsonValidatorLink)
 
     expect(jsonValidatorLink).toHaveAttribute('href', '/tools/json/validate')
@@ -301,7 +332,7 @@ describe('Sidebar Component', () => {
       'JSON Converter',
       'JSON Minifier',
       'JSON to CSV',
-      'CSV to JSON'
+      'CSV to JSON',
     ]
 
     jsonTools.forEach(tool => {
@@ -317,11 +348,7 @@ describe('Sidebar Component', () => {
     const codeToolsButton = screen.getByRole('button', { name: /Code Tools/ })
     await user.click(codeToolsButton)
 
-    const codeTools = [
-      'Code Formatter',
-      'Code Executor',
-      'Code Minifier'
-    ]
+    const codeTools = ['Code Formatter', 'Code Executor', 'Code Minifier']
 
     codeTools.forEach(tool => {
       expect(screen.getByRole('link', { name: tool })).toBeInTheDocument()
@@ -341,7 +368,7 @@ describe('Sidebar Component', () => {
       'URL Encoder',
       'Hash Generator',
       'UUID Generator',
-      'Timestamp Converter'
+      'Timestamp Converter',
     ]
 
     textTools.forEach(tool => {

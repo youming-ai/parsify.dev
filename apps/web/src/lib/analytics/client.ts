@@ -3,40 +3,34 @@
  * Core analytics functionality for web application
  */
 
-import type {
-  AnalyticsEvent,
-  AnalyticsConfig,
-  AnalyticsSession,
-  AnalyticsBatch,
-  AnalyticsConsent,
-  PageViewEvent,
-  ToolUsageEvent,
-  PerformanceEvent,
-  UserInteractionEvent,
-  APIUsageEvent,
-} from './types'
 import {
-  DEFAULT_ANALYTICS_CONFIG,
-  CLOUDFLARE_ANALYTICS_CONFIG,
   ANALYTICS_EVENTS,
-  PERFORMANCE_METRICS,
-  INTERACTION_TYPES,
-  TOOL_ACTIONS,
-  CONSENT_LEVELS,
-  PERFORMANCE_THRESHOLDS,
-  EVENT_PRIORITIES,
+  CLOUDFLARE_ANALYTICS_CONFIG,
+  DEFAULT_ANALYTICS_CONFIG,
   RATE_LIMITS,
 } from './config'
+import type {
+  AnalyticsBatch,
+  AnalyticsConfig,
+  AnalyticsConsent,
+  AnalyticsEvent,
+  AnalyticsSession,
+  APIUsageEvent,
+  PageViewEvent,
+  PerformanceEvent,
+  ToolUsageEvent,
+  UserInteractionEvent,
+} from './types'
 
 export class CloudflareAnalyticsClient {
   private config: AnalyticsConfig
   private session: AnalyticsSession | null = null
   private consent: AnalyticsConsent | null = null
   private eventQueue: AnalyticsEvent[] = []
-  private batchTimer: NodeJS.Timeout | null = null
   private performanceObserver: PerformanceObserver | null = null
   private isInitialized = false
   private eventCounters = new Map<string, number>()
+  private batchTimer: NodeJS.Timeout | null = null
 
   constructor(config?: Partial<AnalyticsConfig>) {
     this.config = { ...DEFAULT_ANALYTICS_CONFIG, ...config }
@@ -172,13 +166,7 @@ export class CloudflareAnalyticsClient {
    * Track user interactions
    */
   trackInteraction(params: {
-    interactionType:
-      | 'click'
-      | 'scroll'
-      | 'focus'
-      | 'blur'
-      | 'submit'
-      | 'navigation'
+    interactionType: 'click' | 'scroll' | 'focus' | 'blur' | 'submit' | 'navigation'
     elementId?: string
     elementTag?: string
     elementText?: string
@@ -322,7 +310,7 @@ export class CloudflareAnalyticsClient {
       // Resume existing session
       this.session = {
         id: existingSessionId,
-        userId: this.getStorageItem('userId'),
+        userId: this.getStorageItem('userId') || undefined,
         startTime: Date.now(),
         lastActivity: Date.now(),
         pageViews: 0,
@@ -336,7 +324,7 @@ export class CloudflareAnalyticsClient {
       // Create new session
       this.session = {
         id: this.generateSessionId(),
-        userId: this.getStorageItem('userId'),
+        userId: this.getStorageItem('userId') || undefined,
         startTime: Date.now(),
         lastActivity: Date.now(),
         pageViews: 0,
@@ -389,7 +377,7 @@ export class CloudflareAnalyticsClient {
 
           case 'first-input':
             this.trackPerformance({
-              fid: entry.processingStart - entry.startTime,
+              fid: (entry as any).processingStart - entry.startTime,
             })
             break
 
@@ -401,28 +389,23 @@ export class CloudflareAnalyticsClient {
             }
             break
 
-          case 'navigation':
+          case 'navigation': {
             const navEntry = entry as PerformanceNavigationTiming
             this.trackPerformance({
               fcp: navEntry.responseStart - navEntry.requestStart,
               ttfb: navEntry.responseStart - navEntry.requestStart,
-              domContentLoaded:
-                navEntry.domContentLoadedEventEnd - navEntry.navigationStart,
-              load: navEntry.loadEventEnd - navEntry.navigationStart,
+              domContentLoaded: navEntry.domContentLoadedEventEnd - (navEntry.startTime || 0),
+              load: navEntry.loadEventEnd - (navEntry.startTime || 0),
             })
             break
+          }
         }
       })
     })
 
     // Observe performance entries
     this.performanceObserver.observe({
-      entryTypes: [
-        'largest-contentful-paint',
-        'first-input',
-        'layout-shift',
-        'navigation',
-      ],
+      entryTypes: ['largest-contentful-paint', 'first-input', 'layout-shift', 'navigation'],
     })
   }
 
@@ -521,23 +504,20 @@ export class CloudflareAnalyticsClient {
     try {
       batch.status = 'sending'
 
-      const response = await fetch(
-        CLOUDFLARE_ANALYTICS_CONFIG.customDataEndpoint,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Request-ID': this.generateEventId(),
-          },
-          body: JSON.stringify({
-            batchId: batch.id,
-            events: batch.events,
-            sessionId: this.session?.id,
-            userId: this.session?.userId,
-            timestamp: batch.timestamp,
-          }),
-        }
-      )
+      const response = await fetch(CLOUDFLARE_ANALYTICS_CONFIG.customDataEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Request-ID': this.generateEventId(),
+        },
+        body: JSON.stringify({
+          batchId: batch.id,
+          events: batch.events,
+          sessionId: this.session?.id,
+          userId: this.session?.userId,
+          timestamp: batch.timestamp,
+        }),
+      })
 
       if (response.ok) {
         batch.status = 'sent'
@@ -552,16 +532,11 @@ export class CloudflareAnalyticsClient {
 
       if (batch.retryCount < RATE_LIMITS.batchRetries) {
         batch.retryCount++
-        setTimeout(
-          () => this.sendBatch(batch),
-          RATE_LIMITS.retryDelay * batch.retryCount
-        )
+        setTimeout(() => this.sendBatch(batch), RATE_LIMITS.retryDelay * batch.retryCount)
       } else {
         this.logError(`Failed to send batch ${batch.id}`, error)
         // Remove failed events from queue to prevent memory issues
-        this.eventQueue = this.eventQueue.filter(
-          event => !batch.events.includes(event)
-        )
+        this.eventQueue = this.eventQueue.filter(event => !batch.events.includes(event))
       }
     }
   }
@@ -623,8 +598,7 @@ export class CloudflareAnalyticsClient {
 
   private calculateScrollDepth(): number {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-    const documentHeight =
-      document.documentElement.scrollHeight - window.innerHeight
+    const documentHeight = document.documentElement.scrollHeight - window.innerHeight
     return Math.round((scrollTop / documentHeight) * 100)
   }
 
@@ -640,7 +614,7 @@ export class CloudflareAnalyticsClient {
     return (
       navigator.doNotTrack === '1' ||
       (window as any).doNotTrack === '1' ||
-      navigator.msDoNotTrack === '1'
+      (navigator as any).msDoNotTrack === '1'
     )
   }
 
@@ -655,9 +629,7 @@ export class CloudflareAnalyticsClient {
   private getStorageItem(key: string): string | null {
     try {
       return localStorage.getItem(
-        CLOUDFLARE_ANALYTICS_CONFIG.storage[
-          key as keyof typeof CLOUDFLARE_ANALYTICS_CONFIG.storage
-        ]
+        CLOUDFLARE_ANALYTICS_CONFIG.storage[key as keyof typeof CLOUDFLARE_ANALYTICS_CONFIG.storage]
       )
     } catch {
       return null

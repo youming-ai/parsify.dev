@@ -1,8 +1,9 @@
-import React, { useState, useCallback, useRef } from 'react'
-import { cn } from '@/lib/utils'
+import type React from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { FileUploadEvents, FileChangeEvent, DragOverEvent } from './file-upload-types'
+import { cn } from '@/lib/utils'
+import type { DragOverEvent, FileChangeEvent, FileUploadEvents } from './file-upload-types'
 
 interface FileDropZoneProps {
   /** Whether files can be dropped */
@@ -39,93 +40,108 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
   onDragLeave,
   onFilesSelected,
 }) => {
-  const [isDragOver, setIsDragOver] = useState(false)
+  const [_isDragOver, setIsDragOver] = useState(false)
   const [isDragActive, setIsDragActive] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const handleDragOver = useCallback((event: DragOverEvent) => {
-    event.preventDefault()
-    event.stopPropagation()
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      event.preventDefault()
+      event.stopPropagation()
 
-    if (!disabled) {
-      setIsDragOver(true)
-      setIsDragActive(true)
-      onDragOver?.(event)
-    }
-  }, [disabled, onDragOver])
+      if (!disabled) {
+        setIsDragOver(true)
+        setIsDragActive(true)
+        onDragOver?.(event)
+      }
+    },
+    [disabled, onDragOver]
+  )
 
-  const handleDragEnter = useCallback((event: DragOverEvent) => {
-    event.preventDefault()
-    event.stopPropagation()
+  const handleDragEnter = useCallback(
+    (event: DragOverEvent) => {
+      event.preventDefault()
+      event.stopPropagation()
 
-    if (!disabled) {
-      setIsDragActive(true)
-    }
-  }, [disabled])
+      if (!disabled) {
+        setIsDragActive(true)
+      }
+    },
+    [disabled]
+  )
 
-  const handleDragLeave = useCallback((event: DragOverEvent) => {
-    event.preventDefault()
-    event.stopPropagation()
+  const handleDragLeave = useCallback(
+    (event: DragOverEvent) => {
+      event.preventDefault()
+      event.stopPropagation()
 
-    if (!disabled) {
+      if (!disabled) {
+        setIsDragOver(false)
+        setIsDragActive(false)
+        onDragLeave?.(event)
+      }
+    },
+    [disabled, onDragLeave]
+  )
+
+  const handleDrop = useCallback(
+    (event: DragOverEvent) => {
+      event.preventDefault()
+      event.stopPropagation()
+
+      if (disabled) {
+        return
+      }
+
       setIsDragOver(false)
       setIsDragActive(false)
-      onDragLeave?.(event)
-    }
-  }, [disabled, onDragLeave])
 
-  const handleDrop = useCallback((event: DragOverEvent) => {
-    event.preventDefault()
-    event.stopPropagation()
+      const files = Array.from(event.dataTransfer.files)
 
-    if (disabled) {
-      return
-    }
+      // Filter files based on accept and maxSize
+      const validFiles = files.filter(file => {
+        if (accept.length > 0) {
+          const isAccepted = accept.some(type => {
+            if (type.startsWith('.')) {
+              return file.name.toLowerCase().endsWith(type.toLowerCase())
+            }
+            return file.type.match(type.replace('*', '.*'))
+          })
+          if (!isAccepted) return false
+        }
 
-    setIsDragOver(false)
-    setIsDragActive(false)
+        if (maxSize && file.size > maxSize) {
+          return false
+        }
 
-    const files = Array.from(event.dataTransfer.files)
+        return true
+      })
 
-    // Filter files based on accept and maxSize
-    const validFiles = files.filter(file => {
-      if (accept.length > 0) {
-        const isAccepted = accept.some(type => {
-          if (type.startsWith('.')) {
-            return file.name.toLowerCase().endsWith(type.toLowerCase())
-          }
-          return file.type.match(type.replace('*', '.*'))
-        })
-        if (!isAccepted) return false
+      // Handle multiple file constraint
+      const filesToProcess = multiple ? validFiles : validFiles.slice(0, 1)
+
+      if (filesToProcess.length > 0) {
+        onDrop?.(filesToProcess)
+        onFilesSelected?.(filesToProcess)
+      }
+    },
+    [disabled, accept, maxSize, multiple, onDrop, onFilesSelected]
+  )
+
+  const handleFileInput = useCallback(
+    (event: FileChangeEvent) => {
+      const files = Array.from(event.target.files || [])
+
+      if (files.length > 0) {
+        const filesToProcess = multiple ? files : files.slice(0, 1)
+        onFilesSelected?.(filesToProcess)
       }
 
-      if (maxSize && file.size > maxSize) {
-        return false
-      }
-
-      return true
-    })
-
-    // Handle multiple file constraint
-    const filesToProcess = multiple ? validFiles : validFiles.slice(0, 1)
-
-    if (filesToProcess.length > 0) {
-      onDrop?.(filesToProcess)
-      onFilesSelected?.(filesToProcess)
-    }
-  }, [disabled, accept, maxSize, multiple, onDrop, onFilesSelected])
-
-  const handleFileInput = useCallback((event: FileChangeEvent) => {
-    const files = Array.from(event.target.files || [])
-
-    if (files.length > 0) {
-      const filesToProcess = multiple ? files : files.slice(0, 1)
-      onFilesSelected?.(filesToProcess)
-    }
-
-    // Reset the input value so the same file can be selected again
-    event.target.value = ''
-  }, [multiple, onFilesSelected])
+      // Reset the input value so the same file can be selected again
+      event.target.value = ''
+    },
+    [multiple, onFilesSelected]
+  )
 
   const handleClick = useCallback(() => {
     if (!disabled && inputRef.current) {
@@ -133,21 +149,24 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
     }
   }, [disabled])
 
-  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      handleClick()
-    }
-  }, [handleClick])
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        handleClick()
+      }
+    },
+    [handleClick]
+  )
 
   return (
     <Card
       className={cn(
-        'relative cursor-pointer transition-all duration-200 border-2 border-dashed',
+        'relative cursor-pointer border-2 border-dashed transition-all duration-200',
         {
           'border-blue-500 bg-blue-50 dark:bg-blue-950/20': isDragActive,
           'border-gray-300 bg-gray-50 dark:bg-gray-800/20': !isDragActive,
-          'opacity-50 cursor-not-allowed': disabled,
+          'cursor-not-allowed opacity-50': disabled,
         },
         className
       )}
@@ -171,15 +190,15 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
           accept={accept.join(',')}
           onChange={handleFileInput}
           disabled={disabled}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
           aria-label="File input"
         />
 
         {children || (
           <div className="space-y-4">
-            <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
               <svg
-                className="w-6 h-6 text-gray-400"
+                className="h-6 w-6 text-gray-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -194,19 +213,17 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
             </div>
 
             <div>
-              <p className="text-lg font-medium text-gray-900 dark:text-gray-100">
+              <p className="font-medium text-gray-900 text-lg dark:text-gray-100">
                 {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                or click to browse
-              </p>
+              <p className="mt-1 text-gray-500 text-sm dark:text-gray-400">or click to browse</p>
             </div>
 
             <Button
               variant="outline"
               type="button"
               disabled={disabled}
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation()
                 handleClick()
               }}
@@ -215,13 +232,13 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
             </Button>
 
             {accept.length > 0 && (
-              <p className="text-xs text-gray-400 dark:text-gray-500">
+              <p className="text-gray-400 text-xs dark:text-gray-500">
                 Accepted formats: {accept.join(', ')}
               </p>
             )}
 
             {maxSize && (
-              <p className="text-xs text-gray-400 dark:text-gray-500">
+              <p className="text-gray-400 text-xs dark:text-gray-500">
                 Max file size: {formatFileSize(maxSize)}
               </p>
             )}
@@ -242,7 +259,7 @@ function formatFileSize(bytes: number): string {
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
 }
 
 export default FileDropZone

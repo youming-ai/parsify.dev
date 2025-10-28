@@ -1,19 +1,18 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
+  AUTH_IDENTITY_QUERIES,
   AuthIdentity,
   AuthIdentitySchema,
   CreateAuthIdentitySchema,
-  OAuthProviderSchema,
-  GoogleProviderDataSchema,
   GitHubProviderDataSchema,
+  GoogleProviderDataSchema,
   OAuth2ProviderDataSchema,
-  AUTH_IDENTITY_QUERIES
 } from '../../../../apps/api/src/models/auth_identity'
 import {
-  createTestDatabase,
+  cleanupTestEnvironment,
   createMockAuthIdentity,
+  createTestDatabase,
   setupTestEnvironment,
-  cleanupTestEnvironment
 } from './database.mock'
 
 describe('AuthIdentity Model', () => {
@@ -69,8 +68,8 @@ describe('AuthIdentity Model', () => {
         provider_data: {
           sub: 'google-123',
           email: 'test@example.com',
-          name: 'Test User'
-        }
+          name: 'Test User',
+        },
       }
 
       const result = CreateAuthIdentitySchema.safeParse(createData)
@@ -84,7 +83,7 @@ describe('AuthIdentity Model', () => {
         name: 'Test User',
         picture: 'https://example.com/avatar.jpg',
         email_verified: true,
-        locale: 'en'
+        locale: 'en',
       }
 
       const result = GoogleProviderDataSchema.safeParse(googleData)
@@ -95,7 +94,7 @@ describe('AuthIdentity Model', () => {
       const invalidGoogleData = {
         sub: 'google-123',
         email: 'invalid-email',
-        name: 'Test User'
+        name: 'Test User',
       }
 
       const result = GoogleProviderDataSchema.safeParse(invalidGoogleData)
@@ -118,7 +117,7 @@ describe('AuthIdentity Model', () => {
         followers: 5,
         following: 3,
         created_at: '2023-01-01T00:00:00Z',
-        updated_at: '2023-01-01T00:00:00Z'
+        updated_at: '2023-01-01T00:00:00Z',
       }
 
       const result = GitHubProviderDataSchema.safeParse(githubData)
@@ -134,7 +133,7 @@ describe('AuthIdentity Model', () => {
         email_verified: true,
         locale: 'en',
         provider: 'custom',
-        raw_data: { custom_field: 'value' }
+        raw_data: { custom_field: 'value' },
       }
 
       const result = OAuth2ProviderDataSchema.safeParse(oauth2Data)
@@ -161,8 +160,8 @@ describe('AuthIdentity Model', () => {
         provider_data: {
           id: 456,
           login: 'testuser',
-          name: 'Test User'
-        }
+          name: 'Test User',
+        },
       }
 
       const authIdentity = AuthIdentity.create(createData)
@@ -180,7 +179,7 @@ describe('AuthIdentity Model', () => {
         email: 'google@example.com',
         name: 'Google User',
         picture: 'https://example.com/google-avatar.jpg',
-        email_verified: true
+        email_verified: true,
       }
       const userId = 'user-789'
 
@@ -208,7 +207,7 @@ describe('AuthIdentity Model', () => {
         followers: 2,
         following: 1,
         created_at: '2023-01-01T00:00:00Z',
-        updated_at: '2023-01-01T00:00:00Z'
+        updated_at: '2023-01-01T00:00:00Z',
       }
       const userId = 'user-789'
 
@@ -227,7 +226,7 @@ describe('AuthIdentity Model', () => {
         name: 'OAuth2 User',
         email_verified: true,
         provider: 'custom-oauth2',
-        raw_data: { custom_field: 'custom_value' }
+        raw_data: { custom_field: 'custom_value' },
       }
       const userId = 'user-789'
 
@@ -253,7 +252,7 @@ describe('AuthIdentity Model', () => {
     it('should parse JSON provider_data in fromRow', () => {
       const providerData = { sub: 'google-123', email: 'test@example.com' }
       const rowData = createMockAuthIdentity({
-        provider_data: JSON.stringify(providerData)
+        provider_data: JSON.stringify(providerData),
       })
 
       const authIdentity = AuthIdentity.fromRow(rowData)
@@ -296,7 +295,7 @@ describe('AuthIdentity Model', () => {
       const googleData = {
         sub: 'google-123',
         email: 'test@example.com',
-        name: 'John Doe'
+        name: 'John Doe',
       }
       const authIdentity = AuthIdentity.fromGoogle(googleData, 'user-123')
 
@@ -319,7 +318,7 @@ describe('AuthIdentity Model', () => {
         followers: 0,
         following: 0,
         created_at: '2023-01-01T00:00:00Z',
-        updated_at: '2023-01-01T00:00:00Z'
+        updated_at: '2023-01-01T00:00:00Z',
       }
       const authIdentity = AuthIdentity.fromGitHub(githubData, 'user-123')
 
@@ -330,7 +329,7 @@ describe('AuthIdentity Model', () => {
       const oauth2Data = {
         sub: 'oauth2-123',
         email: 'test@example.com',
-        name: 'Jane Doe'
+        name: 'Jane Doe',
       }
       const authIdentity = AuthIdentity.fromOAuth2(oauth2Data, 'user-123')
 
@@ -348,7 +347,7 @@ describe('AuthIdentity Model', () => {
       const googleData = {
         sub: 'google-123',
         email: 'google@example.com',
-        name: 'Google User'
+        name: 'Google User',
       }
       const authIdentity = AuthIdentity.fromGoogle(googleData, 'user-123')
 
@@ -371,7 +370,7 @@ describe('AuthIdentity Model', () => {
         followers: 0,
         following: 0,
         created_at: '2023-01-01T00:00:00Z',
-        updated_at: '2023-01-01T00:00:00Z'
+        updated_at: '2023-01-01T00:00:00Z',
       }
       const authIdentity = AuthIdentity.fromGitHub(githubData, 'user-123')
 
@@ -394,7 +393,7 @@ describe('AuthIdentity Model', () => {
         followers: 0,
         following: 0,
         created_at: '2023-01-01T00:00:00Z',
-        updated_at: '2023-01-01T00:00:00Z'
+        updated_at: '2023-01-01T00:00:00Z',
       }
       const authIdentity = AuthIdentity.fromGitHub(githubData, 'user-123')
 
@@ -406,7 +405,7 @@ describe('AuthIdentity Model', () => {
         sub: 'google-123',
         email: 'test@example.com',
         name: 'Test User',
-        picture: 'https://google.com/avatar.jpg'
+        picture: 'https://google.com/avatar.jpg',
       }
       const authIdentity = AuthIdentity.fromGoogle(googleData, 'user-123')
 
@@ -429,7 +428,7 @@ describe('AuthIdentity Model', () => {
         followers: 0,
         following: 0,
         created_at: '2023-01-01T00:00:00Z',
-        updated_at: '2023-01-01T00:00:00Z'
+        updated_at: '2023-01-01T00:00:00Z',
       }
       const authIdentity = AuthIdentity.fromGitHub(githubData, 'user-123')
 
@@ -441,7 +440,7 @@ describe('AuthIdentity Model', () => {
         sub: 'oauth2-123',
         email: 'test@example.com',
         name: 'Test User',
-        picture: 'https://oauth2.com/avatar.jpg'
+        picture: 'https://oauth2.com/avatar.jpg',
       }
       const authIdentity = AuthIdentity.fromOAuth2(oauth2Data, 'user-123')
 
@@ -452,7 +451,7 @@ describe('AuthIdentity Model', () => {
       const oauth2Data = {
         sub: 'oauth2-123',
         email: 'test@example.com',
-        name: 'Test User'
+        name: 'Test User',
       }
       const authIdentity = AuthIdentity.fromOAuth2(oauth2Data, 'user-123')
 
@@ -464,13 +463,13 @@ describe('AuthIdentity Model', () => {
         sub: 'google-123',
         email: 'test@example.com',
         name: 'Test User',
-        email_verified: true
+        email_verified: true,
       }
       const unverifiedGoogleData = {
         sub: 'google-456',
         email: 'unverified@example.com',
         name: 'Unverified User',
-        email_verified: false
+        email_verified: false,
       }
 
       const verifiedAuth = AuthIdentity.fromGoogle(verifiedGoogleData, 'user-123')
@@ -496,7 +495,7 @@ describe('AuthIdentity Model', () => {
         followers: 0,
         following: 0,
         created_at: '2023-01-01T00:00:00Z',
-        updated_at: '2023-01-01T00:00:00Z'
+        updated_at: '2023-01-01T00:00:00Z',
       }
       const authIdentity = AuthIdentity.fromGitHub(githubData, 'user-123')
 
@@ -508,13 +507,13 @@ describe('AuthIdentity Model', () => {
         sub: 'oauth2-123',
         email: 'test@example.com',
         name: 'Test User',
-        email_verified: true
+        email_verified: true,
       }
       const unverifiedOAuth2Data = {
         sub: 'oauth2-456',
         email: 'unverified@example.com',
         name: 'Unverified User',
-        email_verified: false
+        email_verified: false,
       }
 
       const verifiedAuth = AuthIdentity.fromOAuth2(verifiedOAuth2Data, 'user-123')
@@ -547,7 +546,7 @@ describe('AuthIdentity Model', () => {
         followers: 0,
         following: 0,
         created_at: '2023-01-01T00:00:00Z',
-        updated_at: '2023-01-01T00:00:00Z'
+        updated_at: '2023-01-01T00:00:00Z',
       }
       const authIdentity = AuthIdentity.fromGitHub(githubData, 'user-123')
 
@@ -558,7 +557,7 @@ describe('AuthIdentity Model', () => {
       const googleData = {
         sub: 'google-123',
         email: 'test@example.com',
-        name: 'Google User'
+        name: 'Google User',
       }
       const authIdentity = AuthIdentity.fromGoogle(googleData, 'user-123')
 
@@ -569,7 +568,7 @@ describe('AuthIdentity Model', () => {
       const oauth2Data = {
         sub: 'oauth2-123',
         email: 'test@example.com',
-        name: 'OAuth2 User'
+        name: 'OAuth2 User',
       }
       const authIdentity = AuthIdentity.fromOAuth2(oauth2Data, 'user-123')
 
@@ -585,7 +584,7 @@ describe('AuthIdentity Model', () => {
         provider: 'google' as const,
         provider_uid: 'google-123',
         provider_data: null,
-        created_at: 1234567890
+        created_at: 1234567890,
       }
 
       const authIdentity = new AuthIdentity(minimalAuthData)
@@ -598,7 +597,7 @@ describe('AuthIdentity Model', () => {
         id: 'invalid-uuid',
         user_id: 'invalid-uuid',
         provider: 'invalid',
-        provider_uid: 'test-123'
+        provider_uid: 'test-123',
       }
 
       expect(() => AuthIdentity.fromRow(invalidRow)).toThrow()
@@ -617,7 +616,7 @@ describe('AuthIdentity Model', () => {
 
     it('should handle malformed JSON in provider_data', () => {
       const rowData = createMockAuthIdentity({
-        provider_data: 'invalid json string'
+        provider_data: 'invalid json string',
       })
 
       expect(() => AuthIdentity.fromRow(rowData)).toThrow()
@@ -640,9 +639,13 @@ describe('AuthIdentity Model', () => {
     })
 
     it('should have proper table creation query', () => {
-      expect(AUTH_IDENTITY_QUERIES.CREATE_TABLE).toContain('CREATE TABLE IF NOT EXISTS auth_identities')
+      expect(AUTH_IDENTITY_QUERIES.CREATE_TABLE).toContain(
+        'CREATE TABLE IF NOT EXISTS auth_identities'
+      )
       expect(AUTH_IDENTITY_QUERIES.CREATE_TABLE).toContain('id TEXT PRIMARY KEY')
-      expect(AUTH_IDENTITY_QUERIES.CREATE_TABLE).toContain('FOREIGN KEY (user_id) REFERENCES users(id)')
+      expect(AUTH_IDENTITY_QUERIES.CREATE_TABLE).toContain(
+        'FOREIGN KEY (user_id) REFERENCES users(id)'
+      )
       expect(AUTH_IDENTITY_QUERIES.CREATE_TABLE).toContain('UNIQUE(provider, provider_uid)')
     })
 
@@ -656,7 +659,9 @@ describe('AuthIdentity Model', () => {
       expect(AUTH_IDENTITY_QUERIES.INSERT).toContain('VALUES (?, ?, ?, ?, ?, ?)')
       expect(AUTH_IDENTITY_QUERIES.SELECT_BY_ID).toContain('WHERE id = ?')
       expect(AUTH_IDENTITY_QUERIES.SELECT_BY_USER_ID).toContain('WHERE user_id = ?')
-      expect(AUTH_IDENTITY_QUERIES.SELECT_BY_PROVIDER_AND_UID).toContain('WHERE provider = ? AND provider_uid = ?')
+      expect(AUTH_IDENTITY_QUERIES.SELECT_BY_PROVIDER_AND_UID).toContain(
+        'WHERE provider = ? AND provider_uid = ?'
+      )
       expect(AUTH_IDENTITY_QUERIES.DELETE).toContain('WHERE id = ?')
     })
   })
@@ -677,14 +682,16 @@ describe('AuthIdentity Model', () => {
       const authData = createMockAuthIdentity()
 
       // Test INSERT
-      const insertStmt = mockDb.prepare(AUTH_IDENTITY_QUERIES.INSERT).bind(
-        authData.id,
-        authData.user_id,
-        authData.provider,
-        authData.provider_uid,
-        authData.provider_data,
-        authData.created_at
-      )
+      const insertStmt = mockDb
+        .prepare(AUTH_IDENTITY_QUERIES.INSERT)
+        .bind(
+          authData.id,
+          authData.user_id,
+          authData.provider,
+          authData.provider_uid,
+          authData.provider_data,
+          authData.created_at
+        )
 
       const result = await insertStmt.run()
       expect(result.success).toBe(true)
@@ -701,10 +708,9 @@ describe('AuthIdentity Model', () => {
       mockDb.setTableData('auth_identities', [authData])
 
       // Test SELECT by provider and UID
-      const selectStmt = mockDb.prepare(AUTH_IDENTITY_QUERIES.SELECT_BY_PROVIDER_AND_UID).bind(
-        authData.provider,
-        authData.provider_uid
-      )
+      const selectStmt = mockDb
+        .prepare(AUTH_IDENTITY_QUERIES.SELECT_BY_PROVIDER_AND_UID)
+        .bind(authData.provider, authData.provider_uid)
       const result = await selectStmt.first()
 
       expect(result).toEqual(authData)
@@ -715,7 +721,9 @@ describe('AuthIdentity Model', () => {
       mockDb.setTableData('auth_identities', [authData])
 
       // Test SELECT by user ID
-      const selectStmt = mockDb.prepare(AUTH_IDENTITY_QUERIES.SELECT_BY_USER_ID).bind(authData.user_id)
+      const selectStmt = mockDb
+        .prepare(AUTH_IDENTITY_QUERIES.SELECT_BY_USER_ID)
+        .bind(authData.user_id)
       const result = await selectStmt.all()
 
       expect(result.results).toHaveLength(1)
@@ -726,13 +734,15 @@ describe('AuthIdentity Model', () => {
       const authData = createMockAuthIdentity()
       mockDb.setTableData('auth_identities', [authData])
 
-      const updatedProviderData = { sub: 'updated-google-123', email: 'updated@example.com' }
+      const updatedProviderData = {
+        sub: 'updated-google-123',
+        email: 'updated@example.com',
+      }
 
       // Test UPDATE
-      const updateStmt = mockDb.prepare(AUTH_IDENTITY_QUERIES.UPDATE).bind(
-        JSON.stringify(updatedProviderData),
-        authData.id
-      )
+      const updateStmt = mockDb
+        .prepare(AUTH_IDENTITY_QUERIES.UPDATE)
+        .bind(JSON.stringify(updatedProviderData), authData.id)
 
       const result = await updateStmt.run()
       expect(result.success).toBe(true)
@@ -759,7 +769,7 @@ describe('AuthIdentity Model', () => {
       const userId = 'user-123'
       const authIdentities = [
         createMockAuthIdentity({ user_id: userId, provider: 'google' }),
-        createMockAuthIdentity({ user_id: userId, provider: 'github' })
+        createMockAuthIdentity({ user_id: userId, provider: 'github' }),
       ]
       mockDb.setTableData('auth_identities', authIdentities)
 

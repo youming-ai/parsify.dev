@@ -8,30 +8,27 @@
  */
 
 import {
-  CloudflareImagesConfig,
-  ImageTransformationOptions,
-  ImageMetadata,
-  ImageVariant,
-  ImageUploadOptions,
-  UploadProgress,
-  ImagesHealthCheck,
-  CloudflareImagesApiResponse,
-  CloudflareImage,
-  DirectUploadInfo,
+  type CloudflareImage,
+  type CloudflareImagesApiResponse,
+  type CloudflareImagesConfig,
   CloudflareImagesError,
+  calculateImageDimensions,
+  type DirectUploadInfo,
+  detectImageFormat,
+  generateTransformationUrl,
+  getImagesConfig,
+  type ImageMetadata,
+  type ImagesHealthCheck,
+  type ImageTransformationOptions,
+  type ImageUploadOptions,
+  type ImageVariant,
   validateImageFormat,
   validateTransformationOptions,
-  generateTransformationUrl,
-  parseImageIdFromUrl,
-  detectImageFormat,
-  calculateImageDimensions,
-  getImagesConfig,
 } from '../../config/cloudflare/images-config'
-
-import { FileUpload } from '../../models/file_upload'
-import { FileService } from '../file_service'
-import { R2StorageService } from './r2-storage'
-import { DatabaseClient } from '../../database'
+import type { DatabaseClient } from '../../database'
+import type { FileUpload } from '../../models/file_upload'
+import type { FileService } from '../file_service'
+import type { R2StorageService } from './r2-storage'
 
 export interface CloudflareImagesServiceOptions {
   config?: CloudflareImagesConfig
@@ -100,7 +97,7 @@ export class CloudflareImagesService {
 
     // Setup API headers
     this.apiHeaders = {
-      'Authorization': `Bearer ${this.config.apiToken}`,
+      Authorization: `Bearer ${this.config.apiToken}`,
       'Content-Type': 'application/json',
     }
 
@@ -193,17 +190,18 @@ export class CloudflareImagesService {
         uploadedAt: new Date(),
         userId: options.metadata?.userId,
         fileId: fileUpload.fileId,
-        variants: imageInfo.variants?.map(url => ({
-          name: 'original',
-          width: 0,
-          height: 0,
-          size: 0,
-          format,
-          url,
-          cdnUrl: url,
-          transformation: {},
-          createdAt: new Date(),
-        })) || [],
+        variants:
+          imageInfo.variants?.map(url => ({
+            name: 'original',
+            width: 0,
+            height: 0,
+            size: 0,
+            format,
+            url,
+            cdnUrl: url,
+            transformation: {},
+            createdAt: new Date(),
+          })) || [],
         tags: options.tags || [],
         metadata: options.metadata || {},
         url: imageInfo.variants?.[0] || '',
@@ -384,10 +382,9 @@ export class CloudflareImagesService {
   async getImageMetadata(imageId: string): Promise<ImageMetadata | null> {
     try {
       // Try to get from database first
-      const result = await this.database.queryFirst(
-        'SELECT * FROM image_metadata WHERE id = ?',
-        [imageId]
-      )
+      const result = await this.database.queryFirst('SELECT * FROM image_metadata WHERE id = ?', [
+        imageId,
+      ])
 
       if (result) {
         return this.mapRowToImageMetadata(result)
@@ -557,8 +554,8 @@ export class CloudflareImagesService {
    */
   async getImageStats(userId?: string): Promise<ImageStats> {
     try {
-      let whereClause = userId ? 'WHERE user_id = ?' : ''
-      let params: any[] = userId ? [userId] : []
+      const whereClause = userId ? 'WHERE user_id = ?' : ''
+      const params: any[] = userId ? [userId] : []
 
       const statsQuery = `
         SELECT
@@ -587,7 +584,7 @@ export class CloudflareImagesService {
       })
 
       // Get user breakdown (if not filtered by user)
-      let imagesByUser: Record<string, number> = {}
+      const imagesByUser: Record<string, number> = {}
       if (!userId) {
         const userQuery = `
           SELECT user_id, COUNT(*) as count
@@ -637,12 +634,9 @@ export class CloudflareImagesService {
   /**
    * Generate CDN URL with transformations
    */
-  generateCdnUrl(
-    imageId: string,
-    transformation: ImageTransformationOptions = {}
-  ): string {
-    const baseUrl = this.config.customDomain ||
-                   `https://imagedelivery.net/${this.config.accountHash}`
+  generateCdnUrl(imageId: string, transformation: ImageTransformationOptions = {}): string {
+    const baseUrl =
+      this.config.customDomain || `https://imagedelivery.net/${this.config.accountHash}`
 
     return generateTransformationUrl(baseUrl, imageId, transformation)
   }
@@ -653,7 +647,7 @@ export class CloudflareImagesService {
   async generateSignedUrl(
     imageId: string,
     transformation: ImageTransformationOptions = {},
-    expiresIn = 3600
+    _expiresIn = 3600
   ): Promise<string> {
     // This would need to implement Cloudflare's signed URL generation
     // For now, return the regular CDN URL
@@ -742,17 +736,13 @@ export class CloudflareImagesService {
       })
 
       if (!uploadResponse.ok) {
-        throw new CloudflareImagesError(
-          `Upload failed: ${uploadResponse.statusText}`
-        )
+        throw new CloudflareImagesError(`Upload failed: ${uploadResponse.statusText}`)
       }
 
       const uploadResult = await uploadResponse.json()
 
       if (!uploadResult.success) {
-        throw new CloudflareImagesError(
-          uploadResult.errors?.[0]?.message || 'Upload failed'
-        )
+        throw new CloudflareImagesError(uploadResult.errors?.[0]?.message || 'Upload failed')
       }
 
       return directUpload
@@ -801,10 +791,7 @@ export class CloudflareImagesService {
     }
   }
 
-  private async validateImageFile(
-    buffer: ArrayBuffer,
-    options: ImageUploadOptions
-  ): Promise<void> {
+  private async validateImageFile(buffer: ArrayBuffer, options: ImageUploadOptions): Promise<void> {
     const size = buffer.byteLength
 
     // Check file size
@@ -825,15 +812,11 @@ export class CloudflareImagesService {
     }
 
     if (this.config.allowedFormats && !this.config.allowedFormats.includes(detectedFormat)) {
-      throw new CloudflareImagesError(
-        `Image format ${detectedFormat} is not allowed`
-      )
+      throw new CloudflareImagesError(`Image format ${detectedFormat} is not allowed`)
     }
   }
 
-  private async normalizeFileInput(
-    file: File | ArrayBuffer | Uint8Array
-  ): Promise<ArrayBuffer> {
+  private async normalizeFileInput(file: File | ArrayBuffer | Uint8Array): Promise<ArrayBuffer> {
     if (file instanceof File) {
       return file.arrayBuffer()
     }
@@ -989,8 +972,8 @@ export class CloudflareImagesService {
     imageId: string,
     transformation: ImageTransformationOptions
   ): string {
-    const baseUrl = this.config.customDomain ||
-                   `https://imagedelivery.net/${this.config.accountHash}`
+    const baseUrl =
+      this.config.customDomain || `https://imagedelivery.net/${this.config.accountHash}`
 
     return generateTransformationUrl(baseUrl, imageId, transformation)
   }

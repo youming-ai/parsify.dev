@@ -1,22 +1,40 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { WasmMemoryMonitor, MemoryMonitorConfig } from '../memory-monitor'
-import { IWasmModule } from '../../modules/interfaces/wasm-module.interface'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import type { IWasmModule } from '../../modules/interfaces/wasm-module.interface'
+import { type MemoryMonitorConfig, WasmMemoryMonitor } from '../memory-monitor'
 
 // Mock WASM module for testing
 class MockWasmModule implements IWasmModule {
   constructor(public readonly id: string) {}
 
-  get name(): string { return this.id }
-  get version(): string { return '1.0.0' }
-  get description(): string { return `Mock module ${this.id}` }
-  get category(): string { return 'test' }
-  get authors(): string[] { return ['Test Author'] }
-  get dependencies(): string[] { return [] }
-  get apiVersion(): string { return '1.0.0' }
+  get name(): string {
+    return this.id
+  }
+  get version(): string {
+    return '1.0.0'
+  }
+  get description(): string {
+    return `Mock module ${this.id}`
+  }
+  get category(): string {
+    return 'test'
+  }
+  get authors(): string[] {
+    return ['Test Author']
+  }
+  get dependencies(): string[] {
+    return []
+  }
+  get apiVersion(): string {
+    return '1.0.0'
+  }
 
-  async isCompatible(): Promise<boolean> { return true }
+  async isCompatible(): Promise<boolean> {
+    return true
+  }
   async initialize(): Promise<void> {}
-  isInitialized(): boolean { return true }
+  isInitialized(): boolean {
+    return true
+  }
   getMetadata() {
     return {
       id: this.id,
@@ -34,10 +52,12 @@ class MockWasmModule implements IWasmModule {
       checksum: '',
       supportedFormats: [],
       capabilities: [],
-      limitations: []
+      limitations: [],
     }
   }
-  async execute(): Promise<any> { return { success: true } }
+  async execute(): Promise<any> {
+    return { success: true }
+  }
   async dispose(): Promise<void> {}
   async getHealth() {
     return {
@@ -46,7 +66,7 @@ class MockWasmModule implements IWasmModule {
       responseTime: 0,
       memoryUsage: 1024 * 1024,
       errorRate: 0,
-      uptime: 0
+      uptime: 0,
     }
   }
 }
@@ -62,13 +82,13 @@ describe('WasmMemoryMonitor', () => {
         low: 50,
         medium: 70,
         high: 85,
-        critical: 95
+        critical: 95,
       },
       maxHistorySize: 10,
       leakDetection: true,
       autoGC: false, // Disable for testing
       profiling: true,
-      maxProfilingDuration: 1000
+      maxProfilingDuration: 1000,
     })
     mockModule = new MockWasmModule('test-module')
   })
@@ -132,7 +152,7 @@ describe('WasmMemoryMonitor', () => {
 
     it('should provide suggestions in warnings', async () => {
       let warning: any = null
-      monitor.onWarning(w => warning = w)
+      monitor.onWarning(w => (warning = w))
 
       monitor.startMonitoring(mockModule, 1024 * 1024)
       await new Promise(resolve => setTimeout(resolve, 150))
@@ -146,7 +166,7 @@ describe('WasmMemoryMonitor', () => {
   describe('Memory Profiling', () => {
     it('should generate memory profiles', async () => {
       let profile: any = null
-      monitor.onProfile(p => profile = p)
+      monitor.onProfile(p => (profile = p))
 
       monitor.startMonitoring(mockModule)
 
@@ -162,7 +182,7 @@ describe('WasmMemoryMonitor', () => {
 
     it('should track memory timeline', async () => {
       let profile: any = null
-      monitor.onProfile(p => profile = p)
+      monitor.onProfile(p => (profile = p))
 
       monitor.startMonitoring(mockModule)
       await new Promise(resolve => setTimeout(resolve, 300))
@@ -202,8 +222,8 @@ describe('WasmMemoryMonitor', () => {
           low: 40,
           medium: 60,
           high: 80,
-          critical: 90
-        }
+          critical: 90,
+        },
       }
 
       monitor.updateConfig(newConfig)

@@ -1,5 +1,5 @@
-import { DatabaseService, DatabaseServiceMetrics } from './service'
-import { DatabaseHealthMonitor, HealthReport } from './health'
+import type { DatabaseHealthMonitor } from './health'
+import type { DatabaseService, DatabaseServiceMetrics } from './service'
 
 export interface MonitoringMetrics {
   timestamp: number
@@ -20,9 +20,7 @@ export interface MonitoringMetrics {
 
 export interface MonitoringDashboard {
   addSystemMetrics(metrics: Partial<MonitoringMetrics['system']>): void
-  addApplicationMetrics(
-    metrics: Partial<MonitoringMetrics['application']>
-  ): void
+  addApplicationMetrics(metrics: Partial<MonitoringMetrics['application']>): void
   getMetricsHistory(timeRange?: number): MonitoringMetrics[]
   generateReport(timeRange?: number): MonitoringReport
   exportMetrics(format: 'json' | 'csv' | 'prometheus'): string
@@ -65,10 +63,7 @@ export class DatabaseMonitoringDashboard implements MonitoringDashboard {
   private metricsHistory: MonitoringMetrics[] = []
   private maxHistorySize: number = 1000 // Keep last 1000 data points
 
-  constructor(
-    databaseService: DatabaseService,
-    healthMonitor: DatabaseHealthMonitor
-  ) {
+  constructor(databaseService: DatabaseService, healthMonitor: DatabaseHealthMonitor) {
     this.databaseService = databaseService
     this.healthMonitor = healthMonitor
 
@@ -86,9 +81,7 @@ export class DatabaseMonitoringDashboard implements MonitoringDashboard {
   /**
    * Add application metrics to monitoring data
    */
-  addApplicationMetrics(
-    metrics: Partial<MonitoringMetrics['application']>
-  ): void {
+  addApplicationMetrics(metrics: Partial<MonitoringMetrics['application']>): void {
     this.addMetricsEntry({ application: metrics })
   }
 
@@ -241,9 +234,7 @@ export class DatabaseMonitoringDashboard implements MonitoringDashboard {
     }
   }
 
-  private calculateSummary(
-    history: MonitoringMetrics[]
-  ): MonitoringReport['summary'] {
+  private calculateSummary(history: MonitoringMetrics[]): MonitoringReport['summary'] {
     const totalQueries = history.reduce(
       (sum, entry) => sum + entry.database.queries.totalQueries,
       0
@@ -253,16 +244,11 @@ export class DatabaseMonitoringDashboard implements MonitoringDashboard {
       0
     )
     const avgResponseTime =
-      history.reduce(
-        (sum, entry) => sum + entry.database.queries.averageQueryTime,
-        0
-      ) / history.length
+      history.reduce((sum, entry) => sum + entry.database.queries.averageQueryTime, 0) /
+      history.length
 
     const errorRate = totalQueries > 0 ? totalFailed / totalQueries : 0
-    const uptime =
-      history.length > 0
-        ? history[history.length - 1].database.service.uptime
-        : 0
+    const uptime = history.length > 0 ? history[history.length - 1].database.service.uptime : 0
     const alertCount = this.healthMonitor.getAlerts().length
 
     return {
@@ -274,9 +260,7 @@ export class DatabaseMonitoringDashboard implements MonitoringDashboard {
     }
   }
 
-  private calculateTrends(
-    history: MonitoringMetrics[]
-  ): MonitoringReport['trends'] {
+  private calculateTrends(history: MonitoringMetrics[]): MonitoringReport['trends'] {
     return {
       responseTime: history.map(entry => ({
         timestamp: entry.timestamp,
@@ -290,8 +274,7 @@ export class DatabaseMonitoringDashboard implements MonitoringDashboard {
         timestamp: entry.timestamp,
         value:
           entry.database.queries.totalQueries > 0
-            ? entry.database.queries.failedQueries /
-              entry.database.queries.totalQueries
+            ? entry.database.queries.failedQueries / entry.database.queries.totalQueries
             : 0,
       })),
     }

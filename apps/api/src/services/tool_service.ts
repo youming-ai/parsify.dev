@@ -1,21 +1,11 @@
-import {
-  Tool,
-  ToolSchema,
-  CreateToolSchema,
-  UpdateToolSchema,
-  TOOL_QUERIES,
-} from '../models/tool'
-import { ToolUsage, TOOL_USAGE_QUERIES } from '../models/tool_usage'
-import { Job, JOB_QUERIES } from '../models/job'
-import {
-  QuotaCounter,
-  QuotaLimit,
-  QUOTA_COUNTER_QUERIES,
-} from '../models/quota_counter'
-import { AuditLog, AUDIT_LOG_QUERIES } from '../models/audit_log'
-import { DatabaseClient, createDatabaseClient } from '../database'
-import { CloudflareService } from './cloudflare/cloudflare-service'
-import { KVCacheService } from './cloudflare/kv-cache'
+import { createDatabaseClient, type DatabaseClient } from '../database'
+import { AUDIT_LOG_QUERIES, AuditLog } from '../models/audit_log'
+import { Job } from '../models/job'
+import { QUOTA_COUNTER_QUERIES, QuotaCounter } from '../models/quota_counter'
+import { CreateToolSchema, TOOL_QUERIES, Tool, UpdateToolSchema } from '../models/tool'
+import { TOOL_USAGE_QUERIES, ToolUsage } from '../models/tool_usage'
+import type { CloudflareService } from './cloudflare/cloudflare-service'
+import type { KVCacheService } from './cloudflare/kv-cache'
 
 export interface ToolServiceOptions {
   db: D1Database
@@ -133,10 +123,7 @@ export class ToolService {
         `tool:${toolId}`,
         async () => {
           try {
-            const result = await this.client.queryFirst(
-              TOOL_QUERIES.SELECT_BY_ID,
-              [toolId]
-            )
+            const result = await this.client.queryFirst(TOOL_QUERIES.SELECT_BY_ID, [toolId])
             return result ? Tool.fromRow(result) : null
           } catch (error) {
             throw new Error(`Failed to get tool: ${error}`)
@@ -159,9 +146,7 @@ export class ToolService {
     }
 
     try {
-      const result = await this.client.queryFirst(TOOL_QUERIES.SELECT_BY_ID, [
-        toolId,
-      ])
+      const result = await this.client.queryFirst(TOOL_QUERIES.SELECT_BY_ID, [toolId])
 
       if (!result) {
         return null
@@ -184,10 +169,7 @@ export class ToolService {
         `tool_by_slug:${slug}`,
         async () => {
           try {
-            const result = await this.client.queryFirst(
-              TOOL_QUERIES.SELECT_BY_SLUG,
-              [slug]
-            )
+            const result = await this.client.queryFirst(TOOL_QUERIES.SELECT_BY_SLUG, [slug])
             return result ? Tool.fromRow(result) : null
           } catch (error) {
             throw new Error(`Failed to get tool by slug: ${error}`)
@@ -211,9 +193,7 @@ export class ToolService {
     }
 
     try {
-      const result = await this.client.queryFirst(TOOL_QUERIES.SELECT_BY_SLUG, [
-        slug,
-      ])
+      const result = await this.client.queryFirst(TOOL_QUERIES.SELECT_BY_SLUG, [slug])
 
       if (!result) {
         return null
@@ -322,7 +302,7 @@ export class ToolService {
         {
           namespace: 'cache',
           ttl: 900, // 15 minutes
-          tags: ['tools_list', 'category:' + (category || 'all')],
+          tags: ['tools_list', `category:${category || 'all'}`],
           staleWhileRevalidate: true,
         }
       )
@@ -332,17 +312,12 @@ export class ToolService {
     return this.fetchToolsFromDatabase(category, enabledOnly)
   }
 
-  private async fetchToolsFromDatabase(
-    category?: string,
-    enabledOnly = true
-  ): Promise<Tool[]> {
+  private async fetchToolsFromDatabase(category?: string, enabledOnly = true): Promise<Tool[]> {
     try {
       let tools: any[]
 
       if (category) {
-        tools = await this.client.query(TOOL_QUERIES.SELECT_BY_CATEGORY, [
-          category,
-        ])
+        tools = await this.client.query(TOOL_QUERIES.SELECT_BY_CATEGORY, [category])
       } else {
         tools = await this.client.query(TOOL_QUERIES.SELECT_ENABLED)
       }
@@ -388,7 +363,7 @@ export class ToolService {
   async searchTools(query: string): Promise<Tool[]> {
     try {
       const searchQuery = `%${query}%`
-      let tools = await this.client.query(
+      const tools = await this.client.query(
         `
         SELECT * FROM tools
         WHERE (name LIKE ? OR description LIKE ? OR slug LIKE ?)
@@ -412,10 +387,7 @@ export class ToolService {
   }
 
   // Tool execution
-  async executeTool(
-    toolId: string,
-    options: ToolExecutionOptions
-  ): Promise<ToolExecutionResult> {
+  async executeTool(toolId: string, options: ToolExecutionOptions): Promise<ToolExecutionResult> {
     const tool = await this.getToolById(toolId)
     if (!tool) {
       return { success: false, error: 'Tool not found' }
@@ -427,11 +399,7 @@ export class ToolService {
     }
 
     // Check quota
-    const quotaCheck = await this.checkQuota(
-      tool,
-      options.userId,
-      options.ipAddress
-    )
+    const quotaCheck = await this.checkQuota(tool, options.userId, options.ipAddress)
     if (!quotaCheck.allowed) {
       return {
         success: false,
@@ -516,10 +484,7 @@ export class ToolService {
       }
 
       // Get usage statistics
-      const usageResult = await this.client.queryFirst(
-        TOOL_USAGE_QUERIES.COUNT_BY_TOOL,
-        [toolId]
-      )
+      const usageResult = await this.client.queryFirst(TOOL_USAGE_QUERIES.COUNT_BY_TOOL, [toolId])
       const totalUsage = (usageResult?.count as number) || 0
 
       // Get success rate
@@ -552,9 +517,7 @@ export class ToolService {
       `,
         [toolId]
       )
-      const lastUsed = lastUsedResult?.last_used
-        ? parseInt(lastUsedResult.last_used)
-        : 0
+      const lastUsed = lastUsedResult?.last_used ? parseInt(lastUsedResult.last_used, 10) : 0
 
       return {
         toolId,
@@ -570,9 +533,7 @@ export class ToolService {
     }
   }
 
-  async getPopularTools(
-    limit = 10
-  ): Promise<Array<{ tool: Tool; usageCount: number }>> {
+  async getPopularTools(limit = 10): Promise<Array<{ tool: Tool; usageCount: number }>> {
     try {
       const stmt = this.db.prepare(`
         SELECT tool_id, COUNT(*) as usage_count
@@ -679,7 +640,7 @@ export class ToolService {
       const indent = input.indent || 2
       const sortKeys = input.sort_keys || false
 
-      let formatted = JSON.stringify(
+      const formatted = JSON.stringify(
         parsed,
         sortKeys ? this.sortKeysAlphabetically : undefined,
         indent
@@ -713,9 +674,7 @@ export class ToolService {
         // Basic schema validation (in production, use proper schema validator)
         const errors: string[] = []
         if (input.schema.type && typeof parsed !== input.schema.type) {
-          errors.push(
-            `Expected type ${input.schema.type}, got ${typeof parsed}`
-          )
+          errors.push(`Expected type ${input.schema.type}, got ${typeof parsed}`)
         }
 
         return {
@@ -739,7 +698,7 @@ export class ToolService {
     }
   }
 
-  private executeCode(input: any): any {
+  private executeCode(_input: any): any {
     // Code execution would be implemented with WASM sandbox
     // For now, return a mock response
     return {
@@ -785,14 +744,10 @@ export class ToolService {
 
       // Check user/IP rate limits
       const quotaType = 'api_requests' // Could be more specific per tool
-      const quotaKey = userId || ipAddress
+      const _quotaKey = userId || ipAddress
 
-      const quotaStmt = this.db.prepare(
-        QUOTA_COUNTER_QUERIES.SELECT_BY_USER_AND_TYPE
-      )
-      const result = await quotaStmt
-        .bind(quotaType, Math.floor(Date.now() / 1000))
-        .first()
+      const quotaStmt = this.db.prepare(QUOTA_COUNTER_QUERIES.SELECT_BY_USER_AND_TYPE)
+      const result = await quotaStmt.bind(quotaType, Math.floor(Date.now() / 1000)).first()
 
       if (result) {
         const quota = QuotaCounter.fromRow(result)
@@ -815,18 +770,18 @@ export class ToolService {
   }
 
   private async updateQuota(
-    tool: Tool,
+    _tool: Tool,
     userId: string | undefined,
     ipAddress: string
   ): Promise<void> {
     try {
       const quotaType = 'api_requests'
-      const quotaKey = userId || ipAddress
+      const _quotaKey = userId || ipAddress
       const now = Math.floor(Date.now() / 1000)
 
       // Find existing quota counter
       let stmt = this.db.prepare(QUOTA_COUNTER_QUERIES.SELECT_BY_USER_AND_TYPE)
-      let result = await stmt.bind(quotaType, now).first()
+      const result = await stmt.bind(quotaType, now).first()
 
       if (result) {
         // Update existing counter
@@ -834,14 +789,8 @@ export class ToolService {
         await stmt.bind(1, now, result.id).run()
       } else {
         // Create new counter
-        const period = QuotaCounter.createPeriod(quotaType, 'hour', now)
-        const quota = QuotaCounter.createForAnonymous(
-          ipAddress,
-          quotaType,
-          'hour',
-          100,
-          now
-        )
+        const _period = QuotaCounter.createPeriod(quotaType, 'hour', now)
+        const quota = QuotaCounter.createForAnonymous(ipAddress, quotaType, 'hour', 100, now)
 
         stmt = this.db.prepare(QUOTA_COUNTER_QUERIES.INSERT)
         await stmt
@@ -873,13 +822,9 @@ export class ToolService {
     try {
       const executionTime = result.executionTime || Date.now() - startTime
       const inputSize = JSON.stringify(options.input).length
-      const outputSize = result.output
-        ? JSON.stringify(result.output).length
-        : 0
+      const outputSize = result.output ? JSON.stringify(result.output).length : 0
 
-      const toolUsage = ToolUsage[
-        result.success ? 'createSuccess' : 'createError'
-      ](
+      const toolUsage = ToolUsage[result.success ? 'createSuccess' : 'createError'](
         tool.id,
         options.userId,
         inputSize,

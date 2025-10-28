@@ -1,5 +1,11 @@
-import { JsonValidationResult, JsonValidationError } from './json-types'
-import { FileValidationRequest, FileValidationResponse, FileParseRequest, FileParseResponse, JsonDocument, ValidationError } from '../../../contracts'
+import type {
+  FileParseRequest,
+  FileParseResponse,
+  FileValidationRequest,
+  FileValidationResponse,
+  ValidationError,
+} from '@/contracts/index'
+import type { JsonValidationError, JsonValidationResult } from './json-types'
 
 export class JsonApiService {
   private baseUrl: string
@@ -27,7 +33,9 @@ export class JsonApiService {
 
       return await response.json()
     } catch (error) {
-      throw new Error(`Failed to validate file: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to validate file: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -50,19 +58,24 @@ export class JsonApiService {
 
       return await response.json()
     } catch (error) {
-      throw new Error(`Failed to parse file: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to parse file: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
   /**
    * Format JSON using the backend API
    */
-  async formatJson(content: string, options: {
-    indent?: number
-    sortKeys?: boolean
-    compact?: boolean
-    trailingComma?: boolean
-  } = {}): Promise<string> {
+  async formatJson(
+    content: string,
+    options: {
+      indent?: number
+      sortKeys?: boolean
+      compact?: boolean
+      trailingComma?: boolean
+    } = {}
+  ): Promise<string> {
     try {
       const response = await fetch(`${this.baseUrl}/format`, {
         method: 'POST',
@@ -71,7 +84,7 @@ export class JsonApiService {
         },
         body: JSON.stringify({
           content,
-          options
+          options,
         }),
       })
 
@@ -82,7 +95,9 @@ export class JsonApiService {
       const result = await response.json()
       return result.formatted
     } catch (error) {
-      throw new Error(`Failed to format JSON: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to format JSON: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -106,19 +121,25 @@ export class JsonApiService {
       const result = await response.json()
       return this.convertValidationResponse(result)
     } catch (error) {
-      throw new Error(`Failed to validate JSON: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to validate JSON: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
   /**
    * Convert JSON to another format using the backend API
    */
-  async convertJson(content: string, targetFormat: 'xml' | 'yaml' | 'csv', options: {
-    rootElement?: string
-    arrayItemName?: string
-    flatten?: boolean
-    csvDelimiter?: string
-  } = {}): Promise<string> {
+  async convertJson(
+    content: string,
+    targetFormat: 'xml' | 'yaml' | 'csv',
+    options: {
+      rootElement?: string
+      arrayItemName?: string
+      flatten?: boolean
+      csvDelimiter?: string
+    } = {}
+  ): Promise<string> {
     try {
       const response = await fetch(`${this.baseUrl}/convert`, {
         method: 'POST',
@@ -128,7 +149,7 @@ export class JsonApiService {
         body: JSON.stringify({
           content,
           targetFormat,
-          options
+          options,
         }),
       })
 
@@ -139,7 +160,9 @@ export class JsonApiService {
       const result = await response.json()
       return result.converted
     } catch (error) {
-      throw new Error(`Failed to convert JSON: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to convert JSON: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -163,7 +186,9 @@ export class JsonApiService {
       const result = await response.json()
       return result.minified
     } catch (error) {
-      throw new Error(`Failed to minify JSON: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to minify JSON: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -175,13 +200,13 @@ export class JsonApiService {
       line: error.line || 1,
       column: error.column || 1,
       message: error.message,
-      severity: error.severity === 'error' ? 'error' : 'warning' as const
+      severity: error.severity === 'error' ? 'error' : ('warning' as const),
     }))
 
     return {
       isValid: response.isValid,
       errors,
-      lineNumbers: errors.map(e => e.line)
+      lineNumbers: errors.map(e => e.line),
     }
   }
 
@@ -215,17 +240,23 @@ export class JsonApiService {
         size: result.size,
         name: result.name,
         type: result.type,
-        validation: this.convertValidationResponse(result.validation)
+        validation: this.convertValidationResponse(result.validation),
       }
     } catch (error) {
-      throw new Error(`Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
   /**
    * Download formatted JSON as a file
    */
-  async downloadAsFile(content: string, filename: string, format: 'json' | 'xml' | 'yaml' | 'csv' = 'json'): Promise<void> {
+  async downloadAsFile(
+    content: string,
+    filename: string,
+    format: 'json' | 'xml' | 'yaml' | 'csv' = 'json'
+  ): Promise<void> {
     try {
       const response = await fetch(`${this.baseUrl}/download`, {
         method: 'POST',
@@ -235,7 +266,7 @@ export class JsonApiService {
         body: JSON.stringify({
           content,
           filename,
-          format
+          format,
         }),
       })
 
@@ -254,7 +285,9 @@ export class JsonApiService {
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
     } catch (error) {
-      throw new Error(`Failed to download file: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to download file: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -269,7 +302,9 @@ export class JsonApiService {
     required?: string[]
   }> {
     try {
-      const response = await fetch(`${this.baseUrl}/schema${schemaUrl ? `?url=${encodeURIComponent(schemaUrl)}` : ''}`)
+      const response = await fetch(
+        `${this.baseUrl}/schema${schemaUrl ? `?url=${encodeURIComponent(schemaUrl)}` : ''}`
+      )
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -277,14 +312,19 @@ export class JsonApiService {
 
       return await response.json()
     } catch (error) {
-      throw new Error(`Failed to get schema info: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to get schema info: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
   /**
    * Validate JSON against a schema
    */
-  async validateAgainstSchema(content: string, schema: object): Promise<{
+  async validateAgainstSchema(
+    content: string,
+    schema: object
+  ): Promise<{
     isValid: boolean
     errors: Array<{
       path: string
@@ -300,7 +340,7 @@ export class JsonApiService {
         },
         body: JSON.stringify({
           content,
-          schema
+          schema,
         }),
       })
 
@@ -310,7 +350,9 @@ export class JsonApiService {
 
       return await response.json()
     } catch (error) {
-      throw new Error(`Failed to validate against schema: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to validate against schema: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 }

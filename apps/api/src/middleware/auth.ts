@@ -1,11 +1,8 @@
-import { Context, Next } from 'hono'
-import { AuthService, TokenPayload } from '../services/auth_service'
-import { User } from '../models/user'
-import {
-  createCloudflareService,
-  CloudflareService,
-} from '../services/cloudflare'
+import type { Context, Next } from 'hono'
+import type { User } from '../models/user'
 import { getSentryClient } from '../monitoring/sentry'
+import { AuthService, type TokenPayload } from '../services/auth_service'
+import type { CloudflareService } from '../services/cloudflare'
 
 // Extended context type to include auth data
 export interface AuthContext {
@@ -50,12 +47,7 @@ export interface AuthErrorResponse {
  */
 export const authMiddleware = (options: AuthMiddlewareOptions = {}) => {
   return async (c: Context<{ Bindings: Env }>, next: Next) => {
-    const {
-      required = false,
-      roles = [],
-      skipPaths = [],
-      refreshToken = true,
-    } = options
+    const { required = false, roles = [], skipPaths = [], refreshToken = true } = options
 
     // Skip authentication for specified paths
     if (skipPaths.some(path => c.req.path.startsWith(path))) {
@@ -65,9 +57,7 @@ export const authMiddleware = (options: AuthMiddlewareOptions = {}) => {
 
     const requestId = c.get('requestId')
     const clientIP =
-      c.req.header('CF-Connecting-IP') ||
-      c.req.header('X-Forwarded-For') ||
-      'unknown'
+      c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown'
 
     try {
       // Initialize services
@@ -177,11 +167,7 @@ export const authMiddleware = (options: AuthMiddlewareOptions = {}) => {
       // Check role/subscription requirements
       if (user && roles.length > 0) {
         if (!roles.includes(user.subscription_tier)) {
-          return handleAuthError(
-            c,
-            AuthError.INSUFFICIENT_PERMISSIONS,
-            requestId
-          )
+          return handleAuthError(c, AuthError.INSUFFICIENT_PERMISSIONS, requestId)
         }
       }
 
@@ -299,8 +285,7 @@ function handleAuthError(
         endpoint: c.req.path,
         method: c.req.method,
         user_agent: c.req.header('User-Agent'),
-        ip_address:
-          c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For'),
+        ip_address: c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For'),
         request_id: requestId,
       },
     })
@@ -345,8 +330,7 @@ function handleAuthError(
     },
     [AuthError.INSUFFICIENT_PERMISSIONS]: {
       error: 'Insufficient Permissions',
-      message:
-        'You do not have the required permissions to access this resource',
+      message: 'You do not have the required permissions to access this resource',
       code: AuthError.INSUFFICIENT_PERMISSIONS,
       requestId,
     },
@@ -400,7 +384,7 @@ async function attemptTokenRefresh(
   authService: AuthService,
   sessionId: string,
   ipAddress: string,
-  userAgent: string
+  _userAgent: string
 ): Promise<{ token: string; payload: TokenPayload } | null> {
   try {
     // Get the session to ensure it's still valid
@@ -411,11 +395,7 @@ async function attemptTokenRefresh(
 
     // Generate new token
     const user = await authService.getUserById(session.userId)
-    const newToken = authService.generateToken(
-      sessionId,
-      session.userId,
-      user?.subscription_tier
-    )
+    const newToken = authService.generateToken(sessionId, session.userId, user?.subscription_tier)
 
     // Verify the new token to get the payload
     const payload = await authService.verifyToken(newToken, ipAddress)
@@ -477,10 +457,7 @@ export const isAuthenticated = (c: Context): boolean => {
 /**
  * Helper function to check if user has required subscription tier
  */
-export const hasSubscriptionTier = (
-  c: Context,
-  requiredTier: string
-): boolean => {
+export const hasSubscriptionTier = (c: Context, requiredTier: string): boolean => {
   const auth = c.get('auth') as AuthContext
   return auth.user?.subscription_tier === requiredTier
 }
@@ -546,9 +523,7 @@ export const optionalAuth = () => {
 export const authRateLimit = () => {
   return async (c: Context<{ Bindings: Env }>, next: Next) => {
     const clientIP =
-      c.req.header('CF-Connecting-IP') ||
-      c.req.header('X-Forwarded-For') ||
-      'unknown'
+      c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown'
     const requestId = c.get('requestId')
 
     try {

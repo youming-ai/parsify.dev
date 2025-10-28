@@ -1,21 +1,19 @@
-import {
-  ICodeWasmModule,
-  SupportedLanguage,
+import { handleWasmError } from '../core/wasm-error-handler'
+import type {
+  CodeAnalysisResult,
   CodeExecutionOptions,
   CodeFormatOptions,
   CodeLintOptions,
-  CodeAnalysisResult,
+  CodeRefactoring,
   CodeTemplate,
-  CodeRefactoring
+  ICodeWasmModule,
+  SupportedLanguage,
 } from '../interfaces/code-module.interface'
-import {
-  IWasmModule,
-  WasmModuleResult,
-  WasmModuleMetadata,
+import type {
   WasmModuleHealth,
-  WasmModuleError
+  WasmModuleMetadata,
+  WasmModuleResult,
 } from '../interfaces/wasm-module.interface'
-import { handleWasmError, createFallbackResult } from '../core/wasm-error-handler'
 
 /**
  * Code execution WASM module implementation
@@ -33,7 +31,13 @@ export class CodeWasmModule implements ICodeWasmModule {
   private createdAt: Date
   private totalExecutionTime = 0
   private supportedLanguages: Set<SupportedLanguage> = new Set([
-    'javascript', 'typescript', 'python', 'json', 'html', 'css', 'scss'
+    'javascript',
+    'typescript',
+    'python',
+    'json',
+    'html',
+    'css',
+    'scss',
   ])
 
   constructor() {
@@ -102,12 +106,15 @@ export class CodeWasmModule implements ICodeWasmModule {
       this._initialized = true
       console.log('Code WASM module initialized successfully')
     } catch (error) {
-      console.warn('Failed to initialize WASM module, falling back to native implementation:', error)
+      console.warn(
+        'Failed to initialize WASM module, falling back to native implementation:',
+        error
+      )
       this._initialized = true
     }
   }
 
-  private async initializeWasmModule(config?: any): Promise<void> {
+  private async initializeWasmModule(_config?: any): Promise<void> {
     // TODO: Initialize actual WASM module when available
     // For now, use native implementation as fallback
     this.wasmModule = {
@@ -115,7 +122,7 @@ export class CodeWasmModule implements ICodeWasmModule {
       executeCode: this.executeCodeNative.bind(this),
       formatCode: this.formatCodeNative.bind(this),
       lintCode: this.lintCodeNative.bind(this),
-      analyzeCode: this.analyzeCodeNative.bind(this)
+      analyzeCode: this.analyzeCodeNative.bind(this),
     }
   }
 
@@ -142,15 +149,15 @@ export class CodeWasmModule implements ICodeWasmModule {
         'transpilation',
         'minification',
         'validation',
-        'refactoring'
+        'refactoring',
       ],
       limitations: [
         'Maximum code size: 1MB',
         'Execution timeout: 30 seconds',
         'Memory limit: 64MB',
         'Network access disabled',
-        'File system access restricted'
-      ]
+        'File system access restricted',
+      ],
     }
   }
 
@@ -195,15 +202,15 @@ export class CodeWasmModule implements ICodeWasmModule {
           executionTime,
           memoryUsage: 0, // This would be measured from WASM
           outputSize: JSON.stringify(result).length,
-          processedItems: 1
-        }
+          processedItems: 1,
+        },
       }
     } catch (error) {
       const errorInfo = handleWasmError(error as Error, {
         moduleId: this.id,
         operation: 'execute',
         input,
-        configuration: options
+        configuration: options,
       })
 
       return {
@@ -213,8 +220,8 @@ export class CodeWasmModule implements ICodeWasmModule {
           message: errorInfo.error.message,
           details: errorInfo.error.details,
           recoverable: errorInfo.classification.recoverable,
-          suggestions: errorInfo.error.suggestions
-        }
+          suggestions: errorInfo.error.suggestions,
+        },
       }
     }
   }
@@ -226,7 +233,7 @@ export class CodeWasmModule implements ICodeWasmModule {
 
     try {
       // Dispose WASM module if loaded
-      if (this.wasmModule && this.wasmModule.dispose) {
+      if (this.wasmModule?.dispose) {
         this.wasmModule.dispose()
       }
 
@@ -251,24 +258,29 @@ export class CodeWasmModule implements ICodeWasmModule {
       uptime,
       details: {
         executionCount: this.executionCount,
-        averageExecutionTime: this.executionCount > 0 ? this.totalExecutionTime / this.executionCount : 0,
+        averageExecutionTime:
+          this.executionCount > 0 ? this.totalExecutionTime / this.executionCount : 0,
         lastUsedAt: this.lastUsedAt,
         wasmLoaded: this.wasmModule !== null,
-        supportedLanguages: Array.from(this.supportedLanguages)
-      }
+        supportedLanguages: Array.from(this.supportedLanguages),
+      },
     }
   }
 
   // Code-specific interface implementation
-  async executeCode(code: string, language: SupportedLanguage, options: CodeExecutionOptions = {}): Promise<WasmModuleResult> {
+  async executeCode(
+    code: string,
+    language: SupportedLanguage,
+    options: CodeExecutionOptions = {}
+  ): Promise<WasmModuleResult> {
     if (!this._initialized) {
       throw new Error('Module is not initialized')
     }
 
-    const startTime = performance.now()
+    const _startTime = performance.now()
 
     try {
-      if (this.wasmModule && this.wasmModule.executeCode) {
+      if (this.wasmModule?.executeCode) {
         // Use WASM implementation if available
         return await this.wasmModule.executeCode(code, language, options)
       } else {
@@ -279,7 +291,7 @@ export class CodeWasmModule implements ICodeWasmModule {
       const errorInfo = handleWasmError(error as Error, {
         moduleId: this.id,
         operation: 'executeCode',
-        input: { code, language, options }
+        input: { code, language, options },
       })
 
       return {
@@ -289,16 +301,20 @@ export class CodeWasmModule implements ICodeWasmModule {
           message: errorInfo.error.message,
           details: errorInfo.error.details,
           recoverable: errorInfo.classification.recoverable,
-          suggestions: errorInfo.error.suggestions
-        }
+          suggestions: errorInfo.error.suggestions,
+        },
       }
     }
   }
 
-  private async executeCodeNative(code: string, language: SupportedLanguage, options: CodeExecutionOptions = {}): Promise<WasmModuleResult> {
+  private async executeCodeNative(
+    code: string,
+    language: SupportedLanguage,
+    options: CodeExecutionOptions = {}
+  ): Promise<WasmModuleResult> {
     const startTime = performance.now()
-    const timeout = options.timeout || 30000
-    const maxMemory = options.maxMemory || 64 * 1024 * 1024 // 64MB
+    const _timeout = options.timeout || 30000
+    const _maxMemory = options.maxMemory || 64 * 1024 * 1024 // 64MB
 
     try {
       // Input validation
@@ -343,14 +359,14 @@ export class CodeWasmModule implements ICodeWasmModule {
           stdout: result.stdout,
           stderr: result.stderr,
           language,
-          options
+          options,
         },
         metadata: {
           executionTime,
           memoryUsage: result.memoryUsage || 0,
           outputSize: JSON.stringify(result).length,
-          processedItems: 1
-        }
+          processedItems: 1,
+        },
       }
     } catch (error) {
       return {
@@ -359,23 +375,23 @@ export class CodeWasmModule implements ICodeWasmModule {
           code: 'EXECUTION_ERROR',
           message: error instanceof Error ? error.message : 'Unknown error',
           recoverable: true,
-          suggestions: [
-            'Check code syntax',
-            'Verify language support',
-            'Review execution options'
-          ]
-        }
+          suggestions: ['Check code syntax', 'Verify language support', 'Review execution options'],
+        },
       }
     }
   }
 
-  async formatCode(code: string, language: SupportedLanguage, options: CodeFormatOptions = {}): Promise<WasmModuleResult> {
+  async formatCode(
+    code: string,
+    language: SupportedLanguage,
+    options: CodeFormatOptions = {}
+  ): Promise<WasmModuleResult> {
     if (!this._initialized) {
       throw new Error('Module is not initialized')
     }
 
     try {
-      if (this.wasmModule && this.wasmModule.formatCode) {
+      if (this.wasmModule?.formatCode) {
         return await this.wasmModule.formatCode(code, language, options)
       } else {
         return await this.formatCodeNative(code, language, options)
@@ -384,7 +400,7 @@ export class CodeWasmModule implements ICodeWasmModule {
       const errorInfo = handleWasmError(error as Error, {
         moduleId: this.id,
         operation: 'formatCode',
-        input: { code, language, options }
+        input: { code, language, options },
       })
 
       return {
@@ -394,13 +410,17 @@ export class CodeWasmModule implements ICodeWasmModule {
           message: errorInfo.error.message,
           details: errorInfo.error.details,
           recoverable: errorInfo.classification.recoverable,
-          suggestions: errorInfo.error.suggestions
-        }
+          suggestions: errorInfo.error.suggestions,
+        },
       }
     }
   }
 
-  private async formatCodeNative(code: string, language: SupportedLanguage, options: CodeFormatOptions = {}): Promise<WasmModuleResult> {
+  private async formatCodeNative(
+    code: string,
+    language: SupportedLanguage,
+    options: CodeFormatOptions = {}
+  ): Promise<WasmModuleResult> {
     try {
       // Input validation
       if (typeof code !== 'string') {
@@ -439,8 +459,8 @@ export class CodeWasmModule implements ICodeWasmModule {
           original: code,
           language,
           options,
-          changes: formatted !== code
-        }
+          changes: formatted !== code,
+        },
       }
     } catch (error) {
       return {
@@ -452,20 +472,24 @@ export class CodeWasmModule implements ICodeWasmModule {
           suggestions: [
             'Check code syntax',
             'Verify language support',
-            'Review formatting options'
-          ]
-        }
+            'Review formatting options',
+          ],
+        },
       }
     }
   }
 
-  async lintCode(code: string, language: SupportedLanguage, options: CodeLintOptions = {}): Promise<WasmModuleResult> {
+  async lintCode(
+    code: string,
+    language: SupportedLanguage,
+    options: CodeLintOptions = {}
+  ): Promise<WasmModuleResult> {
     if (!this._initialized) {
       throw new Error('Module is not initialized')
     }
 
     try {
-      if (this.wasmModule && this.wasmModule.lintCode) {
+      if (this.wasmModule?.lintCode) {
         return await this.wasmModule.lintCode(code, language, options)
       } else {
         return await this.lintCodeNative(code, language, options)
@@ -474,7 +498,7 @@ export class CodeWasmModule implements ICodeWasmModule {
       const errorInfo = handleWasmError(error as Error, {
         moduleId: this.id,
         operation: 'lintCode',
-        input: { code, language, options }
+        input: { code, language, options },
       })
 
       return {
@@ -484,13 +508,17 @@ export class CodeWasmModule implements ICodeWasmModule {
           message: errorInfo.error.message,
           details: errorInfo.error.details,
           recoverable: errorInfo.classification.recoverable,
-          suggestions: errorInfo.error.suggestions
-        }
+          suggestions: errorInfo.error.suggestions,
+        },
       }
     }
   }
 
-  private async lintCodeNative(code: string, language: SupportedLanguage, options: CodeLintOptions = {}): Promise<WasmModuleResult> {
+  private async lintCodeNative(
+    code: string,
+    language: SupportedLanguage,
+    options: CodeLintOptions = {}
+  ): Promise<WasmModuleResult> {
     try {
       // Input validation
       if (typeof code !== 'string') {
@@ -514,8 +542,8 @@ export class CodeWasmModule implements ICodeWasmModule {
           infoCount: issues.filter(issue => issue.severity === 'info').length,
           language,
           options,
-          fixed: options.fix ? this.fixIssues(code, issues) : code
-        }
+          fixed: options.fix ? this.fixIssues(code, issues) : code,
+        },
       }
     } catch (error) {
       return {
@@ -524,17 +552,18 @@ export class CodeWasmModule implements ICodeWasmModule {
           code: 'LINT_ERROR',
           message: error instanceof Error ? error.message : 'Unknown error',
           recoverable: true,
-          suggestions: [
-            'Check code syntax',
-            'Verify language support',
-            'Review linting rules'
-          ]
-        }
+          suggestions: ['Check code syntax', 'Verify language support', 'Review linting rules'],
+        },
       }
     }
   }
 
-  async transpileCode(code: string, from: SupportedLanguage, to: SupportedLanguage, options: any = {}): Promise<WasmModuleResult> {
+  async transpileCode(
+    code: string,
+    from: SupportedLanguage,
+    to: SupportedLanguage,
+    options: any = {}
+  ): Promise<WasmModuleResult> {
     try {
       // Input validation
       if (typeof code !== 'string') {
@@ -565,8 +594,8 @@ export class CodeWasmModule implements ICodeWasmModule {
           original: code,
           from,
           to,
-          options
-        }
+          options,
+        },
       }
     } catch (error) {
       return {
@@ -578,14 +607,18 @@ export class CodeWasmModule implements ICodeWasmModule {
           suggestions: [
             'Check code syntax',
             'Verify language conversion support',
-            'Review transpilation options'
-          ]
-        }
+            'Review transpilation options',
+          ],
+        },
       }
     }
   }
 
-  async minifyCode(code: string, language: SupportedLanguage, options: any = {}): Promise<WasmModuleResult> {
+  async minifyCode(
+    code: string,
+    language: SupportedLanguage,
+    options: any = {}
+  ): Promise<WasmModuleResult> {
     try {
       // Input validation
       if (typeof code !== 'string') {
@@ -622,8 +655,8 @@ export class CodeWasmModule implements ICodeWasmModule {
           language,
           options,
           compressionRatio: code.length > 0 ? minified.length / code.length : 1,
-          sizeReduction: code.length - minified.length
-        }
+          sizeReduction: code.length - minified.length,
+        },
       }
     } catch (error) {
       return {
@@ -635,9 +668,9 @@ export class CodeWasmModule implements ICodeWasmModule {
           suggestions: [
             'Check code syntax',
             'Verify language support',
-            'Review minification options'
-          ]
-        }
+            'Review minification options',
+          ],
+        },
       }
     }
   }
@@ -662,8 +695,8 @@ export class CodeWasmModule implements ICodeWasmModule {
           valid: validation.valid,
           errors: validation.errors,
           warnings: validation.warnings,
-          language
-        }
+          language,
+        },
       }
     } catch (error) {
       return {
@@ -672,24 +705,24 @@ export class CodeWasmModule implements ICodeWasmModule {
           code: 'VALIDATION_ERROR',
           message: error instanceof Error ? error.message : 'Unknown error',
           recoverable: true,
-          suggestions: [
-            'Check code syntax',
-            'Verify language support'
-          ]
-        }
+          suggestions: ['Check code syntax', 'Verify language support'],
+        },
       }
     }
   }
 
   async analyzeCode(code: string, language: SupportedLanguage): Promise<WasmModuleResult> {
-    if (this.wasmModule && this.wasmModule.analyzeCode) {
+    if (this.wasmModule?.analyzeCode) {
       return await this.wasmModule.analyzeCode(code, language)
     } else {
       return await this.analyzeCodeNative(code, language)
     }
   }
 
-  private async analyzeCodeNative(code: string, language: SupportedLanguage): Promise<WasmModuleResult> {
+  private async analyzeCodeNative(
+    code: string,
+    language: SupportedLanguage
+  ): Promise<WasmModuleResult> {
     try {
       // Input validation
       if (typeof code !== 'string') {
@@ -705,7 +738,7 @@ export class CodeWasmModule implements ICodeWasmModule {
 
       return {
         success: true,
-        data: analysis
+        data: analysis,
       }
     } catch (error) {
       return {
@@ -714,16 +747,16 @@ export class CodeWasmModule implements ICodeWasmModule {
           code: 'ANALYSIS_ERROR',
           message: error instanceof Error ? error.message : 'Unknown error',
           recoverable: true,
-          suggestions: [
-            'Check code syntax',
-            'Verify language support'
-          ]
-        }
+          suggestions: ['Check code syntax', 'Verify language support'],
+        },
       }
     }
   }
 
-  async generateCode(template: CodeTemplate, parameters: Record<string, any>): Promise<WasmModuleResult> {
+  async generateCode(
+    template: CodeTemplate,
+    parameters: Record<string, any>
+  ): Promise<WasmModuleResult> {
     try {
       // Validate template
       this.validateCodeTemplate(template)
@@ -740,8 +773,8 @@ export class CodeWasmModule implements ICodeWasmModule {
           generated,
           template: template.id,
           parameters,
-          language: template.language
-        }
+          language: template.language,
+        },
       }
     } catch (error) {
       return {
@@ -753,14 +786,18 @@ export class CodeWasmModule implements ICodeWasmModule {
           suggestions: [
             'Check template format',
             'Verify required parameters',
-            'Review parameter values'
-          ]
-        }
+            'Review parameter values',
+          ],
+        },
       }
     }
   }
 
-  async refactorCode(code: string, language: SupportedLanguage, refactoring: CodeRefactoring): Promise<WasmModuleResult> {
+  async refactorCode(
+    code: string,
+    language: SupportedLanguage,
+    refactoring: CodeRefactoring
+  ): Promise<WasmModuleResult> {
     try {
       // Input validation
       if (typeof code !== 'string') {
@@ -781,8 +818,8 @@ export class CodeWasmModule implements ICodeWasmModule {
           original: code,
           refactoring,
           language,
-          changes: refactored !== code
-        }
+          changes: refactored !== code,
+        },
       }
     } catch (error) {
       return {
@@ -794,14 +831,18 @@ export class CodeWasmModule implements ICodeWasmModule {
           suggestions: [
             'Check code syntax',
             'Verify refactoring parameters',
-            'Review refactoring scope'
-          ]
-        }
+            'Review refactoring scope',
+          ],
+        },
       }
     }
   }
 
-  async obfuscateCode(code: string, language: SupportedLanguage, options: any = {}): Promise<WasmModuleResult> {
+  async obfuscateCode(
+    code: string,
+    language: SupportedLanguage,
+    options: any = {}
+  ): Promise<WasmModuleResult> {
     try {
       // Input validation
       if (typeof code !== 'string') {
@@ -821,8 +862,8 @@ export class CodeWasmModule implements ICodeWasmModule {
           obfuscated,
           original: code,
           language,
-          options
-        }
+          options,
+        },
       }
     } catch (error) {
       return {
@@ -834,9 +875,9 @@ export class CodeWasmModule implements ICodeWasmModule {
           suggestions: [
             'Check code syntax',
             'Verify language support',
-            'Review obfuscation options'
-          ]
-        }
+            'Review obfuscation options',
+          ],
+        },
       }
     }
   }
@@ -861,8 +902,8 @@ export class CodeWasmModule implements ICodeWasmModule {
           deobfuscated,
           original: code,
           language,
-          note: 'Limited deobfuscation capabilities'
-        }
+          note: 'Limited deobfuscation capabilities',
+        },
       }
     } catch (error) {
       return {
@@ -874,9 +915,9 @@ export class CodeWasmModule implements ICodeWasmModule {
           suggestions: [
             'Check code format',
             'Verify language support',
-            'Manual deobfuscation may be required'
-          ]
-        }
+            'Manual deobfuscation may be required',
+          ],
+        },
       }
     }
   }
@@ -906,19 +947,19 @@ export class CodeWasmModule implements ICodeWasmModule {
         'transpilation',
         'minification',
         'validation',
-        'refactoring'
+        'refactoring',
       ],
       limitations: [
         'Maximum code size: 1MB',
         'Execution timeout: 30 seconds',
         'Memory limit: 64MB',
         'Network access disabled',
-        'File system access restricted'
-      ]
+        'File system access restricted',
+      ],
     }
   }
 
-  private validateCodeForSecurity(code: string, language: SupportedLanguage): void {
+  private validateCodeForSecurity(code: string, _language: SupportedLanguage): void {
     // Basic security checks to prevent malicious code execution
     const suspiciousPatterns = [
       /eval\s*\(/i,
@@ -936,7 +977,7 @@ export class CodeWasmModule implements ICodeWasmModule {
       /fs\./i,
       /child_process/i,
       /exec\s*\(/i,
-      /spawn\s*\(/i
+      /spawn\s*\(/i,
     ]
 
     for (const pattern of suspiciousPatterns) {
@@ -946,7 +987,8 @@ export class CodeWasmModule implements ICodeWasmModule {
     }
 
     // Check for extremely long code that might cause DoS
-    if (code.length > 1024 * 1024) { // 1MB
+    if (code.length > 1024 * 1024) {
+      // 1MB
       throw new Error('Code exceeds maximum size limit of 1MB')
     }
 
@@ -983,7 +1025,7 @@ export class CodeWasmModule implements ICodeWasmModule {
             if (options.captureStdout !== false) {
               return args.join(' ')
             }
-          }
+          },
         },
         // Safe globals
         Math: Math,
@@ -993,14 +1035,18 @@ export class CodeWasmModule implements ICodeWasmModule {
         Number: Number,
         Array: Array,
         Object: Object,
-        JSON: JSON
+        JSON: JSON,
       }
 
       // Create a function from the code
       const func = new Function(...Object.keys(sandbox), code)
 
       // Execute with timeout
-      const result = await this.executeWithTimeout(func, options.timeout || 30000, ...Object.values(sandbox))
+      const result = await this.executeWithTimeout(
+        func,
+        options.timeout || 30000,
+        ...Object.values(sandbox)
+      )
 
       return {
         output: result,
@@ -1009,7 +1055,7 @@ export class CodeWasmModule implements ICodeWasmModule {
         executionTime: 0,
         memoryUsage: 0,
         stdout: typeof result === 'string' ? result : JSON.stringify(result),
-        stderr: ''
+        stderr: '',
       }
     } catch (error) {
       return {
@@ -1019,12 +1065,12 @@ export class CodeWasmModule implements ICodeWasmModule {
         executionTime: 0,
         memoryUsage: 0,
         stdout: '',
-        stderr: error instanceof Error ? error.message : 'Unknown error'
+        stderr: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   }
 
-  private async executePython(code: string, options: CodeExecutionOptions): Promise<any> {
+  private async executePython(_code: string, _options: CodeExecutionOptions): Promise<any> {
     // Python execution is not natively supported in this environment
     // This would require a Python interpreter or external service
     return {
@@ -1034,11 +1080,11 @@ export class CodeWasmModule implements ICodeWasmModule {
       executionTime: 0,
       memoryUsage: 0,
       stdout: '',
-      stderr: 'Python interpreter not available'
+      stderr: 'Python interpreter not available',
     }
   }
 
-  private async executeJson(code: string, options: CodeExecutionOptions): Promise<any> {
+  private async executeJson(code: string, _options: CodeExecutionOptions): Promise<any> {
     try {
       const parsed = JSON.parse(code)
       return {
@@ -1048,7 +1094,7 @@ export class CodeWasmModule implements ICodeWasmModule {
         executionTime: 0,
         memoryUsage: 0,
         stdout: JSON.stringify(parsed, null, 2),
-        stderr: ''
+        stderr: '',
       }
     } catch (error) {
       return {
@@ -1058,12 +1104,16 @@ export class CodeWasmModule implements ICodeWasmModule {
         executionTime: 0,
         memoryUsage: 0,
         stdout: '',
-        stderr: error instanceof Error ? error.message : 'Invalid JSON'
+        stderr: error instanceof Error ? error.message : 'Invalid JSON',
       }
     }
   }
 
-  private async executeWithTimeout(func: Function, timeoutMs: number, ...args: any[]): Promise<any> {
+  private async executeWithTimeout(
+    func: Function,
+    timeoutMs: number,
+    ...args: any[]
+  ): Promise<any> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new Error('Code execution timeout'))
@@ -1080,11 +1130,11 @@ export class CodeWasmModule implements ICodeWasmModule {
     })
   }
 
-  private formatJavaScript(code: string, options: CodeFormatOptions): string {
+  private formatJavaScript(code: string, _options: CodeFormatOptions): string {
     // Simplified JavaScript formatting
     // In a real implementation, use a proper formatter like Prettier
     try {
-      const parsed = JSON.parse(JSON.stringify(code))
+      const _parsed = JSON.parse(JSON.stringify(code))
       return code // Placeholder
     } catch {
       return code
@@ -1101,19 +1151,23 @@ export class CodeWasmModule implements ICodeWasmModule {
     }
   }
 
-  private formatHtml(code: string, options: CodeFormatOptions): string {
+  private formatHtml(code: string, _options: CodeFormatOptions): string {
     // Simplified HTML formatting
     // In a real implementation, use a proper HTML formatter
     return code.replace(/></g, '>\n<')
   }
 
-  private formatCss(code: string, options: CodeFormatOptions): string {
+  private formatCss(code: string, _options: CodeFormatOptions): string {
     // Simplified CSS formatting
     // In a real implementation, use a proper CSS formatter
     return code.replace(/{/g, ' {\n  ').replace(/}/g, '\n}\n').replace(/;/g, ';\n  ')
   }
 
-  private lintCodeByLanguage(code: string, language: SupportedLanguage, options: CodeLintOptions): any[] {
+  private lintCodeByLanguage(
+    code: string,
+    language: SupportedLanguage,
+    _options: CodeLintOptions
+  ): any[] {
     // Simplified linting implementation
     const issues: any[] = []
 
@@ -1135,7 +1189,7 @@ export class CodeWasmModule implements ICodeWasmModule {
         column: 1,
         message: error instanceof Error ? error.message : 'Syntax error',
         severity: 'error',
-        rule: 'syntax-error'
+        rule: 'syntax-error',
       })
     }
 
@@ -1156,19 +1210,22 @@ export class CodeWasmModule implements ICodeWasmModule {
     return fixed
   }
 
-  private transpileTypeScriptToJavaScript(code: string, options: any): string {
+  private transpileTypeScriptToJavaScript(code: string, _options: any): string {
     // Simplified TypeScript to JavaScript transpilation
     // In a real implementation, use TypeScript compiler
-    return code.replace(/:\s*string/g, '').replace(/:\s*number/g, '').replace(/:\s*boolean/g, '')
+    return code
+      .replace(/:\s*string/g, '')
+      .replace(/:\s*number/g, '')
+      .replace(/:\s*boolean/g, '')
   }
 
-  private transpileJavaScriptToTypeScript(code: string, options: any): string {
+  private transpileJavaScriptToTypeScript(code: string, _options: any): string {
     // Simplified JavaScript to TypeScript transpilation
     // This is a very basic implementation
     return code // Placeholder - would need type inference
   }
 
-  private minifyJavaScript(code: string, options: any): string {
+  private minifyJavaScript(code: string, _options: any): string {
     // Simplified JavaScript minification
     return code
       .replace(/\/\*[\s\S]*?\*\//g, '') // Remove block comments
@@ -1177,7 +1234,7 @@ export class CodeWasmModule implements ICodeWasmModule {
       .trim()
   }
 
-  private minifyCss(code: string, options: any): string {
+  private minifyCss(code: string, _options: any): string {
     // Simplified CSS minification
     return code
       .replace(/\/\*[\s\S]*?\*\//g, '') // Remove comments
@@ -1186,7 +1243,7 @@ export class CodeWasmModule implements ICodeWasmModule {
       .trim()
   }
 
-  private minifyHtml(code: string, options: any): string {
+  private minifyHtml(code: string, _options: any): string {
     // Simplified HTML minification
     return code
       .replace(/<!--[\s\S]*?-->/g, '') // Remove comments
@@ -1233,14 +1290,14 @@ export class CodeWasmModule implements ICodeWasmModule {
         cyclomaticComplexity: 1,
         cognitiveComplexity: 1,
         halsteadVolume: 0,
-        maintainabilityIndex: 100
+        maintainabilityIndex: 100,
       },
       structure: {
         functions: [],
         classes: [],
         imports: [],
         exports: [],
-        variables: []
+        variables: [],
       },
       dependencies: [],
       securityIssues: [],
@@ -1248,12 +1305,12 @@ export class CodeWasmModule implements ICodeWasmModule {
       quality: {
         duplicatedLines: 0,
         duplicationPercentage: 0,
-        technicalDebt: 'low'
+        technicalDebt: 'low',
       },
       metrics: {
         analysisTime: 0,
-        memoryUsage: 0
-      }
+        memoryUsage: 0,
+      },
     }
 
     // Language-specific analysis
@@ -1277,7 +1334,7 @@ export class CodeWasmModule implements ICodeWasmModule {
 
   private analyzeJavaScript(code: string, analysis: CodeAnalysisResult): void {
     // Simplified JavaScript analysis
-    const lines = code.split('\n')
+    const _lines = code.split('\n')
 
     // Find functions
     const functionRegex = /function\s+(\w+)\s*\(/g
@@ -1290,7 +1347,7 @@ export class CodeWasmModule implements ICodeWasmModule {
         returnType: 'any',
         complexity: 1,
         isAsync: false,
-        isGenerator: false
+        isGenerator: false,
       })
     }
 
@@ -1302,7 +1359,7 @@ export class CodeWasmModule implements ICodeWasmModule {
         name: match[0],
         line: code.substring(0, match.index).split('\n').length,
         type: 'named',
-        isUsed: true
+        isUsed: true,
       })
     }
   }
@@ -1316,7 +1373,7 @@ export class CodeWasmModule implements ICodeWasmModule {
         type: Array.isArray(parsed) ? 'array' : typeof parsed,
         isConst: true,
         isUsed: true,
-        scope: 'global'
+        scope: 'global',
       })
     } catch {
       // Invalid JSON
@@ -1333,7 +1390,10 @@ export class CodeWasmModule implements ICodeWasmModule {
     }
   }
 
-  private validateTemplateParameters(template: CodeTemplate, parameters: Record<string, any>): void {
+  private validateTemplateParameters(
+    template: CodeTemplate,
+    parameters: Record<string, any>
+  ): void {
     for (const param of template.parameters) {
       if (param.required && !(param.name in parameters)) {
         throw new Error(`Required parameter missing: ${param.name}`)
@@ -1366,7 +1426,11 @@ export class CodeWasmModule implements ICodeWasmModule {
     return result
   }
 
-  private applyRefactoring(code: string, language: SupportedLanguage, refactoring: CodeRefactoring): string {
+  private applyRefactoring(
+    code: string,
+    _language: SupportedLanguage,
+    refactoring: CodeRefactoring
+  ): string {
     // Simplified refactoring implementation
     let result = code
 
@@ -1388,7 +1452,11 @@ export class CodeWasmModule implements ICodeWasmModule {
     return result
   }
 
-  private obfuscateCodeByLanguage(code: string, language: SupportedLanguage, options: any): string {
+  private obfuscateCodeByLanguage(
+    code: string,
+    _language: SupportedLanguage,
+    options: any
+  ): string {
     // Simplified obfuscation
     let result = code
 
@@ -1412,7 +1480,7 @@ export class CodeWasmModule implements ICodeWasmModule {
     return result
   }
 
-  private deobfuscateCodeByLanguage(code: string, language: SupportedLanguage): string {
+  private deobfuscateCodeByLanguage(code: string, _language: SupportedLanguage): string {
     // Limited deobfuscation capabilities
     // In most cases, deobfuscation is not possible without additional information
     return code

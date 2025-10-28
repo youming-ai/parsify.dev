@@ -1,13 +1,6 @@
-import {
-  FileUpload,
-  FileUploadSchema,
-  CreateFileUploadSchema,
-  UpdateFileUploadSchema,
-  FILE_UPLOAD_QUERIES,
-} from '../models/file_upload'
-import { ToolUsage, TOOL_USAGE_QUERIES } from '../models/tool_usage'
-import { AuditLog, AUDIT_LOG_QUERIES } from '../models/audit_log'
-import { DatabaseClient, createDatabaseClient } from '../database'
+import { createDatabaseClient, type DatabaseClient } from '../database'
+import { AUDIT_LOG_QUERIES, AuditLog } from '../models/audit_log'
+import { FILE_UPLOAD_QUERIES, FileUpload } from '../models/file_upload'
 
 export interface FileServiceOptions {
   db: D1Database
@@ -109,9 +102,7 @@ export class FileService {
   }
 
   // File validation
-  async validateFileUpload(
-    options: UploadOptions
-  ): Promise<FileValidationResult> {
+  async validateFileUpload(options: UploadOptions): Promise<FileValidationResult> {
     // Validate filename
     const filenameValidation = FileUpload.validateFilename(options.filename)
     if (!filenameValidation.valid) {
@@ -122,10 +113,7 @@ export class FileService {
     }
 
     // Validate MIME type
-    const mimeTypeValidation = FileUpload.validateMimeType(
-      options.mimeType,
-      this.allowedMimeTypes
-    )
+    const mimeTypeValidation = FileUpload.validateMimeType(options.mimeType, this.allowedMimeTypes)
     if (!mimeTypeValidation.valid) {
       return {
         valid: false,
@@ -136,10 +124,7 @@ export class FileService {
     }
 
     // Validate file size
-    const sizeValidation = FileUpload.validateFileSize(
-      options.size,
-      this.maxFileSize
-    )
+    const sizeValidation = FileUpload.validateFileSize(options.size, this.maxFileSize)
     if (!sizeValidation.valid) {
       return {
         valid: false,
@@ -310,10 +295,7 @@ export class FileService {
   // File download and access
   async getFileUploadById(fileId: string): Promise<FileUpload | null> {
     try {
-      const result = await this.client.queryFirst(
-        FILE_UPLOAD_QUERIES.SELECT_BY_ID,
-        [fileId]
-      )
+      const result = await this.client.queryFirst(FILE_UPLOAD_QUERIES.SELECT_BY_ID, [fileId])
 
       if (!result) {
         return null
@@ -326,10 +308,7 @@ export class FileService {
     }
   }
 
-  async getPresignedDownloadUrl(
-    fileId: string,
-    expiresIn = 3600
-  ): Promise<string | null> {
+  async getPresignedDownloadUrl(fileId: string, expiresIn = 3600): Promise<string | null> {
     const fileUpload = await this.getFileUploadById(fileId)
     if (!fileUpload || !fileUpload.isAccessible) {
       return null
@@ -395,11 +374,7 @@ export class FileService {
   }
 
   // File management
-  async deleteFile(
-    fileId: string,
-    ipAddress?: string,
-    userAgent?: string
-  ): Promise<boolean> {
+  async deleteFile(fileId: string, ipAddress?: string, userAgent?: string): Promise<boolean> {
     const fileUpload = await this.getFileUploadById(fileId)
     if (!fileUpload) {
       return false
@@ -434,10 +409,7 @@ export class FileService {
     }
   }
 
-  async extendFileRetention(
-    fileId: string,
-    additionalHours: number
-  ): Promise<boolean> {
+  async extendFileRetention(fileId: string, additionalHours: number): Promise<boolean> {
     const fileUpload = await this.getFileUploadById(fileId)
     if (!fileUpload) {
       return false
@@ -455,17 +427,15 @@ export class FileService {
   }
 
   // File listing and search
-  async getFilesByUser(
-    userId: string,
-    limit = 50,
-    offset = 0
-  ): Promise<FileUpload[]> {
+  async getFilesByUser(userId: string, limit = 50, offset = 0): Promise<FileUpload[]> {
     try {
       const now = Math.floor(Date.now() / 1000)
-      const result = await this.client.query(
-        FILE_UPLOAD_QUERIES.SELECT_COMPLETED_BY_USER,
-        [userId, now, limit, offset]
-      )
+      const result = await this.client.query(FILE_UPLOAD_QUERIES.SELECT_COMPLETED_BY_USER, [
+        userId,
+        now,
+        limit,
+        offset,
+      ])
 
       return result.map(row => FileUpload.fromRow(row))
     } catch (error) {
@@ -592,9 +562,7 @@ export class FileService {
     topMimeTypes: Array<{ mimeType: string; count: number; size: number }>
   }> {
     try {
-      const analyticsStmt = this.db.prepare(
-        FILE_UPLOAD_QUERIES.STORAGE_ANALYTICS
-      )
+      const analyticsStmt = this.db.prepare(FILE_UPLOAD_QUERIES.STORAGE_ANALYTICS)
       const sevenDaysAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60
       const result = await analyticsStmt.bind(sevenDaysAgo).all()
 
@@ -613,8 +581,8 @@ export class FileService {
       const stats = result.results[0]
       const totalFiles = stats.total_files || 0
       const totalSize = stats.total_size_bytes || 0
-      const completedFiles = stats.completed_files || 0
-      const uploadingFiles = stats.uploading_files || 0
+      const _completedFiles = stats.completed_files || 0
+      const _uploadingFiles = stats.uploading_files || 0
 
       return {
         totalFiles,
@@ -709,18 +677,12 @@ export class FileService {
     }
   }
 
-  private async generatePresignedUploadUrl(
-    fileUpload: FileUpload
-  ): Promise<string> {
+  private async generatePresignedUploadUrl(fileUpload: FileUpload): Promise<string> {
     // In production, use R2's presigned URL API
     // For now, return a mock URL that would be generated by the actual implementation
     const baseUrl = 'https://upload.r2.cloudflarestorage.com'
     const expires = Math.floor(Date.now() / 1000) + 3600 // 1 hour
-    const signature = await this.generateSignature(
-      fileUpload.r2_key,
-      'PUT',
-      expires
-    )
+    const signature = await this.generateSignature(fileUpload.r2_key, 'PUT', expires)
 
     return `${baseUrl}/${fileUpload.r2_key}?expires=${expires}&signature=${signature}`
   }
@@ -732,20 +694,12 @@ export class FileService {
     // In production, use R2's presigned URL API
     const baseUrl = 'https://download.r2.cloudflarestorage.com'
     const expires = Math.floor(Date.now() / 1000) + expiresIn
-    const signature = await this.generateSignature(
-      fileUpload.r2_key,
-      'GET',
-      expires
-    )
+    const signature = await this.generateSignature(fileUpload.r2_key, 'GET', expires)
 
     return `${baseUrl}/${fileUpload.r2_key}?expires=${expires}&signature=${signature}`
   }
 
-  private async generateSignature(
-    key: string,
-    method: string,
-    expires: number
-  ): Promise<string> {
+  private async generateSignature(key: string, method: string, expires: number): Promise<string> {
     // Generate HMAC signature for presigned URL
     const message = `${method}\n${key}\n${expires}`
     const encoder = new TextEncoder()
@@ -753,9 +707,7 @@ export class FileService {
     const messageData = encoder.encode(message)
 
     const signature = await crypto.subtle
-      .importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, [
-        'sign',
-      ])
+      .importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
       .then(key => crypto.subtle.sign('HMAC', key, messageData))
       .then(sig => btoa(String.fromCharCode(...new Uint8Array(sig))))
 

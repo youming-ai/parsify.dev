@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
-import { cn } from '@/lib/utils'
+import type React from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { UploadedFile, FileDownloadOptions } from './file-upload-types'
+import { cn } from '@/lib/utils'
+import type { FileDownloadOptions, UploadedFile } from './file-upload-types'
 
 interface DownloadButtonProps {
   /** File to download */
@@ -111,7 +112,10 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
           }
 
           // Create blob from chunks
-          const blob = new Blob(chunks, { type: file.type })
+          const blob = new Blob(
+            chunks.map(chunk => new Uint8Array(chunk)),
+            { type: file.type }
+          )
           const url = URL.createObjectURL(blob)
 
           // Create download link
@@ -133,7 +137,6 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
         setIsDownloading(false)
         setDownloadProgress(0)
       }, 1000)
-
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Download failed')
       setError(error.message)
@@ -148,7 +151,7 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
     const k = 1024
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
   }
 
   return (
@@ -165,29 +168,40 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
       >
         {isDownloading ? (
           <>
-            <svg className="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <svg
+              className="mr-2 h-4 w-4 animate-spin"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
             </svg>
             {showProgress ? `${downloadProgress}%` : 'Downloading...'}
           </>
         ) : (
           <>
-            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
             </svg>
             {children || 'Download'}
           </>
         )}
       </Button>
 
-      {error && (
-        <div className="mt-2 text-xs text-red-600 max-w-xs">
-          {error}
-        </div>
-      )}
+      {error && <div className="mt-2 max-w-xs text-red-600 text-xs">{error}</div>}
 
       {showProgress && isDownloading && (
-        <div className="mt-2 text-xs text-gray-500 max-w-xs">
+        <div className="mt-2 max-w-xs text-gray-500 text-xs">
           Downloading {formatFileSize(file.size)}...
         </div>
       )}
@@ -297,7 +311,6 @@ export const BatchDownloadButton: React.FC<BatchDownloadButtonProps> = ({
         setIsDownloading(false)
         setDownloadProgress(0)
       }, 1000)
-
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Batch download failed')
       setError(error.message)
@@ -321,30 +334,42 @@ export const BatchDownloadButton: React.FC<BatchDownloadButtonProps> = ({
       >
         {isDownloading ? (
           <>
-            <svg className="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <svg
+              className="mr-2 h-4 w-4 animate-spin"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
             </svg>
             {showProgress ? `${downloadProgress}%` : `Downloading ${validFiles.length} files...`}
           </>
         ) : (
           <>
-            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
             </svg>
             {children || `Download ${validFiles.length} files`}
           </>
         )}
       </Button>
 
-      {error && (
-        <div className="mt-2 text-xs text-red-600 max-w-xs">
-          {error}
-        </div>
-      )}
+      {error && <div className="mt-2 max-w-xs text-red-600 text-xs">{error}</div>}
 
       {showProgress && isDownloading && (
-        <div className="mt-2 text-xs text-gray-500 max-w-xs">
-          Downloaded {Math.round((downloadProgress / 100) * validFiles.length)} of {validFiles.length} files
+        <div className="mt-2 max-w-xs text-gray-500 text-xs">
+          Downloaded {Math.round((downloadProgress / 100) * validFiles.length)} of{' '}
+          {validFiles.length} files
         </div>
       )}
     </div>
@@ -352,4 +377,3 @@ export const BatchDownloadButton: React.FC<BatchDownloadButtonProps> = ({
 }
 
 export { DownloadButton as default }
-export { BatchDownloadButton }

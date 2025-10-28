@@ -5,7 +5,6 @@
 
 import { Hono } from 'hono'
 import { z } from 'zod'
-import { nanoid } from 'nanoid'
 import type { Env } from '../index'
 
 // Type definitions
@@ -87,7 +86,7 @@ const app = new Hono<{ Bindings: Env }>()
 /**
  * Store analytics events
  */
-app.post('/events', async (c) => {
+app.post('/events', async c => {
   try {
     const body = await c.req.json()
     const validatedData = BatchSchema.parse(body)
@@ -133,7 +132,7 @@ app.post('/events', async (c) => {
 /**
  * Get real-time analytics data
  */
-app.get('/realtime', async (c) => {
+app.get('/realtime', async c => {
   try {
     const now = Date.now()
     const oneHourAgo = now - 60 * 60 * 1000
@@ -161,11 +160,13 @@ app.get('/realtime', async (c) => {
 /**
  * Get analytics dashboard data
  */
-app.get('/dashboard', async (c) => {
+app.get('/dashboard', async c => {
   try {
     const query = MetricsQuerySchema.parse(c.req.query())
 
-    const startDate = query.startDate ? new Date(query.startDate).getTime() : Date.now() - 7 * 24 * 60 * 60 * 1000
+    const startDate = query.startDate
+      ? new Date(query.startDate).getTime()
+      : Date.now() - 7 * 24 * 60 * 60 * 1000
     const endDate = query.endDate ? new Date(query.endDate).getTime() : Date.now()
 
     // Get aggregated metrics from database
@@ -194,11 +195,13 @@ app.get('/dashboard', async (c) => {
 /**
  * Get tool usage analytics
  */
-app.get('/tools', async (c) => {
+app.get('/tools', async c => {
   try {
     const query = MetricsQuerySchema.parse(c.req.query())
 
-    const startDate = query.startDate ? new Date(query.startDate).getTime() : Date.now() - 7 * 24 * 60 * 60 * 1000
+    const startDate = query.startDate
+      ? new Date(query.startDate).getTime()
+      : Date.now() - 7 * 24 * 60 * 60 * 1000
     const endDate = query.endDate ? new Date(query.endDate).getTime() : Date.now()
 
     // Get tool usage metrics
@@ -226,11 +229,13 @@ app.get('/tools', async (c) => {
 /**
  * Get performance analytics
  */
-app.get('/performance', async (c) => {
+app.get('/performance', async c => {
   try {
     const query = MetricsQuerySchema.parse(c.req.query())
 
-    const startDate = query.startDate ? new Date(query.startDate).getTime() : Date.now() - 7 * 24 * 60 * 60 * 1000
+    const startDate = query.startDate
+      ? new Date(query.startDate).getTime()
+      : Date.now() - 7 * 24 * 60 * 60 * 1000
     const endDate = query.endDate ? new Date(query.endDate).getTime() : Date.now()
 
     // Get performance metrics
@@ -258,7 +263,7 @@ app.get('/performance', async (c) => {
 /**
  * Get user analytics (requires authentication)
  */
-app.get('/users/:userId', async (c) => {
+app.get('/users/:userId', async c => {
   try {
     const userId = c.req.param('userId')
 
@@ -266,7 +271,9 @@ app.get('/users/:userId', async (c) => {
     // has permission to access this user's analytics
 
     const query = MetricsQuerySchema.parse(c.req.query())
-    const startDate = query.startDate ? new Date(query.startDate).getTime() : Date.now() - 7 * 24 * 60 * 60 * 1000
+    const startDate = query.startDate
+      ? new Date(query.startDate).getTime()
+      : Date.now() - 7 * 24 * 60 * 60 * 1000
     const endDate = query.endDate ? new Date(query.endDate).getTime() : Date.now()
 
     // Get user-specific analytics
@@ -295,7 +302,7 @@ app.get('/users/:userId', async (c) => {
 /**
  * Export analytics data (requires admin permissions)
  */
-app.post('/export', async (c) => {
+app.post('/export', async c => {
   try {
     const body = await c.req.json()
     const { format = 'json', filters = {} } = body
@@ -303,7 +310,9 @@ app.post('/export', async (c) => {
     // In a real implementation, you would verify admin permissions
 
     const query = MetricsQuerySchema.parse(c.req.query())
-    const startDate = query.startDate ? new Date(query.startDate).getTime() : Date.now() - 30 * 24 * 60 * 60 * 1000
+    const startDate = query.startDate
+      ? new Date(query.startDate).getTime()
+      : Date.now() - 30 * 24 * 60 * 60 * 1000
     const endDate = query.endDate ? new Date(query.endDate).getTime() : Date.now()
 
     // Get analytics data for export
@@ -344,7 +353,7 @@ app.post('/export', async (c) => {
 /**
  * Delete analytics data (GDPR compliance)
  */
-app.delete('/users/:userId', async (c) => {
+app.delete('/users/:userId', async c => {
   try {
     const userId = c.req.param('userId')
 
@@ -386,12 +395,13 @@ async function updateRealtimeCounters(env: Env, event: AnalyticsEvent): Promise<
       case 'page_view':
         counters.pageViews = (counters.pageViews || 0) + 1
         break
-      case 'tool_usage':
+      case 'tool_usage': {
         counters.toolUsage = (counters.toolUsage || 0) + 1
         counters.toolUsageBreakdown = counters.toolUsageBreakdown || {}
         const toolName = event.data.toolName || 'unknown'
         counters.toolUsageBreakdown[toolName] = (counters.toolUsageBreakdown[toolName] || 0) + 1
         break
+      }
       case 'performance':
         counters.performanceEvents = (counters.performanceEvents || 0) + 1
         break
@@ -415,7 +425,7 @@ async function updateRealtimeCounters(env: Env, event: AnalyticsEvent): Promise<
   }
 }
 
-async function getRealtimeMetrics(env: Env, startTime: number, endTime: number): Promise<any> {
+async function getRealtimeMetrics(env: Env, startTime: number, _endTime: number): Promise<any> {
   const metrics = {
     pageViews: 0,
     uniqueSessions: new Set<string>(),
@@ -472,17 +482,19 @@ async function storeEventInDatabase(env: Env, event: AnalyticsEvent): Promise<vo
       INSERT INTO analytics_events (
         id, name, timestamp, url, user_agent, user_id, session_id, data, properties
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(
-      event.id,
-      event.name,
-      new Date(event.timestamp).toISOString(),
-      event.url,
-      event.userAgent,
-      event.userId || null,
-      event.sessionId,
-      JSON.stringify(event.data),
-      event.properties ? JSON.stringify(event.properties) : null
-    ).run()
+    `)
+      .bind(
+        event.id,
+        event.name,
+        new Date(event.timestamp).toISOString(),
+        event.url,
+        event.userAgent,
+        event.userId || null,
+        event.sessionId,
+        JSON.stringify(event.data),
+        event.properties ? JSON.stringify(event.properties) : null
+      )
+      .run()
   } catch (error) {
     console.error('Failed to store event in database:', error)
   }
@@ -492,7 +504,7 @@ async function getAggregatedMetrics(
   env: Env,
   startDate: number,
   endDate: number,
-  granularity: string
+  _granularity: string
 ): Promise<AnalyticsMetrics> {
   try {
     // Get aggregated metrics from D1 database
@@ -505,10 +517,9 @@ async function getAggregatedMetrics(
         SUM(CASE WHEN name = 'tool_usage' THEN 1 ELSE 0 END) as tool_usage
       FROM analytics_events
       WHERE timestamp BETWEEN ? AND ?
-    `).bind(
-      new Date(startDate).toISOString(),
-      new Date(endDate).toISOString()
-    ).first()
+    `)
+      .bind(new Date(startDate).toISOString(), new Date(endDate).toISOString())
+      .first()
 
     return {
       totalPageViews: result?.page_views || 0,
@@ -552,10 +563,9 @@ async function getToolUsageMetrics(env: Env, startDate: number, endDate: number)
         AND timestamp BETWEEN ? AND ?
       GROUP BY tool_name, action
       ORDER BY usage_count DESC
-    `).bind(
-      new Date(startDate).toISOString(),
-      new Date(endDate).toISOString()
-    ).all()
+    `)
+      .bind(new Date(startDate).toISOString(), new Date(endDate).toISOString())
+      .all()
 
     return result.results || []
   } catch (error) {
@@ -576,10 +586,9 @@ async function getPerformanceMetrics(env: Env, startDate: number, endDate: numbe
       FROM analytics_events
       WHERE name = 'performance'
         AND timestamp BETWEEN ? AND ?
-    `).bind(
-      new Date(startDate).toISOString(),
-      new Date(endDate).toISOString()
-    ).all()
+    `)
+      .bind(new Date(startDate).toISOString(), new Date(endDate).toISOString())
+      .all()
 
     const metrics = result.results || []
     const validMetrics = metrics.filter(m => m.lcp || m.fid || m.cls || m.fcp || m.ttfb)
@@ -609,7 +618,12 @@ async function getPerformanceMetrics(env: Env, startDate: number, endDate: numbe
   }
 }
 
-async function getUserAnalytics(env: Env, userId: string, startDate: number, endDate: number): Promise<any> {
+async function getUserAnalytics(
+  env: Env,
+  userId: string,
+  startDate: number,
+  endDate: number
+): Promise<any> {
   try {
     const result = await env.DB.prepare(`
       SELECT
@@ -622,11 +636,9 @@ async function getUserAnalytics(env: Env, userId: string, startDate: number, end
         AND timestamp BETWEEN ? AND ?
       GROUP BY name
       ORDER BY event_count DESC
-    `).bind(
-      userId,
-      new Date(startDate).toISOString(),
-      new Date(endDate).toISOString()
-    ).all()
+    `)
+      .bind(userId, new Date(startDate).toISOString(), new Date(endDate).toISOString())
+      .all()
 
     return result.results || []
   } catch (error) {
@@ -635,7 +647,12 @@ async function getUserAnalytics(env: Env, userId: string, startDate: number, end
   }
 }
 
-async function getAnalyticsExport(env: Env, startDate: number, endDate: number, filters: any): Promise<any> {
+async function getAnalyticsExport(
+  env: Env,
+  startDate: number,
+  endDate: number,
+  _filters: any
+): Promise<any> {
   try {
     const result = await env.DB.prepare(`
       SELECT *
@@ -643,10 +660,9 @@ async function getAnalyticsExport(env: Env, startDate: number, endDate: number, 
       WHERE timestamp BETWEEN ? AND ?
       ORDER BY timestamp DESC
       LIMIT 10000
-    `).bind(
-      new Date(startDate).toISOString(),
-      new Date(endDate).toISOString()
-    ).all()
+    `)
+      .bind(new Date(startDate).toISOString(), new Date(endDate).toISOString())
+      .all()
 
     return result.results || []
   } catch (error) {
@@ -661,10 +677,14 @@ async function deleteUserAnalytics(env: Env, userId: string): Promise<void> {
     await env.DB.prepare(`
       DELETE FROM analytics_events
       WHERE user_id = ?
-    `).bind(userId).run()
+    `)
+      .bind(userId)
+      .run()
 
     // Also clean up any KV storage
-    const list = await env.ANALYTICS.list({ prefix: `analytics:user:${userId}:` })
+    const list = await env.ANALYTICS.list({
+      prefix: `analytics:user:${userId}:`,
+    })
     for (const key of list.keys) {
       await env.ANALYTICS.delete(key.name)
     }

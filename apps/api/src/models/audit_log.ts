@@ -21,7 +21,7 @@ export const AuditActionSchema = z.enum([
   'api_access',
   'rate_limit_hit',
   'security_event',
-  'error_occurred'
+  'error_occurred',
 ])
 export type AuditAction = z.infer<typeof AuditActionSchema>
 
@@ -37,7 +37,7 @@ export const ResourceTypeSchema = z.enum([
   'session',
   'api_key',
   'system_config',
-  'admin_log'
+  'admin_log',
 ])
 export type ResourceType = z.infer<typeof ResourceTypeSchema>
 
@@ -54,7 +54,7 @@ export const AuditLogSchema = z.object({
   user_agent: z.string().nullable(),
   success: z.boolean().default(true),
   error_message: z.string().nullable(),
-  created_at: z.number()
+  created_at: z.number(),
 })
 
 export type AuditLog = z.infer<typeof AuditLogSchema>
@@ -63,7 +63,7 @@ export type AuditLog = z.infer<typeof AuditLogSchema>
 export const CreateAuditLogSchema = AuditLogSchema.partial({
   id: true,
   success: true,
-  created_at: true
+  created_at: true,
 })
 
 export type CreateAuditLog = z.infer<typeof CreateAuditLogSchema>
@@ -79,7 +79,7 @@ export const UpdateAuditLogSchema = AuditLogSchema.partial({
   new_values: true,
   ip_address: true,
   user_agent: true,
-  created_at: true
+  created_at: true,
 })
 
 export type UpdateAuditLog = z.infer<typeof UpdateAuditLogSchema>
@@ -91,13 +91,15 @@ export const AuditContextSchema = z.object({
   correlation_id: z.string().optional(),
   source_ip: z.string().ip().optional(),
   device_info: z.record(z.any()).optional(),
-  geo_location: z.object({
-    country: z.string().optional(),
-    region: z.string().optional(),
-    city: z.string().optional(),
-    latitude: z.number().optional(),
-    longitude: z.number().optional()
-  }).optional()
+  geo_location: z
+    .object({
+      country: z.string().optional(),
+      region: z.string().optional(),
+      city: z.string().optional(),
+      latitude: z.number().optional(),
+      longitude: z.number().optional(),
+    })
+    .optional(),
 })
 
 export type AuditContext = z.infer<typeof AuditContextSchema>
@@ -113,7 +115,7 @@ export const AuditFilterSchema = z.object({
   date_from: z.number().optional(),
   date_to: z.number().optional(),
   limit: z.number().min(1).max(1000).default(100),
-  offset: z.number().min(0).default(0)
+  offset: z.number().min(0).default(0),
 })
 
 export type AuditFilter = z.infer<typeof AuditFilterSchema>
@@ -154,16 +156,18 @@ export class AuditLog {
       id: crypto.randomUUID(),
       success: true,
       created_at: Math.floor(Date.now() / 1000),
-      ...data
+      ...data,
     })
   }
 
   static fromRow(row: any): AuditLog {
-    return new AuditLog(AuditLogSchema.parse({
-      ...row,
-      old_values: row.old_values ? JSON.parse(row.old_values) : null,
-      new_values: row.new_values ? JSON.parse(row.new_values) : null
-    }))
+    return new AuditLog(
+      AuditLogSchema.parse({
+        ...row,
+        old_values: row.old_values ? JSON.parse(row.old_values) : null,
+        new_values: row.new_values ? JSON.parse(row.new_values) : null,
+      })
+    )
   }
 
   toRow(): Record<string, any> {
@@ -179,7 +183,7 @@ export class AuditLog {
       user_agent: this.user_agent,
       success: this.success,
       error_message: this.error_message,
-      created_at: this.created_at
+      created_at: this.created_at,
     }
   }
 
@@ -202,26 +206,18 @@ export class AuditLog {
       'permission_denied',
       'quota_exceeded',
       'rate_limit_hit',
-      'security_event'
+      'security_event',
     ]
     return securityActions.includes(this.action)
   }
 
   get isDataAccess(): boolean {
-    const dataAccessActions = [
-      'file_upload',
-      'file_download',
-      'data_export',
-      'data_delete'
-    ]
+    const dataAccessActions = ['file_upload', 'file_download', 'data_export', 'data_delete']
     return dataAccessActions.includes(this.action)
   }
 
   get isAdministrative(): boolean {
-    const adminActions = [
-      'admin_action',
-      'config_change'
-    ]
+    const adminActions = ['admin_action', 'config_change']
     return adminActions.includes(this.action)
   }
 
@@ -246,7 +242,7 @@ export class AuditLog {
       api_access: 'API access',
       rate_limit_hit: 'Rate limit exceeded',
       security_event: 'Security event',
-      error_occurred: 'Error occurred'
+      error_occurred: 'Error occurred',
     }
     return descriptions[this.action] || this.action
   }
@@ -269,20 +265,22 @@ export class AuditLog {
 
     if (allKeys.length === 0) return null
 
-    const changes = allKeys.map(key => {
-      const oldValue = this.old_values?.[key]
-      const newValue = this.new_values?.[key]
+    const changes = allKeys
+      .map(key => {
+        const oldValue = this.old_values?.[key]
+        const newValue = this.new_values?.[key]
 
-      if (oldValue === undefined) {
-        return `${key}: → ${JSON.stringify(newValue)}`
-      } else if (newValue === undefined) {
-        return `${key}: ${JSON.stringify(oldValue)} →`
-      } else if (oldValue !== newValue) {
-        return `${key}: ${JSON.stringify(oldValue)} → ${JSON.stringify(newValue)}`
-      }
+        if (oldValue === undefined) {
+          return `${key}: → ${JSON.stringify(newValue)}`
+        } else if (newValue === undefined) {
+          return `${key}: ${JSON.stringify(oldValue)} →`
+        } else if (oldValue !== newValue) {
+          return `${key}: ${JSON.stringify(oldValue)} → ${JSON.stringify(newValue)}`
+        }
 
-      return null
-    }).filter(Boolean) as string[]
+        return null
+      })
+      .filter(Boolean) as string[]
 
     return changes.length > 0 ? changes.join(', ') : null
   }
@@ -297,7 +295,7 @@ export class AuditLog {
       ip_address: ipAddress || null,
       user_agent: userAgent || null,
       success,
-      error_message: success ? null : 'Login failed'
+      error_message: success ? null : 'Login failed',
     })
   }
 
@@ -319,7 +317,7 @@ export class AuditLog {
       ip_address: ipAddress || null,
       user_agent: userAgent || null,
       success,
-      error_message: errorMessage || null
+      error_message: errorMessage || null,
     })
   }
 
@@ -342,7 +340,7 @@ export class AuditLog {
       ip_address: ipAddress || null,
       user_agent: userAgent || null,
       success,
-      error_message: errorMessage || null
+      error_message: errorMessage || null,
     })
   }
 
@@ -361,7 +359,7 @@ export class AuditLog {
       ip_address: ipAddress || null,
       user_agent: userAgent || null,
       success: false,
-      error_message: reason
+      error_message: reason,
     })
   }
 
@@ -380,7 +378,7 @@ export class AuditLog {
       ip_address: ipAddress || null,
       user_agent: userAgent || null,
       success: false,
-      error_message: `Quota exceeded for ${quotaType}`
+      error_message: `Quota exceeded for ${quotaType}`,
     })
   }
 
@@ -399,7 +397,7 @@ export class AuditLog {
       new_values: { event, ...details },
       ip_address: ipAddress || null,
       user_agent: userAgent || null,
-      success: true
+      success: true,
     })
   }
 
@@ -407,8 +405,8 @@ export class AuditLog {
     userId: string,
     resourceType: ResourceType,
     resourceId: string,
-    oldValues: Record<string, any> | null,
-    newValues: Record<string, any> | null,
+    _oldValues: Record<string, any> | null,
+    _newValues: Record<string, any> | null,
     ipAddress?: string,
     userAgent?: string
   ): AuditLog {
@@ -421,7 +419,7 @@ export class AuditLog {
       new_values,
       ip_address: ipAddress || null,
       user_agent: userAgent || null,
-      success: true
+      success: true,
     })
   }
 
@@ -442,7 +440,9 @@ export class AuditLog {
     return logs.filter(log => log.isAdministrative)
   }
 
-  static getActionStats(logs: AuditLog[]): Record<AuditAction, { count: number; success_rate: number }> {
+  static getActionStats(
+    logs: AuditLog[]
+  ): Record<AuditAction, { count: number; success_rate: number }> {
     const stats: Record<AuditAction, { count: number; success_rate: number }> = {} as any
 
     for (const action of Object.values(AuditActionSchema.enum)) {
@@ -451,7 +451,7 @@ export class AuditLog {
 
       stats[action] = {
         count: actionLogs.length,
-        success_rate: actionLogs.length > 0 ? (successCount / actionLogs.length) * 100 : 0
+        success_rate: actionLogs.length > 0 ? (successCount / actionLogs.length) * 100 : 0,
       }
     }
 
@@ -459,12 +459,12 @@ export class AuditLog {
   }
 
   static getUserActivitySummary(logs: AuditLog[]): Array<{
-    user_id: string;
-    total_actions: number;
-    successful_actions: number;
-    failed_actions: number;
-    unique_actions: Set<AuditAction>;
-    last_activity: number;
+    user_id: string
+    total_actions: number
+    successful_actions: number
+    failed_actions: number
+    unique_actions: Set<AuditAction>
+    last_activity: number
   }> {
     const userMap = new Map<string, any>()
 
@@ -478,7 +478,7 @@ export class AuditLog {
           successful_actions: 0,
           failed_actions: 0,
           unique_actions: new Set(),
-          last_activity: 0
+          last_activity: 0,
         })
       }
 
@@ -525,7 +525,7 @@ export const AUDIT_LOG_QUERIES = {
     'CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at);',
     'CREATE INDEX IF NOT EXISTS idx_audit_logs_resource ON audit_logs(resource_type, resource_id);',
     'CREATE INDEX IF NOT EXISTS idx_audit_logs_ip_address ON audit_logs(ip_address);',
-    'CREATE INDEX IF NOT EXISTS idx_audit_logs_success ON audit_logs(success);'
+    'CREATE INDEX IF NOT EXISTS idx_audit_logs_success ON audit_logs(success);',
   ],
 
   INSERT: `
@@ -649,5 +649,5 @@ export const AUDIT_LOG_QUERIES = {
       AND created_at >= ?
     GROUP BY action, ip_address, DATE(created_at, 'unixepoch')
     ORDER BY event_date DESC, event_count DESC;
-  `
+  `,
 } as const

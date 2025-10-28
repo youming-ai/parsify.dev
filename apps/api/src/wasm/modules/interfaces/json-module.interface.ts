@@ -1,4 +1,4 @@
-import { IWasmModule, WasmModuleResult, WasmModuleConfig } from './wasm-module.interface'
+import type { IWasmModule, WasmModuleResult } from './wasm-module.interface'
 
 /**
  * Interface for JSON processing WASM modules
@@ -27,7 +27,11 @@ export interface IJsonWasmModule extends IWasmModule {
   /**
    * Convert JSON to other formats
    */
-  convertJson(json: string, targetFormat: JsonTargetFormat, options?: JsonConversionOptions): Promise<WasmModuleResult>
+  convertJson(
+    json: string,
+    targetFormat: JsonTargetFormat,
+    options?: JsonConversionOptions
+  ): Promise<WasmModuleResult>
 
   /**
    * Extract data from JSON using JSONPath or similar
@@ -240,12 +244,12 @@ export interface JsonConversionOptions {
  * JSON merge strategies
  */
 export type MergeStrategy =
-  | 'overwrite'     // Later values overwrite earlier ones
-  | 'merge'         // Deep merge objects
-  | 'append'        // Append arrays
-  | 'combine'       // Combine values intelligently
-  | 'keep-first'    // Keep first occurrence
-  | 'keep-last'     // Keep last occurrence
+  | 'overwrite' // Later values overwrite earlier ones
+  | 'merge' // Deep merge objects
+  | 'append' // Append arrays
+  | 'combine' // Combine values intelligently
+  | 'keep-first' // Keep first occurrence
+  | 'keep-last' // Keep last occurrence
 
 /**
  * JSON comparison options
@@ -409,7 +413,16 @@ export interface JsonTransformationOperation {
   /**
    * Type of transformation
    */
-  type: 'rename' | 'move' | 'copy' | 'delete' | 'modify' | 'add' | 'calculate' | 'format' | 'convert'
+  type:
+    | 'rename'
+    | 'move'
+    | 'copy'
+    | 'delete'
+    | 'modify'
+    | 'add'
+    | 'calculate'
+    | 'format'
+    | 'convert'
 
   /**
    * Target path for the transformation

@@ -1,10 +1,4 @@
-import {
-  Migration,
-  MigrationStatus,
-  MigrationHook,
-  MigrationContext,
-  MigrationLogger
-} from './types'
+import type { Migration, MigrationContext, MigrationHook, MigrationLogger } from './types'
 
 /**
  * Migration hook system for automated execution
@@ -27,7 +21,7 @@ export class MigrationHooks {
     onValidationError: [],
     onMigrationStart: [],
     onMigrationComplete: [],
-    onMigrationFail: []
+    onMigrationFail: [],
   }
 
   private logger: MigrationLogger
@@ -39,10 +33,7 @@ export class MigrationHooks {
   /**
    * Register a hook
    */
-  registerHook(
-    event: keyof typeof MigrationHooks.prototype.hooks,
-    hook: MigrationHook
-  ): void {
+  registerHook(event: keyof typeof MigrationHooks.prototype.hooks, hook: MigrationHook): void {
     if (!this.hooks[event]) {
       throw new Error(`Unknown hook event: ${event}`)
     }
@@ -54,10 +45,7 @@ export class MigrationHooks {
   /**
    * Remove a hook
    */
-  removeHook(
-    event: keyof typeof MigrationHooks.prototype.hooks,
-    hook: MigrationHook
-  ): void {
+  removeHook(event: keyof typeof MigrationHooks.prototype.hooks, hook: MigrationHook): void {
     if (!this.hooks[event]) {
       return
     }
@@ -85,7 +73,7 @@ export class MigrationHooks {
 
     this.logger.debug(`Executing ${hooks.length} hooks for event: ${event}`, {
       migrationId: migration.id,
-      version: migration.version
+      version: migration.version,
     })
 
     const errors: Error[] = []
@@ -96,7 +84,7 @@ export class MigrationHooks {
         this.logger.debug(`Hook executed successfully`, {
           event,
           migrationId: migration.id,
-          hookName: hook.name || 'anonymous'
+          hookName: hook.name || 'anonymous',
         })
       } catch (error) {
         const err = error as Error
@@ -104,7 +92,7 @@ export class MigrationHooks {
           event,
           migrationId: migration.id,
           hookName: hook.name || 'anonymous',
-          error: err.message
+          error: err.message,
         })
         errors.push(err)
 
@@ -148,11 +136,7 @@ export class MigrationHooks {
    */
   private shouldStopOnError(event: keyof typeof MigrationHooks.prototype.hooks): boolean {
     // Critical events that should stop execution on error
-    const criticalEvents = [
-      'beforeMigration',
-      'beforeRollback',
-      'onValidationError'
-    ]
+    const criticalEvents = ['beforeMigration', 'beforeRollback', 'onValidationError']
 
     return criticalEvents.includes(event)
   }
@@ -178,7 +162,7 @@ export class MigrationHooks {
       },
       log: (level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: any[]) => {
         console[level](`[MigrationHooks] ${message}`, ...args)
-      }
+      },
     }
   }
 }
@@ -200,7 +184,7 @@ export class BuiltInHooks {
         version: migration.version,
         name: migration.name,
         action: context.action,
-        dryRun: context.dryRun
+        dryRun: context.dryRun,
       })
     }
   }
@@ -220,7 +204,7 @@ export class BuiltInHooks {
         name: migration.name,
         action: context.action,
         dryRun: context.dryRun,
-        executionTime
+        executionTime,
       })
     }
   }
@@ -246,11 +230,9 @@ export class BuiltInHooks {
   /**
    * Create a hook that checks for concurrent migrations
    */
-  static createConcurrencyCheckHook(
-    isRunning: { value: boolean }
-  ): MigrationHook {
+  static createConcurrencyCheckHook(isRunning: { value: boolean }): MigrationHook {
     return async function checkConcurrency(
-      migration: Migration,
+      _migration: Migration,
       context: MigrationContext
     ): Promise<void> {
       if (context.dryRun) {
@@ -268,12 +250,10 @@ export class BuiltInHooks {
   /**
    * Create a hook that releases concurrency lock
    */
-  static createConcurrencyReleaseHook(
-    isRunning: { value: boolean }
-  ): MigrationHook {
+  static createConcurrencyReleaseHook(isRunning: { value: boolean }): MigrationHook {
     return async function releaseConcurrency(
-      migration: Migration,
-      context: MigrationContext
+      _migration: Migration,
+      _context: MigrationContext
     ): Promise<void> {
       isRunning.value = false
     }
@@ -294,15 +274,9 @@ export class BuiltInHooks {
       }
 
       // Check if migration contains destructive operations
-      const destructivePatterns = [
-        /DROP\s+TABLE/i,
-        /DELETE\s+FROM/i,
-        /TRUNCATE/i
-      ]
+      const destructivePatterns = [/DROP\s+TABLE/i, /DELETE\s+FROM/i, /TRUNCATE/i]
 
-      const hasDestructiveOps = destructivePatterns.some(pattern =>
-        pattern.test(migration.up)
-      )
+      const hasDestructiveOps = destructivePatterns.some(pattern => pattern.test(migration.up))
 
       if (hasDestructiveOps) {
         await backupFunction(migration, context)
@@ -324,8 +298,8 @@ export class BuiltInHooks {
       migration: Migration,
       context: MigrationContext
     ): Promise<void> {
-      const status = context.action === 'up' ? 'started' :
-                    context.action === 'down' ? 'completed' : 'failed'
+      const status =
+        context.action === 'up' ? 'started' : context.action === 'down' ? 'completed' : 'failed'
 
       await notificationFunction(migration, context, status)
     }
@@ -339,7 +313,7 @@ export class BuiltInHooks {
     errorMessage: string = 'Environment conditions not met for migration'
   ): MigrationHook {
     return async function validateEnvironment(
-      migration: Migration,
+      _migration: Migration,
       context: MigrationContext
     ): Promise<void> {
       if (context.dryRun) {
@@ -376,7 +350,7 @@ export class BuiltInHooks {
         version: migration.version,
         action: context.action,
         executionTime,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     }
   }
@@ -384,14 +358,12 @@ export class BuiltInHooks {
   /**
    * Create a hook that implements rate limiting
    */
-  static createRateLimitHook(
-    rateLimiter: {
-      canProceed: () => Promise<boolean>
-      waitTime: () => Promise<number>
-    }
-  ): MigrationHook {
+  static createRateLimitHook(rateLimiter: {
+    canProceed: () => Promise<boolean>
+    waitTime: () => Promise<number>
+  }): MigrationHook {
     return async function enforceRateLimit(
-      migration: Migration,
+      _migration: Migration,
       context: MigrationContext
     ): Promise<void> {
       if (context.dryRun) {
@@ -409,16 +381,14 @@ export class BuiltInHooks {
   /**
    * Create a hook that implements circuit breaker pattern
    */
-  static createCircuitBreakerHook(
-    circuitBreaker: {
-      isOpen: () => boolean
-      recordSuccess: () => void
-      recordFailure: () => void
-    }
-  ): MigrationHook {
+  static createCircuitBreakerHook(circuitBreaker: {
+    isOpen: () => boolean
+    recordSuccess: () => void
+    recordFailure: () => void
+  }): MigrationHook {
     return async function circuitBreakerCheck(
-      migration: Migration,
-      context: MigrationContext
+      _migration: Migration,
+      _context: MigrationContext
     ): Promise<void> {
       if (circuitBreaker.isOpen()) {
         throw new Error('Circuit breaker is open - migrations temporarily disabled')
@@ -430,7 +400,7 @@ export class BuiltInHooks {
    * Create a hook that implements retry logic
    */
   static createRetryHook(
-    retryFunction: (
+    _retryFunction: (
       migration: Migration,
       context: MigrationContext,
       attempt: number,
@@ -438,8 +408,8 @@ export class BuiltInHooks {
     ) => Promise<boolean>
   ): MigrationHook {
     return async function retryMigration(
-      migration: Migration,
-      context: MigrationContext
+      _migration: Migration,
+      _context: MigrationContext
     ): Promise<void> {
       // This hook would need to be integrated with the runner's retry logic
       // For now, it's a placeholder for the concept
@@ -471,10 +441,7 @@ export class MigrationHookRegistry {
   /**
    * Register a global hook
    */
-  registerHook(
-    event: keyof typeof MigrationHooks.prototype.hooks,
-    hook: MigrationHook
-  ): void {
+  registerHook(event: keyof typeof MigrationHooks.prototype.hooks, hook: MigrationHook): void {
     this.hooks.registerHook(event, hook)
   }
 

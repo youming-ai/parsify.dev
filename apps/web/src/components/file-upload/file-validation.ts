@@ -1,9 +1,16 @@
-import { FileValidationError, FileUploadOptions, COMMON_MIME_TYPES } from './file-upload-types'
+import {
+  COMMON_MIME_TYPES,
+  type FileUploadOptions,
+  type FileValidationError,
+} from './file-upload-types'
 
 /**
  * Validates a single file against the provided options
  */
-export function validateFile(file: File, options: FileUploadOptions = {}): FileValidationError | null {
+export function validateFile(
+  file: File,
+  options: FileUploadOptions = {}
+): FileValidationError | null {
   const { maxSize, accept, validator } = options
 
   // Check file size
@@ -25,7 +32,7 @@ export function validateFile(file: File, options: FileUploadOptions = {}): FileV
       if (type.includes('/*')) {
         // MIME type wildcard match (e.g., 'image/*')
         const category = type.split('/')[0]
-        return file.type.startsWith(category + '/')
+        return file.type.startsWith(`${category}/`)
       }
       // Exact MIME type match
       return file.type === type
@@ -58,7 +65,10 @@ export function validateFile(file: File, options: FileUploadOptions = {}): FileV
 /**
  * Validates multiple files against the provided options
  */
-export function validateFiles(files: File[], options: FileUploadOptions = {}): {
+export function validateFiles(
+  files: File[],
+  options: FileUploadOptions = {}
+): {
   validFiles: File[]
   errors: FileValidationError[]
 } {
@@ -101,7 +111,7 @@ export function isPreviewable(file: File): boolean {
   return previewableMimeTypes.some(type => {
     if (type.includes('/*')) {
       const category = type.split('/')[0]
-      return file.type.startsWith(category + '/')
+      return file.type.startsWith(`${category}/`)
     }
     return file.type === type
   })
@@ -112,18 +122,20 @@ export function isPreviewable(file: File): boolean {
  */
 export function getFileCategory(file: File): keyof typeof COMMON_MIME_TYPES {
   for (const [category, mimeTypes] of Object.entries(COMMON_MIME_TYPES)) {
-    if (mimeTypes.some(type => {
-      if (type.includes('/*')) {
-        const mimeCategory = type.split('/')[0]
-        return file.type.startsWith(mimeCategory + '/')
-      }
-      return file.type === type
-    })) {
+    if (
+      mimeTypes.some(type => {
+        if (type.includes('/*')) {
+          const mimeCategory = type.split('/')[0]
+          return file.type.startsWith(`${mimeCategory}/`)
+        }
+        return file.type === type
+      })
+    ) {
       return category as keyof typeof COMMON_MIME_TYPES
     }
   }
 
-  return 'text' // default category
+  return 'TEXT' // default category
 }
 
 /**
@@ -133,12 +145,12 @@ export function getFileTypeDescription(file: File): string {
   const category = getFileCategory(file)
 
   const categoryDescriptions: Record<keyof typeof COMMON_MIME_TYPES, string> = {
-    json: 'JSON file',
-    text: 'Text file',
-    image: 'Image file',
-    document: 'Document',
-    spreadsheet: 'Spreadsheet',
-    archive: 'Archive file',
+    JSON: 'JSON file',
+    TEXT: 'Text file',
+    IMAGE: 'Image file',
+    DOCUMENT: 'Document',
+    SPREADSHEET: 'Spreadsheet',
+    ARCHIVE: 'Archive file',
   }
 
   return categoryDescriptions[category] || 'File'
@@ -155,13 +167,10 @@ export function isImageFile(file: File): boolean {
  * Checks if a file is a text file
  */
 export function isTextFile(file: File): boolean {
-  return [
-    ...COMMON_MIME_TYPES.JSON,
-    ...COMMON_MIME_TYPES.TEXT,
-  ].some(type => {
+  return [...COMMON_MIME_TYPES.JSON, ...COMMON_MIME_TYPES.TEXT].some(type => {
     if (type.includes('/*')) {
       const category = type.split('/')[0]
-      return file.type.startsWith(category + '/')
+      return file.type.startsWith(`${category}/`)
     }
     return file.type === type
   })
@@ -171,19 +180,24 @@ export function isTextFile(file: File): boolean {
  * Checks if a file is a JSON file
  */
 export function isJsonFile(file: File): boolean {
-  return COMMON_MIME_TYPES.JSON.some(type => {
-    if (type.includes('/*')) {
-      const category = type.split('/')[0]
-      return file.type.startsWith(category + '/')
-    }
-    return file.type === type
-  }) || file.name.toLowerCase().endsWith('.json')
+  return (
+    COMMON_MIME_TYPES.JSON.some(type => {
+      if (type.includes('/*')) {
+        const category = type.split('/')[0]
+        return file.type.startsWith(`${category}/`)
+      }
+      return file.type === type
+    }) || file.name.toLowerCase().endsWith('.json')
+  )
 }
 
 /**
  * Validates JSON content
  */
-export function validateJsonContent(content: string): { isValid: boolean; error?: string } {
+export function validateJsonContent(content: string): {
+  isValid: boolean
+  error?: string
+} {
   try {
     JSON.parse(content)
     return { isValid: true }
@@ -240,22 +254,22 @@ export function getFileExtension(filename: string): string {
 export function validateMimeType(file: File): boolean {
   const extension = getFileExtension(file.name)
   const expectedTypes: Record<string, string[]> = {
-    'json': ['application/json', 'text/json'],
-    'txt': ['text/plain'],
-    'csv': ['text/csv'],
-    'html': ['text/html'],
-    'css': ['text/css'],
-    'js': ['text/javascript', 'application/javascript'],
-    'xml': ['text/xml', 'application/xml'],
-    'pdf': ['application/pdf'],
-    'jpg': ['image/jpeg'],
-    'jpeg': ['image/jpeg'],
-    'png': ['image/png'],
-    'gif': ['image/gif'],
-    'webp': ['image/webp'],
-    'svg': ['image/svg+xml'],
-    'zip': ['application/zip', 'application/x-zip-compressed'],
-    'rar': ['application/x-rar-compressed'],
+    json: ['application/json', 'text/json'],
+    txt: ['text/plain'],
+    csv: ['text/csv'],
+    html: ['text/html'],
+    css: ['text/css'],
+    js: ['text/javascript', 'application/javascript'],
+    xml: ['text/xml', 'application/xml'],
+    pdf: ['application/pdf'],
+    jpg: ['image/jpeg'],
+    jpeg: ['image/jpeg'],
+    png: ['image/png'],
+    gif: ['image/gif'],
+    webp: ['image/webp'],
+    svg: ['image/svg+xml'],
+    zip: ['application/zip', 'application/x-zip-compressed'],
+    rar: ['application/x-rar-compressed'],
     '7z': ['application/x-7z-compressed'],
   }
 
@@ -278,7 +292,7 @@ export function formatFileSize(bytes: number): string {
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
 }
 
 /**
@@ -286,17 +300,17 @@ export function formatFileSize(bytes: number): string {
  */
 export function fileSizeToBytes(size: string): number {
   const units: Record<string, number> = {
-    'b': 1,
-    'byte': 1,
-    'bytes': 1,
-    'kb': 1024,
-    'k': 1024,
-    'mb': 1024 * 1024,
-    'm': 1024 * 1024,
-    'gb': 1024 * 1024 * 1024,
-    'g': 1024 * 1024 * 1024,
-    'tb': 1024 * 1024 * 1024 * 1024,
-    't': 1024 * 1024 * 1024 * 1024,
+    b: 1,
+    byte: 1,
+    bytes: 1,
+    kb: 1024,
+    k: 1024,
+    mb: 1024 * 1024,
+    m: 1024 * 1024,
+    gb: 1024 * 1024 * 1024,
+    g: 1024 * 1024 * 1024,
+    tb: 1024 * 1024 * 1024 * 1024,
+    t: 1024 * 1024 * 1024 * 1024,
   }
 
   const match = size.toLowerCase().match(/^([\d.]+)\s*([a-z]+)?$/)
@@ -318,7 +332,10 @@ export function createFileValidator(options: FileUploadOptions) {
 /**
  * Checks if files can be uploaded based on options
  */
-export function canUploadFiles(files: File[], options: FileUploadOptions = {}): {
+export function canUploadFiles(
+  files: File[],
+  options: FileUploadOptions = {}
+): {
   canUpload: boolean
   errors: FileValidationError[]
 } {
@@ -338,7 +355,20 @@ export const FILE_TYPE_GROUPS = {
   DOCUMENTS: ['.pdf', '.doc', '.docx', '.txt', '.rtf'],
   SPREADSHEETS: ['.xls', '.xlsx', '.csv'],
   ARCHIVES: ['.zip', '.rar', '.7z', '.tar', '.gz'],
-  CODE: ['.js', '.ts', '.jsx', '.tsx', '.html', '.css', '.json', '.xml', '.py', '.java', '.cpp', '.c'],
+  CODE: [
+    '.js',
+    '.ts',
+    '.jsx',
+    '.tsx',
+    '.html',
+    '.css',
+    '.json',
+    '.xml',
+    '.py',
+    '.java',
+    '.cpp',
+    '.c',
+  ],
   MEDIA: ['image/*', 'video/*', 'audio/*'],
   TEXT: ['.txt', '.md', '.csv', '.json', '.xml', '.yaml', '.yml'],
 } as const

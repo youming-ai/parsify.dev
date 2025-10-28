@@ -1,11 +1,10 @@
 import {
   codeExecutor,
-  ExecutionRequest,
-  ExecutionLimits,
+  type ExecutionLimits,
+  type ExecutionRequest,
   executeCode,
   executeJavaScript,
   executePython,
-  executeTypeScript,
 } from './code_executor'
 
 /**
@@ -42,15 +41,9 @@ async function demonstrateCodeExecutor() {
     `,
       'Hello, World! This is test input.'
     )
-    console.log(
-      'Result:',
-      jsWithInputResult.success ? '✅ Success' : '❌ Failed'
-    )
+    console.log('Result:', jsWithInputResult.success ? '✅ Success' : '❌ Failed')
     console.log('Output:', jsWithInputResult.output)
-    console.log(
-      'Execution Time:',
-      `${jsWithInputResult.executionTime.toFixed(2)}ms\n`
-    )
+    console.log('Execution Time:', `${jsWithInputResult.executionTime.toFixed(2)}ms\n`)
 
     // Example 3: Python execution
     console.log('3. Python Execution:')
@@ -65,10 +58,7 @@ async function demonstrateCodeExecutor() {
     `)
     console.log('Result:', pythonResult.success ? '✅ Success' : '❌ Failed')
     console.log('Output:', pythonResult.output)
-    console.log(
-      'Execution Time:',
-      `${pythonResult.executionTime.toFixed(2)}ms\n`
-    )
+    console.log('Execution Time:', `${pythonResult.executionTime.toFixed(2)}ms\n`)
 
     // Example 4: Python with input
     console.log('4. Python with Input:')
@@ -83,15 +73,9 @@ async function demonstrateCodeExecutor() {
     `,
       'Python is awesome for data processing'
     )
-    console.log(
-      'Result:',
-      pythonWithInputResult.success ? '✅ Success' : '❌ Failed'
-    )
+    console.log('Result:', pythonWithInputResult.success ? '✅ Success' : '❌ Failed')
     console.log('Output:', pythonWithInputResult.output)
-    console.log(
-      'Execution Time:',
-      `${pythonWithInputResult.executionTime.toFixed(2)}ms\n`
-    )
+    console.log('Execution Time:', `${pythonWithInputResult.executionTime.toFixed(2)}ms\n`)
 
     // Example 5: Custom execution limits
     console.log('5. Custom Execution Limits:')
@@ -117,28 +101,14 @@ async function demonstrateCodeExecutor() {
     })
     console.log('Result:', limitedResult.success ? '✅ Success' : '❌ Failed')
     console.log('Output:', limitedResult.output)
-    console.log(
-      'Execution Time:',
-      `${limitedResult.executionTime.toFixed(2)}ms`
-    )
+    console.log('Execution Time:', `${limitedResult.executionTime.toFixed(2)}ms`)
     console.log(
       'Memory Used:',
-      limitedResult.memoryUsed
-        ? `${(limitedResult.memoryUsed / 1024 / 1024).toFixed(2)}MB`
-        : 'N/A'
+      limitedResult.memoryUsed ? `${(limitedResult.memoryUsed / 1024 / 1024).toFixed(2)}MB` : 'N/A'
     )
-    console.log(
-      'Timeout Hit:',
-      limitedResult.metadata.timeoutHit ? '✅ Yes' : '❌ No'
-    )
-    console.log(
-      'Memory Limit Hit:',
-      limitedResult.metadata.memoryLimitHit ? '✅ Yes' : '❌ No'
-    )
-    console.log(
-      'Was Sandboxed:',
-      limitedResult.metadata.wasSandboxed ? '✅ Yes' : '❌ No\n'
-    )
+    console.log('Timeout Hit:', limitedResult.metadata.timeoutHit ? '✅ Yes' : '❌ No')
+    console.log('Memory Limit Hit:', limitedResult.metadata.memoryLimitHit ? '✅ Yes' : '❌ No')
+    console.log('Was Sandboxed:', limitedResult.metadata.wasSandboxed ? '✅ Yes' : '❌ No\n')
 
     // Example 6: Error handling - Security violation
     console.log('6. Security Violation Example:')
@@ -171,10 +141,7 @@ async function demonstrateCodeExecutor() {
         },
       })
     } catch (error) {
-      console.log(
-        '✅ Timeout caught:',
-        error instanceof Error ? error.message : 'Unknown error'
-      )
+      console.log('✅ Timeout caught:', error instanceof Error ? error.message : 'Unknown error')
     }
 
     // Example 8: Multiple executions in parallel
@@ -197,10 +164,7 @@ async function demonstrateCodeExecutor() {
     const multipleResults = await codeExecutor.executeMultiple(multipleRequests)
     console.log('Parallel execution results:')
     multipleResults.forEach((result, index) => {
-      console.log(
-        `  Task ${index + 1}:`,
-        result.success ? '✅ Success' : '❌ Failed'
-      )
+      console.log(`  Task ${index + 1}:`, result.success ? '✅ Success' : '❌ Failed')
       if (result.success) {
         console.log(`    Output: ${result.output.trim()}`)
       } else {
@@ -214,31 +178,20 @@ async function demonstrateCodeExecutor() {
     console.log('  Total Executions:', stats.totalExecutions)
     console.log('  Successful Executions:', stats.successfulExecutions)
     console.log('  Failed Executions:', stats.failedExecutions)
-    console.log(
-      '  Average Execution Time:',
-      `${stats.averageExecutionTime.toFixed(2)}ms`
-    )
+    console.log('  Average Execution Time:', `${stats.averageExecutionTime.toFixed(2)}ms`)
     console.log(
       '  Average Memory Usage:',
-      stats.averageMemoryUsage > 0
-        ? `${stats.averageMemoryUsage.toFixed(2)}MB`
-        : 'N/A'
+      stats.averageMemoryUsage > 0 ? `${stats.averageMemoryUsage.toFixed(2)}MB` : 'N/A'
     )
     console.log('  Most Used Language:', stats.mostUsedLanguage)
-    console.log(
-      '  Last Execution Time:',
-      new Date(stats.lastExecutionTime).toISOString()
-    )
+    console.log('  Last Execution Time:', new Date(stats.lastExecutionTime).toISOString())
 
     // Example 10: Show supported languages
     console.log('\n10. Supported Languages:')
     const supportedLanguages = codeExecutor.getSupportedLanguages()
     supportedLanguages.forEach(lang => {
       const envInfo = codeExecutor.getEnvironmentInfo(lang)
-      console.log(
-        `  ${lang}:`,
-        envInfo?.available ? '✅ Available' : '❌ Not Available'
-      )
+      console.log(`  ${lang}:`, envInfo?.available ? '✅ Available' : '❌ Not Available')
       if (envInfo) {
         console.log(`    Runtime: ${envInfo.runtime} ${envInfo.version}`)
         console.log(`    Capabilities:`, {

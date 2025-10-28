@@ -3,7 +3,7 @@
  * Monitors CPU, memory, network, and database performance during load tests
  */
 
-import { SystemResourceMetrics } from '../config/load-test-config'
+import type { SystemResourceMetrics } from '../config/load-test-config'
 
 export class SystemResourceMonitor {
   private isMonitoring = false
@@ -54,7 +54,9 @@ export class SystemResourceMonitor {
     // Collect final metrics
     await this.collectMetrics()
 
-    console.log(`🔍 Stopped system resource monitoring. Collected ${this.metrics.length} data points.`)
+    console.log(
+      `🔍 Stopped system resource monitoring. Collected ${this.metrics.length} data points.`
+    )
   }
 
   /**
@@ -74,7 +76,7 @@ export class SystemResourceMonitor {
         cpu: { max: 0, average: 0, maxLoadAverage: 0 },
         memory: { max: 0, average: 0, peakUsage: 0 },
         network: { totalBytesIn: 0, totalBytesOut: 0, maxConnections: 0 },
-        database: { maxConnections: 0, averageQueryTime: 0, maxQueueSize: 0 }
+        database: { maxConnections: 0, averageQueryTime: 0, maxQueueSize: 0 },
       }
     }
 
@@ -90,25 +92,31 @@ export class SystemResourceMonitor {
       cpu: {
         max: Math.max(...cpuUsages),
         average: cpuUsages.reduce((sum, usage) => sum + usage, 0) / cpuUsages.length,
-        maxLoadAverage: Math.max(...this.metrics.map(m => Math.max(...m.cpu.loadAverage)))
+        maxLoadAverage: Math.max(...this.metrics.map(m => Math.max(...m.cpu.loadAverage))),
       },
       memory: {
         max: Math.max(...memoryUsages),
         average: memoryUsages.reduce((sum, usage) => sum + usage, 0) / memoryUsages.length,
-        peakUsage: Math.max(...this.metrics.map(m => m.memory.used))
+        peakUsage: Math.max(...this.metrics.map(m => m.memory.used)),
       },
       network: {
-        totalBytesIn: this.metrics.reduce((sum, m, i) =>
-          i === 0 ? 0 : sum + (m.network.bytesIn - this.metrics[i - 1].network.bytesIn), 0),
-        totalBytesOut: this.metrics.reduce((sum, m, i) =>
-          i === 0 ? 0 : sum + (m.network.bytesOut - this.metrics[i - 1].network.bytesOut), 0),
-        maxConnections: Math.max(...networkConnections)
+        totalBytesIn: this.metrics.reduce(
+          (sum, m, i) =>
+            i === 0 ? 0 : sum + (m.network.bytesIn - this.metrics[i - 1].network.bytesIn),
+          0
+        ),
+        totalBytesOut: this.metrics.reduce(
+          (sum, m, i) =>
+            i === 0 ? 0 : sum + (m.network.bytesOut - this.metrics[i - 1].network.bytesOut),
+          0
+        ),
+        maxConnections: Math.max(...networkConnections),
       },
       database: {
         maxConnections: Math.max(...dbConnections),
         averageQueryTime: dbQueryTimes.reduce((sum, time) => sum + time, 0) / dbQueryTimes.length,
-        maxQueueSize: Math.max(...dbQueueSizes)
-      }
+        maxQueueSize: Math.max(...dbQueueSizes),
+      },
     }
   }
 
@@ -126,14 +134,17 @@ export class SystemResourceMonitor {
         cpu: await this.collectCpuMetrics(),
         memory: await this.collectMemoryMetrics(),
         network: await this.collectNetworkMetrics(),
-        database: await this.collectDatabaseMetrics()
+        database: await this.collectDatabaseMetrics(),
       }
 
       this.metrics.push(metrics)
 
       // Log metrics at key points
-      if (this.metrics.length === 1 || this.metrics.length % 12 === 0) { // Every minute
-        console.log(`📊 Resource metrics (${this.metrics.length} samples): CPU=${metrics.cpu.usage.toFixed(1)}%, Memory=${metrics.memory.percentage.toFixed(1)}%, DB Conn=${metrics.database.connections}`)
+      if (this.metrics.length === 1 || this.metrics.length % 12 === 0) {
+        // Every minute
+        console.log(
+          `📊 Resource metrics (${this.metrics.length} samples): CPU=${metrics.cpu.usage.toFixed(1)}%, Memory=${metrics.memory.percentage.toFixed(1)}%, DB Conn=${metrics.database.connections}`
+        )
       }
     } catch (error) {
       console.error('Error collecting resource metrics:', error)
@@ -143,7 +154,10 @@ export class SystemResourceMonitor {
   /**
    * Collect CPU metrics
    */
-  private async collectCpuMetrics(): Promise<{ usage: number; loadAverage: number[] }> {
+  private async collectCpuMetrics(): Promise<{
+    usage: number
+    loadAverage: number[]
+  }> {
     // Simulate CPU usage based on time and system load
     const baseUsage = 20
     const loadVariation = Math.sin(Date.now() / 10000) * 15
@@ -152,9 +166,9 @@ export class SystemResourceMonitor {
 
     // Simulate load averages (1, 5, 15 minute averages)
     const loadAverage = [
-      usage / 100 * 2 + Math.random() * 0.5,
-      usage / 100 * 1.8 + Math.random() * 0.3,
-      usage / 100 * 1.5 + Math.random() * 0.2
+      (usage / 100) * 2 + Math.random() * 0.5,
+      (usage / 100) * 1.8 + Math.random() * 0.3,
+      (usage / 100) * 1.5 + Math.random() * 0.2,
     ]
 
     return { usage, loadAverage }
@@ -163,7 +177,11 @@ export class SystemResourceMonitor {
   /**
    * Collect memory metrics
    */
-  private async collectMemoryMetrics(): Promise<{ used: number; total: number; percentage: number }> {
+  private async collectMemoryMetrics(): Promise<{
+    used: number
+    total: number
+    percentage: number
+  }> {
     // Simulate memory usage
     const totalMemory = 8192 // 8GB total
     const baseUsage = 0.3 // 30% base usage
@@ -178,7 +196,11 @@ export class SystemResourceMonitor {
   /**
    * Collect network metrics
    */
-  private async collectNetworkMetrics(): Promise<{ bytesIn: number; bytesOut: number; connections: number }> {
+  private async collectNetworkMetrics(): Promise<{
+    bytesIn: number
+    bytesOut: number
+    connections: number
+  }> {
     // Simulate network metrics
     const previousMetrics = this.metrics.length > 0 ? this.metrics[this.metrics.length - 1] : null
 
@@ -187,11 +209,11 @@ export class SystemResourceMonitor {
     const multiplier = 1 + randomVariation
 
     const bytesIn = previousMetrics
-      ? previousMetrics.network.bytesIn + (bytesPerSecond * 5 * multiplier) // 5 second intervals
+      ? previousMetrics.network.bytesIn + bytesPerSecond * 5 * multiplier // 5 second intervals
       : 1024 * 1024 * 10 // Start with 10MB
 
     const bytesOut = previousMetrics
-      ? previousMetrics.network.bytesOut + (bytesPerSecond * 0.8 * multiplier) // 80% of inbound
+      ? previousMetrics.network.bytesOut + bytesPerSecond * 0.8 * multiplier // 80% of inbound
       : 1024 * 1024 * 8 // Start with 8MB
 
     const baseConnections = 50
@@ -204,12 +226,19 @@ export class SystemResourceMonitor {
   /**
    * Collect database metrics
    */
-  private async collectDatabaseMetrics(): Promise<{ connections: number; queryTime: number; queueSize: number }> {
+  private async collectDatabaseMetrics(): Promise<{
+    connections: number
+    queryTime: number
+    queueSize: number
+  }> {
     // Simulate database metrics
     const baseConnections = 20
     const connectionLoad = this.metrics.length * 0.1 // Increase connections over time
     const connectionVariation = Math.sin(Date.now() / 6000) * 5
-    const connections = Math.max(5, Math.floor(baseConnections + connectionLoad + connectionVariation))
+    const connections = Math.max(
+      5,
+      Math.floor(baseConnections + connectionLoad + connectionVariation)
+    )
 
     const baseQueryTime = 5 // 5ms base query time
     const queryLoad = this.metrics.length * 0.02 // Query time increases with load
@@ -291,11 +320,17 @@ ${this.generateEfficiencyAnalysis(summary)}
     } else if (summary.database.averageQueryTime < 50) {
       analysis.push('⚠️  Database query performance is acceptable but could be optimized')
     } else {
-      analysis.push('❌ Database query performance is poor - consider indexing or query optimization')
+      analysis.push(
+        '❌ Database query performance is poor - consider indexing or query optimization'
+      )
     }
 
     // Network efficiency analysis
-    const totalThroughput = (summary.network.totalBytesIn + summary.network.totalBytesOut) / (summary.duration / 1000) / 1024 / 1024
+    const totalThroughput =
+      (summary.network.totalBytesIn + summary.network.totalBytesOut) /
+      (summary.duration / 1000) /
+      1024 /
+      1024
     if (totalThroughput < 10) {
       analysis.push('✅ Network usage is low')
     } else if (totalThroughput < 50) {
@@ -322,7 +357,7 @@ ${this.generateEfficiencyAnalysis(summary)}
         value: summary.cpu.max,
         threshold: 90,
         severity: 'critical',
-        recommendation: 'Scale up CPU resources or optimize compute-intensive operations'
+        recommendation: 'Scale up CPU resources or optimize compute-intensive operations',
       })
     } else if (summary.cpu.average > 70) {
       bottlenecks.push({
@@ -331,7 +366,7 @@ ${this.generateEfficiencyAnalysis(summary)}
         value: summary.cpu.average,
         threshold: 70,
         severity: 'high',
-        recommendation: 'Monitor CPU usage and consider optimization under load'
+        recommendation: 'Monitor CPU usage and consider optimization under load',
       })
     }
 
@@ -343,7 +378,7 @@ ${this.generateEfficiencyAnalysis(summary)}
         value: summary.memory.max,
         threshold: 90,
         severity: 'critical',
-        recommendation: 'Investigate memory leaks and optimize memory usage'
+        recommendation: 'Investigate memory leaks and optimize memory usage',
       })
     } else if (summary.memory.average > 75) {
       bottlenecks.push({
@@ -352,7 +387,7 @@ ${this.generateEfficiencyAnalysis(summary)}
         value: summary.memory.average,
         threshold: 75,
         severity: 'high',
-        recommendation: 'Monitor memory usage and implement caching strategies'
+        recommendation: 'Monitor memory usage and implement caching strategies',
       })
     }
 
@@ -364,7 +399,7 @@ ${this.generateEfficiencyAnalysis(summary)}
         value: summary.database.maxConnections,
         threshold: 80,
         severity: 'high',
-        recommendation: 'Consider connection pooling or database scaling'
+        recommendation: 'Consider connection pooling or database scaling',
       })
     }
 
@@ -375,7 +410,7 @@ ${this.generateEfficiencyAnalysis(summary)}
         value: summary.database.averageQueryTime,
         threshold: 100,
         severity: 'medium',
-        recommendation: 'Optimize database queries and add appropriate indexes'
+        recommendation: 'Optimize database queries and add appropriate indexes',
       })
     }
 
@@ -386,7 +421,8 @@ ${this.generateEfficiencyAnalysis(summary)}
         value: summary.database.maxQueueSize,
         threshold: 10,
         severity: 'high',
-        recommendation: 'Database is experiencing high load - consider scaling or query optimization'
+        recommendation:
+          'Database is experiencing high load - consider scaling or query optimization',
       })
     }
 

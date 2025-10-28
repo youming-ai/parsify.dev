@@ -1,4 +1,10 @@
-import { EnhancedTransaction, TransactionManager, TransactionMetrics, TransactionStatus, IsolationLevel } from './transaction'
+import {
+  type EnhancedTransaction,
+  type IsolationLevel,
+  type TransactionManager,
+  type TransactionMetrics,
+  TransactionStatus,
+} from './transaction'
 
 export interface TransactionMonitoringConfig {
   enabled?: boolean
@@ -90,7 +96,7 @@ export class TransactionMonitor {
         maxFailureRate: config.alertingThresholds?.maxFailureRate ?? 5, // 5%
         maxDeadlockRate: config.alertingThresholds?.maxDeadlockRate ?? 1, // 1%
       },
-      exportFormats: config.exportFormats ?? ['json', 'prometheus']
+      exportFormats: config.exportFormats ?? ['json', 'prometheus'],
     }
   }
 
@@ -200,7 +206,8 @@ export class TransactionMonitor {
   /**
    * Generate transaction report
    */
-  generateReport(timeRangeMs = 3600000): TransactionReport { // Default 1 hour
+  generateReport(timeRangeMs = 3600000): TransactionReport {
+    // Default 1 hour
     const now = Date.now()
     const start = now - timeRangeMs
     const transactions = this.getTransactionsInRange(start, now)
@@ -218,7 +225,7 @@ export class TransactionMonitor {
       performance,
       alerts,
       trends,
-      recommendations
+      recommendations,
     }
   }
 
@@ -250,21 +257,21 @@ export class TransactionMonitor {
       timestamp: Date.now(),
       active: {
         count: activeTransactions.length,
-        transactions: activeTransactions.map(tx => tx.getMetrics())
+        transactions: activeTransactions.map(tx => tx.getMetrics()),
       },
       alerts: {
         count: activeAlerts.length,
-        recent: activeAlerts.slice(0, 10)
+        recent: activeAlerts.slice(0, 10),
       },
       performance: {
         recentTransactions: recentTransactions,
         averageDuration: this.calculateAverageDuration(recentTransactions),
-        successRate: this.calculateSuccessRate(recentTransactions)
+        successRate: this.calculateSuccessRate(recentTransactions),
       },
       health: {
         status: this.getHealthStatus(activeAlerts),
-        recommendations: this.getRealtimeRecommendations(activeTransactions, activeAlerts)
-      }
+        recommendations: this.getRealtimeRecommendations(activeTransactions, activeAlerts),
+      },
     }
   }
 
@@ -298,22 +305,24 @@ export class TransactionMonitor {
       timestamp: Date.now(),
       activeTransactions: activeTransactions.length,
       completedTransactions: completedTransactions.length,
-      failedTransactions: completedTransactions.filter(tx =>
-        tx.status === TransactionStatus.FAILED ||
-        tx.status === TransactionStatus.ROLLED_BACK ||
-        tx.status === TransactionStatus.DEADLOCKED ||
-        tx.status === TransactionStatus.TIMEOUT
+      failedTransactions: completedTransactions.filter(
+        tx =>
+          tx.status === TransactionStatus.FAILED ||
+          tx.status === TransactionStatus.ROLLED_BACK ||
+          tx.status === TransactionStatus.DEADLOCKED ||
+          tx.status === TransactionStatus.TIMEOUT
       ).length,
       averageDuration: this.calculateAverageDuration(completedTransactions),
       totalQueries: completedTransactions.reduce((sum, tx) => sum + tx.queryCount, 0),
       isolationLevels: this.getIsolationLevelDistribution(completedTransactions),
-      alerts: this.getActiveAlerts()
+      alerts: this.getActiveAlerts(),
     }
 
     this.snapshots.push(snapshot)
 
     // Keep only recent snapshots
-    if (this.snapshots.length > 1440) { // 24 hours at 1-minute intervals
+    if (this.snapshots.length > 1440) {
+      // 24 hours at 1-minute intervals
       this.snapshots = this.snapshots.slice(-1440)
     }
   }
@@ -328,20 +337,24 @@ export class TransactionMonitor {
       this.createAlert({
         transactionId: metrics.transactionId,
         type: 'slow',
-        severity: metrics.duration > this.config.alertingThresholds.maxDuration * 2 ? 'high' : 'medium',
+        severity:
+          metrics.duration > this.config.alertingThresholds.maxDuration * 2 ? 'high' : 'medium',
         message: `Transaction took ${metrics.duration}ms (threshold: ${this.config.alertingThresholds.maxDuration}ms)`,
-        metrics
+        metrics,
       })
     }
 
     // Check for failed transaction
-    if (metrics.status === TransactionStatus.FAILED || metrics.status === TransactionStatus.ROLLED_BACK) {
+    if (
+      metrics.status === TransactionStatus.FAILED ||
+      metrics.status === TransactionStatus.ROLLED_BACK
+    ) {
       this.createAlert({
         transactionId: metrics.transactionId,
         type: 'failed',
         severity: 'medium',
         message: `Transaction failed: ${metrics.rollbackReason || 'Unknown reason'}`,
-        metrics
+        metrics,
       })
     }
 
@@ -352,7 +365,7 @@ export class TransactionMonitor {
         type: 'deadlock',
         severity: 'high',
         message: 'Transaction was rolled back due to deadlock',
-        metrics
+        metrics,
       })
     }
 
@@ -363,18 +376,20 @@ export class TransactionMonitor {
         type: 'timeout',
         severity: 'high',
         message: `Transaction timed out after ${metrics.duration}ms`,
-        metrics
+        metrics,
       })
     }
   }
 
-  private checkSlowTransactionAlert(metrics: TransactionMetrics, transaction: EnhancedTransaction): void {
+  private checkSlowTransactionAlert(
+    metrics: TransactionMetrics,
+    transaction: EnhancedTransaction
+  ): void {
     if (!this.config.enableAlerts) return
 
     const existingAlert = Array.from(this.alerts.values()).find(
-      alert => alert.transactionId === metrics.transactionId &&
-               alert.type === 'slow' &&
-               !alert.resolved
+      alert =>
+        alert.transactionId === metrics.transactionId && alert.type === 'slow' && !alert.resolved
     )
 
     if (!existingAlert) {
@@ -385,19 +400,23 @@ export class TransactionMonitor {
         message: `Transaction has been running for ${metrics.duration}ms`,
         metrics: {
           ...metrics,
-          queryCount: transaction.getQueryHistory().length
-        }
+          queryCount: transaction.getQueryHistory().length,
+        },
       })
     }
   }
 
-  private checkHighQueryCountAlert(metrics: TransactionMetrics, transaction: EnhancedTransaction): void {
+  private checkHighQueryCountAlert(
+    metrics: TransactionMetrics,
+    _transaction: EnhancedTransaction
+  ): void {
     if (!this.config.enableAlerts) return
 
     const existingAlert = Array.from(this.alerts.values()).find(
-      alert => alert.transactionId === metrics.transactionId &&
-               alert.type === 'high_query_count' &&
-               !alert.resolved
+      alert =>
+        alert.transactionId === metrics.transactionId &&
+        alert.type === 'high_query_count' &&
+        !alert.resolved
     )
 
     if (!existingAlert) {
@@ -406,7 +425,7 @@ export class TransactionMonitor {
         type: 'high_query_count',
         severity: 'low',
         message: `Transaction has executed ${metrics.queryCount} queries`,
-        metrics
+        metrics,
       })
     }
   }
@@ -416,7 +435,7 @@ export class TransactionMonitor {
       ...alertData,
       id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
-      resolved: false
+      resolved: false,
     }
 
     this.alerts.set(alert.id, alert)
@@ -432,20 +451,20 @@ export class TransactionMonitor {
   }
 
   private getTransactionsInRange(start: number, end: number): TransactionMetrics[] {
-    return this.transactionHistory.filter(tx =>
-      tx.endTime && tx.endTime >= start && tx.endTime <= end
+    return this.transactionHistory.filter(
+      tx => tx.endTime && tx.endTime >= start && tx.endTime <= end
     )
   }
 
   private getAlertsInRange(start: number, end: number): TransactionAlert[] {
-    return Array.from(this.alerts.values()).filter(alert =>
-      alert.timestamp >= start && alert.timestamp <= end
+    return Array.from(this.alerts.values()).filter(
+      alert => alert.timestamp >= start && alert.timestamp <= end
     )
   }
 
   private getSnapshotsInRange(start: number, end: number): TransactionSnapshot[] {
-    return this.snapshots.filter(snapshot =>
-      snapshot.timestamp >= start && snapshot.timestamp <= end
+    return this.snapshots.filter(
+      snapshot => snapshot.timestamp >= start && snapshot.timestamp <= end
     )
   }
 
@@ -456,15 +475,17 @@ export class TransactionMonitor {
     const timedOut = transactions.filter(tx => tx.status === TransactionStatus.TIMEOUT).length
 
     const durations = transactions.map(tx => tx.duration).filter(d => d !== undefined) as number[]
-    const averageDuration = durations.length > 0 ? durations.reduce((a, b) => a + b) / durations.length : 0
+    const averageDuration =
+      durations.length > 0 ? durations.reduce((a, b) => a + b) / durations.length : 0
 
     return {
       totalTransactions: total,
       successRate: total > 0 ? (successful / total) * 100 : 0,
       averageDuration,
-      averageQueryCount: total > 0 ? transactions.reduce((sum, tx) => sum + tx.queryCount, 0) / total : 0,
+      averageQueryCount:
+        total > 0 ? transactions.reduce((sum, tx) => sum + tx.queryCount, 0) / total : 0,
       deadlockRate: total > 0 ? (deadlocked / total) * 100 : 0,
-      timeoutRate: total > 0 ? (timedOut / total) * 100 : 0
+      timeoutRate: total > 0 ? (timedOut / total) * 100 : 0,
     }
   }
 
@@ -476,22 +497,35 @@ export class TransactionMonitor {
     return {
       slowestTransactions: sortedByDuration.slice(0, 10),
       fastestTransactions: sortedBySpeed.slice(0, 10),
-      queryHeavyTransactions: sortedByQueryCount.slice(0, 10)
+      queryHeavyTransactions: sortedByQueryCount.slice(0, 10),
     }
   }
 
   private calculateTrends(snapshots: TransactionSnapshot[]) {
     return {
-      transactionRate: snapshots.map(s => ({ timestamp: s.timestamp, count: s.completedTransactions })),
+      transactionRate: snapshots.map(s => ({
+        timestamp: s.timestamp,
+        count: s.completedTransactions,
+      })),
       successRate: snapshots.map(s => ({
         timestamp: s.timestamp,
-        rate: s.completedTransactions > 0 ? ((s.completedTransactions - s.failedTransactions) / s.completedTransactions) * 100 : 0
+        rate:
+          s.completedTransactions > 0
+            ? ((s.completedTransactions - s.failedTransactions) / s.completedTransactions) * 100
+            : 0,
       })),
-      averageDuration: snapshots.map(s => ({ timestamp: s.timestamp, duration: s.averageDuration }))
+      averageDuration: snapshots.map(s => ({
+        timestamp: s.timestamp,
+        duration: s.averageDuration,
+      })),
     }
   }
 
-  private generateRecommendations(summary: any, performance: any, alerts: TransactionAlert[]): string[] {
+  private generateRecommendations(
+    summary: any,
+    performance: any,
+    alerts: TransactionAlert[]
+  ): string[] {
     const recommendations: string[] = []
 
     if (summary.successRate < 95) {
@@ -499,11 +533,15 @@ export class TransactionMonitor {
     }
 
     if (summary.averageDuration > 5000) {
-      recommendations.push('Average transaction duration is high. Consider optimizing queries or breaking up large transactions.')
+      recommendations.push(
+        'Average transaction duration is high. Consider optimizing queries or breaking up large transactions.'
+      )
     }
 
     if (summary.deadlockRate > 1) {
-      recommendations.push('High deadlock rate detected. Consider reducing transaction isolation level or optimizing query order.')
+      recommendations.push(
+        'High deadlock rate detected. Consider reducing transaction isolation level or optimizing query order.'
+      )
     }
 
     const criticalAlerts = alerts.filter(a => a.severity === 'critical')
@@ -511,8 +549,14 @@ export class TransactionMonitor {
       recommendations.push(`${criticalAlerts.length} critical alerts require immediate attention.`)
     }
 
-    if (performance.slowestTransactions.length > 0 && performance.slowestTransactions[0].duration && performance.slowestTransactions[0].duration > 30000) {
-      recommendations.push('Some transactions are taking longer than 30 seconds. Review and optimize these transactions.')
+    if (
+      performance.slowestTransactions.length > 0 &&
+      performance.slowestTransactions[0].duration &&
+      performance.slowestTransactions[0].duration > 30000
+    ) {
+      recommendations.push(
+        'Some transactions are taking longer than 30 seconds. Review and optimize these transactions.'
+      )
     }
 
     return recommendations
@@ -529,11 +573,16 @@ export class TransactionMonitor {
     return (successful / transactions.length) * 100
   }
 
-  private getIsolationLevelDistribution(transactions: TransactionMetrics[]): Record<IsolationLevel, number> {
-    return transactions.reduce((acc, tx) => {
-      acc[tx.isolationLevel] = (acc[tx.isolationLevel] || 0) + 1
-      return acc
-    }, {} as Record<IsolationLevel, number>)
+  private getIsolationLevelDistribution(
+    transactions: TransactionMetrics[]
+  ): Record<IsolationLevel, number> {
+    return transactions.reduce(
+      (acc, tx) => {
+        acc[tx.isolationLevel] = (acc[tx.isolationLevel] || 0) + 1
+        return acc
+      },
+      {} as Record<IsolationLevel, number>
+    )
   }
 
   private getHealthStatus(alerts: TransactionAlert[]): 'healthy' | 'warning' | 'critical' {
@@ -545,16 +594,23 @@ export class TransactionMonitor {
     return 'healthy'
   }
 
-  private getRealtimeRecommendations(activeTransactions: EnhancedTransaction[], activeAlerts: TransactionAlert[]): string[] {
+  private getRealtimeRecommendations(
+    activeTransactions: EnhancedTransaction[],
+    activeAlerts: TransactionAlert[]
+  ): string[] {
     const recommendations: string[] = []
 
     if (activeTransactions.length > 50) {
-      recommendations.push('High number of concurrent transactions. Consider implementing connection pooling.')
+      recommendations.push(
+        'High number of concurrent transactions. Consider implementing connection pooling.'
+      )
     }
 
     const longRunningTransactions = activeTransactions.filter(tx => tx.getDuration() > 10000)
     if (longRunningTransactions.length > 0) {
-      recommendations.push(`${longRunningTransactions.length} transactions have been running for more than 10 seconds.`)
+      recommendations.push(
+        `${longRunningTransactions.length} transactions have been running for more than 10 seconds.`
+      )
     }
 
     const criticalAlerts = activeAlerts.filter(a => a.severity === 'critical')
@@ -569,8 +625,8 @@ export class TransactionMonitor {
     const cutoff = Date.now() - this.config.metricsRetentionPeriod
 
     // Clean up transaction history
-    this.transactionHistory = this.transactionHistory.filter(tx =>
-      (tx.endTime || tx.startTime) > cutoff
+    this.transactionHistory = this.transactionHistory.filter(
+      tx => (tx.endTime || tx.startTime) > cutoff
     )
 
     // Clean up resolved alerts
@@ -585,28 +641,35 @@ export class TransactionMonitor {
   }
 
   private exportAsJSON(): string {
-    return JSON.stringify({
-      transactions: this.transactionHistory,
-      alerts: Array.from(this.alerts.values()),
-      snapshots: this.snapshots,
-      timestamp: Date.now()
-    }, null, 2)
+    return JSON.stringify(
+      {
+        transactions: this.transactionHistory,
+        alerts: Array.from(this.alerts.values()),
+        snapshots: this.snapshots,
+        timestamp: Date.now(),
+      },
+      null,
+      2
+    )
   }
 
   private exportAsPrometheus(): string {
     const transactions = this.transactionHistory.slice(-100) // Last 100 transactions
     const now = Date.now()
-    const recentTransactions = transactions.filter(tx =>
-      tx.endTime && (now - tx.endTime) < 300000 // Last 5 minutes
+    const recentTransactions = transactions.filter(
+      tx => tx.endTime && now - tx.endTime < 300000 // Last 5 minutes
     )
 
     const totalTransactions = transactions.length
-    const successfulTransactions = transactions.filter(tx => tx.status === TransactionStatus.COMMITTED).length
-    const failedTransactions = transactions.filter(tx =>
-      tx.status === TransactionStatus.FAILED ||
-      tx.status === TransactionStatus.ROLLED_BACK
+    const successfulTransactions = transactions.filter(
+      tx => tx.status === TransactionStatus.COMMITTED
     ).length
-    const deadlockedTransactions = transactions.filter(tx => tx.status === TransactionStatus.DEADLOCKED).length
+    const failedTransactions = transactions.filter(
+      tx => tx.status === TransactionStatus.FAILED || tx.status === TransactionStatus.ROLLED_BACK
+    ).length
+    const deadlockedTransactions = transactions.filter(
+      tx => tx.status === TransactionStatus.DEADLOCKED
+    ).length
 
     const averageDuration = this.calculateAverageDuration(recentTransactions)
     const activeAlerts = this.getActiveAlerts().length
@@ -638,7 +701,7 @@ export class TransactionMonitor {
       '',
       `# HELP database_active_transactions Number of currently active transactions`,
       `# TYPE database_active_transactions gauge`,
-      `database_active_transactions ${recentTransactions.length}`
+      `database_active_transactions ${recentTransactions.length}`,
     ].join('\n')
   }
 
@@ -654,7 +717,7 @@ export class TransactionMonitor {
       'isolationLevel',
       'queryCount',
       'retryCount',
-      'rollbackReason'
+      'rollbackReason',
     ]
 
     const rows = this.transactionHistory.map(tx => [
@@ -666,7 +729,7 @@ export class TransactionMonitor {
       tx.isolationLevel,
       tx.queryCount,
       tx.retryCount,
-      tx.rollbackReason || ''
+      tx.rollbackReason || '',
     ])
 
     return [headers, ...rows].map(row => row.join(',')).join('\n')

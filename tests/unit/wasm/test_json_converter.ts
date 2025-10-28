@@ -1,26 +1,24 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
-  JsonConverter,
-  JsonConversionOptions,
-  JsonConversionResult,
-  JsonConversionError,
-  UnsupportedFormatError,
-  ConversionTimeoutError,
-  ConversionSizeError,
   ConversionDepthError,
-  MalformedDataError,
-  jsonConverter,
+  ConversionSizeError,
+  ConversionTimeoutError,
+  convertCsvToJson,
   convertJson,
-  convertJsonToXml,
-  convertJsonToYaml,
   convertJsonToCsv,
   convertJsonToToml,
+  convertJsonToXml,
+  convertJsonToYaml,
+  convertTomlToJson,
   convertXmlToJson,
   convertYamlToJson,
-  convertCsvToJson,
-  convertTomlToJson,
   detectDataFormat,
-  getSupportedFormats
+  getSupportedFormats,
+  JsonConversionError,
+  JsonConverter,
+  jsonConverter,
+  MalformedDataError,
+  UnsupportedFormatError,
 } from '../../../apps/api/src/wasm/json_converter'
 
 describe('JsonConverter', () => {
@@ -144,9 +142,9 @@ describe('JsonConverter', () => {
           name: 'John',
           address: {
             city: 'New York',
-            zip: '10001'
-          }
-        }
+            zip: '10001',
+          },
+        },
       })
 
       const result = await converter.convert(jsonData, 'json', 'xml')
@@ -174,7 +172,7 @@ describe('JsonConverter', () => {
         xmlRoot: 'person',
         xmlAttributes: true,
         xmlAttributePrefix: '@',
-        indent: 4
+        indent: 4,
       }
 
       const result = await converter.convert(jsonData, 'json', 'xml', options)
@@ -221,9 +219,9 @@ describe('JsonConverter', () => {
           name: 'John',
           profile: {
             age: 30,
-            active: true
-          }
-        }
+            active: true,
+          },
+        },
       })
 
       const result = await converter.convert(jsonData, 'json', 'yaml')
@@ -250,7 +248,7 @@ describe('JsonConverter', () => {
       const jsonData = '{"items":[{"name":"item1"},{"name":"item2"}]}'
       const options = {
         yamlIndent: 4,
-        yamlFlowStyle: true
+        yamlFlowStyle: true,
       }
 
       const result = await converter.convert(jsonData, 'json', 'yaml', options)
@@ -263,7 +261,7 @@ describe('JsonConverter', () => {
     it('should handle different YAML scalar styles', async () => {
       const jsonData = '{"text":"Hello world","number":42,"boolean":true}'
       const options = {
-        yamlScalarStyle: 'double-quoted'
+        yamlScalarStyle: 'double-quoted',
       }
 
       const result = await converter.convert(jsonData, 'json', 'yaml', options)
@@ -277,7 +275,7 @@ describe('JsonConverter', () => {
     it('should convert JSON array to CSV', async () => {
       const jsonData = JSON.stringify([
         { name: 'John', age: 30, active: true },
-        { name: 'Jane', age: 25, active: false }
+        { name: 'Jane', age: 25, active: false },
       ])
 
       const result = await converter.convert(jsonData, 'json', 'csv')
@@ -289,14 +287,12 @@ describe('JsonConverter', () => {
     })
 
     it('should handle CSV-specific options', async () => {
-      const jsonData = JSON.stringify([
-        { name: 'John Doe', age: 30, city: 'New York' }
-      ])
+      const jsonData = JSON.stringify([{ name: 'John Doe', age: 30, city: 'New York' }])
 
       const options = {
         csvDelimiter: ';',
         csvQuote: "'",
-        csvHeader: true
+        csvHeader: true,
       }
 
       const result = await converter.convert(jsonData, 'json', 'csv', options)
@@ -307,9 +303,7 @@ describe('JsonConverter', () => {
     })
 
     it('should handle CSV quoting', async () => {
-      const jsonData = JSON.stringify([
-        { name: 'John, Jr.', description: 'A "special" person' }
-      ])
+      const jsonData = JSON.stringify([{ name: 'John, Jr.', description: 'A "special" person' }])
 
       const result = await converter.convert(jsonData, 'json', 'csv')
 
@@ -319,12 +313,10 @@ describe('JsonConverter', () => {
     })
 
     it('should handle custom column order', async () => {
-      const jsonData = JSON.stringify([
-        { name: 'John', age: 30, city: 'NYC' }
-      ])
+      const jsonData = JSON.stringify([{ name: 'John', age: 30, city: 'NYC' }])
 
       const options = {
-        csvColumns: ['city', 'name', 'age']
+        csvColumns: ['city', 'name', 'age'],
       }
 
       const result = await converter.convert(jsonData, 'json', 'csv', options)
@@ -360,9 +352,9 @@ describe('JsonConverter', () => {
           name: 'John',
           profile: {
             age: 30,
-            active: true
-          }
-        }
+            active: true,
+          },
+        },
       })
 
       const result = await converter.convert(jsonData, 'json', 'toml')
@@ -387,7 +379,7 @@ describe('JsonConverter', () => {
       const jsonData = '{"items":[{"name":"item1"},{"name":"item2"}]}'
       const options = {
         tomlTables: true,
-        tomlInlineTables: true
+        tomlInlineTables: true,
       }
 
       const result = await converter.convert(jsonData, 'json', 'toml', options)
@@ -409,7 +401,8 @@ describe('JsonConverter', () => {
     })
 
     it('should convert nested XML to JSON', async () => {
-      const xmlData = '<user><name>John</name><address><city>New York</city><zip>10001</zip></address></user>'
+      const xmlData =
+        '<user><name>John</name><address><city>New York</city><zip>10001</zip></address></user>'
       const result = await converter.convert(xmlData, 'xml', 'json')
 
       expect(result.success).toBe(true)
@@ -423,7 +416,7 @@ describe('JsonConverter', () => {
       const xmlData = '<user id="1" active="true"><name>John</name></user>'
       const options = {
         xmlAttributes: true,
-        xmlAttributePrefix: '@'
+        xmlAttributePrefix: '@',
       }
 
       const result = await converter.convert(xmlData, 'xml', 'json', options)
@@ -437,7 +430,7 @@ describe('JsonConverter', () => {
     it('should handle XML CDATA', async () => {
       const xmlData = '<content><![CDATA[Some special content <with> tags]]></content>'
       const options = {
-        xmlCData: true
+        xmlCData: true,
       }
 
       const result = await converter.convert(xmlData, 'xml', 'json', options)
@@ -448,8 +441,9 @@ describe('JsonConverter', () => {
     it('should handle malformed XML', async () => {
       const malformedXml = '<root><name>John</name><age>'
 
-      await expect(converter.convert(malformedXml, 'xml', 'json'))
-        .rejects.toThrow(MalformedDataError)
+      await expect(converter.convert(malformedXml, 'xml', 'json')).rejects.toThrow(
+        MalformedDataError
+      )
     })
   })
 
@@ -513,7 +507,7 @@ describe('JsonConverter', () => {
     it('should handle CSV with custom delimiter', async () => {
       const csvData = 'name;age;active\nJohn;30;true'
       const options = {
-        csvDelimiter: ';'
+        csvDelimiter: ';',
       }
 
       const result = await converter.convert(csvData, 'csv', 'json', options)
@@ -527,7 +521,7 @@ describe('JsonConverter', () => {
       const csvData = 'John,30,true\nJane,25,false'
       const options = {
         csvHeader: false,
-        csvColumns: ['name', 'age', 'active']
+        csvColumns: ['name', 'age', 'active'],
       }
 
       const result = await converter.convert(csvData, 'csv', 'json', options)
@@ -545,7 +539,7 @@ describe('JsonConverter', () => {
       const parsed = JSON.parse(result.data!)
       expect(parsed[0]).toEqual({
         name: 'John, Jr.',
-        description: 'A "special" person'
+        description: 'A "special" person',
       })
     })
 
@@ -647,46 +641,51 @@ describe('JsonConverter', () => {
     it('should handle unsupported source format', async () => {
       const inputData = 'some data'
 
-      await expect(converter.convert(inputData, 'unsupported', 'json'))
-        .rejects.toThrow(UnsupportedFormatError)
+      await expect(converter.convert(inputData, 'unsupported', 'json')).rejects.toThrow(
+        UnsupportedFormatError
+      )
     })
 
     it('should handle unsupported target format', async () => {
       const inputData = '{"name":"John"}'
 
-      await expect(converter.convert(inputData, 'json', 'unsupported'))
-        .rejects.toThrow(UnsupportedFormatError)
+      await expect(converter.convert(inputData, 'json', 'unsupported')).rejects.toThrow(
+        UnsupportedFormatError
+      )
     })
 
     it('should handle empty input', async () => {
-      await expect(converter.convert('', 'json', 'xml'))
-        .rejects.toThrow(JsonConversionError)
+      await expect(converter.convert('', 'json', 'xml')).rejects.toThrow(JsonConversionError)
     })
 
     it('should handle non-string input', async () => {
-      await expect(converter.convert(null as any, 'json', 'xml'))
-        .rejects.toThrow(JsonConversionError)
+      await expect(converter.convert(null as any, 'json', 'xml')).rejects.toThrow(
+        JsonConversionError
+      )
     })
 
     it('should handle oversized input', async () => {
       const largeInput = 'x'.repeat(11 * 1024 * 1024) // 11MB
 
-      await expect(converter.convert(largeInput, 'json', 'xml'))
-        .rejects.toThrow(ConversionSizeError)
+      await expect(converter.convert(largeInput, 'json', 'xml')).rejects.toThrow(
+        ConversionSizeError
+      )
     })
 
     it('should handle malformed XML', async () => {
       const malformedXml = '<root><name>John</name><age>'
 
-      await expect(converter.convert(malformedXml, 'xml', 'json'))
-        .rejects.toThrow(MalformedDataError)
+      await expect(converter.convert(malformedXml, 'xml', 'json')).rejects.toThrow(
+        MalformedDataError
+      )
     })
 
     it('should handle malformed YAML', async () => {
       const malformedYaml = 'invalid: yaml: content: here'
 
-      await expect(converter.convert(malformedYaml, 'yaml', 'json'))
-        .rejects.toThrow(MalformedDataError)
+      await expect(converter.convert(malformedYaml, 'yaml', 'json')).rejects.toThrow(
+        MalformedDataError
+      )
     })
 
     it('should handle malformed CSV', async () => {
@@ -700,18 +699,20 @@ describe('JsonConverter', () => {
     it('should handle malformed TOML', async () => {
       const malformedToml = 'invalid toml syntax here'
 
-      await expect(converter.convert(malformedToml, 'toml', 'json'))
-        .rejects.toThrow(MalformedDataError)
+      await expect(converter.convert(malformedToml, 'toml', 'json')).rejects.toThrow(
+        MalformedDataError
+      )
     })
 
     it('should handle timeout errors', async () => {
       const jsonData = '{"name":"John"}'
       const options = {
-        timeout: 1 // 1ms timeout
+        timeout: 1, // 1ms timeout
       }
 
-      await expect(converter.convert(jsonData, 'json', 'xml', options))
-        .rejects.toThrow(ConversionTimeoutError)
+      await expect(converter.convert(jsonData, 'json', 'xml', options)).rejects.toThrow(
+        ConversionTimeoutError
+      )
     })
   })
 
@@ -720,7 +721,7 @@ describe('JsonConverter', () => {
       const jsonData = '{"name":"John","age":30}'
       const options = {
         prettyPrint: true,
-        indent: 4
+        indent: 4,
       }
 
       const result = await converter.convert(jsonData, 'json', 'json', options)
@@ -733,7 +734,7 @@ describe('JsonConverter', () => {
     it('should use compact mode', async () => {
       const jsonData = '{"name":"John","age":30}'
       const options = {
-        prettyPrint: false
+        prettyPrint: false,
       }
 
       const result = await converter.convert(jsonData, 'json', 'json', options)
@@ -745,7 +746,7 @@ describe('JsonConverter', () => {
     it('should sort keys', async () => {
       const jsonData = '{"z":1,"a":2,"m":3}'
       const options = {
-        sortKeys: true
+        sortKeys: true,
       }
 
       const result = await converter.convert(jsonData, 'json', 'json', options)
@@ -759,7 +760,7 @@ describe('JsonConverter', () => {
     it('should handle encoding options', async () => {
       const jsonData = '{"name":"Jöhn"}'
       const options = {
-        encoding: 'ascii'
+        encoding: 'ascii',
       }
 
       const result = await converter.convert(jsonData, 'json', 'json', options)
@@ -770,7 +771,7 @@ describe('JsonConverter', () => {
     it('should use WASM when available', async () => {
       const jsonData = '{"name":"John","age":30}'
       const options = {
-        useWasm: true
+        useWasm: true,
       }
 
       const result = await converter.convert(jsonData, 'json', 'xml', options)
@@ -782,7 +783,7 @@ describe('JsonConverter', () => {
     it('should fall back to native when WASM unavailable', async () => {
       const jsonData = '{"name":"John","age":30}'
       const options = {
-        useWasm: false
+        useWasm: false,
       }
 
       const result = await converter.convert(jsonData, 'json', 'xml', options)
@@ -823,7 +824,7 @@ describe('JsonConverter', () => {
         largeObject[`key${i}`] = {
           id: i,
           name: `Item ${i}`,
-          tags: [`tag${i}`, `category${i % 10}`]
+          tags: [`tag${i}`, `category${i % 10}`],
         }
       }
 
@@ -845,35 +846,38 @@ describe('JsonConverter', () => {
     it('should reject suspicious content', async () => {
       const maliciousInput = '{"script":"<script>alert(1)</script>"}'
 
-      await expect(converter.convert(maliciousInput, 'json', 'xml'))
-        .rejects.toThrow(JsonConversionError)
+      await expect(converter.convert(maliciousInput, 'json', 'xml')).rejects.toThrow(
+        JsonConversionError
+      )
     })
 
     it('should reject extremely deep nesting', async () => {
       const deepInput = '['.repeat(1001) + ']'.repeat(1001)
       const options = {
-        maxDepth: 100
+        maxDepth: 100,
       }
 
-      await expect(converter.convert(deepInput, 'json', 'xml', options))
-        .rejects.toThrow(ConversionDepthError)
+      await expect(converter.convert(deepInput, 'json', 'xml', options)).rejects.toThrow(
+        ConversionDepthError
+      )
     })
 
     it('should handle excessive repetition', async () => {
-      const repetitiveInput = '{"data":"' + 'a'.repeat(1001) + '"}'
+      const repetitiveInput = `{"data":"${'a'.repeat(1001)}"}`
 
-      await expect(converter.convert(repetitiveInput, 'json', 'xml'))
-        .rejects.toThrow(JsonConversionError)
+      await expect(converter.convert(repetitiveInput, 'json', 'xml')).rejects.toThrow(
+        JsonConversionError
+      )
     })
   })
 
   describe('Configuration', () => {
     it('should allow setting custom limits', () => {
       converter.setLimits(
-        1024,     // 1KB input
-        5120,     // 5KB output
-        32768,    // 32MB memory
-        5000      // 5 second timeout
+        1024, // 1KB input
+        5120, // 5KB output
+        32768, // 32MB memory
+        5000 // 5 second timeout
       )
 
       // Limits would be applied during conversion
@@ -884,15 +888,14 @@ describe('JsonConverter', () => {
       converter.setLimits(100, 1000, 1024, 100) // Very small limits
 
       const smallData = '{"name":"test"}'
-      const largeData = '{"name":"' + 'x'.repeat(200) + '"}'
+      const largeData = `{"name":"${'x'.repeat(200)}"}`
 
       // Should work with small data
       const result1 = await converter.convert(smallData, 'json', 'xml')
       expect(result1.success).toBe(true)
 
       // Should fail with large data
-      await expect(converter.convert(largeData, 'json', 'xml'))
-        .rejects.toThrow(ConversionSizeError)
+      await expect(converter.convert(largeData, 'json', 'xml')).rejects.toThrow(ConversionSizeError)
     })
   })
 
@@ -957,7 +960,7 @@ describe('Utility functions', () => {
   it('convertJsonToCsv should convert JSON to CSV', async () => {
     const jsonData = JSON.stringify([
       { name: 'John', age: 30 },
-      { name: 'Jane', age: 25 }
+      { name: 'Jane', age: 25 },
     ])
     const result = await convertJsonToCsv(jsonData)
 
@@ -1071,7 +1074,7 @@ describe('Edge cases', () => {
       newline: 'line1\\nline2',
       tab: 'col1\\tcol2',
       quote: 'say \\"hello\\"',
-      backslash: 'path\\\\to\\\\file'
+      backslash: 'path\\\\to\\\\file',
     })
 
     const result = await convertJson(jsonData, 'json', 'xml')
@@ -1081,7 +1084,7 @@ describe('Edge cases', () => {
   it('should handle very large numbers', async () => {
     const jsonData = JSON.stringify({
       bigInt: 9007199254740991n, // BigInt max safe integer
-      scientific: 1.23e+10
+      scientific: 1.23e10,
     })
 
     const result = await convertJson(jsonData, 'json', 'xml')
@@ -1093,7 +1096,7 @@ describe('Edge cases', () => {
       name: null,
       age: undefined,
       active: true,
-      empty: ''
+      empty: '',
     })
 
     const result = await convertJson(jsonData, 'json', 'xml')
@@ -1134,8 +1137,8 @@ describe('Performance benchmarks', () => {
         tags: [`tag${i}`, `category${i % 10}`],
         metadata: {
           created: new Date().toISOString(),
-          active: i % 2 === 0
-        }
+          active: i % 2 === 0,
+        },
       }
     }
 
@@ -1186,11 +1189,7 @@ describe('Performance benchmarks', () => {
     const startTime = performance.now()
 
     try {
-      const stream = await jsonConverter.convertStream(
-        asyncIterable(),
-        'json',
-        'xml'
-      )
+      const stream = await jsonConverter.convertStream(asyncIterable(), 'json', 'xml')
 
       const results = []
       for await (const result of stream) {

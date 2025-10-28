@@ -18,19 +18,23 @@ vi.mock('next/navigation', () => ({
   },
   usePathname() {
     return '/'
-  }
+  },
 }))
 
 // Mock Lucide React icons
 vi.mock('lucide-react', () => ({
-  ChevronDown: ({ className }: { className?: string }) =>
-    <div data-testid="chevron-down" className={className} />,
-  ChevronRight: ({ className }: { className?: string }) =>
-    <div data-testid="chevron-right" className={className} />,
-  Copy: ({ className }: { className?: string }) =>
-    <div data-testid="copy-icon" className={className} />,
-  Download: ({ className }: { className?: string }) =>
-    <div data-testid="download-icon" className={className} />,
+  ChevronDown: ({ className }: { className?: string }) => (
+    <div data-testid="chevron-down" className={className} />
+  ),
+  ChevronRight: ({ className }: { className?: string }) => (
+    <div data-testid="chevron-right" className={className} />
+  ),
+  Copy: ({ className }: { className?: string }) => (
+    <div data-testid="copy-icon" className={className} />
+  ),
+  Download: ({ className }: { className?: string }) => (
+    <div data-testid="download-icon" className={className} />
+  ),
 }))
 
 // Mock clipboard API
@@ -75,7 +79,7 @@ if (!global.crypto?.randomUUID) {
   Object.defineProperty(global, 'crypto', {
     value: {
       ...global.crypto,
-      randomUUID: () => 'test-uuid-' + Math.random().toString(36).substr(2, 9),
+      randomUUID: () => `test-uuid-${Math.random().toString(36).substr(2, 9)}`,
     },
   })
 }

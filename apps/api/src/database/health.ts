@@ -1,4 +1,4 @@
-import { DatabaseService, DatabaseServiceMetrics, HealthCheckResult } from './service'
+import type { DatabaseService, DatabaseServiceMetrics, HealthCheckResult } from './service'
 
 export interface HealthCheckConfig {
   enabled: boolean
@@ -60,8 +60,8 @@ export class DatabaseHealthMonitor {
       alertThresholds: {
         queryTime: config.alertThresholds?.queryTime ?? 1000, // 1 second
         errorRate: config.alertThresholds?.errorRate ?? 0.05, // 5%
-        connectionPoolUtilization: config.alertThresholds?.connectionPoolUtilization ?? 0.9 // 90%
-      }
+        connectionPoolUtilization: config.alertThresholds?.connectionPoolUtilization ?? 0.9, // 90%
+      },
     }
 
     this.startTime = Date.now()
@@ -71,7 +71,7 @@ export class DatabaseHealthMonitor {
       consecutiveFailures: 0,
       consecutiveSuccesses: 0,
       uptime: 0,
-      responseTime: 0
+      responseTime: 0,
     }
 
     if (this.config.enabled) {
@@ -123,7 +123,7 @@ export class DatabaseHealthMonitor {
       status: this.getHealthStatus(),
       metrics,
       alerts: [...this.alerts],
-      recommendations
+      recommendations,
     }
   }
 
@@ -134,12 +134,12 @@ export class DatabaseHealthMonitor {
     const startTime = Date.now()
 
     try {
-      const result = await Promise.race([
+      const result = (await Promise.race([
         this.databaseService.healthCheck(),
         new Promise<HealthCheckResult>((_, reject) =>
           setTimeout(() => reject(new Error('Health check timeout')), this.config.timeoutMs)
-        )
-      ]) as HealthCheckResult
+        ),
+      ])) as HealthCheckResult
 
       const responseTime = Date.now() - startTime
       this.updateStatus(true, responseTime)
@@ -156,7 +156,7 @@ export class DatabaseHealthMonitor {
         healthy: false,
         responseTime,
         error: (error as Error).message,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
     }
   }
@@ -172,9 +172,7 @@ export class DatabaseHealthMonitor {
    * Get recent alerts
    */
   getAlerts(limit = 50): HealthAlert[] {
-    return this.alerts
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, limit)
+    return this.alerts.sort((a, b) => b.timestamp - a.timestamp).slice(0, limit)
   }
 
   /**
@@ -183,7 +181,7 @@ export class DatabaseHealthMonitor {
   addAlert(alert: Omit<HealthAlert, 'timestamp'>): void {
     const fullAlert: HealthAlert = {
       ...alert,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
 
     this.alerts.push(fullAlert)
@@ -228,7 +226,7 @@ export class DatabaseHealthMonitor {
         consecutiveFailures: 0,
         consecutiveSuccesses: this.status.consecutiveSuccesses + 1,
         uptime,
-        responseTime
+        responseTime,
       }
     } else {
       this.status = {
@@ -238,7 +236,7 @@ export class DatabaseHealthMonitor {
         consecutiveSuccesses: 0,
         uptime,
         responseTime,
-        error
+        error,
       }
 
       // Add alert if threshold exceeded
@@ -247,7 +245,7 @@ export class DatabaseHealthMonitor {
           type: 'database_unavailable',
           severity: 'critical',
           message: `Database health check failed ${this.status.consecutiveFailures} times consecutively`,
-          metrics: this.databaseService.getMetrics()
+          metrics: this.databaseService.getMetrics(),
         })
       }
     }
@@ -261,7 +259,7 @@ export class DatabaseHealthMonitor {
       this.addAlert({
         type: 'slow_query',
         severity: 'warning',
-        message: `Health check took ${responseTime}ms (threshold: ${this.config.alertThresholds.queryTime}ms)`
+        message: `Health check took ${responseTime}ms (threshold: ${this.config.alertThresholds.queryTime}ms)`,
       })
     }
 
@@ -271,7 +269,7 @@ export class DatabaseHealthMonitor {
         type: 'slow_query',
         severity: 'warning',
         message: `Average query time is ${metrics.queries.averageQueryTime}ms (threshold: ${this.config.alertThresholds.queryTime}ms)`,
-        metrics
+        metrics,
       })
     }
 
@@ -284,19 +282,20 @@ export class DatabaseHealthMonitor {
           type: 'high_error_rate',
           severity: 'error',
           message: `Database error rate is ${(errorRate * 100).toFixed(2)}% (threshold: ${(this.config.alertThresholds.errorRate * 100).toFixed(2)}%)`,
-          metrics
+          metrics,
         })
       }
     }
 
     // Check connection pool utilization
-    const poolUtilization = metrics.connections.activeConnections / metrics.connections.totalConnections
+    const poolUtilization =
+      metrics.connections.activeConnections / metrics.connections.totalConnections
     if (poolUtilization > this.config.alertThresholds.connectionPoolUtilization) {
       this.addAlert({
         type: 'connection_pool_exhausted',
         severity: 'warning',
         message: `Connection pool utilization is ${(poolUtilization * 100).toFixed(2)}% (threshold: ${(this.config.alertThresholds.connectionPoolUtilization * 100).toFixed(2)}%)`,
-        metrics
+        metrics,
       })
     }
   }
@@ -313,13 +312,16 @@ export class DatabaseHealthMonitor {
     if (metrics.queries.totalQueries > 0) {
       const errorRate = metrics.queries.failedQueries / metrics.queries.totalQueries
       if (errorRate > 0.01) {
-        recommendations.push('High error rate detected - check application logs for database errors')
+        recommendations.push(
+          'High error rate detected - check application logs for database errors'
+        )
       }
     }
 
     // Connection pool recommendations
     if (metrics.connections.totalConnections > 0) {
-      const poolUtilization = metrics.connections.activeConnections / metrics.connections.totalConnections
+      const poolUtilization =
+        metrics.connections.activeConnections / metrics.connections.totalConnections
       if (poolUtilization > 0.8) {
         recommendations.push('Consider increasing database connection pool size')
       }
@@ -332,7 +334,9 @@ export class DatabaseHealthMonitor {
 
     // Health status recommendations
     if (!this.status.healthy) {
-      recommendations.push('Database health checks are failing - investigate database connectivity and performance')
+      recommendations.push(
+        'Database health checks are failing - investigate database connectivity and performance'
+      )
     }
 
     return recommendations
@@ -369,6 +373,6 @@ export const DEFAULT_HEALTH_CHECK_CONFIG: HealthCheckConfig = {
   alertThresholds: {
     queryTime: 1000,
     errorRate: 0.05,
-    connectionPoolUtilization: 0.9
-  }
+    connectionPoolUtilization: 0.9,
+  },
 }

@@ -5,8 +5,8 @@
  * including databases, storage, APIs, and external services.
  */
 
-import { stagingConfig, stagingHealthCheck } from './staging.js'
 import { productionConfig, productionHealthCheck } from './production.js'
+import { stagingConfig, stagingHealthCheck } from './staging.js'
 
 export interface HealthCheckResult {
   status: 'healthy' | 'unhealthy' | 'degraded' | 'unknown'
@@ -71,7 +71,7 @@ export function getHealthCheckConfig(environment: 'staging' | 'production'): Hea
       expectedStatusCodes: baseConfig.expectedStatusCodes,
       checkInterval: 30000,
       retries: baseConfig.retries,
-      critical: true
+      critical: true,
     },
     {
       name: 'api-health',
@@ -81,7 +81,7 @@ export function getHealthCheckConfig(environment: 'staging' | 'production'): Hea
       expectedStatusCodes: baseConfig.expectedStatusCodes,
       checkInterval: 30000,
       retries: baseConfig.retries,
-      critical: true
+      critical: true,
     },
     {
       name: 'api-status',
@@ -91,7 +91,7 @@ export function getHealthCheckConfig(environment: 'staging' | 'production'): Hea
       expectedStatusCodes: baseConfig.expectedStatusCodes,
       checkInterval: 60000,
       retries: baseConfig.retries,
-      critical: false
+      critical: false,
     },
 
     // Database health checks
@@ -103,7 +103,7 @@ export function getHealthCheckConfig(environment: 'staging' | 'production'): Hea
       expectedStatusCodes: [200],
       checkInterval: 30000,
       retries: 3,
-      critical: true
+      critical: true,
     },
 
     // Storage health checks
@@ -115,7 +115,7 @@ export function getHealthCheckConfig(environment: 'staging' | 'production'): Hea
       expectedStatusCodes: [200],
       checkInterval: 60000,
       retries: 3,
-      critical: false
+      critical: false,
     },
     {
       name: 'kv-cache',
@@ -125,7 +125,7 @@ export function getHealthCheckConfig(environment: 'staging' | 'production'): Hea
       expectedStatusCodes: [200],
       checkInterval: 30000,
       retries: 2,
-      critical: false
+      critical: false,
     },
 
     // External service health checks
@@ -137,7 +137,7 @@ export function getHealthCheckConfig(environment: 'staging' | 'production'): Hea
       expectedStatusCodes: [200, 503], // 503 is acceptable if analytics is down
       checkInterval: 120000,
       retries: 2,
-      critical: false
+      critical: false,
     },
     {
       name: 'email-service',
@@ -147,7 +147,7 @@ export function getHealthCheckConfig(environment: 'staging' | 'production'): Hea
       expectedStatusCodes: [200, 503], // 503 is acceptable if email is down
       checkInterval: 300000,
       retries: 2,
-      critical: false
+      critical: false,
     },
 
     // Performance health checks
@@ -159,8 +159,8 @@ export function getHealthCheckConfig(environment: 'staging' | 'production'): Hea
       expectedStatusCodes: [200],
       checkInterval: 60000,
       retries: 2,
-      critical: false
-    }
+      critical: false,
+    },
   ]
 
   // Add production-specific checks
@@ -174,7 +174,7 @@ export function getHealthCheckConfig(environment: 'staging' | 'production'): Hea
         expectedStatusCodes: [200],
         checkInterval: 30000,
         retries: 3,
-        critical: true
+        critical: true,
       },
       {
         name: 'ssl-certificate',
@@ -184,7 +184,7 @@ export function getHealthCheckConfig(environment: 'staging' | 'production'): Hea
         expectedStatusCodes: [200],
         checkInterval: 3600000, // Check every hour
         retries: 1,
-        critical: false
+        critical: false,
       }
     )
   }
@@ -207,10 +207,10 @@ export async function performHealthCheck(config: HealthCheckConfig): Promise<Hea
       method: config.method,
       headers: {
         'User-Agent': 'Parsify-HealthCheck/1.0',
-        ...config.headers
+        ...config.headers,
       },
       body: config.body,
-      signal: controller.signal
+      signal: controller.signal,
     })
 
     clearTimeout(timeoutId)
@@ -226,8 +226,8 @@ export async function performHealthCheck(config: HealthCheckConfig): Promise<Hea
         details: {
           expectedStatusCodes: config.expectedStatusCodes,
           actualStatusCode: response.status,
-          responseHeaders: Object.fromEntries(response.headers.entries())
-        }
+          responseHeaders: Object.fromEntries(response.headers.entries()),
+        },
       }
     }
 
@@ -242,8 +242,8 @@ export async function performHealthCheck(config: HealthCheckConfig): Promise<Hea
           error: `Response body does not contain expected text: ${config.expectedBody}`,
           details: {
             expectedBody: config.expectedBody,
-            actualBody: responseText.substring(0, 200) // First 200 chars
-          }
+            actualBody: responseText.substring(0, 200), // First 200 chars
+          },
         }
       }
     }
@@ -260,10 +260,9 @@ export async function performHealthCheck(config: HealthCheckConfig): Promise<Hea
       responseTime,
       details: {
         statusCode: response.status,
-        responseHeaders: Object.fromEntries(response.headers.entries())
-      }
+        responseHeaders: Object.fromEntries(response.headers.entries()),
+      },
     }
-
   } catch (error) {
     const responseTime = Date.now() - startTime
 
@@ -273,8 +272,8 @@ export async function performHealthCheck(config: HealthCheckConfig): Promise<Hea
       responseTime,
       error: error instanceof Error ? error.message : 'Unknown error',
       details: {
-        errorType: error instanceof Error ? error.constructor.name : 'Unknown'
-      }
+        errorType: error instanceof Error ? error.constructor.name : 'Unknown',
+      },
     }
   }
 }
@@ -282,7 +281,9 @@ export async function performHealthCheck(config: HealthCheckConfig): Promise<Hea
 /**
  * Perform health check with retries
  */
-export async function performHealthCheckWithRetries(config: HealthCheckConfig): Promise<HealthCheckResult> {
+export async function performHealthCheckWithRetries(
+  config: HealthCheckConfig
+): Promise<HealthCheckResult> {
   let lastResult: HealthCheckResult | null = null
 
   for (let attempt = 1; attempt <= config.retries + 1; attempt++) {
@@ -293,8 +294,8 @@ export async function performHealthCheckWithRetries(config: HealthCheckConfig): 
         ...result,
         metadata: {
           attempt,
-          totalAttempts: config.retries + 1
-        }
+          totalAttempts: config.retries + 1,
+        },
       }
     }
 
@@ -303,7 +304,7 @@ export async function performHealthCheckWithRetries(config: HealthCheckConfig): 
     // Don't wait after the last attempt
     if (attempt <= config.retries) {
       // Exponential backoff
-      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000)
+      const delay = Math.min(1000 * 2 ** (attempt - 1), 10000)
       await new Promise(resolve => setTimeout(resolve, delay))
     }
   }
@@ -313,18 +314,20 @@ export async function performHealthCheckWithRetries(config: HealthCheckConfig): 
     metadata: {
       attempt: config.retries + 1,
       totalAttempts: config.retries + 1,
-      failedAttempts: config.retries + 1
-    }
+      failedAttempts: config.retries + 1,
+    },
   }
 }
 
 /**
  * Check all services for an environment
  */
-export async function checkEnvironmentHealth(environment: 'staging' | 'production'): Promise<EnvironmentHealth> {
+export async function checkEnvironmentHealth(
+  environment: 'staging' | 'production'
+): Promise<EnvironmentHealth> {
   const configs = getHealthCheckConfig(environment)
   const services: Record<string, ServiceHealth> = {}
-  let healthyCount = 0
+  let _healthyCount = 0
   let totalCount = 0
   let totalResponseTime = 0
   let errorCount = 0
@@ -343,7 +346,7 @@ export async function checkEnvironmentHealth(environment: 'staging' | 'productio
   for (const [serviceName, serviceConfigs] of Object.entries(serviceGroups)) {
     const checks: HealthCheckResult[] = []
     let serviceStatus: 'healthy' | 'unhealthy' | 'degraded' | 'unknown' = 'healthy'
-    let serviceUptime = 100
+    const serviceUptime = 100
 
     for (const config of serviceConfigs) {
       const result = await performHealthCheckWithRetries(config)
@@ -353,7 +356,7 @@ export async function checkEnvironmentHealth(environment: 'staging' | 'productio
       totalResponseTime += result.responseTime
 
       if (result.status === 'healthy') {
-        healthyCount++
+        _healthyCount++
       } else if (result.status === 'unhealthy') {
         errorCount++
         if (config.critical) {
@@ -373,7 +376,7 @@ export async function checkEnvironmentHealth(environment: 'staging' | 'productio
       status: serviceStatus,
       checks,
       lastChecked: new Date().toISOString(),
-      uptime: serviceUptime
+      uptime: serviceUptime,
     }
   }
 
@@ -402,15 +405,18 @@ export async function checkEnvironmentHealth(environment: 'staging' | 'productio
     performance: {
       averageResponseTime,
       errorRate,
-      throughput
-    }
+      throughput,
+    },
   }
 }
 
 /**
  * Validate environment configuration
  */
-export function validateEnvironmentConfig(environment: 'staging' | 'production'): { valid: boolean; errors: string[] } {
+export function validateEnvironmentConfig(environment: 'staging' | 'production'): {
+  valid: boolean
+  errors: string[]
+} {
   const errors: string[] = []
   const config = environment === 'staging' ? stagingConfig : productionConfig
 
@@ -461,14 +467,13 @@ export function validateEnvironmentConfig(environment: 'staging' | 'production')
         errors.push('Encryption key must be at least 32 characters long')
       }
     }
-
   } catch (error) {
     errors.push(`Configuration validation error: ${error}`)
   }
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   }
 }
 
@@ -484,12 +489,13 @@ export function getHealthSummary(environment: 'staging' | 'production'): Promise
 }> {
   return checkEnvironmentHealth(environment).then(health => {
     const totalChecks = Object.values(health.services).reduce(
-      (total, service) => total + service.checks.length, 0
+      (total, service) => total + service.checks.length,
+      0
     )
     const failures = Object.values(health.services).reduce(
-      (total, service) => total + service.checks.filter(check =>
-        check.status === 'unhealthy'
-      ).length, 0
+      (total, service) =>
+        total + service.checks.filter(check => check.status === 'unhealthy').length,
+      0
     )
 
     return {
@@ -497,7 +503,7 @@ export function getHealthSummary(environment: 'staging' | 'production'): Promise
       checks: totalChecks,
       failures,
       responseTime: Math.round(health.performance.averageResponseTime),
-      uptime: Math.round(100 - health.performance.errorRate)
+      uptime: Math.round(100 - health.performance.errorRate),
     }
   })
 }
@@ -562,5 +568,5 @@ export default {
   checkEnvironmentHealth,
   validateEnvironmentConfig,
   getHealthSummary,
-  HealthMonitor
+  HealthMonitor,
 }

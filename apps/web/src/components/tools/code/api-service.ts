@@ -1,8 +1,8 @@
-import {
+import type {
   CodeExecutionRequest,
   CodeExecutionResult,
   CodeFormatOptions,
-  CodeLanguage
+  CodeLanguage,
 } from './code-types'
 
 export interface ApiResponse<T = any> {
@@ -75,7 +75,7 @@ class CodeApiService {
         body: JSON.stringify({
           code,
           language,
-          options
+          options,
         }),
       })
 
@@ -97,9 +97,17 @@ class CodeApiService {
   }
 
   // Validate code syntax
-  async validateCode(code: string, language: CodeLanguage): Promise<{
+  async validateCode(
+    code: string,
+    language: CodeLanguage
+  ): Promise<{
     isValid: boolean
-    errors: Array<{ line: number; column: number; message: string; severity: 'error' | 'warning' }>
+    errors: Array<{
+      line: number
+      column: number
+      message: string
+      severity: 'error' | 'warning'
+    }>
   }> {
     try {
       const response = await fetch(`${this.baseUrl}/validate`, {
@@ -109,7 +117,7 @@ class CodeApiService {
         },
         body: JSON.stringify({
           code,
-          language
+          language,
         }),
       })
 
@@ -119,7 +127,12 @@ class CodeApiService {
 
       const result: ApiResponse<{
         isValid: boolean
-        errors: Array<{ line: number; column: number; message: string; severity: 'error' | 'warning' }>
+        errors: Array<{
+          line: number
+          column: number
+          message: string
+          severity: 'error' | 'warning'
+        }>
       }> = await response.json()
 
       if (!result.success || !result.data) {
@@ -241,7 +254,10 @@ class CodeApiService {
   }
 
   // Upload file for execution
-  async uploadFile(file: File, language: CodeLanguage): Promise<{
+  async uploadFile(
+    file: File,
+    language: CodeLanguage
+  ): Promise<{
     fileId: string
     fileName: string
     size: number
@@ -277,9 +293,12 @@ class CodeApiService {
   // Download execution result
   async downloadResult(executionId: string, format: 'txt' | 'json' = 'txt'): Promise<Blob> {
     try {
-      const response = await fetch(`${this.baseUrl}/execute/${executionId}/download?format=${format}`, {
-        method: 'GET',
-      })
+      const response = await fetch(
+        `${this.baseUrl}/execute/${executionId}/download?format=${format}`,
+        {
+          method: 'GET',
+        }
+      )
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -293,7 +312,10 @@ class CodeApiService {
   }
 
   // Get execution history
-  async getExecutionHistory(limit: number = 10, offset: number = 0): Promise<{
+  async getExecutionHistory(
+    limit: number = 10,
+    offset: number = 0
+  ): Promise<{
     executions: Array<{
       id: string
       language: CodeLanguage
@@ -365,7 +387,7 @@ export const createExecutionRequest = (
   code,
   input,
   version,
-  compilerOptions
+  compilerOptions,
 })
 
 export const formatExecutionTime = (ms: number): string => {
@@ -380,7 +402,9 @@ export const formatMemoryUsage = (kb: number): string => {
   return `${(kb / (1024 * 1024)).toFixed(2)}GB`
 }
 
-export const validateExecutionRequest = (request: CodeExecutionRequest): {
+export const validateExecutionRequest = (
+  request: CodeExecutionRequest
+): {
   isValid: boolean
   errors: string[]
 } => {
@@ -404,6 +428,6 @@ export const validateExecutionRequest = (request: CodeExecutionRequest): {
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   }
 }

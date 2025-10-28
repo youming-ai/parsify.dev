@@ -6,14 +6,14 @@
  * with existing services in the application.
  */
 
-import { CloudflareService } from './cloudflare-service'
 import {
-  KVConfig,
   getKVConfig,
-  KVCacheEntry,
-  KVOptions,
-  KVHealthMonitor
+  type KVCacheEntry,
+  type KVConfig,
+  type KVHealthMonitor,
+  type KVOptions,
 } from '../../config/cloudflare/kv-config'
+import type { CloudflareService } from './cloudflare-service'
 
 export interface CacheNamespace {
   name: string
@@ -167,23 +167,12 @@ export interface CacheIterator<T = any> {
 export class KVCacheService {
   private cloudflare: CloudflareService
   private namespaces: Map<string, CacheNamespace> = new Map()
-  private invalidationRules: Map<string, CacheInvalidationRule> = new Map()
   private metrics: Map<string, CacheMetrics> = new Map()
   private warmingConfigs: Map<string, CacheWarmingConfig> = new Map()
   private eventListeners: Map<string, Array<(event: CacheEvent) => void>> = new Map()
   private healthMonitor: KVHealthMonitor | null = null
   private warmingTimers: Map<string, ReturnType<typeof setInterval>> = new Map()
   private isShuttingDown = false
-
-  // Performance optimization
-  private batchOperations: Map<string, Array<{
-    type: 'get' | 'set' | 'delete'
-    key: string
-    value?: any
-    options?: CacheOptions
-    resolve: (value: any) => void
-    reject: (error: Error) => void
-  }>> = new Map()
 
   private batchTimers: Map<string, ReturnType<typeof setTimeout>> = new Map()
 
@@ -216,7 +205,7 @@ export class KVCacheService {
   }
 
   private initializeMetrics(): void {
-    this.namespaces.forEach((namespace, name) => {
+    this.namespaces.forEach((_namespace, name) => {
       this.metrics.set(name, {
         namespace: name,
         operations: {
@@ -253,11 +242,14 @@ export class KVCacheService {
 
   private startEventListeners(): void {
     // Clean up expired entries periodically
-    setInterval(() => {
-      if (!this.isShuttingDown) {
-        this.cleanupExpiredEntries()
-      }
-    }, 5 * 60 * 1000) // Every 5 minutes
+    setInterval(
+      () => {
+        if (!this.isShuttingDown) {
+          this.cleanupExpiredEntries()
+        }
+      },
+      5 * 60 * 1000
+    ) // Every 5 minutes
 
     // Update metrics periodically
     setInterval(() => {
@@ -293,7 +285,7 @@ export class KVCacheService {
         timestamp: startTime,
         duration: Date.now() - startTime,
         success: true,
-        metadata: { hit: result !== null }
+        metadata: { hit: result !== null },
       })
 
       return result
@@ -307,7 +299,7 @@ export class KVCacheService {
         timestamp: startTime,
         duration: Date.now() - startTime,
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
 
       return null
@@ -369,11 +361,7 @@ export class KVCacheService {
     return kvEntry.data
   }
 
-  async set<T = any>(
-    key: string,
-    data: T,
-    options: CacheOptions = {}
-  ): Promise<void> {
+  async set<T = any>(key: string, data: T, options: CacheOptions = {}): Promise<void> {
     const namespace = options.namespace || 'cache'
     const startTime = Date.now()
 
@@ -383,7 +371,7 @@ export class KVCacheService {
       const entry: CacheEntry<T> = {
         data,
         timestamp: Date.now(),
-        ttl: options.ttl || this.namespaces.get(namespace)!.defaultTTL,
+        ttl: options.ttl || this.namespaces.get(namespace)?.defaultTTL,
         namespace,
         accessCount: 0,
         lastAccessed: Date.now(),
@@ -399,7 +387,7 @@ export class KVCacheService {
 
       // Store in KV
       await this.cloudflare.cacheSet(namespace as any, key, serialized, {
-        ttl: entry.ttl
+        ttl: entry.ttl,
       })
 
       // Update local cache
@@ -414,7 +402,7 @@ export class KVCacheService {
       this.recordOperation(namespace, 'set', Date.now() - startTime, true)
       this.updateMetrics(namespace, {
         entryAdd: true,
-        sizeAdd: entry.size
+        sizeAdd: entry.size,
       })
 
       // Emit event
@@ -428,10 +416,9 @@ export class KVCacheService {
         metadata: {
           size: entry.size,
           tags: entry.tags,
-          ttl: entry.ttl
-        }
+          ttl: entry.ttl,
+        },
       })
-
     } catch (error) {
       this.recordError(namespace, 'write', error)
 
@@ -442,7 +429,7 @@ export class KVCacheService {
         timestamp: startTime,
         duration: Date.now() - startTime,
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
 
       throw error
@@ -459,7 +446,7 @@ export class KVCacheService {
       // Get the entry before deletion for metrics and callbacks
       const entry = await this.get<CacheEntry>(key, {
         namespace,
-        enableMetrics: false
+        enableMetrics: false,
       })
 
       // Delete from KV
@@ -489,7 +476,7 @@ export class KVCacheService {
       if (success && entry) {
         this.updateMetrics(namespace, {
           entryRemove: true,
-          sizeRemove: entry.size
+          sizeRemove: entry.size,
         })
       }
 
@@ -501,7 +488,7 @@ export class KVCacheService {
         timestamp: startTime,
         duration: Date.now() - startTime,
         success,
-        metadata: { hadEntry: !!entry }
+        metadata: { hadEntry: !!entry },
       })
 
       return success
@@ -515,7 +502,7 @@ export class KVCacheService {
         timestamp: startTime,
         duration: Date.now() - startTime,
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
 
       return false
@@ -548,7 +535,7 @@ export class KVCacheService {
         timestamp: startTime,
         duration: Date.now() - startTime,
         success: true,
-        metadata: { deletedCount }
+        metadata: { deletedCount },
       })
 
       return deletedCount
@@ -562,7 +549,7 @@ export class KVCacheService {
         timestamp: startTime,
         duration: Date.now() - startTime,
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
 
       throw error
@@ -579,7 +566,7 @@ export class KVCacheService {
 
     // Delete from local cache
     for (const key of namespaceKeys) {
-      (window as any).__localCache?.delete(key)
+      ;(window as any).__localCache?.delete(key)
       deletedCount++
     }
 
@@ -617,7 +604,10 @@ export class KVCacheService {
     if (kvKeys.length > 0) {
       const promises = kvKeys.map(async key => {
         try {
-          const value = await this.get<T>(key, { ...options, enableMetrics: false })
+          const value = await this.get<T>(key, {
+            ...options,
+            enableMetrics: false,
+          })
           results[key] = value
         } catch (error) {
           console.error(`Failed to get key ${key}:`, error)
@@ -726,8 +716,8 @@ export class KVCacheService {
         success: true,
         metadata: {
           invalidatedCount,
-          criteria: options
-        }
+          criteria: options,
+        },
       })
 
       return invalidatedCount
@@ -739,7 +729,7 @@ export class KVCacheService {
         duration: Date.now() - startTime,
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-        metadata: options
+        metadata: options,
       })
 
       throw error
@@ -765,7 +755,7 @@ export class KVCacheService {
           // Check if already exists and is fresh
           const existing = await this.get(entry.key, {
             namespace: entry.namespace,
-            enableMetrics: false
+            enableMetrics: false,
           })
 
           if (!existing) {
@@ -774,7 +764,7 @@ export class KVCacheService {
               namespace: entry.namespace,
               ttl: entry.ttl,
               tags: entry.tags,
-              enableMetrics: false
+              enableMetrics: false,
             })
             success++
           }
@@ -799,7 +789,7 @@ export class KVCacheService {
         timestamp: startTime,
         duration,
         success: true,
-        metadata: { success, failed, totalEntries: config.entries.length }
+        metadata: { success, failed, totalEntries: config.entries.length },
       })
 
       return { success, failed, duration }
@@ -812,7 +802,7 @@ export class KVCacheService {
         timestamp: startTime,
         duration,
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
 
       throw error
@@ -829,11 +819,14 @@ export class KVCacheService {
     }
 
     // Start new timer
-    const timer = setInterval(() => {
-      if (!this.isShuttingDown) {
-        this.warmup(config).catch(console.error)
-      }
-    }, config.interval * 60 * 1000)
+    const timer = setInterval(
+      () => {
+        if (!this.isShuttingDown) {
+          this.warmup(config).catch(console.error)
+        }
+      },
+      config.interval * 60 * 1000
+    )
 
     this.warmingTimers.set(namespace, timer)
   }
@@ -857,14 +850,16 @@ export class KVCacheService {
       if (options.staleWhileRevalidate) {
         const entry = await this.get<CacheEntry<T>>(key, {
           namespace,
-          enableMetrics: false
+          enableMetrics: false,
         })
 
         if (entry && this.shouldRefresh(entry, options.refreshThreshold)) {
           // Refresh in background without waiting
-          fetchFn().then(data => {
-            this.set(key, data, options).catch(console.error)
-          }).catch(console.error)
+          fetchFn()
+            .then(data => {
+              this.set(key, data, options).catch(console.error)
+            })
+            .catch(console.error)
         }
       }
 
@@ -903,7 +898,7 @@ export class KVCacheService {
       if (options.staleWhileRevalidate) {
         cached = await this.get<T>(key, {
           ...options,
-          ttl: 0 // Ignore TTL
+          ttl: 0, // Ignore TTL
         })
 
         if (cached !== null) {
@@ -925,7 +920,7 @@ export class KVCacheService {
       tryFallbackOnCacheHit?: boolean
     } = {}
   ): Promise<T> {
-    const namespace = options.namespace || 'cache'
+    const _namespace = options.namespace || 'cache'
 
     // Try cache first
     const cached = await this.get<T>(key, options)
@@ -946,7 +941,7 @@ export class KVCacheService {
         // Cache with shorter TTL for fallback data
         await this.set(key, data, {
           ...options,
-          ttl: options.fallbackTTL || 300 // 5 minutes default
+          ttl: options.fallbackTTL || 300, // 5 minutes default
         })
         return data
       } catch (fallbackError) {
@@ -980,7 +975,7 @@ export class KVCacheService {
       namespaceMetrics,
       invalidationStats,
       warmingStats,
-      healthStatus
+      healthStatus,
     }
   }
 
@@ -1001,7 +996,7 @@ export class KVCacheService {
       lastAccessed: number
     }> = []
 
-    for (const [nsName, nsMetrics] of this.metrics) {
+    for (const [nsName, _nsMetrics] of this.metrics) {
       // This would require maintaining access statistics per key
       // For now, return mock data
       allKeys.push({
@@ -1010,13 +1005,11 @@ export class KVCacheService {
         accessCount: 100,
         hitRate: 0.95,
         size: 1024,
-        lastAccessed: Date.now()
+        lastAccessed: Date.now(),
       })
     }
 
-    return allKeys
-      .sort((a, b) => b.accessCount - a.accessCount)
-      .slice(0, limit)
+    return allKeys.sort((a, b) => b.accessCount - a.accessCount).slice(0, limit)
   }
 
   private getInvalidationStats() {
@@ -1024,7 +1017,7 @@ export class KVCacheService {
       totalInvalidations: 0,
       byType: {} as Record<string, number>,
       byNamespace: {} as Record<string, number>,
-      avgInvalidationTime: 0
+      avgInvalidationTime: 0,
     }
   }
 
@@ -1034,7 +1027,7 @@ export class KVCacheService {
       successfulWarmings: 0,
       failedWarmings: 0,
       avgWarmingTime: 0,
-      lastWarming: 0
+      lastWarming: 0,
     }
   }
 
@@ -1042,7 +1035,7 @@ export class KVCacheService {
     const health: CacheAnalytics['healthStatus'] = {
       overall: 'healthy',
       namespaces: {} as Record<string, 'healthy' | 'degraded' | 'unhealthy'>,
-      issues: []
+      issues: [],
     }
 
     for (const nsName of this.namespaces.keys()) {
@@ -1058,7 +1051,7 @@ export class KVCacheService {
     details: Record<string, any>
     timestamp: number
   }> {
-    const startTime = Date.now()
+    const _startTime = Date.now()
     const details: Record<string, any> = {}
 
     try {
@@ -1082,7 +1075,7 @@ export class KVCacheService {
         } else {
           details[nsName] = {
             status: 'unhealthy',
-            error: result.reason
+            error: result.reason,
           }
           overallStatus = 'unhealthy'
         }
@@ -1091,13 +1084,15 @@ export class KVCacheService {
       return {
         status: overallStatus,
         details,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
     } catch (error) {
       return {
         status: 'unhealthy',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        timestamp: Date.now()
+        details: {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+        timestamp: Date.now(),
       }
     }
   }
@@ -1121,13 +1116,13 @@ export class KVCacheService {
 
       return {
         status: success && responseTime < 1000 ? 'healthy' : 'degraded',
-        responseTime
+        responseTime,
       }
     } catch (error) {
       return {
         status: 'unhealthy',
         responseTime: Date.now() - startTime,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   }
@@ -1137,7 +1132,7 @@ export class KVCacheService {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, [])
     }
-    this.eventListeners.get(event)!.push(listener)
+    this.eventListeners.get(event)?.push(listener)
   }
 
   off(event: string, listener: (event: CacheEvent) => void): void {
@@ -1207,17 +1202,17 @@ export class KVCacheService {
 
   private setLocalCacheEntry<T>(key: string, entry: CacheEntry<T>): void {
     if (!(window as any).__localCache) {
-      (window as any).__localCache = new Map()
+      ;(window as any).__localCache = new Map()
     }
-    (window as any).__localCache.set(key, entry)
+    ;(window as any).__localCache.set(key, entry)
   }
 
   private deleteLocalCacheEntry(key: string): void {
-    (window as any).__localCache?.delete(key)
+    ;(window as any).__localCache?.delete(key)
   }
 
   private clearLocalCache(): void {
-    (window as any).__localCache?.clear()
+    ;(window as any).__localCache?.clear()
   }
 
   private isExpired(entry: CacheEntry): boolean {
@@ -1237,8 +1232,8 @@ export class KVCacheService {
 
   private async triggerBackgroundRefresh<T>(
     key: string,
-    entry: CacheEntry<T>,
-    options: CacheOptions
+    _entry: CacheEntry<T>,
+    _options: CacheOptions
   ): Promise<void> {
     // This would need to be implemented with actual refresh logic
     // For now, it's a placeholder
@@ -1253,49 +1248,49 @@ export class KVCacheService {
     return JSON.stringify(entry)
   }
 
-  private deserializeEntry<T>(serialized: string): CacheEntry<T> | null {
-    try {
-      return JSON.parse(serialized)
-    } catch {
-      return null
-    }
-  }
-
-  private async updateAccessStats(namespace: string, key: string, entry: CacheEntry): Promise<void> {
+  private async updateAccessStats(
+    namespace: string,
+    key: string,
+    entry: CacheEntry
+  ): Promise<void> {
     try {
       await this.cloudflare.cacheSet(namespace as any, key, entry, {
-        ttl: entry.ttl
+        ttl: entry.ttl,
       })
-    } catch (error) {
+    } catch (_error) {
       // Ignore errors in background update
     }
   }
 
-  private async updateTagIndices(namespace: string, key: string, tags: string[]): Promise<void> {
+  private async updateTagIndices(_namespace: string, _key: string, _tags: string[]): Promise<void> {
     // Implementation for maintaining tag indices
     // This would involve storing mappings from tags to keys
   }
 
-  private async removeFromTagIndices(namespace: string, key: string, tags: string[]): Promise<void> {
+  private async removeFromTagIndices(
+    _namespace: string,
+    _key: string,
+    _tags: string[]
+  ): Promise<void> {
     // Implementation for removing keys from tag indices
   }
 
-  private async getKeysByTag(tag: string, namespace?: string): Promise<string[]> {
+  private async getKeysByTag(_tag: string, _namespace?: string): Promise<string[]> {
     // Implementation for retrieving keys by tag
     return []
   }
 
-  private async getKeysByPattern(pattern: string, namespace?: string): Promise<string[]> {
+  private async getKeysByPattern(_pattern: string, _namespace?: string): Promise<string[]> {
     // Implementation for retrieving keys by pattern
     return []
   }
 
-  private async getKeysByDependency(dependency: string, namespace?: string): Promise<string[]> {
+  private async getKeysByDependency(_dependency: string, _namespace?: string): Promise<string[]> {
     // Implementation for retrieving keys by dependency
     return []
   }
 
-  private async getKeysOlderThan(cutoffTime: number, namespace?: string): Promise<string[]> {
+  private async getKeysOlderThan(_cutoffTime: number, _namespace?: string): Promise<string[]> {
     // Implementation for retrieving keys older than specified time
     return []
   }
@@ -1314,7 +1309,7 @@ export class KVCacheService {
       if (existing === null) {
         await this.set(lockKey, lockValue, {
           namespace,
-          ttl: lockTTL
+          ttl: lockTTL,
         })
         return true
       }
@@ -1369,7 +1364,7 @@ export class KVCacheService {
 
     // Update performance metrics
     const perf = metrics.performance
-    const totalOps = ops.gets + ops.sets + ops.deletes
+    const _totalOps = ops.gets + ops.sets + ops.deletes
 
     switch (operation) {
       case 'get':
@@ -1386,7 +1381,7 @@ export class KVCacheService {
     metrics.lastUpdated = Date.now()
   }
 
-  private recordError(namespace: string, type: string, error: any): void {
+  private recordError(namespace: string, type: string, _error: any): void {
     const metrics = this.metrics.get(namespace)
     if (!metrics) return
 
@@ -1410,14 +1405,17 @@ export class KVCacheService {
     metrics.lastUpdated = Date.now()
   }
 
-  private updateMetrics(namespace: string, updates: {
-    hit?: boolean
-    miss?: boolean
-    entryAdd?: boolean
-    entryRemove?: boolean
-    sizeAdd?: number
-    sizeRemove?: number
-  }): void {
+  private updateMetrics(
+    namespace: string,
+    updates: {
+      hit?: boolean
+      miss?: boolean
+      entryAdd?: boolean
+      entryRemove?: boolean
+      sizeAdd?: number
+      sizeRemove?: number
+    }
+  ): void {
     const metrics = this.metrics.get(namespace)
     if (!metrics) return
 
@@ -1450,24 +1448,39 @@ export class KVCacheService {
     return {
       namespace,
       operations: {
-        gets: 0, sets: 0, deletes: 0, clears: 0, hits: 0, misses: 0
+        gets: 0,
+        sets: 0,
+        deletes: 0,
+        clears: 0,
+        hits: 0,
+        misses: 0,
       },
       performance: {
-        avgGetTime: 0, avgSetTime: 0, avgDeleteTime: 0, totalSize: 0, entryCount: 0
+        avgGetTime: 0,
+        avgSetTime: 0,
+        avgDeleteTime: 0,
+        totalSize: 0,
+        entryCount: 0,
       },
       effectiveness: {
-        hitRate: 0, missRate: 0, evictionRate: 0, compressionRatio: 0
+        hitRate: 0,
+        missRate: 0,
+        evictionRate: 0,
+        compressionRatio: 0,
       },
       errors: {
-        readErrors: 0, writeErrors: 0, networkErrors: 0, serializationErrors: 0
+        readErrors: 0,
+        writeErrors: 0,
+        networkErrors: 0,
+        serializationErrors: 0,
       },
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     }
   }
 
   private updateMetrics(): void {
     // Update global metrics calculations
-    for (const [namespace, metrics] of this.metrics) {
+    for (const [_namespace, metrics] of this.metrics) {
       const ops = metrics.operations
       const totalRequests = ops.hits + ops.misses
 
@@ -1500,5 +1513,5 @@ export type {
   CacheEvent,
   CacheOptions,
   MultiGetResult,
-  CacheIterator
+  CacheIterator,
 }

@@ -1,16 +1,16 @@
-import React, { useState } from 'react'
-import { createRoot } from 'react-dom/client'
 import { QueryClientProvider } from '@tanstack/react-query'
+import type React from 'react'
+import { useState } from 'react'
+import { createRoot } from 'react-dom/client'
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary'
 import { FileSelector } from './components/FileSelector/FileSelector'
 import { JsonViewer } from './components/JsonViewer/JsonViewer'
+import { LoadingSpinner } from './components/Loading/LoadingSpinner'
 import { useFileReader } from './hooks/useFileReader'
 import { useJsonParser } from './hooks/useJsonParser'
-import { LoadingSpinner } from './components/Loading/LoadingSpinner'
 import { logError } from './lib/errorHandler'
 import { queryClient } from './lib/queryClient'
-import type { JsonFile, JsonDocument } from './lib/types'
-import { LoadingStates } from './lib/types'
+import type { JsonDocument, JsonFile } from './lib/types'
 import './styles/globals.css'
 import './styles/App.css'
 
@@ -20,31 +20,31 @@ const App: React.FC = () => {
   const [errors, setErrors] = useState<string[]>([])
 
   const fileReader = useFileReader({
-    onSuccess: (file) => {
+    onSuccess: file => {
       setSelectedFile(file)
       setErrors([])
       // Auto-parse JSON when file is selected
       parseJsonContent(file.content)
     },
-    onError: (error) => {
+    onError: error => {
       setErrors([error.message])
       setSelectedFile(null)
       setJsonDocuments([])
-    }
+    },
   })
 
   const jsonParser = useJsonParser({
-    onSuccess: (documents) => {
+    onSuccess: documents => {
       setJsonDocuments(documents)
       const validDocuments = documents.filter(doc => doc.isValid)
       if (validDocuments.length === 0) {
         setErrors(['No valid JSON found in the file'])
       }
     },
-    onError: (error) => {
+    onError: error => {
       setErrors([error.message])
       setJsonDocuments([])
-    }
+    },
   })
 
   const parseJsonContent = async (content: string) => {
@@ -71,7 +71,7 @@ const App: React.FC = () => {
     jsonParser.reset()
   }
 
-  const getPrimaryJsonDocument = (): JsonDocument | null => {
+  const _getPrimaryJsonDocument = (): JsonDocument | null => {
     return jsonDocuments.find(doc => doc.isValid) || null
   }
 
@@ -90,17 +90,7 @@ const App: React.FC = () => {
           </header>
 
           <main className="app-main">
-            {!selectedFile ? (
-              <section className="upload-section">
-                <div className="upload-container">
-                  <FileSelector
-                    onFileSelect={handleFileSelect}
-                    onError={(error) => setErrors([error.message])}
-                    className="main-file-selector"
-                  />
-                </div>
-              </section>
-            ) : (
+            {selectedFile ? (
               <section className="viewer-section">
                 <div className="viewer-header">
                   <div className="file-info">
@@ -108,11 +98,7 @@ const App: React.FC = () => {
                     <p>Size: {Math.round(selectedFile.size / 1024)}KB</p>
                   </div>
                   <div className="viewer-actions">
-                    <button
-                      type="button"
-                      onClick={handleClearFile}
-                      className="clear-button"
-                    >
+                    <button type="button" onClick={handleClearFile} className="clear-button">
                       Clear File
                     </button>
                   </div>
@@ -137,7 +123,7 @@ const App: React.FC = () => {
                     {jsonDocuments.length > 1 && (
                       <p>Found {jsonDocuments.length} JSON document(s)</p>
                     )}
-                    {jsonDocuments.map((doc, index) => (
+                    {jsonDocuments.map((doc, _index) => (
                       <div key={doc.id} className="json-document">
                         {doc.lineNumber && (
                           <p className="json-location">
@@ -164,6 +150,16 @@ const App: React.FC = () => {
                   </div>
                 )}
               </section>
+            ) : (
+              <section className="upload-section">
+                <div className="upload-container">
+                  <FileSelector
+                    onFileSelect={handleFileSelect}
+                    onError={error => setErrors([error.message])}
+                    className="main-file-selector"
+                  />
+                </div>
+              </section>
             )}
 
             {fileReader.isReading && (
@@ -177,7 +173,6 @@ const App: React.FC = () => {
             <p>Built with TanStack Ecosystem</p>
           </footer>
         </div>
-
       </ErrorBoundary>
     </QueryClientProvider>
   )

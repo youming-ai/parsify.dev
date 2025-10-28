@@ -29,12 +29,7 @@ export interface UploadedFile {
   metadata?: Record<string, any>
 }
 
-export type FileUploadStatus =
-  | 'pending'
-  | 'uploading'
-  | 'success'
-  | 'error'
-  | 'cancelled'
+export type FileUploadStatus = 'pending' | 'uploading' | 'success' | 'error' | 'cancelled'
 
 export interface FileUploadProgress {
   loaded: number
@@ -99,7 +94,9 @@ export interface FileUploadEvents {
 export interface FileUploadConfig extends FileUploadOptions, FileUploadEvents {}
 
 // Default configuration
-export const DEFAULT_FILE_UPLOAD_CONFIG: Required<Omit<FileUploadConfig, 'validator' | keyof FileUploadEvents>> = {
+export const DEFAULT_FILE_UPLOAD_CONFIG: Required<
+  Omit<FileUploadConfig, 'validator' | keyof FileUploadEvents>
+> = {
   maxSize: 10 * 1024 * 1024, // 10MB
   accept: [],
   multiple: false,
@@ -113,8 +110,15 @@ export const COMMON_MIME_TYPES = {
   JSON: ['application/json', 'text/json'],
   TEXT: ['text/plain', 'text/csv', 'text/markdown', 'text/html'],
   IMAGE: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-  DOCUMENT: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-  SPREADSHEET: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+  DOCUMENT: [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ],
+  SPREADSHEET: [
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ],
   ARCHIVE: ['application/zip', 'application/x-rar-compressed', 'application/x-7z-compressed'],
 } as const
 

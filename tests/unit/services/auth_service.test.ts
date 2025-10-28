@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { AuthService } from '@/api/src/services/auth_service'
 import {
-  createTestDatabase,
-  createMockUser,
-  createMockAuthIdentity,
-  createMockAuditLog,
-  setupTestEnvironment,
   cleanupTestEnvironment,
+  createMockAuditLog,
+  createMockAuthIdentity,
+  createMockUser,
+  createTestDatabase,
   type MockD1Database,
+  setupTestEnvironment,
 } from '../models/database.mock'
 
 // Mock fetch for OAuth calls
@@ -86,7 +86,8 @@ vi.mock('@/api/src/models/auth_identity', () => ({
   },
   AUTH_IDENTITY_QUERIES: {
     INSERT: 'INSERT INTO auth_identities...',
-    SELECT_BY_PROVIDER_AND_UID: 'SELECT * FROM auth_identities WHERE provider = ? AND provider_uid = ?',
+    SELECT_BY_PROVIDER_AND_UID:
+      'SELECT * FROM auth_identities WHERE provider = ? AND provider_uid = ?',
     UPDATE: 'UPDATE auth_identities SET...',
   },
 }))
@@ -377,7 +378,9 @@ describe('AuthService', () => {
         const sessionId = 'nonexistent-session'
         mockCacheService.get.mockResolvedValue(null)
 
-        const result = await authService.updateSession(sessionId, { userAgent: 'updated' })
+        const result = await authService.updateSession(sessionId, {
+          userAgent: 'updated',
+        })
 
         expect(result).toBe(false)
       })
@@ -405,8 +408,8 @@ describe('AuthService', () => {
         const tier = 'pro'
 
         // Mock the sign method
-        const originalSign = authService['sign']
-        authService['sign'] = vi.fn().mockReturnValue('mock-signature')
+        const originalSign = authService.sign
+        authService.sign = vi.fn().mockReturnValue('mock-signature')
 
         const token = authService.generateToken(sessionId, userId, tier)
 
@@ -414,7 +417,7 @@ describe('AuthService', () => {
         expect(typeof token).toBe('string')
         expect(token.split('.')).toHaveLength(3) // header.payload.signature
 
-        authService['sign'] = originalSign
+        authService.sign = originalSign
       })
     })
 
@@ -434,14 +437,16 @@ describe('AuthService', () => {
 
         // Create a valid token structure
         const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }))
-        const payload = btoa(JSON.stringify({
-          sessionId,
-          userId,
-          ipAddress,
-          tier: 'pro',
-          exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
-          iat: Math.floor(Date.now() / 1000),
-        }))
+        const payload = btoa(
+          JSON.stringify({
+            sessionId,
+            userId,
+            ipAddress,
+            tier: 'pro',
+            exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
+            iat: Math.floor(Date.now() / 1000),
+          })
+        )
         const signature = 'mock-signature'
         const token = `${header}.${payload}.${signature}`
 
@@ -449,8 +454,8 @@ describe('AuthService', () => {
         mockCacheService.set.mockResolvedValue(undefined)
 
         // Mock the sign method to return the same signature
-        const originalSign = authService['sign']
-        authService['sign'] = vi.fn().mockReturnValue(signature)
+        const originalSign = authService.sign
+        authService.sign = vi.fn().mockReturnValue(signature)
 
         const result = await authService.verifyToken(token, ipAddress)
 
@@ -458,7 +463,7 @@ describe('AuthService', () => {
         expect(result?.sessionId).toBe(sessionId)
         expect(result?.userId).toBe(userId)
 
-        authService['sign'] = originalSign
+        authService.sign = originalSign
       })
 
       it('should return null for invalid token format', async () => {
@@ -475,22 +480,24 @@ describe('AuthService', () => {
 
         // Create an expired token
         const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }))
-        const payload = btoa(JSON.stringify({
-          sessionId,
-          exp: Math.floor(Date.now() / 1000) - 3600, // 1 hour ago
-          iat: Math.floor(Date.now() / 1000) - 7200, // 2 hours ago
-        }))
+        const payload = btoa(
+          JSON.stringify({
+            sessionId,
+            exp: Math.floor(Date.now() / 1000) - 3600, // 1 hour ago
+            iat: Math.floor(Date.now() / 1000) - 7200, // 2 hours ago
+          })
+        )
         const signature = 'mock-signature'
         const token = `${header}.${payload}.${signature}`
 
-        const originalSign = authService['sign']
-        authService['sign'] = vi.fn().mockReturnValue(signature)
+        const originalSign = authService.sign
+        authService.sign = vi.fn().mockReturnValue(signature)
 
         const result = await authService.verifyToken(token, ipAddress)
 
         expect(result).toBeNull()
 
-        authService['sign'] = originalSign
+        authService.sign = originalSign
       })
     })
   })
@@ -530,7 +537,7 @@ describe('AuthService', () => {
         const mockUser = createMockUser({ email: 'test@gmail.com' })
         User.create.mockReturnValue(mockUser)
 
-        mockDbClient.enhancedTransaction.mockImplementation(async (callback) => {
+        mockDbClient.enhancedTransaction.mockImplementation(async callback => {
           await callback(mockDbClient)
           return mockUser
         })
@@ -611,7 +618,7 @@ describe('AuthService', () => {
         const mockUser = createMockUser({ email: 'test@example.com' })
         User.create.mockReturnValue(mockUser)
 
-        mockDbClient.enhancedTransaction.mockImplementation(async (callback) => {
+        mockDbClient.enhancedTransaction.mockImplementation(async callback => {
           await callback(mockDbClient)
           return mockUser
         })
@@ -687,7 +694,10 @@ describe('AuthService', () => {
     describe('invalidateUserCache', () => {
       it('should invalidate user cache entries', async () => {
         const userId = 'user-123'
-        const mockUser = createMockUser({ id: userId, email: 'test@example.com' })
+        const mockUser = createMockUser({
+          id: userId,
+          email: 'test@example.com',
+        })
 
         mockDbClient.queryFirst.mockResolvedValue(mockUser)
         const { User } = require('@/api/src/models/user')
@@ -711,7 +721,10 @@ describe('AuthService', () => {
     describe('warmupUserCache', () => {
       it('should warmup user cache', async () => {
         const userId = 'user-123'
-        const mockUser = createMockUser({ id: userId, email: 'test@example.com' })
+        const mockUser = createMockUser({
+          id: userId,
+          email: 'test@example.com',
+        })
 
         mockDbClient.queryFirst.mockResolvedValue(mockUser)
         const { User } = require('@/api/src/models/user')
@@ -726,11 +739,15 @@ describe('AuthService', () => {
           ttl: 3600,
           tags: ['user', `user_tier:${mockUser.subscription_tier}`],
         })
-        expect(mockCacheService.set).toHaveBeenCalledWith(`user_by_email:${mockUser.email}`, mockUser, {
-          namespace: 'cache',
-          ttl: 3600,
-          tags: ['user', 'email_lookup'],
-        })
+        expect(mockCacheService.set).toHaveBeenCalledWith(
+          `user_by_email:${mockUser.email}`,
+          mockUser,
+          {
+            namespace: 'cache',
+            ttl: 3600,
+            tags: ['user', 'email_lookup'],
+          }
+        )
       })
     })
 
@@ -927,7 +944,7 @@ describe('AuthService', () => {
       })
       AuthIdentity.create.mockReturnValue(mockAuthIdentity)
 
-      mockDbClient.enhancedTransaction.mockImplementation(async (callback) => {
+      mockDbClient.enhancedTransaction.mockImplementation(async callback => {
         await callback(mockDbClient)
         return mockAuthIdentity
       })

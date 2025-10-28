@@ -3,13 +3,11 @@
  * Tests system behavior under concurrent tool usage scenarios
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { runLoadTest } from '../../performance/utils/performance-utils'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { TestDataGenerator } from '../../performance/utils/endpoint-configs'
-import { CONCURRENT_USER_SCENARIOS } from '../config/load-test-config'
-import { SystemResourceMonitor } from '../utils/resource-monitor'
+import type { LoadTestReport } from '../config/load-test-config'
 import { LoadTestReporter } from '../utils/load-test-reporter'
-import { LoadTestReport } from '../config/load-test-config'
+import { SystemResourceMonitor } from '../utils/resource-monitor'
 
 describe('Simultaneous Tool Execution Load Tests', () => {
   const resourceMonitor = new SystemResourceMonitor()
@@ -26,7 +24,9 @@ describe('Simultaneous Tool Execution Load Tests', () => {
       }
       console.log('✅ API server is running and healthy')
     } catch (error) {
-      console.error('❌ API server is not available. Please start the server before running load tests.')
+      console.error(
+        '❌ API server is not available. Please start the server before running load tests.'
+      )
       throw error
     }
 
@@ -63,14 +63,14 @@ describe('Simultaneous Tool Execution Load Tests', () => {
         const requestBody = {
           json: TestDataGenerator.generateJsonData(size),
           indent: Math.floor(Math.random() * 4) + 1,
-          sort_keys: Math.random() > 0.5
+          sort_keys: Math.random() > 0.5,
         }
 
         requests.push({
           url: `${baseUrl}/tools/json/format`,
           method: 'POST' as const,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
+          body: JSON.stringify(requestBody),
         })
       }
 
@@ -81,7 +81,7 @@ describe('Simultaneous Tool Execution Load Tests', () => {
         maxP95ResponseTime: 500,
         minSuccessRate: 0.95,
         minThroughput: 100,
-        maxErrorRate: 0.05
+        maxErrorRate: 0.05,
       })
 
       testReports.push(report)
@@ -119,7 +119,7 @@ describe('Simultaneous Tool Execution Load Tests', () => {
           url: `${baseUrl}/tools/json/validate`,
           method: 'POST' as const,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
+          body: JSON.stringify(requestBody),
         })
       }
 
@@ -127,14 +127,14 @@ describe('Simultaneous Tool Execution Load Tests', () => {
 
       const report = await generateToolExecutionReport('json-validate-concurrent', result, {
         maxP95ResponseTime: 300,
-        minSuccessRate: 0.90, // Allow for some invalid JSON requests
+        minSuccessRate: 0.9, // Allow for some invalid JSON requests
         minThroughput: 150,
-        maxErrorRate: 0.10
+        maxErrorRate: 0.1,
       })
 
       testReports.push(report)
 
-      expect(report.summary.successRate).toBeGreaterThan(0.90)
+      expect(report.summary.successRate).toBeGreaterThan(0.9)
       expect(report.summary.p95ResponseTime).toBeLessThan(300)
 
       console.log('✅ Concurrent JSON validation test completed successfully')
@@ -154,14 +154,14 @@ describe('Simultaneous Tool Execution Load Tests', () => {
         const targetFormat = targetFormats[i % targetFormats.length]
         const requestBody = {
           json: TestDataGenerator.generateJsonData('medium'),
-          target_format: targetFormat
+          target_format: targetFormat,
         }
 
         requests.push({
           url: `${baseUrl}/tools/json/convert`,
           method: 'POST' as const,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
+          body: JSON.stringify(requestBody),
         })
       }
 
@@ -171,7 +171,7 @@ describe('Simultaneous Tool Execution Load Tests', () => {
         maxP95ResponseTime: 1000,
         minSuccessRate: 0.95,
         minThroughput: 50,
-        maxErrorRate: 0.05
+        maxErrorRate: 0.05,
       })
 
       testReports.push(report)
@@ -199,14 +199,14 @@ describe('Simultaneous Tool Execution Load Tests', () => {
         const requestBody = {
           code: TestDataGenerator.generateCodeSamples(language),
           language: language,
-          indent_size: Math.floor(Math.random() * 4) + 2
+          indent_size: Math.floor(Math.random() * 4) + 2,
         }
 
         requests.push({
           url: `${baseUrl}/tools/code/format`,
           method: 'POST' as const,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
+          body: JSON.stringify(requestBody),
         })
       }
 
@@ -216,7 +216,7 @@ describe('Simultaneous Tool Execution Load Tests', () => {
         maxP95ResponseTime: 600,
         minSuccessRate: 0.95,
         minThroughput: 80,
-        maxErrorRate: 0.05
+        maxErrorRate: 0.05,
       })
 
       testReports.push(report)
@@ -243,20 +243,20 @@ describe('Simultaneous Tool Execution Load Tests', () => {
           'Math.random() * 100;',
           '[1,2,3].map(x => x * 2);',
           'Date.now();',
-          'Array.from({length: 5}, (_, i) => i);'
+          'Array.from({length: 5}, (_, i) => i);',
         ]
 
         const requestBody = {
           code: codeSnippets[i % codeSnippets.length],
           language: 'javascript',
-          timeout: 5000
+          timeout: 5000,
         }
 
         requests.push({
           url: `${baseUrl}/tools/code/execute`,
           method: 'POST' as const,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
+          body: JSON.stringify(requestBody),
         })
       }
 
@@ -264,14 +264,14 @@ describe('Simultaneous Tool Execution Load Tests', () => {
 
       const report = await generateToolExecutionReport('code-execute-concurrent', result, {
         maxP95ResponseTime: 2000,
-        minSuccessRate: 0.90,
+        minSuccessRate: 0.9,
         minThroughput: 20,
-        maxErrorRate: 0.10
+        maxErrorRate: 0.1,
       })
 
       testReports.push(report)
 
-      expect(report.summary.successRate).toBeGreaterThan(0.90)
+      expect(report.summary.successRate).toBeGreaterThan(0.9)
       expect(report.summary.p95ResponseTime).toBeLessThan(2000)
 
       console.log('✅ Concurrent code execution test completed successfully')
@@ -292,7 +292,7 @@ describe('Simultaneous Tool Execution Load Tests', () => {
         { url: '/tools/json/validate', weight: 0.25 },
         { url: '/tools/json/convert', weight: 0.2 },
         { url: '/tools/code/format', weight: 0.2 },
-        { url: '/tools/code/execute', weight: 0.05 }
+        { url: '/tools/code/execute', weight: 0.05 },
       ]
 
       for (let i = 0; i < totalRequests; i++) {
@@ -303,30 +303,30 @@ describe('Simultaneous Tool Execution Load Tests', () => {
           case '/tools/json/format':
             requestBody = {
               json: TestDataGenerator.generateJsonData('medium'),
-              indent: 2
+              indent: 2,
             }
             break
           case '/tools/json/validate':
             requestBody = {
-              json: TestDataGenerator.generateJsonData('small')
+              json: TestDataGenerator.generateJsonData('small'),
             }
             break
           case '/tools/json/convert':
             requestBody = {
               json: TestDataGenerator.generateJsonData('small'),
-              target_format: Math.random() > 0.5 ? 'csv' : 'xml'
+              target_format: Math.random() > 0.5 ? 'csv' : 'xml',
             }
             break
           case '/tools/code/format':
             requestBody = {
               code: TestDataGenerator.generateCodeSamples('javascript'),
-              language: 'javascript'
+              language: 'javascript',
             }
             break
           case '/tools/code/execute':
             requestBody = {
               code: 'console.log("test");',
-              language: 'javascript'
+              language: 'javascript',
             }
             break
         }
@@ -335,7 +335,7 @@ describe('Simultaneous Tool Execution Load Tests', () => {
           url: `${baseUrl}${tool.url}`,
           method: 'POST' as const,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
+          body: JSON.stringify(requestBody),
         })
       }
 
@@ -345,7 +345,7 @@ describe('Simultaneous Tool Execution Load Tests', () => {
         maxP95ResponseTime: 800,
         minSuccessRate: 0.92,
         minThroughput: 150,
-        maxErrorRate: 0.08
+        maxErrorRate: 0.08,
       })
 
       testReports.push(report)
@@ -372,25 +372,27 @@ describe('Simultaneous Tool Execution Load Tests', () => {
         const batchRequests = []
 
         for (let i = 0; i < concurrentUsers; i++) {
-          const toolType = ['json-format', 'json-validate', 'code-format'][Math.floor(Math.random() * 3)]
+          const toolType = ['json-format', 'json-validate', 'code-format'][
+            Math.floor(Math.random() * 3)
+          ]
           let requestBody
 
           switch (toolType) {
             case 'json-format':
               requestBody = {
                 json: TestDataGenerator.generateJsonData('small'),
-                indent: 2
+                indent: 2,
               }
               break
             case 'json-validate':
               requestBody = {
-                json: TestDataGenerator.generateJsonData('small')
+                json: TestDataGenerator.generateJsonData('small'),
               }
               break
             case 'code-format':
               requestBody = {
                 code: TestDataGenerator.generateCodeSamples('javascript'),
-                language: 'javascript'
+                language: 'javascript',
               }
               break
           }
@@ -399,7 +401,7 @@ describe('Simultaneous Tool Execution Load Tests', () => {
             url: `${baseUrl}/tools/${toolType.replace('-', '/')}`,
             method: 'POST' as const,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify(requestBody),
           })
         }
 
@@ -408,7 +410,7 @@ describe('Simultaneous Tool Execution Load Tests', () => {
           timestamp: Date.now(),
           p95: batchResult.p95,
           successRate: batchResult.successfulRequests / batchResult.totalRequests,
-          throughput: batchResult.requestsPerSecond
+          throughput: batchResult.requestsPerSecond,
         })
 
         // Small delay between batches
@@ -435,22 +437,26 @@ describe('Simultaneous Tool Execution Load Tests', () => {
       const variance = (maxP95 - minP95) / avgP95
 
       expect(variance).toBeLessThan(0.5, 'Performance variance too high over sustained load')
-      expect(minSuccessRate).toBeGreaterThan(0.90)
+      expect(minSuccessRate).toBeGreaterThan(0.9)
 
       // Generate endurance test report
-      const enduranceReport = await generateToolExecutionReport('tools-endurance', {
-        totalRequests: results.reduce((sum, r) => sum + concurrentUsers, 0),
-        successfulRequests: results.reduce((sum, r) => sum + (r.successRate * concurrentUsers), 0),
-        failedRequests: 0,
-        averageResponseTime: avgP95,
-        p95: avgP95,
-        requestsPerSecond: avgThroughput
-      }, {
-        maxP95ResponseTime: 600,
-        minSuccessRate: 0.90,
-        minThroughput: 100,
-        maxErrorRate: 0.10
-      })
+      const enduranceReport = await generateToolExecutionReport(
+        'tools-endurance',
+        {
+          totalRequests: results.reduce((sum, _r) => sum + concurrentUsers, 0),
+          successfulRequests: results.reduce((sum, r) => sum + r.successRate * concurrentUsers, 0),
+          failedRequests: 0,
+          averageResponseTime: avgP95,
+          p95: avgP95,
+          requestsPerSecond: avgThroughput,
+        },
+        {
+          maxP95ResponseTime: 600,
+          minSuccessRate: 0.9,
+          minThroughput: 100,
+          maxErrorRate: 0.1,
+        }
+      )
 
       testReports.push(enduranceReport)
 
@@ -465,7 +471,7 @@ describe('Simultaneous Tool Execution Load Tests', () => {
         { name: 'small', size: 10240, multiplier: 2 },
         { name: 'medium', size: 102400, multiplier: 5 },
         { name: 'large', size: 1024000, multiplier: 10 },
-        { name: 'huge', size: 5120000, multiplier: 20 }
+        { name: 'huge', size: 5120000, multiplier: 20 },
       ]
 
       const sizeResults = []
@@ -481,14 +487,14 @@ describe('Simultaneous Tool Execution Load Tests', () => {
           const requestBody = {
             json: json,
             indent: 2,
-            sort_keys: false
+            sort_keys: false,
           }
 
           requests.push({
             url: `${baseUrl}/tools/json/format`,
             method: 'POST' as const,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify(requestBody),
           })
         }
 
@@ -500,22 +506,27 @@ describe('Simultaneous Tool Execution Load Tests', () => {
           p95: result.p95,
           successRate: result.successfulRequests / result.totalRequests,
           throughput: result.requestsPerSecond,
-          avgResponseTime: result.averageResponseTime
+          avgResponseTime: result.averageResponseTime,
         })
       }
 
       // Analyze how data size affects performance
       console.log('\nData Size Performance Analysis:')
       sizeResults.forEach(result => {
-        console.log(`  ${result.size}: P95=${result.p95.toFixed(2)}ms, Success=${(result.successRate * 100).toFixed(1)}%, Throughput=${result.throughput.toFixed(1)} req/s`)
+        console.log(
+          `  ${result.size}: P95=${result.p95.toFixed(2)}ms, Success=${(result.successRate * 100).toFixed(1)}%, Throughput=${result.throughput.toFixed(1)} req/s`
+        )
       })
 
       // Performance should scale reasonably with data size
-      const tinyP95 = sizeResults.find(r => r.size === 'tiny')!.p95
-      const hugeP95 = sizeResults.find(r => r.size === 'huge')!.p95
+      const tinyP95 = sizeResults.find(r => r.size === 'tiny')?.p95
+      const hugeP95 = sizeResults.find(r => r.size === 'huge')?.p95
       const performanceRatio = hugeP95 / tinyP95
 
-      expect(performanceRatio).toBeLessThan(50, 'Performance degradation too extreme for large data sizes')
+      expect(performanceRatio).toBeLessThan(
+        50,
+        'Performance degradation too extreme for large data sizes'
+      )
 
       // All sizes should maintain reasonable success rates
       sizeResults.forEach(result => {
@@ -537,7 +548,7 @@ describe('Simultaneous Tool Execution Load Tests', () => {
     for (let i = 0; i < requests.length; i += concurrency) {
       const batch = requests.slice(i, i + concurrency)
 
-      const batchPromises = batch.map(async (request) => {
+      const batchPromises = batch.map(async request => {
         const startTime = performance.now()
 
         try {
@@ -545,7 +556,7 @@ describe('Simultaneous Tool Execution Load Tests', () => {
             method: request.method,
             headers: request.headers,
             body: request.body,
-            signal: AbortSignal.timeout(30000)
+            signal: AbortSignal.timeout(30000),
           })
 
           const endTime = performance.now()
@@ -555,7 +566,7 @@ describe('Simultaneous Tool Execution Load Tests', () => {
             success: response.ok,
             statusCode: response.status,
             responseTime,
-            error: response.ok ? undefined : `HTTP ${response.status}`
+            error: response.ok ? undefined : `HTTP ${response.status}`,
           }
         } catch (error) {
           const endTime = performance.now()
@@ -565,7 +576,7 @@ describe('Simultaneous Tool Execution Load Tests', () => {
             success: false,
             statusCode: 0,
             responseTime,
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           }
         }
       })
@@ -580,25 +591,34 @@ describe('Simultaneous Tool Execution Load Tests', () => {
     // Calculate metrics
     const totalTime = Date.now() - startTime
     const successfulRequests = results.filter(r => r.success).length
-    const responseTimes = results.filter(r => r.success).map(r => r.responseTime).sort((a, b) => a - b)
+    const responseTimes = results
+      .filter(r => r.success)
+      .map(r => r.responseTime)
+      .sort((a, b) => a - b)
 
     return {
       totalRequests: results.length,
       successfulRequests,
       failedRequests: results.length - successfulRequests,
-      averageResponseTime: responseTimes.length > 0
-        ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
-        : 0,
+      averageResponseTime:
+        responseTimes.length > 0
+          ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
+          : 0,
       p50: responseTimes[Math.floor(responseTimes.length * 0.5)] || 0,
       p90: responseTimes[Math.floor(responseTimes.length * 0.9)] || 0,
       p95: responseTimes[Math.floor(responseTimes.length * 0.95)] || 0,
       p99: responseTimes[Math.floor(responseTimes.length * 0.99)] || 0,
       requestsPerSecond: results.length / (totalTime / 1000),
-      errors: results.filter(r => !r.success).reduce((acc, r) => {
-        const error = r.error || 'Unknown error'
-        acc[error] = (acc[error] || 0) + 1
-        return acc
-      }, {} as Record<string, number>)
+      errors: results
+        .filter(r => !r.success)
+        .reduce(
+          (acc, r) => {
+            const error = r.error || 'Unknown error'
+            acc[error] = (acc[error] || 0) + 1
+            return acc
+          },
+          {} as Record<string, number>
+        ),
     }
   }
 
@@ -622,7 +642,11 @@ describe('Simultaneous Tool Execution Load Tests', () => {
   /**
    * Generate tool execution report
    */
-  async function generateToolExecutionReport(scenario: string, result: any, requirements: any): Promise<LoadTestReport> {
+  async function generateToolExecutionReport(
+    scenario: string,
+    result: any,
+    requirements: any
+  ): Promise<LoadTestReport> {
     const resourceMetrics = resourceMonitor.getMetrics()
 
     return {
@@ -638,7 +662,7 @@ describe('Simultaneous Tool Execution Load Tests', () => {
         p95ResponseTime: result.p95,
         p99ResponseTime: result.p99,
         throughput: result.requestsPerSecond,
-        errorRate: result.failedRequests / result.totalRequests
+        errorRate: result.failedRequests / result.totalRequests,
       },
       endpoints: {
         'tools-endpoint': {
@@ -646,13 +670,16 @@ describe('Simultaneous Tool Execution Load Tests', () => {
           averageResponseTime: result.averageResponseTime,
           p95ResponseTime: result.p95,
           successRate: result.successfulRequests / result.totalRequests,
-          errors: Object.entries(result.errors).map(([type, count]) => ({ type, count: count as number }))
-        }
+          errors: Object.entries(result.errors).map(([type, count]) => ({
+            type,
+            count: count as number,
+          })),
+        },
       },
       userBehavior: {},
       resources: resourceMetrics,
       bottlenecks: identifyToolBottlenecks(result, requirements),
-      recommendations: generateToolRecommendations(result, requirements)
+      recommendations: generateToolRecommendations(result, requirements),
     }
   }
 
@@ -669,7 +696,10 @@ describe('Simultaneous Tool Execution Load Tests', () => {
         metric: 'p95_response_time',
         value: result.p95,
         threshold: requirements.maxP95ResponseTime,
-        severity: result.p95 > requirements.maxP95ResponseTime * 2 ? 'critical' as const : 'high' as const
+        severity:
+          result.p95 > requirements.maxP95ResponseTime * 2
+            ? ('critical' as const)
+            : ('high' as const),
       })
     }
 
@@ -681,7 +711,10 @@ describe('Simultaneous Tool Execution Load Tests', () => {
         metric: 'success_rate',
         value: successRate,
         threshold: requirements.minSuccessRate,
-        severity: successRate < requirements.minSuccessRate * 0.8 ? 'critical' as const : 'high' as const
+        severity:
+          successRate < requirements.minSuccessRate * 0.8
+            ? ('critical' as const)
+            : ('high' as const),
       })
     }
 
@@ -695,20 +728,29 @@ describe('Simultaneous Tool Execution Load Tests', () => {
     const recommendations = []
 
     if (result.p95 > requirements.maxP95ResponseTime) {
-      recommendations.push('Consider optimizing tool execution algorithms or implementing result caching')
+      recommendations.push(
+        'Consider optimizing tool execution algorithms or implementing result caching'
+      )
     }
 
     if (result.averageResponseTime > 500) {
-      recommendations.push('Consider implementing asynchronous processing for long-running tool operations')
+      recommendations.push(
+        'Consider implementing asynchronous processing for long-running tool operations'
+      )
     }
 
-    const errorCount = Object.values(result.errors).reduce((sum: number, count: any) => sum + count, 0)
+    const errorCount = Object.values(result.errors).reduce(
+      (sum: number, count: any) => sum + count,
+      0
+    )
     if (errorCount > result.totalRequests * 0.05) {
       recommendations.push('Review tool error handling and implement better input validation')
     }
 
     if (result.requestsPerSecond < requirements.minThroughput) {
-      recommendations.push('Consider scaling up compute resources or implementing tool execution pools')
+      recommendations.push(
+        'Consider scaling up compute resources or implementing tool execution pools'
+      )
     }
 
     return recommendations

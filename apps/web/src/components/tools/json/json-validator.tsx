@@ -1,22 +1,21 @@
+import { AlertCircle, CheckCircle, RefreshCw } from 'lucide-react'
 import * as React from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { JsonValidatorProps, JsonValidationResult } from './json-types'
-import { validateJson } from './json-utils'
-import { JsonErrorDisplay } from './json-error-display'
 import { cn } from '@/lib/utils'
-import { CheckCircle, AlertCircle, RefreshCw } from 'lucide-react'
+import { JsonErrorDisplay } from './json-error-display'
+import type { JsonValidationResult, JsonValidatorProps } from './json-types'
+import { validateJson } from './json-utils'
 
 export function JsonValidator({
   input,
   onValidationChange,
   showLineNumbers = true,
-  className
+  className,
 }: JsonValidatorProps) {
   const [validationResult, setValidationResult] = React.useState<JsonValidationResult>({
     isValid: false,
-    errors: []
+    errors: [],
   })
   const [isValidating, setIsValidating] = React.useState(false)
 
@@ -33,12 +32,14 @@ export function JsonValidator({
       } catch (error) {
         const errorResult: JsonValidationResult = {
           isValid: false,
-          errors: [{
-            line: 1,
-            column: 1,
-            message: error instanceof Error ? error.message : 'Unknown validation error',
-            severity: 'error'
-          }]
+          errors: [
+            {
+              line: 1,
+              column: 1,
+              message: error instanceof Error ? error.message : 'Unknown validation error',
+              severity: 'error',
+            },
+          ],
         }
         setValidationResult(errorResult)
         onValidationChange?.(errorResult)
@@ -62,12 +63,14 @@ export function JsonValidator({
     } catch (error) {
       const errorResult: JsonValidationResult = {
         isValid: false,
-        errors: [{
-          line: 1,
-          column: 1,
-          message: error instanceof Error ? error.message : 'Unknown validation error',
-          severity: 'error'
-        }]
+        errors: [
+          {
+            line: 1,
+            column: 1,
+            message: error instanceof Error ? error.message : 'Unknown validation error',
+            severity: 'error',
+          },
+        ],
       }
       setValidationResult(errorResult)
       onValidationChange?.(errorResult)
@@ -78,12 +81,12 @@ export function JsonValidator({
 
   const getStatusIcon = () => {
     if (isValidating) {
-      return <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
+      return <RefreshCw className="h-4 w-4 animate-spin text-blue-600" />
     }
     if (validationResult.isValid) {
-      return <CheckCircle className="w-4 h-4 text-green-600" />
+      return <CheckCircle className="h-4 w-4 text-green-600" />
     }
-    return <AlertCircle className="w-4 h-4 text-red-600" />
+    return <AlertCircle className="h-4 w-4 text-red-600" />
   }
 
   const getStatusColor = () => {
@@ -114,18 +117,13 @@ export function JsonValidator({
   return (
     <div className={cn('space-y-4', className)}>
       {/* Status Bar */}
-      <div className={cn(
-        'border rounded-lg p-4 transition-colors duration-200',
-        getStatusColor()
-      )}>
+      <div className={cn('rounded-lg border p-4 transition-colors duration-200', getStatusColor())}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {getStatusIcon()}
             <div>
-              <h3 className="font-medium text-gray-900">
-                {getStatusText()}
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">
+              <h3 className="font-medium text-gray-900">{getStatusText()}</h3>
+              <p className="mt-1 text-gray-600 text-sm">
                 JSON validation {isValidating ? 'in progress' : 'complete'}
               </p>
             </div>
@@ -139,15 +137,15 @@ export function JsonValidator({
               disabled={isValidating}
               className="flex items-center gap-1"
             >
-              <RefreshCw className={cn('w-3 h-3', isValidating && 'animate-spin')} />
+              <RefreshCw className={cn('h-3 w-3', isValidating && 'animate-spin')} />
               Revalidate
             </Button>
           </div>
         </div>
 
         {/* Statistics */}
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex items-center gap-4 text-sm text-gray-600">
+        <div className="mt-4 border-gray-200 border-t pt-4">
+          <div className="flex items-center gap-4 text-gray-600 text-sm">
             <span>Lines: {stats.lines}</span>
             <span>Characters: {stats.chars}</span>
             <span>Words: {stats.words}</span>
@@ -157,10 +155,7 @@ export function JsonValidator({
 
       {/* Validation Errors */}
       {!validationResult.isValid && validationResult.errors.length > 0 && (
-        <JsonErrorDisplay
-          errors={validationResult.errors}
-          content={input}
-        />
+        <JsonErrorDisplay errors={validationResult.errors} content={input} />
       )}
 
       {/* Success Message */}
@@ -175,8 +170,8 @@ export function JsonValidator({
 
       {/* Empty State */}
       {!input.trim() && (
-        <div className="text-center py-8 text-gray-500">
-          <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+        <div className="py-8 text-center text-gray-500">
+          <AlertCircle className="mx-auto mb-2 h-8 w-8 text-gray-400" />
           <p>Enter JSON content above to validate</p>
         </div>
       )}

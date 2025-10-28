@@ -1,5 +1,5 @@
-import { D1Database } from '@cloudflare/workers-types'
-import { DatabaseConnection, createDatabaseConnection } from './connection'
+import type { D1Database } from '@cloudflare/workers-types'
+import { createDatabaseConnection, type DatabaseConnection } from './connection'
 
 export interface ConnectionPoolConfig {
   // Pool sizing
@@ -138,7 +138,7 @@ export class EnhancedConnectionPool {
         activeConnections: 0,
         idleConnections: 0,
         creatingConnections: 0,
-        destroyingConnections: 0
+        destroyingConnections: 0,
       },
       performance: {
         acquisitionWaitTime: 0,
@@ -146,28 +146,28 @@ export class EnhancedConnectionPool {
         totalQueries: 0,
         successfulQueries: 0,
         failedQueries: 0,
-        connectionErrors: 0
+        connectionErrors: 0,
       },
       lifecycle: {
         connectionsCreated: 0,
         connectionsDestroyed: 0,
         validationsPerformed: 0,
         validationFailures: 0,
-        timeouts: 0
+        timeouts: 0,
       },
       scaling: {
         lastScaleUp: 0,
         lastScaleDown: 0,
         totalScaleUps: 0,
         totalScaleDowns: 0,
-        currentScale: 0
+        currentScale: 0,
       },
       health: {
         lastHealthCheck: 0,
         consecutiveHealthChecks: 0,
         healthCheckFailures: 0,
-        overallHealth: 'healthy'
-      }
+        overallHealth: 'healthy',
+      },
     }
 
     this.statistics = {
@@ -179,7 +179,7 @@ export class EnhancedConnectionPool {
       averageConnections: 0,
       minIdleTime: 0,
       maxIdleTime: 0,
-      averageIdleTime: 0
+      averageIdleTime: 0,
     }
 
     // Initialize minimum connections
@@ -221,9 +221,8 @@ export class EnhancedConnectionPool {
       const waitTime = Date.now() - startTime
       this.updateAcquisitionMetrics(waitTime, false)
       return waitedConnection
-
     } catch (error) {
-      const waitTime = Date.now() - startTime
+      const _waitTime = Date.now() - startTime
       this.poolMetrics.performance.connectionErrors++
       throw new Error(`Failed to acquire connection: ${(error as Error).message}`)
     }
@@ -285,12 +284,10 @@ export class EnhancedConnectionPool {
       this.updatePerformanceMetrics(executionTime, true)
 
       return result.data as T
-
     } catch (error) {
       const executionTime = Date.now() - startTime
       this.updatePerformanceMetrics(executionTime, false)
       throw error
-
     } finally {
       if (connection) {
         await this.release(connection)
@@ -312,7 +309,7 @@ export class EnhancedConnectionPool {
     return {
       ...this.statistics,
       uptime: Date.now() - this.statistics.createdAt,
-      averageConnections: this.calculateAverageConnections()
+      averageConnections: this.calculateAverageConnections(),
     }
   }
 
@@ -338,8 +335,7 @@ export class EnhancedConnectionPool {
           // Mark for removal
           await this.destroyConnection(connection)
         }
-
-      } catch (error) {
+      } catch (_error) {
         const metrics = this.connectionMetrics.get(connectionId)!
         metrics.isHealthy = false
         metrics.isValid = false
@@ -361,23 +357,26 @@ export class EnhancedConnectionPool {
       return
     }
 
-    const utilization = this.poolMetrics.pool.activeConnections / this.poolMetrics.pool.totalConnections
+    const utilization =
+      this.poolMetrics.pool.activeConnections / this.poolMetrics.pool.totalConnections
     const now = Date.now()
 
     // Scale up if needed
-    if (utilization > this.config.scaleUpThreshold &&
-        this.connections.size < this.config.maxConnections &&
-        now - this.lastScaleUp > this.config.scaleUpCooldown) {
-
+    if (
+      utilization > this.config.scaleUpThreshold &&
+      this.connections.size < this.config.maxConnections &&
+      now - this.lastScaleUp > this.config.scaleUpCooldown
+    ) {
       await this.scaleUp()
       return
     }
 
     // Scale down if needed
-    if (utilization < this.config.scaleDownThreshold &&
-        this.connections.size > this.config.minConnections &&
-        now - this.lastScaleDown > this.config.scaleDownCooldown) {
-
+    if (
+      utilization < this.config.scaleDownThreshold &&
+      this.connections.size > this.config.minConnections &&
+      now - this.lastScaleDown > this.config.scaleDownCooldown
+    ) {
       await this.scaleDown()
     }
   }
@@ -397,8 +396,8 @@ export class EnhancedConnectionPool {
     }
 
     // Close all connections
-    const closePromises = Array.from(this.connections.values()).map(
-      connection => this.destroyConnection(connection)
+    const closePromises = Array.from(this.connections.values()).map(connection =>
+      this.destroyConnection(connection)
     )
 
     await Promise.all(closePromises)
@@ -449,7 +448,7 @@ export class EnhancedConnectionPool {
 
       // Environment-specific optimization
       environment: 'production',
-      optimizeForCloudflareWorkers: true
+      optimizeForCloudflareWorkers: true,
     }
 
     // Apply environment-specific optimizations
@@ -478,7 +477,7 @@ export class EnhancedConnectionPool {
       connectionTimeoutMs: this.config.connectionTimeoutMs,
       retryAttempts: this.config.retryAttempts,
       retryDelayMs: this.config.retryDelayMs,
-      enableMetrics: this.config.enableDetailedMetrics
+      enableMetrics: this.config.enableDetailedMetrics,
     })
 
     this.connections.set(connectionId, connection)
@@ -492,7 +491,7 @@ export class EnhancedConnectionPool {
       isValid: true,
       isActive: false,
       isIdle: true,
-      lifetimeMs: 0
+      lifetimeMs: 0,
     })
 
     this.poolMetrics.pool.totalConnections++
@@ -593,8 +592,7 @@ export class EnhancedConnectionPool {
       }
 
       return true
-
-    } catch (error) {
+    } catch (_error) {
       this.poolMetrics.lifecycle.validationFailures++
       return false
     }
@@ -604,7 +602,7 @@ export class EnhancedConnectionPool {
     try {
       const result = await connection.execute(this.config.validationQuery)
       return result.success
-    } catch (error) {
+    } catch (_error) {
       return false
     }
   }
@@ -671,7 +669,7 @@ export class EnhancedConnectionPool {
 
     const promises = []
     for (let i = 0; i < toRemove; i++) {
-      const [connectionId, connection] = idleConnections[i]
+      const [_connectionId, connection] = idleConnections[i]
       promises.push(this.destroyConnection(connection))
     }
     await Promise.all(promises)
@@ -706,7 +704,7 @@ export class EnhancedConnectionPool {
       (this.poolMetrics.performance.averageQueryTime + executionTime) / 2
   }
 
-  private updateHealthMetrics(healthRatio: number, checkTime: number): void {
+  private updateHealthMetrics(healthRatio: number, _checkTime: number): void {
     this.lastHealthCheck = Date.now()
     this.poolMetrics.health.lastHealthCheck = this.lastHealthCheck
 
@@ -778,14 +776,12 @@ export class EnhancedConnectionPool {
     if (this.config.enableDetailedMetrics) {
       this.metricsHistory.push({
         timestamp: Date.now(),
-        metrics: { ...this.poolMetrics }
+        metrics: { ...this.poolMetrics },
       })
 
       // Keep only recent history
       const cutoff = Date.now() - this.config.metricsRetentionPeriod
-      this.metricsHistory = this.metricsHistory.filter(
-        entry => entry.timestamp > cutoff
-      )
+      this.metricsHistory = this.metricsHistory.filter(entry => entry.timestamp > cutoff)
     }
   }
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../../apps/api/src/index'
 
 describe('GET /api/v1/tools', () => {
@@ -11,9 +11,13 @@ describe('GET /api/v1/tools', () => {
   })
 
   it('should return 200 with tools list', async () => {
-    const res = await app.request('/api/v1/tools', {
-      method: 'GET',
-    }, testEnv)
+    const res = await app.request(
+      '/api/v1/tools',
+      {
+        method: 'GET',
+      },
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -27,9 +31,13 @@ describe('GET /api/v1/tools', () => {
   })
 
   it('should filter tools by category', async () => {
-    const res = await app.request('/api/v1/tools?category=json', {
-      method: 'GET',
-    }, testEnv)
+    const res = await app.request(
+      '/api/v1/tools?category=json',
+      {
+        method: 'GET',
+      },
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -43,9 +51,13 @@ describe('GET /api/v1/tools', () => {
   })
 
   it('should return only enabled tools by default', async () => {
-    const res = await app.request('/api/v1/tools?enabled_only=true', {
-      method: 'GET',
-    }, testEnv)
+    const res = await app.request(
+      '/api/v1/tools?enabled_only=true',
+      {
+        method: 'GET',
+      },
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -59,9 +71,13 @@ describe('GET /api/v1/tools', () => {
   })
 
   it('should handle invalid category gracefully', async () => {
-    const res = await app.request('/api/v1/tools?category=invalid', {
-      method: 'GET',
-    }, testEnv)
+    const res = await app.request(
+      '/api/v1/tools?category=invalid',
+      {
+        method: 'GET',
+      },
+      testEnv
+    )
 
     expect(res.status).toBe(400)
 

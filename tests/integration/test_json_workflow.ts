@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../../apps/api/src/index'
 
 describe('JSON Formatting Workflow Integration', () => {
@@ -13,62 +13,74 @@ describe('JSON Formatting Workflow Integration', () => {
   it('should complete full JSON formatting workflow', async () => {
     const sampleJson = {
       user: {
-        name: "John Doe",
+        name: 'John Doe',
         age: 30,
         preferences: {
-          theme: "dark",
-          notifications: true
-        }
+          theme: 'dark',
+          notifications: true,
+        },
       },
       metadata: {
-        created: "2023-01-01",
-        updated: "2023-12-01"
-      }
+        created: '2023-01-01',
+        updated: '2023-12-01',
+      },
     }
 
     // Step 1: Format the JSON
-    const formatRes = await app.request('/api/v1/tools/json/format', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const formatRes = await app.request(
+      '/api/v1/tools/json/format',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: JSON.stringify(sampleJson),
+          indent: 2,
+          sort_keys: true,
+        }),
       },
-      body: JSON.stringify({
-        json: JSON.stringify(sampleJson),
-        indent: 2,
-        sort_keys: true
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(formatRes.status).toBe(200)
     const formatData = await formatRes.json()
     expect(formatData.valid).toBe(true)
 
     // Step 2: Validate the formatted JSON
-    const validateRes = await app.request('/api/v1/tools/json/validate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const validateRes = await app.request(
+      '/api/v1/tools/json/validate',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: formatData.formatted,
+        }),
       },
-      body: JSON.stringify({
-        json: formatData.formatted
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(validateRes.status).toBe(200)
     const validateData = await validateRes.json()
     expect(validateData.valid).toBe(true)
 
     // Step 3: Convert to CSV (if available in MVP)
-    const convertRes = await app.request('/api/v1/tools/json/convert', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const convertRes = await app.request(
+      '/api/v1/tools/json/convert',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: formatData.formatted,
+          target_format: 'csv',
+        }),
       },
-      body: JSON.stringify({
-        json: formatData.formatted,
-        target_format: 'csv'
-      })
-    }, testEnv)
+      testEnv
+    )
 
     // Note: This might not be implemented yet in MVP
     if (convertRes.status === 200) {
@@ -80,14 +92,16 @@ describe('JSON Formatting Workflow Integration', () => {
 
   it('should handle large JSON files within MVP limits', async () => {
     // Create a JSON file close to the 10MB limit
-    const largeArray = Array(1000).fill(null).map((_, i) => ({
-      id: i,
-      data: 'x'.repeat(10000), // 10KB per item
-      nested: {
-        value: i,
-        text: 'Sample text that adds some size to the object'
-      }
-    }))
+    const largeArray = Array(1000)
+      .fill(null)
+      .map((_, i) => ({
+        id: i,
+        data: 'x'.repeat(10000), // 10KB per item
+        nested: {
+          value: i,
+          text: 'Sample text that adds some size to the object',
+        },
+      }))
 
     const largeJson = JSON.stringify(largeArray)
 
@@ -95,16 +109,20 @@ describe('JSON Formatting Workflow Integration', () => {
     expect(largeJson.length).toBeGreaterThan(9_000_000) // 9MB
     expect(largeJson.length).toBeLessThan(11_000_000) // 11MB
 
-    const res = await app.request('/api/v1/tools/json/format', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/json/format',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: largeJson,
+          indent: 2,
+        }),
       },
-      body: JSON.stringify({
-        json: largeJson,
-        indent: 2
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
     const data = await res.json()
@@ -113,23 +131,29 @@ describe('JSON Formatting Workflow Integration', () => {
 
   it('should reject files exceeding size limits', async () => {
     // Create a JSON that would exceed 10MB limit
-    const hugeArray = Array(2000).fill(null).map((_, i) => ({
-      id: i,
-      data: 'x'.repeat(10000) // 10KB per item = 20MB total
-    }))
+    const hugeArray = Array(2000)
+      .fill(null)
+      .map((_, i) => ({
+        id: i,
+        data: 'x'.repeat(10000), // 10KB per item = 20MB total
+      }))
 
     const hugeJson = JSON.stringify(hugeArray)
 
-    const res = await app.request('/api/v1/tools/json/format', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/json/format',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: hugeJson,
+          indent: 2,
+        }),
       },
-      body: JSON.stringify({
-        json: hugeJson,
-        indent: 2
-      })
-    }, testEnv)
+      testEnv
+    )
 
     // Should handle size limit appropriately
     expect(res.status).toBe(413) // Payload Too Large
@@ -138,29 +162,33 @@ describe('JSON Formatting Workflow Integration', () => {
   it('should maintain JSON structure integrity through multiple operations', async () => {
     const originalJson = {
       users: [
-        { id: 1, name: "Alice", active: true },
-        { id: 2, name: "Bob", active: false }
+        { id: 1, name: 'Alice', active: true },
+        { id: 2, name: 'Bob', active: false },
       ],
       settings: {
-        theme: "dark",
-        language: "en",
-        features: ["notifications", "analytics"]
+        theme: 'dark',
+        language: 'en',
+        features: ['notifications', 'analytics'],
       },
-      timestamp: "2023-12-01T12:00:00Z"
+      timestamp: '2023-12-01T12:00:00Z',
     }
 
     // Format
-    const formatRes = await app.request('/api/v1/tools/json/format', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const formatRes = await app.request(
+      '/api/v1/tools/json/format',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: JSON.stringify(originalJson),
+          indent: 4,
+          sort_keys: false,
+        }),
       },
-      body: JSON.stringify({
-        json: JSON.stringify(originalJson),
-        indent: 4,
-        sort_keys: false
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(formatRes.status).toBe(200)
     const formatData = await formatRes.json()

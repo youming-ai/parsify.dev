@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../../apps/api/src/index'
 
 describe('POST /api/v1/upload/sign', () => {
@@ -8,18 +8,18 @@ describe('POST /api/v1/upload/sign', () => {
     testEnv = {
       ENVIRONMENT: 'test',
       R2: {
-        sign: (key: string, options: any) => {
+        sign: (key: string, _options: any) => {
           // Mock R2 sign function for testing
           return {
             url: `https://r2.example.com/upload/${key}`,
             method: 'PUT',
             headers: {
               'Content-Type': 'application/octet-stream',
-              'Authorization': `AWS4-HMAC-SHA256 ${mockSignature}`
-            }
+              Authorization: `AWS4-HMAC-SHA256 ${mockSignature}`,
+            },
           }
-        }
-      }
+        },
+      },
     }
   })
 
@@ -27,16 +27,20 @@ describe('POST /api/v1/upload/sign', () => {
     const fileInfo = {
       filename: 'test-data.json',
       content_type: 'application/json',
-      size: 1024
+      size: 1024,
     }
 
-    const res = await app.request('/api/v1/upload/sign', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/upload/sign',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(fileInfo),
       },
-      body: JSON.stringify(fileInfo)
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -50,17 +54,21 @@ describe('POST /api/v1/upload/sign', () => {
   })
 
   it('should validate required parameters', async () => {
-    const res = await app.request('/api/v1/upload/sign', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/upload/sign',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // Missing required 'filename' parameter
+          content_type: 'application/json',
+          size: 1024,
+        }),
       },
-      body: JSON.stringify({
-        // Missing required 'filename' parameter
-        content_type: 'application/json',
-        size: 1024
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(400)
 
@@ -69,17 +77,21 @@ describe('POST /api/v1/upload/sign', () => {
   })
 
   it('should validate content type', async () => {
-    const res = await app.request('/api/v1/upload/sign', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/upload/sign',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filename: 'test.txt',
+          content_type: 'invalid/type',
+          size: 1024,
+        }),
       },
-      body: JSON.stringify({
-        filename: 'test.txt',
-        content_type: 'invalid/type',
-        size: 1024
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(400)
 
@@ -89,17 +101,21 @@ describe('POST /api/v1/upload/sign', () => {
   })
 
   it('should enforce file size limits', async () => {
-    const res = await app.request('/api/v1/upload/sign', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/upload/sign',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filename: 'large-file.json',
+          content_type: 'application/json',
+          size: 15 * 1024 * 1024, // 15MB - exceeds 10MB free limit
+        }),
       },
-      body: JSON.stringify({
-        filename: 'large-file.json',
-        content_type: 'application/json',
-        size: 15 * 1024 * 1024 // 15MB - exceeds 10MB free limit
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(413) // Payload Too Large
 
@@ -113,20 +129,24 @@ describe('POST /api/v1/upload/sign', () => {
       { filename: 'data.json', content_type: 'application/json' },
       { filename: 'data.csv', content_type: 'text/csv' },
       { filename: 'data.xml', content_type: 'application/xml' },
-      { filename: 'data.txt', content_type: 'text/plain' }
+      { filename: 'data.txt', content_type: 'text/plain' },
     ]
 
     for (const fileInfo of allowedFormats) {
-      const res = await app.request('/api/v1/upload/sign', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/upload/sign',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...fileInfo,
+            size: 1024,
+          }),
         },
-        body: JSON.stringify({
-          ...fileInfo,
-          size: 1024
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(200)
 
@@ -140,20 +160,24 @@ describe('POST /api/v1/upload/sign', () => {
     const prohibitedFiles = [
       { filename: 'malware.exe', content_type: 'application/x-msdownload' },
       { filename: 'script.js', content_type: 'application/javascript' },
-      { filename: 'archive.zip', content_type: 'application/zip' }
+      { filename: 'archive.zip', content_type: 'application/zip' },
     ]
 
     for (const fileInfo of prohibitedFiles) {
-      const res = await app.request('/api/v1/upload/sign', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/upload/sign',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...fileInfo,
+            size: 1024,
+          }),
         },
-        body: JSON.stringify({
-          ...fileInfo,
-          size: 1024
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(400)
 
@@ -167,16 +191,20 @@ describe('POST /api/v1/upload/sign', () => {
     const fileInfo = {
       filename: 'test.json',
       content_type: 'application/json',
-      size: 1024
+      size: 1024,
     }
 
-    const res = await app.request('/api/v1/upload/sign', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/upload/sign',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(fileInfo),
       },
-      body: JSON.stringify(fileInfo)
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -193,24 +221,32 @@ describe('POST /api/v1/upload/sign', () => {
     const fileInfo = {
       filename: 'test.json',
       content_type: 'application/json',
-      size: 1024
+      size: 1024,
     }
 
-    const res1 = await app.request('/api/v1/upload/sign', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res1 = await app.request(
+      '/api/v1/upload/sign',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(fileInfo),
       },
-      body: JSON.stringify(fileInfo)
-    }, testEnv)
+      testEnv
+    )
 
-    const res2 = await app.request('/api/v1/upload/sign', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res2 = await app.request(
+      '/api/v1/upload/sign',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(fileInfo),
       },
-      body: JSON.stringify(fileInfo)
-    }, testEnv)
+      testEnv
+    )
 
     expect(res1.status).toBe(200)
     expect(res2.status).toBe(200)

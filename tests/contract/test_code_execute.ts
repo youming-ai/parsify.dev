@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../../apps/api/src/index'
 
 describe('POST /api/v1/tools/code/execute', () => {
@@ -17,18 +17,22 @@ describe('POST /api/v1/tools/code/execute', () => {
       result;
     `
 
-    const res = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: jsCode,
+          language: 'javascript',
+          input: '',
+          timeout: 5000,
+        }),
       },
-      body: JSON.stringify({
-        code: jsCode,
-        language: 'javascript',
-        input: '',
-        timeout: 5000
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -47,18 +51,22 @@ print(f"Result: {result}")
 result
     `
 
-    const res = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: pythonCode,
+          language: 'python',
+          input: '',
+          timeout: 5000,
+        }),
       },
-      body: JSON.stringify({
-        code: pythonCode,
-        language: 'python',
-        input: '',
-        timeout: 5000
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -75,18 +83,22 @@ result
       \`Processed: \${input.toUpperCase()}\`;
     `
 
-    const res = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: jsCode,
+          language: 'javascript',
+          input: 'hello world',
+          timeout: 5000,
+        }),
       },
-      body: JSON.stringify({
-        code: jsCode,
-        language: 'javascript',
-        input: 'hello world',
-        timeout: 5000
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -103,18 +115,22 @@ result
       console.log(result);
     `
 
-    const res = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: jsCode,
+          language: 'javascript',
+          input: '',
+          timeout: 5000,
+        }),
       },
-      body: JSON.stringify({
-        code: jsCode,
-        language: 'javascript',
-        input: '',
-        timeout: 5000
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -131,18 +147,22 @@ result
       }
     `
 
-    const res = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: infiniteLoopCode,
+          language: 'javascript',
+          input: '',
+          timeout: 1000, // Short timeout for testing
+        }),
       },
-      body: JSON.stringify({
-        code: infiniteLoopCode,
-        language: 'javascript',
-        input: '',
-        timeout: 1000 // Short timeout for testing
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -152,17 +172,21 @@ result
   })
 
   it('should validate required parameters', async () => {
-    const res = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // Missing required 'code' parameter
+          language: 'javascript',
+          timeout: 5000,
+        }),
       },
-      body: JSON.stringify({
-        // Missing required 'code' parameter
-        language: 'javascript',
-        timeout: 5000
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(400)
 
@@ -177,18 +201,22 @@ result
       }
     `
 
-    const res = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: rustCode,
+          language: 'rust', // Not supported in MVP
+          input: '',
+          timeout: 5000,
+        }),
       },
-      body: JSON.stringify({
-        code: rustCode,
-        language: 'rust', // Not supported in MVP
-        input: '',
-        timeout: 5000
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(400)
 
@@ -207,18 +235,22 @@ result
       console.log('Arrays created:', arrays.length);
     `
 
-    const res = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: memoryHeavyCode,
+          language: 'javascript',
+          input: '',
+          timeout: 5000,
+        }),
       },
-      body: JSON.stringify({
-        code: memoryHeavyCode,
-        language: 'javascript',
-        input: '',
-        timeout: 5000
-      })
-    }, testEnv)
+      testEnv
+    )
 
     // Should either succeed with memory limit enforcement or fail gracefully
     expect([200, 400, 500]).toContain(res.status)
@@ -247,18 +279,22 @@ result
       console.log(\`User: \${user.name}, Age: \${user.age}\`);
     `
 
-    const res = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: tsCode,
+          language: 'typescript',
+          input: '',
+          timeout: 5000,
+        }),
       },
-      body: JSON.stringify({
-        code: tsCode,
-        language: 'typescript',
-        input: '',
-        timeout: 5000
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 

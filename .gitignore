@@ -143,3 +143,14 @@ dist-ssr
 
 # Compile-time caches
 .next/cache/
+
+# Temporary and backup files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+simple-api-server.cjs
+
+# Wrangler (duplicate in apps/api/)
+.wrangler.toml

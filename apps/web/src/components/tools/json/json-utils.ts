@@ -1,4 +1,9 @@
-import { JsonValidationError, JsonValidationResult, TreeNode, JsonFormatOptions } from './json-types'
+import type {
+  JsonFormatOptions,
+  JsonValidationError,
+  JsonValidationResult,
+  TreeNode,
+} from './json-types'
 
 export function validateJson(content: string): JsonValidationResult {
   const errors: JsonValidationError[] = []
@@ -7,7 +12,7 @@ export function validateJson(content: string): JsonValidationResult {
   if (!content.trim()) {
     return {
       isValid: false,
-      errors: [{ line: 1, column: 1, message: 'Empty input', severity: 'error' }]
+      errors: [{ line: 1, column: 1, message: 'Empty input', severity: 'error' }],
     }
   }
 
@@ -43,14 +48,14 @@ export function validateJson(content: string): JsonValidationResult {
       line,
       column,
       message: errorMessage,
-      severity: 'error'
+      severity: 'error',
     })
   }
 
   return {
     isValid,
     errors,
-    lineNumbers: errors.map(e => e.line)
+    lineNumbers: errors.map(e => e.line),
   }
 }
 
@@ -69,13 +74,14 @@ export function formatJson(content: string, options: JsonFormatOptions): string 
     }
 
     if (options.trailingComma && !options.compact) {
-      formatted = formatted.replace(/([}\]])/g, '$1,')
-        .replace(/,(\s*[}\]])/g, '$1')
+      formatted = formatted.replace(/([}\]])/g, '$1,').replace(/,(\s*[}\]])/g, '$1')
     }
 
     return formatted
   } catch (error) {
-    throw new Error(`Failed to format JSON: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    throw new Error(
+      `Failed to format JSON: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
   }
 }
 
@@ -100,13 +106,15 @@ export function sortJsonKeys(obj: unknown): unknown {
 
 export function parseJsonToTree(data: unknown, path = 'root', level = 0): TreeNode[] {
   if (data === null || typeof data !== 'object') {
-    return [{
-      key: path,
-      value: data,
-      type: getValueType(data),
-      path,
-      level
-    }]
+    return [
+      {
+        key: path,
+        value: data,
+        type: getValueType(data),
+        path,
+        level,
+      },
+    ]
   }
 
   if (Array.isArray(data)) {
@@ -116,7 +124,7 @@ export function parseJsonToTree(data: unknown, path = 'root', level = 0): TreeNo
       type: 'array',
       path: `${path}[${index}]`,
       children: parseJsonToTree(item, `${path}[${index}]`, level + 1),
-      level
+      level,
     }))
   }
 
@@ -125,10 +133,11 @@ export function parseJsonToTree(data: unknown, path = 'root', level = 0): TreeNo
     value,
     type: getValueType(value),
     path: `${path}.${key}`,
-    children: typeof value === 'object' && value !== null
-      ? parseJsonToTree(value, `${path}.${key}`, level + 1)
-      : undefined,
-    level
+    children:
+      typeof value === 'object' && value !== null
+        ? parseJsonToTree(value, `${path}.${key}`, level + 1)
+        : undefined,
+    level,
   }))
 }
 
@@ -142,22 +151,32 @@ function getValueType(value: unknown): TreeNode['type'] {
   return 'string'
 }
 
-export function convertJson(content: string, targetFormat: 'xml' | 'yaml' | 'csv', options: Record<string, unknown> = {}): string {
+export function convertJson(
+  content: string,
+  targetFormat: 'xml' | 'yaml' | 'csv',
+  options: Record<string, unknown> = {}
+): string {
   try {
     const parsed = JSON.parse(content)
 
     switch (targetFormat) {
       case 'xml':
-        return jsonToXml(parsed, options.rootElement as string || 'root', options.arrayItemName as string || 'item')
+        return jsonToXml(
+          parsed,
+          (options.rootElement as string) || 'root',
+          (options.arrayItemName as string) || 'item'
+        )
       case 'yaml':
         return jsonToYaml(parsed)
       case 'csv':
-        return jsonToCsv(parsed, options.delimiter as string || ',')
+        return jsonToCsv(parsed, (options.delimiter as string) || ',')
       default:
         throw new Error(`Unsupported format: ${targetFormat}`)
     }
   } catch (error) {
-    throw new Error(`Failed to convert JSON: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    throw new Error(
+      `Failed to convert JSON: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
   }
 }
 

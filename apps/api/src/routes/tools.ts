@@ -1,12 +1,9 @@
 import { Hono } from 'hono'
 import {
   authMiddleware,
-  optionalAuth,
-  requirePremium,
-  requireEnterprise,
   getCurrentUser,
-  getUserQuota,
   hasPremiumFeatures,
+  optionalAuth,
 } from '../middleware/auth'
 
 const app = new Hono()
@@ -78,7 +75,7 @@ app.post('/json/format', async c => {
       size: formatted.length,
       errors: null,
     })
-  } catch (error) {
+  } catch (_error) {
     return c.json({ error: 'Invalid request format' }, 400)
   }
 })
@@ -105,8 +102,7 @@ app.post('/json/validate', async c => {
           {
             line: 1,
             column: 1,
-            message:
-              error instanceof Error ? error.message : 'Invalid JSON syntax',
+            message: error instanceof Error ? error.message : 'Invalid JSON syntax',
           },
         ],
       })
@@ -124,11 +120,7 @@ app.post('/json/validate', async c => {
     // In a real implementation, you'd use a library like ajv
     const errors: string[] = []
 
-    const validateSchema = (
-      data: any,
-      schema: any,
-      path: string = ''
-    ): void => {
+    const validateSchema = (data: any, schema: any, path: string = ''): void => {
       if (schema.type === 'object') {
         if (typeof data !== 'object' || data === null || Array.isArray(data)) {
           errors.push(`${path}: Expected object`)
@@ -146,11 +138,7 @@ app.post('/json/validate', async c => {
         if (schema.properties) {
           for (const [prop, propSchema] of Object.entries(schema.properties)) {
             if (prop in data) {
-              validateSchema(
-                data[prop],
-                propSchema,
-                path ? `${path}.${prop}` : prop
-              )
+              validateSchema(data[prop], propSchema, path ? `${path}.${prop}` : prop)
             }
           }
         }
@@ -186,7 +174,7 @@ app.post('/json/validate', async c => {
       valid: errors.length === 0,
       errors: errors.map(msg => ({ line: 1, column: 1, message: msg })),
     })
-  } catch (error) {
+  } catch (_error) {
     return c.json({ error: 'Invalid request format' }, 400)
   }
 })
@@ -205,25 +193,19 @@ app.post('/json/convert', async c => {
 
     const json = body.json
     const targetFormat = body.target_format
-    const options = body.options ?? {}
+    const _options = body.options ?? {}
 
     let parsed
     try {
       parsed = JSON.parse(json)
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Invalid JSON input' }, 400)
     }
 
     let converted: string
 
     if (targetFormat === 'csv') {
-      if (!Array.isArray(parsed)) {
-        // If it's an object, convert to single-row CSV
-        const flattened = flattenObject(parsed)
-        const headers = Object.keys(flattened)
-        const values = headers.map(h => flattened[h])
-        converted = [headers.join(','), values.join(',')].join('\n')
-      } else {
+      if (Array.isArray(parsed)) {
         // Handle array of objects
         if (parsed.length === 0) {
           converted = ''
@@ -231,12 +213,16 @@ app.post('/json/convert', async c => {
           const flattened = parsed.map(item => flattenObject(item))
           const headers = Object.keys(flattened[0])
           const rows = flattened.map(item =>
-            headers
-              .map(h => `"${String(item[h] ?? '').replace(/"/g, '""')}"`)
-              .join(',')
+            headers.map(h => `"${String(item[h] ?? '').replace(/"/g, '""')}"`).join(',')
           )
           converted = [headers.join(','), ...rows].join('\n')
         }
+      } else {
+        // If it's an object, convert to single-row CSV
+        const flattened = flattenObject(parsed)
+        const headers = Object.keys(flattened)
+        const values = headers.map(h => flattened[h])
+        converted = [headers.join(','), values.join(',')].join('\n')
       }
     } else if (targetFormat === 'xml') {
       converted = jsonToXml(parsed)
@@ -248,28 +234,20 @@ app.post('/json/convert', async c => {
       converted,
       format: targetFormat,
     })
-  } catch (error) {
+  } catch (_error) {
     return c.json({ error: 'Conversion failed' }, 500)
   }
 })
 
 // Helper functions
-function flattenObject(
-  obj: any,
-  prefix = '',
-  separator = '.'
-): Record<string, any> {
+function flattenObject(obj: any, prefix = '', separator = '.'): Record<string, any> {
   const flattened: Record<string, any> = {}
 
   for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
+    if (Object.hasOwn(obj, key)) {
       const newKey = prefix ? `${prefix}${separator}${key}` : key
 
-      if (
-        typeof obj[key] === 'object' &&
-        obj[key] !== null &&
-        !Array.isArray(obj[key])
-      ) {
+      if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
         Object.assign(flattened, flattenObject(obj[key], newKey, separator))
       } else {
         flattened[newKey] = obj[key]
@@ -283,11 +261,7 @@ function flattenObject(
 function jsonToXml(obj: any, indent = 0): string {
   const spaces = '  '.repeat(indent)
 
-  if (
-    typeof obj === 'string' ||
-    typeof obj === 'number' ||
-    typeof obj === 'boolean'
-  ) {
+  if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') {
     return String(obj)
   }
 
@@ -343,10 +317,7 @@ app.post('/code/execute', authMiddleware({ required: true }), async c => {
 
     // Validate timeout
     if (timeout < 1000 || timeout > 30000) {
-      return c.json(
-        { error: 'Timeout must be between 1000ms and 30000ms' },
-        400
-      )
+      return c.json({ error: 'Timeout must be between 1000ms and 30000ms' }, 400)
     }
 
     // Validate code size
@@ -365,7 +336,7 @@ app.post('/code/execute', authMiddleware({ required: true }), async c => {
     }
 
     return c.json(result)
-  } catch (error) {
+  } catch (_error) {
     return c.json({ error: 'Invalid request format' }, 400)
   }
 })
@@ -396,10 +367,7 @@ app.post('/code/format', async c => {
     }
 
     // Validate options
-    if (
-      options.indent_size !== undefined &&
-      (options.indent_size < 1 || options.indent_size > 8)
-    ) {
+    if (options.indent_size !== undefined && (options.indent_size < 1 || options.indent_size > 8)) {
       return c.json({ error: 'indent_size must be between 1 and 8' }, 400)
     }
 
@@ -429,11 +397,7 @@ app.post('/code/format', async c => {
 })
 
 // Code execution helpers
-async function executeJavaScript(
-  code: string,
-  input: string,
-  timeout: number
-): Promise<any> {
+async function executeJavaScript(_code: string, _input: string, _timeout: number): Promise<any> {
   try {
     // Simple mock execution for MVP
     // In production, this would use a secure sandboxed environment
@@ -461,11 +425,7 @@ async function executeJavaScript(
   }
 }
 
-async function executePython(
-  code: string,
-  input: string,
-  timeout: number
-): Promise<any> {
+async function executePython(_code: string, _input: string, _timeout: number): Promise<any> {
   try {
     // Simple mock execution for MVP
     // In production, this would use Pyodide or similar
@@ -501,7 +461,7 @@ function formatJavaScript(code: string, options: any): string {
 
   // Very basic formatting for MVP
   // In production, this would use Prettier or similar
-  let formatted = code
+  const formatted = code
     .replace(/\s*{\s*/g, ` {\n${indent}`)
     .replace(/;\s*/g, ';\n')
     .replace(/}\s*/g, `\n}\n`)
@@ -511,11 +471,11 @@ function formatJavaScript(code: string, options: any): string {
 }
 
 function formatPython(code: string, options: any): string {
-  const maxLineLength = options.max_line_length || 79
+  const _maxLineLength = options.max_line_length || 79
 
   // Very basic Python formatting for MVP
   // In production, this would use Black or similar
-  let formatted = code
+  const formatted = code
     .replace(/:\s*#/g, ': #') // Fix spacing in comments
     .replace(/\s*:\s*\n/g, ':\n') // Fix colon spacing
     .replace(/\n\s*\n/g, '\n') // Remove double empty lines
@@ -639,8 +599,7 @@ app.get('/', async c => {
       slug: 'code-execute',
       name: 'Code Executor',
       category: 'code',
-      description:
-        'Execute JavaScript and Python code in a sandboxed environment',
+      description: 'Execute JavaScript and Python code in a sandboxed environment',
       config: {
         inputSchema: {
           type: 'object',
@@ -683,8 +642,7 @@ app.get('/', async c => {
       slug: 'code-format',
       name: 'Code Formatter',
       category: 'code',
-      description:
-        'Format and beautify JavaScript, TypeScript, and Python code',
+      description: 'Format and beautify JavaScript, TypeScript, and Python code',
       config: {
         inputSchema: {
           type: 'object',

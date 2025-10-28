@@ -25,16 +25,8 @@
       "@/api/*": ["./apps/api/src/*"]
     }
   },
-  "include": [
-    "apps/*/src/**/*",
-    "packages/*/src/**/*",
-    "tests/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build"
-  ],
+  "include": ["apps/*/src/**/*", "packages/*/src/**/*", "tests/**/*"],
+  "exclude": ["node_modules", "dist", "build"],
   "references": [
     { "path": "./apps/web" },
     { "path": "./apps/api" },

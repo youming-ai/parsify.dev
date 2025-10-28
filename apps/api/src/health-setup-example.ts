@@ -6,12 +6,12 @@
  */
 
 import { Hono } from 'hono'
-import { setupHealthMonitoring } from './routes/health'
 import { DatabaseHealthMonitor } from './database/health'
 import { DatabaseService } from './database/service'
+import { setupHealthMonitoring } from './routes/health'
+import type { CloudflareService } from './services/cloudflare/cloudflare-service'
 import { KVCacheService } from './services/cloudflare/kv-cache'
-import { R2StorageService } from './services/cloudflare/r2-storage'
-import { CloudflareService } from './services/cloudflare/cloudflare-service'
+import type { R2StorageService } from './services/cloudflare/r2-storage'
 
 export interface HealthCheckEnv {
   // Existing Cloudflare bindings
@@ -56,8 +56,8 @@ export function setupComprehensiveHealthMonitoring(
     alertThresholds: {
       queryTime: 1000, // 1 second
       errorRate: 0.05, // 5%
-      connectionPoolUtilization: 0.9 // 90%
-    }
+      connectionPoolUtilization: 0.9, // 90%
+    },
   })
 
   // Define external dependencies to monitor
@@ -73,7 +73,7 @@ export function setupComprehensiveHealthMonitoring(
         try {
           const response = await fetch(`${env.EXTERNAL_API_URL}/health`, {
             method: 'GET',
-            signal: AbortSignal.timeout(5000) // 5 second timeout
+            signal: AbortSignal.timeout(5000), // 5 second timeout
           })
           const responseTime = Date.now() - startTime
 
@@ -82,17 +82,17 @@ export function setupComprehensiveHealthMonitoring(
             responseTime,
             details: {
               status: response.status,
-              url: env.EXTERNAL_API_URL
-            }
+              url: env.EXTERNAL_API_URL,
+            },
           }
         } catch (error) {
           return {
             healthy: false,
             responseTime: Date.now() - startTime,
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           }
         }
-      }
+      },
     },
     {
       name: 'payment-provider',
@@ -105,7 +105,7 @@ export function setupComprehensiveHealthMonitoring(
         try {
           const response = await fetch(`${env.PAYMENT_PROVIDER_URL}/ping`, {
             method: 'GET',
-            signal: AbortSignal.timeout(3000) // 3 second timeout
+            signal: AbortSignal.timeout(3000), // 3 second timeout
           })
           const responseTime = Date.now() - startTime
 
@@ -114,17 +114,17 @@ export function setupComprehensiveHealthMonitoring(
             responseTime,
             details: {
               status: response.status,
-              url: env.PAYMENT_PROVIDER_URL
-            }
+              url: env.PAYMENT_PROVIDER_URL,
+            },
           }
         } catch (error) {
           return {
             healthy: false,
             responseTime: Date.now() - startTime,
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           }
         }
-      }
+      },
     },
     {
       name: 'notification-service',
@@ -137,7 +137,7 @@ export function setupComprehensiveHealthMonitoring(
         try {
           const response = await fetch(`${env.NOTIFICATION_SERVICE_URL}/health`, {
             method: 'GET',
-            signal: AbortSignal.timeout(3000)
+            signal: AbortSignal.timeout(3000),
           })
           const responseTime = Date.now() - startTime
 
@@ -146,18 +146,18 @@ export function setupComprehensiveHealthMonitoring(
             responseTime,
             details: {
               status: response.status,
-              url: env.NOTIFICATION_SERVICE_URL
-            }
+              url: env.NOTIFICATION_SERVICE_URL,
+            },
           }
         } catch (error) {
           return {
             healthy: false,
             responseTime: Date.now() - startTime,
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           }
         }
-      }
-    }
+      },
+    },
   ]
 
   // Setup comprehensive health monitoring
@@ -171,7 +171,7 @@ export function setupComprehensiveHealthMonitoring(
     cacheService: services.cacheService,
     storageService: services.storageService,
     cloudflareService: services.cloudflareService,
-    dependencies
+    dependencies,
   })
 
   return healthMonitor
@@ -190,7 +190,7 @@ export function createHealthCheckExample() {
     // Create database service
     const databaseService = new DatabaseService(env.DB, {
       enableHealthMonitoring: true,
-      enableMetrics: true
+      enableMetrics: true,
     })
 
     // Create Cloudflare service
@@ -198,7 +198,7 @@ export function createHealthCheckExample() {
       environment: env.ENVIRONMENT,
       enableHealthMonitoring: true,
       enableCaching: true,
-      enableMetrics: true
+      enableMetrics: true,
     })
 
     // Create cache service
@@ -213,23 +213,19 @@ export function createHealthCheckExample() {
         enableCdn: true,
         cdnUrl: 'https://cdn.parsify.dev',
         maxFileSize: 100 * 1024 * 1024, // 100MB
-        enableHealthMonitoring: true
+        enableHealthMonitoring: true,
       },
       database: databaseService,
-      enableHealthMonitoring: true
+      enableHealthMonitoring: true,
     })
 
     // Setup comprehensive health monitoring
-    const healthMonitor = setupComprehensiveHealthMonitoring(
-      app,
-      env,
-      {
-        databaseService,
-        cloudflareService,
-        cacheService,
-        storageService
-      }
-    )
+    const healthMonitor = setupComprehensiveHealthMonitoring(app, env, {
+      databaseService,
+      cloudflareService,
+      cacheService,
+      storageService,
+    })
 
     // Store services in context for later use
     c.set('databaseService', databaseService)
@@ -242,26 +238,32 @@ export function createHealthCheckExample() {
   })
 
   // Add a custom health check endpoint for application-specific health
-  app.get('/health/application', async (c) => {
-    const healthMonitor = c.get('healthMonitor') as DatabaseHealthMonitor
+  app.get('/health/application', async c => {
+    const _healthMonitor = c.get('healthMonitor') as DatabaseHealthMonitor
 
     try {
       // Perform application-specific health checks
       const appHealth = await performApplicationHealthChecks(c)
 
-      return c.json({
-        status: appHealth.healthy ? 'healthy' : 'unhealthy',
-        timestamp: Date.now(),
-        checks: appHealth.checks,
-        version: c.env.API_VERSION || 'v1',
-        environment: c.env.ENVIRONMENT || 'unknown'
-      }, appHealth.healthy ? 200 : 503)
+      return c.json(
+        {
+          status: appHealth.healthy ? 'healthy' : 'unhealthy',
+          timestamp: Date.now(),
+          checks: appHealth.checks,
+          version: c.env.API_VERSION || 'v1',
+          environment: c.env.ENVIRONMENT || 'unknown',
+        },
+        appHealth.healthy ? 200 : 503
+      )
     } catch (error) {
-      return c.json({
-        status: 'unhealthy',
-        timestamp: Date.now(),
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }, 503)
+      return c.json(
+        {
+          status: 'unhealthy',
+          timestamp: Date.now(),
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+        503
+      )
     }
   })
 
@@ -286,12 +288,12 @@ async function performApplicationHealthChecks(c: any): Promise<{
     await dbService.query('SELECT 1 as test')
     checks.database = {
       healthy: true,
-      responseTime: Date.now() - startTime
+      responseTime: Date.now() - startTime,
     }
   } catch (error) {
     checks.database = {
       healthy: false,
-      message: error instanceof Error ? error.message : 'Database check failed'
+      message: error instanceof Error ? error.message : 'Database check failed',
     }
     overallHealthy = false
   }
@@ -309,7 +311,7 @@ async function performApplicationHealthChecks(c: any): Promise<{
 
     checks.cache = {
       healthy: retrieved && retrieved.timestamp === testValue.timestamp,
-      responseTime: Date.now() - startTime
+      responseTime: Date.now() - startTime,
     }
 
     if (!checks.cache.healthy) {
@@ -318,7 +320,7 @@ async function performApplicationHealthChecks(c: any): Promise<{
   } catch (error) {
     checks.cache = {
       healthy: false,
-      message: error instanceof Error ? error.message : 'Cache check failed'
+      message: error instanceof Error ? error.message : 'Cache check failed',
     }
     overallHealthy = false
   }
@@ -332,7 +334,9 @@ async function performApplicationHealthChecks(c: any): Promise<{
     checks.storage = {
       healthy: healthStatus?.healthy || false,
       responseTime: Date.now() - startTime,
-      message: healthStatus?.healthy ? 'Storage service operational' : 'Storage service issues detected'
+      message: healthStatus?.healthy
+        ? 'Storage service operational'
+        : 'Storage service issues detected',
     }
 
     if (!checks.storage.healthy) {
@@ -341,7 +345,7 @@ async function performApplicationHealthChecks(c: any): Promise<{
   } catch (error) {
     checks.storage = {
       healthy: false,
-      message: error instanceof Error ? error.message : 'Storage check failed'
+      message: error instanceof Error ? error.message : 'Storage check failed',
     }
     overallHealthy = false
   }
@@ -354,19 +358,19 @@ async function performApplicationHealthChecks(c: any): Promise<{
     checks.authentication = {
       healthy: true,
       responseTime: Date.now() - startTime,
-      message: 'Authentication system operational'
+      message: 'Authentication system operational',
     }
   } catch (error) {
     checks.authentication = {
       healthy: false,
-      message: error instanceof Error ? error.message : 'Authentication check failed'
+      message: error instanceof Error ? error.message : 'Authentication check failed',
     }
     overallHealthy = false
   }
 
   return {
     healthy: overallHealthy,
-    checks
+    checks,
   }
 }
 
@@ -414,17 +418,20 @@ export function createPrometheusHealthMetrics(healthMonitor: DatabaseHealthMonit
         '',
         `# HELP health_check_timestamp Unix timestamp of last health check`,
         `# TYPE health_check_timestamp gauge`,
-        `health_check_timestamp ${Date.now()}`
+        `health_check_timestamp ${Date.now()}`,
       ].join('\n')
 
       return c.text(metrics, 200, {
-        'Content-Type': 'text/plain; version=0.0.4; charset=utf-8'
+        'Content-Type': 'text/plain; version=0.0.4; charset=utf-8',
       })
     } catch (error) {
-      return c.json({
-        error: 'Failed to generate metrics',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      }, 500)
+      return c.json(
+        {
+          error: 'Failed to generate metrics',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+        500
+      )
     }
   }
 }

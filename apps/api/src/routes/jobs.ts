@@ -8,7 +8,7 @@ const jobs = new Map<string, any>()
 const app = new Hono()
 
 // Create a new job
-app.post('/', async (c) => {
+app.post('/', async c => {
   try {
     const body = await c.req.json()
 
@@ -22,7 +22,13 @@ app.post('/', async (c) => {
     }
 
     // Validate tool_id
-    const validToolIds = ['json-format', 'json-validate', 'json-convert', 'code-execute', 'code-format']
+    const validToolIds = [
+      'json-format',
+      'json-validate',
+      'json-convert',
+      'code-execute',
+      'code-format',
+    ]
     if (!validToolIds.includes(body.tool_id)) {
       return c.json({ error: 'Invalid tool_id' }, 400)
     }
@@ -44,7 +50,7 @@ app.post('/', async (c) => {
       started_at: null,
       completed_at: null,
       created_at: now,
-      updated_at: now
+      updated_at: now,
     }
 
     jobs.set(jobId, job)
@@ -53,13 +59,13 @@ app.post('/', async (c) => {
     processJobAsync(jobId)
 
     return c.json(job, 201)
-  } catch (error) {
+  } catch (_error) {
     return c.json({ error: 'Invalid request format' }, 400)
   }
 })
 
 // Get job by ID
-app.get('/:id', async (c) => {
+app.get('/:id', async c => {
   const jobId = c.req.param('id')
 
   // Validate job ID format
@@ -77,7 +83,7 @@ app.get('/:id', async (c) => {
 })
 
 // Update job (internal use for async processing)
-app.patch('/:id', async (c) => {
+app.patch('/:id', async c => {
   const jobId = c.req.param('id')
   const body = await c.req.json()
 
@@ -113,7 +119,7 @@ app.patch('/:id', async (c) => {
 })
 
 // Delete job
-app.delete('/:id', async (c) => {
+app.delete('/:id', async c => {
   const jobId = c.req.param('id')
 
   const job = jobs.get(jobId)
@@ -126,11 +132,11 @@ app.delete('/:id', async (c) => {
 })
 
 // List jobs (optional, for admin/debug)
-app.get('/', async (c) => {
+app.get('/', async c => {
   const status = c.req.query('status')
   const toolId = c.req.query('tool_id')
-  const limit = parseInt(c.req.query('limit') || '10')
-  const offset = parseInt(c.req.query('offset') || '0')
+  const limit = parseInt(c.req.query('limit') || '10', 10)
+  const offset = parseInt(c.req.query('offset') || '0', 10)
 
   let allJobs = Array.from(jobs.values())
 
@@ -152,7 +158,7 @@ app.get('/', async (c) => {
     jobs: paginatedJobs,
     total: allJobs.length,
     limit,
-    offset
+    offset,
   })
 })
 
@@ -182,7 +188,15 @@ async function processJobAsync(jobId: string) {
             const formatted = JSON.stringify(parsed, null, job.input_data.indent || 2)
             result = { formatted, valid: true, size: formatted.length }
           } catch (error) {
-            result = { formatted: null, valid: false, errors: [{ message: error instanceof Error ? error.message : 'Invalid JSON' }] }
+            result = {
+              formatted: null,
+              valid: false,
+              errors: [
+                {
+                  message: error instanceof Error ? error.message : 'Invalid JSON',
+                },
+              ],
+            }
           }
         }
         break
@@ -193,7 +207,14 @@ async function processJobAsync(jobId: string) {
             JSON.parse(job.input_data.json)
             result = { valid: true, errors: [] }
           } catch (error) {
-            result = { valid: false, errors: [{ message: error instanceof Error ? error.message : 'Invalid JSON' }] }
+            result = {
+              valid: false,
+              errors: [
+                {
+                  message: error instanceof Error ? error.message : 'Invalid JSON',
+                },
+              ],
+            }
           }
         }
         break
@@ -205,7 +226,7 @@ async function processJobAsync(jobId: string) {
             output: 'Mock output\n',
             exit_code: 0,
             execution_time: 45,
-            memory_usage: 1024000
+            memory_usage: 1024000,
           }
         }
         break
@@ -220,7 +241,6 @@ async function processJobAsync(jobId: string) {
     job.progress = 100
     job.completed_at = Math.floor(Date.now() / 1000)
     job.updated_at = job.completed_at
-
   } catch (error) {
     // Handle errors
     job.status = 'failed'

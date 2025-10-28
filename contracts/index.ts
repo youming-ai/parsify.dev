@@ -41,11 +41,7 @@ export interface JsonDocument {
   lineNumber?: number
 }
 
-export type JsonNode =
-  | JsonObject
-  | JsonArray
-  | JsonPrimitive
-  | null
+export type JsonNode = JsonObject | JsonArray | JsonPrimitive | null
 
 export interface JsonObject {
   [key: string]: JsonNode
@@ -55,8 +51,4 @@ export interface JsonArray {
   [index: number]: JsonNode
 }
 
-export type JsonPrimitive =
-  | string
-  | number
-  | boolean
-  | null
+export type JsonPrimitive = string | number | boolean | null

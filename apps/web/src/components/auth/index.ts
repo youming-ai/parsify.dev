@@ -1,23 +1,32 @@
 // Types and interfaces
-export type {
-  User,
-  AuthState,
-  AuthError,
-  OAuthProvider,
-  LoginCredentials,
-  RegisterCredentials,
-  AuthResponse,
-} from './auth-types';
 
 // Core authentication components
-export { AuthProvider, useAuth } from './auth-context';
-
-// UI Components
-export { LoginForm } from './login-form';
-export { UserAvatar } from './user-avatar';
-export { UserProfile } from './user-profile';
-export { LogoutButton } from './logout-button';
-export { AuthStatusIndicator, HeaderAuthStatus, SidebarAuthStatus, AuthStatusBadge } from './auth-status-indicator';
-
+export { AuthProvider, useAuth } from './auth-context'
 // Route protection components
-export { AuthGuard, ProtectedRoute, GuestOnlyRoute, withAuth, useRouteAuth } from './auth-guard';
+export {
+  AuthGuard,
+  GuestOnlyRoute,
+  ProtectedRoute,
+  useRouteAuth,
+  withAuth,
+} from './auth-guard'
+export {
+  AuthStatusBadge,
+  AuthStatusIndicator,
+  HeaderAuthStatus,
+  SidebarAuthStatus,
+} from './auth-status-indicator'
+export type {
+  AuthError,
+  AuthResponse,
+  AuthState,
+  LoginCredentials,
+  OAuthProvider,
+  RegisterCredentials,
+  User,
+} from './auth-types'
+// UI Components
+export { LoginForm } from './login-form'
+export { LogoutButton } from './logout-button'
+export { UserAvatar } from './user-avatar'
+export { UserProfile } from './user-profile'

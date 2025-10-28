@@ -1,7 +1,7 @@
-import { Context, Next } from 'hono'
+import type { Context, Next } from 'hono'
 import { cors } from 'hono/cors'
-import { AuthContext } from './auth'
-import { CloudflareService } from '../services/cloudflare'
+import type { CloudflareService } from '../services/cloudflare'
+import type { AuthContext } from './auth'
 
 // Security configuration interface
 export interface SecurityConfig {
@@ -57,7 +57,15 @@ export interface SecurityConfig {
     xssProtection?: boolean
 
     // Referrer policy
-    referrerPolicy?: 'no-referrer' | 'no-referrer-when-downgrade' | 'origin' | 'origin-when-cross-origin' | 'same-origin' | 'strict-origin' | 'strict-origin-when-cross-origin' | 'unsafe-url'
+    referrerPolicy?:
+      | 'no-referrer'
+      | 'no-referrer-when-downgrade'
+      | 'origin'
+      | 'origin-when-cross-origin'
+      | 'same-origin'
+      | 'strict-origin'
+      | 'strict-origin-when-cross-origin'
+      | 'unsafe-url'
 
     // Permissions policy
     permissionsPolicy?: Record<string, string[]>
@@ -123,7 +131,7 @@ const DEFAULT_CORS = {
     'User-Agent',
     'DNT',
     'Cache-Control',
-    'Pragma'
+    'Pragma',
   ],
   exposeHeaders: [
     'X-Total-Count',
@@ -131,11 +139,11 @@ const DEFAULT_CORS = {
     'X-Rate-Limit-Remaining',
     'X-Rate-Limit-Reset',
     'X-Request-ID',
-    'Content-Length'
+    'Content-Length',
   ],
   credentials: false,
   maxAge: 86400, // 24 hours
-  optionsSuccessStatus: 204
+  optionsSuccessStatus: 204,
 }
 
 const DEFAULT_CSP = {
@@ -153,7 +161,7 @@ const DEFAULT_CSP = {
   manifestSrc: ["'self'"],
   upgradeInsecureRequests: false,
   blockAllMixedContent: false,
-  reportOnly: false
+  reportOnly: false,
 }
 
 const DEFAULT_SECURITY = {
@@ -161,21 +169,21 @@ const DEFAULT_SECURITY = {
     enabled: false, // Disabled by default, enable only with HTTPS
     maxAge: 31536000, // 1 year
     includeSubDomains: true,
-    preload: false
+    preload: false,
   },
   frameOptions: 'SAMEORIGIN',
   contentTypeOptions: true,
   xssProtection: true,
   referrerPolicy: 'strict-origin-when-cross-origin',
   permissionsPolicy: {},
-  customHeaders: {}
+  customHeaders: {},
 }
 
 const DEFAULT_RATE_LIMIT_HEADERS = {
   enabled: true,
   hideLimit: false,
   hideRemaining: false,
-  hideReset: false
+  hideReset: false,
 }
 
 /**
@@ -186,7 +194,8 @@ export const securityMiddleware = (config: SecurityConfig = {}) => {
   return async (c: Context<{ Bindings: Env }>, next: Next) => {
     const environment = c.env.ENVIRONMENT || 'development'
     const requestId = c.get('requestId')
-    const clientIP = c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown'
+    const clientIP =
+      c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown'
 
     // Merge default config with environment-specific config
     const mergedConfig = mergeSecurityConfig(config, environment)
@@ -204,24 +213,31 @@ export const securityMiddleware = (config: SecurityConfig = {}) => {
     if (pathConfig.cors) {
       const originValidation = await validateOrigin(c, pathConfig.cors, requestId, clientIP)
       if (!originValidation.valid) {
-        await logSecurityViolation(c, {
-          type: 'cors',
-          message: originValidation.message || 'Invalid origin',
-          path: c.req.path,
-          method: c.req.method,
-          origin: c.req.header('Origin'),
-          userAgent: c.req.header('User-Agent'),
-          ip: clientIP,
-          timestamp: new Date(),
-          requestId,
-          severity: 'medium'
-        }, mergedConfig)
+        await logSecurityViolation(
+          c,
+          {
+            type: 'cors',
+            message: originValidation.message || 'Invalid origin',
+            path: c.req.path,
+            method: c.req.method,
+            origin: c.req.header('Origin'),
+            userAgent: c.req.header('User-Agent'),
+            ip: clientIP,
+            timestamp: new Date(),
+            requestId,
+            severity: 'medium',
+          },
+          mergedConfig
+        )
 
-        return c.json({
-          error: 'CORS Error',
-          message: 'Origin not allowed',
-          requestId
-        }, 403)
+        return c.json(
+          {
+            error: 'CORS Error',
+            message: 'Origin not allowed',
+            requestId,
+          },
+          403
+        )
       }
     }
 
@@ -229,24 +245,31 @@ export const securityMiddleware = (config: SecurityConfig = {}) => {
     if (pathConfig.customValidation) {
       const isValid = await pathConfig.customValidation(c)
       if (!isValid) {
-        await logSecurityViolation(c, {
-          type: 'custom',
-          message: 'Custom security validation failed',
-          path: c.req.path,
-          method: c.req.method,
-          origin: c.req.header('Origin'),
-          userAgent: c.req.header('User-Agent'),
-          ip: clientIP,
-          timestamp: new Date(),
-          requestId,
-          severity: 'high'
-        }, mergedConfig)
+        await logSecurityViolation(
+          c,
+          {
+            type: 'custom',
+            message: 'Custom security validation failed',
+            path: c.req.path,
+            method: c.req.method,
+            origin: c.req.header('Origin'),
+            userAgent: c.req.header('User-Agent'),
+            ip: clientIP,
+            timestamp: new Date(),
+            requestId,
+            severity: 'high',
+          },
+          mergedConfig
+        )
 
-        return c.json({
-          error: 'Security Violation',
-          message: 'Request blocked by security policy',
-          requestId
-        }, 403)
+        return c.json(
+          {
+            error: 'Security Violation',
+            message: 'Request blocked by security policy',
+            requestId,
+          },
+          403
+        )
       }
     }
 
@@ -289,7 +312,7 @@ function mergeSecurityConfig(config: SecurityConfig, environment: string): Secur
     paths: {},
     skipPaths: [],
     enableLogging: true,
-    logLevel: 'warn'
+    logLevel: 'warn',
   }
 
   // Apply environment-specific overrides
@@ -338,8 +361,8 @@ function deepMerge<T extends Record<string, any>>(target: T, source: Partial<T>)
 async function validateOrigin(
   c: Context,
   corsConfig: SecurityConfig['cors'],
-  requestId: string,
-  clientIP: string
+  _requestId: string,
+  _clientIP: string
 ): Promise<{ valid: boolean; message?: string }> {
   if (!corsConfig) return { valid: true }
 
@@ -360,7 +383,10 @@ async function validateOrigin(
     if (allowedOrigin === '*') {
       return { valid: true }
     }
-    return { valid: origin === allowedOrigin, message: `Origin ${origin} not allowed` }
+    return {
+      valid: origin === allowedOrigin,
+      message: `Origin ${origin} not allowed`,
+    }
   }
 
   if (Array.isArray(allowedOrigin)) {
@@ -376,7 +402,7 @@ async function validateOrigin(
 
     return {
       valid: isValid,
-      message: isValid ? undefined : `Origin ${origin} not in allowed list`
+      message: isValid ? undefined : `Origin ${origin} not in allowed list`,
     }
   }
 
@@ -384,7 +410,10 @@ async function validateOrigin(
   if (typeof allowedOrigin === 'function') {
     try {
       const result = await allowedOrigin(origin, c)
-      return { valid: result, message: result ? undefined : `Origin ${origin} rejected by validation function` }
+      return {
+        valid: result,
+        message: result ? undefined : `Origin ${origin} rejected by validation function`,
+      }
     } catch (error) {
       console.error('Origin validation function error:', error)
       return { valid: false, message: 'Origin validation failed' }
@@ -403,9 +432,7 @@ async function applySecurityHeaders(c: Context, config: SecurityConfig): Promise
 
   // HSTS header (only apply if HTTPS is detected)
   if (security.hsts?.enabled && isSecureRequest(c)) {
-    const hstsParts = [
-      `max-age=${security.hsts.maxAge}`
-    ]
+    const hstsParts = [`max-age=${security.hsts.maxAge}`]
 
     if (security.hsts.includeSubDomains) {
       hstsParts.push('includeSubDomains')
@@ -530,7 +557,9 @@ async function applyCSPHeaders(c: Context, config: SecurityConfig): Promise<void
   }
 
   // Set CSP header
-  const headerName = cspConfig.reportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
+  const headerName = cspConfig.reportOnly
+    ? 'Content-Security-Policy-Report-Only'
+    : 'Content-Security-Policy'
   c.header(headerName, directives.join('; '))
 }
 
@@ -569,9 +598,10 @@ async function applyRateLimitHeaders(c: Context, config: SecurityConfig): Promis
 function isSecureRequest(c: Context): boolean {
   const protocol = c.req.header('CF-Visitor')?.includes('"scheme":"https"')
   const forwardedProto = c.req.header('X-Forwarded-Proto') === 'https'
-  const cfEdgeHttps = c.req.header('X-Forwarded-Proto') ||
-                      c.req.header('CF-Visitor') ||
-                      (c.req.url.startsWith('https://'))
+  const cfEdgeHttps =
+    c.req.header('X-Forwarded-Proto') ||
+    c.req.header('CF-Visitor') ||
+    c.req.url.startsWith('https://')
 
   return protocol || forwardedProto || cfEdgeHttps
 }
@@ -595,9 +625,9 @@ async function logSecurityViolation(
       path: c.req.path,
       method: c.req.method,
       headers: Object.fromEntries(c.req.header()),
-      url: c.req.url
+      url: c.req.url,
     },
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   }
 
   // Log based on severity and configured log level
@@ -606,16 +636,25 @@ async function logSecurityViolation(
   } else if (violation.severity === 'high' || logLevel === 'info') {
     console.warn('[SECURITY]', message, logData)
   } else if (logLevel === 'warn') {
-    console.warn('[SECURITY]', message, { type: violation.type, path: violation.path, ip: violation.ip })
+    console.warn('[SECURITY]', message, {
+      type: violation.type,
+      path: violation.path,
+      ip: violation.ip,
+    })
   }
 
   // Store violation in analytics if Cloudflare service is available
   try {
     const cloudflare = c.get('cloudflare') as CloudflareService
     if (cloudflare) {
-      await cloudflare.cacheSet('analytics', `security_violation:${violation.requestId}`, violation, {
-        ttl: 86400 * 7 // Keep for 7 days
-      })
+      await cloudflare.cacheSet(
+        'analytics',
+        `security_violation:${violation.requestId}`,
+        violation,
+        {
+          ttl: 86400 * 7, // Keep for 7 days
+        }
+      )
     }
   } catch (error) {
     console.error('Failed to store security violation:', error)
@@ -629,31 +668,31 @@ export const SecurityPresets = {
     cors: {
       origin: ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000'],
       credentials: true,
-      allowHeaders: ['*']
+      allowHeaders: ['*'],
     },
     csp: {
       defaultSrc: ["'self'", 'localhost:*', '127.0.0.1:*'],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'localhost:*', '127.0.0.1:*'],
       styleSrc: ["'self'", "'unsafe-inline'", 'localhost:*', '127.0.0.1:*'],
       connectSrc: ["'self'", 'localhost:*', '127.0.0.1:*', 'ws:', 'wss:'],
-      reportOnly: true
+      reportOnly: true,
     },
     security: {
       hsts: { enabled: false },
       frameOptions: 'SAMEORIGIN',
       contentTypeOptions: true,
       xssProtection: true,
-      referrerPolicy: 'strict-origin-when-cross-origin'
+      referrerPolicy: 'strict-origin-when-cross-origin',
     },
     enableLogging: true,
-    logLevel: 'debug'
+    logLevel: 'debug',
   } as SecurityConfig,
 
   // Production configuration with strict security
   PRODUCTION: {
     cors: {
       origin: ['https://parsify.dev', 'https://app.parsify.dev'],
-      credentials: true
+      credentials: true,
     },
     csp: {
       defaultSrc: ["'self'"],
@@ -666,33 +705,33 @@ export const SecurityPresets = {
       mediaSrc: ["'self'"],
       frameSrc: ["'none'"],
       upgradeInsecureRequests: true,
-      blockAllMixedContent: true
+      blockAllMixedContent: true,
     },
     security: {
       hsts: {
         enabled: true,
         maxAge: 31536000,
         includeSubDomains: true,
-        preload: true
+        preload: true,
       },
       frameOptions: 'DENY',
       contentTypeOptions: true,
       xssProtection: true,
       referrerPolicy: 'strict-origin-when-cross-origin',
       permissionsPolicy: {
-        'geolocation': [],
-        'microphone': [],
-        'camera': [],
-        'payment': [],
-        'usb': []
+        geolocation: [],
+        microphone: [],
+        camera: [],
+        payment: [],
+        usb: [],
       },
       customHeaders: {
         'X-Content-Type-Options': 'nosniff',
-        'X-Frame-Options': 'DENY'
-      }
+        'X-Frame-Options': 'DENY',
+      },
     },
     enableLogging: true,
-    logLevel: 'warn'
+    logLevel: 'warn',
   } as SecurityConfig,
 
   // Public API configuration with CORS for external access
@@ -701,34 +740,34 @@ export const SecurityPresets = {
       origin: '*',
       allowMethods: ['GET', 'POST', 'OPTIONS'],
       allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-      credentials: false
+      credentials: false,
     },
     csp: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'"],
       styleSrc: ["'self'"],
-      connectSrc: ["'self'", 'https:']
+      connectSrc: ["'self'", 'https:'],
     },
     security: {
       hsts: { enabled: false },
       frameOptions: 'DENY',
       contentTypeOptions: true,
       xssProtection: true,
-      referrerPolicy: 'no-referrer'
+      referrerPolicy: 'no-referrer',
     },
     rateLimitHeaders: {
       enabled: true,
       hideLimit: false,
       hideRemaining: false,
-      hideReset: false
-    }
+      hideReset: false,
+    },
   } as SecurityConfig,
 
   // Admin panel configuration with strict security
   ADMIN: {
     cors: {
       origin: ['https://admin.parsify.dev'],
-      credentials: true
+      credentials: true,
     },
     csp: {
       defaultSrc: ["'self'"],
@@ -736,29 +775,29 @@ export const SecurityPresets = {
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", 'data:'],
       connectSrc: ["'self'"],
-      frameSrc: ["'none'"]
+      frameSrc: ["'none'"],
     },
     security: {
       hsts: {
         enabled: true,
         maxAge: 31536000,
         includeSubDomains: true,
-        preload: true
+        preload: true,
       },
       frameOptions: 'DENY',
       contentTypeOptions: true,
       xssProtection: true,
       referrerPolicy: 'strict-origin-when-cross-origin',
       customHeaders: {
-        'X-Admin-Panel': 'true'
-      }
+        'X-Admin-Panel': 'true',
+      },
     },
-    customValidation: async (c) => {
+    customValidation: async c => {
       // Add custom admin validation logic here
       const auth = c.get('auth') as AuthContext
       return auth.isAuthenticated && auth.user?.subscription_tier === 'enterprise'
-    }
-  } as SecurityConfig
+    },
+  } as SecurityConfig,
 }
 
 // Middleware factory functions
@@ -811,7 +850,9 @@ export const getClientOrigin = (c: Context): string | null => {
 }
 
 export const isAPIRequest = (c: Context): boolean => {
-  return c.req.path.startsWith('/api/') ||
-         c.req.header('Accept')?.includes('application/json') ||
-         c.req.header('Content-Type')?.includes('application/json')
+  return (
+    c.req.path.startsWith('/api/') ||
+    c.req.header('Accept')?.includes('application/json') ||
+    c.req.header('Content-Type')?.includes('application/json')
+  )
 }

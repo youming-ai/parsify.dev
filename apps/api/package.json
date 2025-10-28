@@ -17,8 +17,7 @@
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20231218.0",
-    "@sentry/cloudflare": "^7.84.0",
-    "@sentry/hono": "^7.84.0",
+    "@sentry/cloudflare": "^8.0.0",
     "hono": "^3.11.0",
     "zod": "^3.22.0"
   },

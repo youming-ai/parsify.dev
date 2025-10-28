@@ -6,16 +6,14 @@
  */
 
 import { Hono } from 'hono'
+import { authMiddleware, requirePremium } from './auth'
 import {
-  rateLimitMiddleware,
-  RateLimitStrategy,
   createApiRateLimit,
-  createFileUploadRateLimit,
-  createJobExecutionRateLimit,
   createAuthRateLimit,
-  RateLimitMiddlewareConfig
+  createFileUploadRateLimit,
+  RateLimitStrategy,
+  rateLimitMiddleware,
 } from './rate_limit'
-import { authMiddleware, requirePremium, requireEnterprise } from './auth'
 
 const app = new Hono()
 
@@ -23,7 +21,8 @@ const app = new Hono()
 app.use('/api/v1/*', createApiRateLimit())
 
 // Example 2: Custom rate limiting for specific routes
-app.use('/api/v1/tools/execute',
+app.use(
+  '/api/v1/tools/execute',
   authMiddleware({ required: true }),
   rateLimitMiddleware({
     strategy: RateLimitStrategy.TOKEN_BUCKET,
@@ -33,20 +32,21 @@ app.use('/api/v1/tools/execute',
       anonymous: 5,
       free: 50,
       pro: 250,
-      enterprise: 2500
+      enterprise: 2500,
     },
     quotaType: 'execution_time',
     period: 'hour',
     route: {
       path: '/api/v1/tools/execute',
       method: 'POST',
-      weight: 5 // Each execution costs 5 tokens
-    }
+      weight: 5, // Each execution costs 5 tokens
+    },
   })
 )
 
 // Example 3: File upload rate limiting
-app.use('/api/v1/upload',
+app.use(
+  '/api/v1/upload',
   authMiddleware({ required: true }),
   createFileUploadRateLimit({
     strategy: RateLimitStrategy.SLIDING_WINDOW,
@@ -56,13 +56,14 @@ app.use('/api/v1/upload',
       anonymous: 3,
       free: 25,
       pro: 125,
-      enterprise: 1250
-    }
+      enterprise: 1250,
+    },
   })
 )
 
 // Example 4: Heavy API operations with different limits
-app.use('/api/v1/analytics/*',
+app.use(
+  '/api/v1/analytics/*',
   authMiddleware({ required: true }),
   rateLimitMiddleware({
     strategy: RateLimitStrategy.TOKEN_BUCKET,
@@ -71,45 +72,51 @@ app.use('/api/v1/analytics/*',
     limits: {
       free: 20,
       pro: 100,
-      enterprise: 1000
+      enterprise: 1000,
     },
     route: {
-      weight: 10 // Analytics queries are expensive
+      weight: 10, // Analytics queries are expensive
     },
     // Skip rate limiting for enterprise users
-    skip: async (c) => {
+    skip: async c => {
       const auth = c.get('auth')
       return auth.user?.subscription_tier === 'enterprise'
-    }
+    },
   })
 )
 
 // Example 5: Authentication endpoints with strict limits
-app.post('/api/v1/auth/login',
+app.post(
+  '/api/v1/auth/login',
   createAuthRateLimit({
     strategy: RateLimitStrategy.SLIDING_WINDOW,
     requests: 5,
     window: 900, // 15 minutes
     // Use IP-based rate limiting for auth attempts
-    keyGenerator: async (c) => {
-      const clientIP = c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown'
+    keyGenerator: async c => {
+      const clientIP =
+        c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown'
       return `auth:${clientIP}`
     },
     // Custom error handler for auth endpoints
     onError: async (c, check) => {
-      return c.json({
-        error: 'Too Many Authentication Attempts',
-        message: 'Too many login attempts. Please try again later.',
-        retryAfter: check.retryAfter ? Math.ceil(check.retryAfter / 1000) : undefined,
-        resetTime: check.resetTime,
-        requestId: c.get('requestId')
-      }, 429)
-    }
+      return c.json(
+        {
+          error: 'Too Many Authentication Attempts',
+          message: 'Too many login attempts. Please try again later.',
+          retryAfter: check.retryAfter ? Math.ceil(check.retryAfter / 1000) : undefined,
+          resetTime: check.resetTime,
+          requestId: c.get('requestId'),
+        },
+        429
+      )
+    },
   })
 )
 
 // Example 6: Premium features with higher limits
-app.use('/api/v1/premium/*',
+app.use(
+  '/api/v1/premium/*',
   authMiddleware({ required: true }),
   requirePremium(),
   rateLimitMiddleware({
@@ -118,34 +125,33 @@ app.use('/api/v1/premium/*',
     window: 3600, // 1 hour
     limits: {
       pro: 1000,
-      enterprise: 10000
+      enterprise: 10000,
     },
     // Bypass rate limiting for enterprise users
-    bypassUsers: [
-      'enterprise-user-1',
-      'enterprise-user-2'
-    ]
+    bypassUsers: ['enterprise-user-1', 'enterprise-user-2'],
   })
 )
 
 // Example 7: Custom rate limiting based on user activity
-app.use('/api/v1/webhooks/*',
+app.use(
+  '/api/v1/webhooks/*',
   authMiddleware({ required: true }),
   rateLimitMiddleware({
     strategy: RateLimitStrategy.SLIDING_WINDOW,
     requests: 100,
     window: 3600, // 1 hour
-    keyGenerator: async (c) => {
+    keyGenerator: async c => {
       const auth = c.get('auth')
       const userId = auth.user?.id || 'anonymous'
       const webhookId = c.req.param('webhookId') || 'default'
       return `webhook:${userId}:${webhookId}`
-    }
+    },
   })
 )
 
 // Example 8: Rate limiting with custom headers and monitoring
-app.use('/api/v1/batch/*',
+app.use(
+  '/api/v1/batch/*',
   authMiddleware({ required: true }),
   rateLimitMiddleware({
     strategy: RateLimitStrategy.TOKEN_BUCKET,
@@ -154,10 +160,10 @@ app.use('/api/v1/batch/*',
     limits: {
       free: 10,
       pro: 50,
-      enterprise: 500
+      enterprise: 500,
     },
     route: {
-      weight: 20 // Batch operations are expensive
+      weight: 20, // Batch operations are expensive
     },
     headers: true,
     // Custom error handler with detailed information
@@ -170,56 +176,63 @@ app.use('/api/v1/batch/*',
         limit: check.limit,
         used: check.limit - check.remaining,
         retryAfter: check.retryAfter,
-        requestId: c.get('requestId')
+        requestId: c.get('requestId'),
       })
 
-      return c.json({
-        error: 'Batch Rate Limit Exceeded',
-        message: 'You have exceeded the batch processing rate limit.',
-        limit: check.limit,
-        used: check.limit - check.remaining,
-        resetTime: new Date(check.resetTime).toISOString(),
-        retryAfter: check.retryAfter ? Math.ceil(check.retryAfter / 1000) : undefined,
-        strategy: RateLimitStrategy.TOKEN_BUCKET,
-        requestId: c.get('requestId')
-      }, 429)
-    }
+      return c.json(
+        {
+          error: 'Batch Rate Limit Exceeded',
+          message: 'You have exceeded the batch processing rate limit.',
+          limit: check.limit,
+          used: check.limit - check.remaining,
+          resetTime: new Date(check.resetTime).toISOString(),
+          retryAfter: check.retryAfter ? Math.ceil(check.retryAfter / 1000) : undefined,
+          strategy: RateLimitStrategy.TOKEN_BUCKET,
+          requestId: c.get('requestId'),
+        },
+        429
+      )
+    },
   })
 )
 
 // Example 9: Conditional rate limiting based on request size
-app.use('/api/v1/upload/large',
+app.use(
+  '/api/v1/upload/large',
   authMiddleware({ required: true }),
   rateLimitMiddleware({
     strategy: RateLimitStrategy.FIXED_WINDOW,
     requests: 5,
     window: 3600, // 1 hour
-    keyGenerator: async (c) => {
+    keyGenerator: async c => {
       const auth = c.get('auth')
       const userId = auth.user?.id || 'anonymous'
-      const contentLength = parseInt(c.req.header('Content-Length') || '0')
+      const contentLength = parseInt(c.req.header('Content-Length') || '0', 10)
 
       // Different rate limits for different file sizes
-      if (contentLength > 50 * 1024 * 1024) { // > 50MB
+      if (contentLength > 50 * 1024 * 1024) {
+        // > 50MB
         return `upload:large:${userId}`
-      } else if (contentLength > 10 * 1024 * 1024) { // > 10MB
+      } else if (contentLength > 10 * 1024 * 1024) {
+        // > 10MB
         return `upload:medium:${userId}`
       } else {
         return `upload:small:${userId}`
       }
-    }
+    },
   })
 )
 
 // Example 10: Global rate limiting with user-based scaling
-app.use('/api/v1/*',
+app.use(
+  '/api/v1/*',
   rateLimitMiddleware({
     strategy: RateLimitStrategy.TOKEN_BUCKET,
     requests: 1000,
     window: 3600, // 1 hour
     distributed: true,
     cacheTTL: 600, // 10 minutes
-    keyGenerator: async (c) => {
+    keyGenerator: async c => {
       const auth = c.get('auth')
 
       if (auth.user) {
@@ -228,10 +241,11 @@ app.use('/api/v1/*',
         return `global:user:${auth.user.id}:${tier}`
       } else {
         // IP-based rate limiting for anonymous users
-        const clientIP = c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown'
+        const clientIP =
+          c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown'
         return `global:ip:${clientIP}`
       }
-    }
+    },
   })
 )
 
@@ -242,17 +256,19 @@ const toolsRouter = new Hono()
 toolsRouter.use('*', createApiRateLimit())
 
 // Additional rate limiting for expensive operations
-toolsRouter.post('/execute',
+toolsRouter.post(
+  '/execute',
   rateLimitMiddleware({
     strategy: RateLimitStrategy.TOKEN_BUCKET,
     requests: 25,
     window: 3600,
     route: { weight: 5 },
-    quotaType: 'execution_time'
+    quotaType: 'execution_time',
   })
 )
 
-toolsRouter.post('/batch',
+toolsRouter.post(
+  '/batch',
   authMiddleware({ required: true }),
   requirePremium(),
   rateLimitMiddleware({
@@ -260,19 +276,20 @@ toolsRouter.post('/batch',
     requests: 5,
     window: 3600,
     route: { weight: 50 },
-    quotaType: 'batch_operations'
+    quotaType: 'batch_operations',
   })
 )
 
 // Example 12: Dynamic rate limiting based on system load
-app.use('/api/v1/process/*',
+app.use(
+  '/api/v1/process/*',
   authMiddleware({ required: true }),
   rateLimitMiddleware({
     strategy: RateLimitStrategy.TOKEN_BUCKET,
     requests: 100,
     window: 3600,
     // Adjust limits based on current system load
-    keyGenerator: async (c) => {
+    keyGenerator: async c => {
       const auth = c.get('auth')
       const userId = auth.user?.id || 'anonymous'
 
@@ -289,22 +306,23 @@ app.use('/api/v1/process/*',
         // Low load - more permissive rate limiting
         return `process:low_load:${userId}`
       }
-    }
+    },
   })
 )
 
 // Example 13: Rate limiting with circuit breaker pattern
-app.use('/api/v1/external/*',
+app.use(
+  '/api/v1/external/*',
   authMiddleware({ required: true }),
   rateLimitMiddleware({
     strategy: RateLimitStrategy.TOKEN_BUCKET,
     requests: 50,
     window: 3600,
     // Skip rate limiting if external service is down
-    skip: async (c) => {
+    skip: async _c => {
       const isExternalServiceHealthy = await checkExternalServiceHealth()
       return !isExternalServiceHealthy
-    }
+    },
   })
 )
 

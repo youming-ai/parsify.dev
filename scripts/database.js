@@ -7,10 +7,10 @@
  * database operations for Cloudflare D1 databases.
  */
 
-const { execSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
-const crypto = require('crypto')
+const { execSync } = require('node:child_process')
+const fs = require('node:fs')
+const path = require('node:path')
+const _crypto = require('node:crypto')
 
 // Configuration
 const PROJECT_ROOT = path.resolve(__dirname, '..')
@@ -22,16 +22,16 @@ const SEEDS_DIR = path.join(PROJECT_ROOT, 'seeds')
 const DATABASE_CONFIG = {
   development: {
     name: 'parsify-dev',
-    id: 'local'
+    id: 'local',
   },
   staging: {
     name: 'parsify-staging',
-    id: process.env.DATABASE_ID || ''
+    id: process.env.DATABASE_ID || '',
   },
   production: {
     name: 'parsify-prod',
-    id: process.env.DATABASE_ID || ''
-  }
+    id: process.env.DATABASE_ID || '',
+  },
 }
 
 // Colors for console output
@@ -41,7 +41,7 @@ const colors = {
   warning: '\x1b[33m',
   info: '\x1b[34m',
   dim: '\x1b[2m',
-  reset: '\x1b[0m'
+  reset: '\x1b[0m',
 }
 
 function log(level, message) {
@@ -56,7 +56,7 @@ function exec(command, options = {}) {
     const result = execSync(command, {
       stdio: silent ? 'pipe' : 'inherit',
       encoding: 'utf8',
-      env
+      env,
     })
     return result
   } catch (error) {
@@ -74,7 +74,7 @@ function checkWrangler() {
     const version = exec('npx wrangler --version', { silent: true })
     log('success', `Wrangler CLI available: ${version.trim()}`)
     return true
-  } catch (error) {
+  } catch (_error) {
     log('error', 'Wrangler CLI not found. Please install it with: npm install -g wrangler')
     return false
   }
@@ -106,7 +106,8 @@ function getMigrationFiles() {
     return []
   }
 
-  const files = fs.readdirSync(MIGRATIONS_DIR)
+  const files = fs
+    .readdirSync(MIGRATIONS_DIR)
     .filter(file => file.endsWith('.sql'))
     .sort()
 
@@ -115,7 +116,7 @@ function getMigrationFiles() {
 
 function getMigrationNumber(filename) {
   const match = filename.match(/^(\d+)_/)
-  return match ? parseInt(match[1]) : 0
+  return match ? parseInt(match[1], 10) : 0
 }
 
 function createMigrationTable(dbConfig) {
@@ -147,14 +148,14 @@ function getExecutedMigrations(dbConfig) {
       const match = line.match(/\|\s*(\d+)\s+\|\s*(.+?)\s+\|/)
       if (match) {
         migrations.push({
-          version: parseInt(match[1]),
-          name: match[2].trim()
+          version: parseInt(match[1], 10),
+          name: match[2].trim(),
         })
       }
     }
 
     return migrations
-  } catch (error) {
+  } catch (_error) {
     // If the table doesn't exist, return empty array
     return []
   }
@@ -300,7 +301,6 @@ function seed(env, seedFile = null) {
     log('info', `Running seed file: ${seedFile}`)
     exec(`npx wrangler d1 execute ${dbConfig.name} --file="${seedPath}"`)
     log('success', `Seed file ${seedFile} executed successfully`)
-
   } else {
     // Run default seed file
     const defaultSeedPath = path.join(MIGRATIONS_DIR, 'seed.sql')
@@ -334,7 +334,9 @@ function reset(env) {
   `
 
   try {
-    const result = exec(`npx wrangler d1 execute ${dbConfig.name} --command="${dropSQL}"`, { silent: true })
+    const result = exec(`npx wrangler d1 execute ${dbConfig.name} --command="${dropSQL}"`, {
+      silent: true,
+    })
 
     // Parse table names and drop them
     const lines = result.split('\n')
@@ -360,7 +362,6 @@ function reset(env) {
     // Run migrations and seed
     migrate(env)
     seed(env)
-
   } catch (error) {
     log('error', 'Database reset failed')
     log('error', error.message)
@@ -382,7 +383,10 @@ function backup(env, name = null) {
 
   try {
     // Dump the entire database
-    const result = exec(`npx wrangler d1 execute ${dbConfig.name} --command="SELECT * FROM sqlite_master WHERE type='table';"`, { silent: true })
+    const _result = exec(
+      `npx wrangler d1 execute ${dbConfig.name} --command="SELECT * FROM sqlite_master WHERE type='table';"`,
+      { silent: true }
+    )
 
     // For now, create a simple backup file with metadata
     const backup = {
@@ -390,17 +394,19 @@ function backup(env, name = null) {
       database: dbConfig.name,
       timestamp: new Date().toISOString(),
       version: '1.0',
-      note: 'Backup created via database script'
+      note: 'Backup created via database script',
     }
 
-    fs.writeFileSync(backupPath, `-- Database Backup\n-- Environment: ${env}\n-- Database: ${dbConfig.name}\n-- Timestamp: ${backup.timestamp}\n\n`)
+    fs.writeFileSync(
+      backupPath,
+      `-- Database Backup\n-- Environment: ${env}\n-- Database: ${dbConfig.name}\n-- Timestamp: ${backup.timestamp}\n\n`
+    )
 
     // In a real implementation, you would need to export all tables
     // D1 doesn't have a direct dump command, so you'd need to query each table
 
     log('success', `Backup created: ${backupPath}`)
     log('info', `Size: ${fs.statSync(backupPath).size} bytes`)
-
   } catch (error) {
     log('error', 'Backup failed')
     log('error', error.message)
@@ -441,7 +447,6 @@ function restore(env, backupFile) {
     }
 
     log('success', 'Database restored successfully')
-
   } catch (error) {
     log('error', 'Database restore failed')
     log('error', error.message)
@@ -491,7 +496,6 @@ function status(env) {
         console.log(`  - ${migration.name} (v${migration.version})`)
       }
     }
-
   } catch (error) {
     log('error', 'Failed to get database status')
     log('error', error.message)
@@ -517,7 +521,7 @@ async function main() {
       migrate(env)
       break
 
-    case 'create':
+    case 'create': {
       const migrationName = args[2]
       if (!migrationName) {
         log('error', 'Migration name is required')
@@ -526,27 +530,31 @@ async function main() {
       }
       createMigration(migrationName)
       break
+    }
 
-    case 'rollback':
-      const steps = parseInt(args[2]) || 1
+    case 'rollback': {
+      const steps = parseInt(args[2], 10) || 1
       rollback(env, steps)
       break
+    }
 
-    case 'seed':
+    case 'seed': {
       const seedFile = args[2]
       seed(env, seedFile)
       break
+    }
 
     case 'reset':
       reset(env)
       break
 
-    case 'backup':
+    case 'backup': {
       const backupName = args[2]
       backup(env, backupName)
       break
+    }
 
-    case 'restore':
+    case 'restore': {
       const restoreFile = args[2]
       if (!restoreFile) {
         log('error', 'Backup file name is required')
@@ -555,6 +563,7 @@ async function main() {
       }
       restore(env, restoreFile)
       break
+    }
 
     case 'status':
       status(env)
@@ -616,7 +625,7 @@ module.exports = {
   restore,
   status,
   getMigrationFiles,
-  getExecutedMigrations
+  getExecutedMigrations,
 }
 
 // Run the script if called directly

@@ -1,40 +1,34 @@
 'use client'
 
-import * as React from 'react'
-import { useState, useMemo } from 'react'
-import Link from 'next/link'
 import {
-  Search,
-  Filter,
-  FileJson,
-  Terminal,
-  Code,
-  FileText,
-  Hash,
-  Zap,
-  Settings,
   ChevronRight,
-  Star,
   Clock,
-  Shield,
-  Play,
+  Code,
   Cpu,
   Database,
-  Lock,
+  FileJson,
+  FileText,
+  Filter,
   Globe,
+  Hash,
+  Lock,
+  Play,
+  Search,
+  Settings,
+  Shield,
+  Star,
+  Terminal,
+  Zap,
 } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import Link from 'next/link'
+import * as React from 'react'
+import { useMemo, useState } from 'react'
 import { MainLayout } from '@/components/layout/main-layout'
-import { toolsData, categories } from '@/data/tools-data'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { categories, toolsData } from '@/data/tools-data'
 import type { Tool } from '@/types/tools'
 
 // Icon mapping
@@ -73,18 +67,14 @@ export default function ToolsPage() {
         searchQuery === '' ||
         tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.tags.some(tag =>
-          tag.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+        tool.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
 
       // Category filter
-      const matchesCategory =
-        selectedCategory === 'all' || tool.category === selectedCategory
+      const matchesCategory = selectedCategory === 'all' || tool.category === selectedCategory
 
       // Tags filter
       const matchesTags =
-        selectedTags.length === 0 ||
-        selectedTags.some(tag => tool.tags.includes(tag))
+        selectedTags.length === 0 || selectedTags.some(tag => tool.tags.includes(tag))
 
       return matchesSearch && matchesCategory && matchesTags
     })
@@ -97,9 +87,7 @@ export default function ToolsPage() {
 
   // Toggle tag selection
   const toggleTag = (tag: string) => {
-    setSelectedTags(prev =>
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    )
+    setSelectedTags(prev => (prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]))
   }
 
   const getDifficultyColor = (difficulty: Tool['difficulty']) => {
@@ -127,11 +115,11 @@ export default function ToolsPage() {
   const getStatusIcon = (processingType: Tool['processingType']) => {
     switch (processingType) {
       case 'client-side':
-        return <Clock className="w-3 h-3" />
+        return <Clock className="h-3 w-3" />
       case 'server-side':
-        return <Zap className="w-3 h-3" />
+        return <Zap className="h-3 w-3" />
       case 'hybrid':
-        return <Settings className="w-3 h-3" />
+        return <Settings className="h-3 w-3" />
     }
   }
 
@@ -140,13 +128,10 @@ export default function ToolsPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Developer Tools
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl">
-            Professional tools for JSON processing, code execution, file
-            transformation, and more. All tools run securely in your browser
-            with no data sent to servers.
+          <h1 className="mb-4 font-bold text-4xl text-gray-900 dark:text-white">Developer Tools</h1>
+          <p className="max-w-3xl text-gray-600 text-lg dark:text-gray-300">
+            Professional tools for JSON processing, code execution, file transformation, and more.
+            All tools run securely in your browser with no data sent to servers.
           </p>
         </div>
 
@@ -154,18 +139,18 @@ export default function ToolsPage() {
         <div className="mb-8 space-y-4">
           {/* Search Bar */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-5 w-5 transform text-gray-400" />
             <Input
               type="text"
               placeholder="Search tools by name, description, or tags..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-3 text-lg"
+              className="py-3 pr-4 pl-10 text-lg"
             />
           </div>
 
           {/* Filter Controls */}
-          <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex flex-wrap items-center gap-4">
             {/* Category Filter */}
             <div className="flex flex-wrap gap-2">
               <Button
@@ -178,9 +163,7 @@ export default function ToolsPage() {
               {categories.map(category => (
                 <Button
                   key={category}
-                  variant={
-                    selectedCategory === category ? 'default' : 'outline'
-                  }
+                  variant={selectedCategory === category ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setSelectedCategory(category)}
                 >
@@ -196,7 +179,7 @@ export default function ToolsPage() {
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2"
             >
-              <Filter className="w-4 h-4" />
+              <Filter className="h-4 w-4" />
               Filters
               {selectedTags.length > 0 && (
                 <Badge variant="secondary" className="ml-1">
@@ -208,8 +191,8 @@ export default function ToolsPage() {
 
           {/* Tag Filters */}
           {showFilters && (
-            <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <div className="rounded-lg border bg-gray-50 p-4 dark:bg-gray-800">
+              <h3 className="mb-3 font-medium text-gray-700 text-sm dark:text-gray-300">
                 Filter by Tags
               </h3>
               <div className="flex flex-wrap gap-2">
@@ -254,19 +237,19 @@ export default function ToolsPage() {
           {filteredTools.map(tool => (
             <Card
               key={tool.id}
-              className="group hover:shadow-lg transition-all duration-300 border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600"
+              className="group border-gray-200 transition-all duration-300 hover:border-blue-300 hover:shadow-lg dark:border-gray-700 dark:hover:border-blue-600"
             >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900">
                       {iconMap[tool.icon] &&
                         React.createElement(iconMap[tool.icon], {
                           className: 'w-5 h-5 text-blue-600 dark:text-blue-300',
                         })}
                     </div>
                     <div className="flex-1">
-                      <CardTitle className="text-lg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex items-center gap-2">
+                      <CardTitle className="flex items-center gap-2 text-lg transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400">
                         {tool.name}
                         {tool.isNew && (
                           <Badge variant="secondary" className="text-xs">
@@ -276,29 +259,25 @@ export default function ToolsPage() {
                         {tool.isPopular && (
                           <Badge
                             variant="default"
-                            className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                            className="bg-yellow-100 text-xs text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
                           >
-                            <Star className="w-3 h-3 mr-1" />
+                            <Star className="mr-1 h-3 w-3" />
                             Popular
                           </Badge>
                         )}
                       </CardTitle>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge
-                          className={`text-xs ${getStatusColor(tool.status)}`}
-                        >
+                      <div className="mt-1 flex items-center gap-2">
+                        <Badge className={`text-xs ${getStatusColor(tool.status)}`}>
                           {tool.status}
                         </Badge>
-                        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center text-gray-500 text-xs dark:text-gray-400">
                           {getStatusIcon(tool.processingType!)}
-                          <span className="ml-1">
-                            {tool.processingType?.replace('-', ' ')}
-                          </span>
+                          <span className="ml-1">{tool.processingType?.replace('-', ' ')}</span>
                         </div>
                         {tool.security === 'secure-sandbox' && (
-                          <div className="relative group">
-                            <Shield className="w-3 h-3 text-green-500" />
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                          <div className="group relative">
+                            <Shield className="h-3 w-3 text-green-500" />
+                            <div className="-translate-x-1/2 absolute bottom-full left-1/2 mb-2 transform whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-white text-xs opacity-0 transition-opacity group-hover:opacity-100">
                               Secure Sandbox
                             </div>
                           </div>
@@ -307,14 +286,12 @@ export default function ToolsPage() {
                     </div>
                   </div>
                 </div>
-                <CardDescription className="text-sm mt-3">
-                  {tool.description}
-                </CardDescription>
+                <CardDescription className="mt-3 text-sm">{tool.description}</CardDescription>
               </CardHeader>
               <CardContent>
                 {/* Features */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <h4 className="mb-2 font-medium text-gray-700 text-sm dark:text-gray-300">
                     Features
                   </h4>
                   <div className="flex flex-wrap gap-1">
@@ -337,7 +314,7 @@ export default function ToolsPage() {
                     {tool.tags.slice(0, 4).map((tag, index) => (
                       <span
                         key={index}
-                        className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded"
+                        className="rounded bg-gray-100 px-2 py-1 text-gray-500 text-xs dark:bg-gray-700 dark:text-gray-400"
                       >
                         {tag}
                       </span>
@@ -347,17 +324,15 @@ export default function ToolsPage() {
 
                 {/* Footer */}
                 <div className="flex items-center justify-between">
-                  <Badge
-                    className={`text-xs ${getDifficultyColor(tool.difficulty)}`}
-                  >
+                  <Badge className={`text-xs ${getDifficultyColor(tool.difficulty)}`}>
                     {tool.difficulty}
                   </Badge>
-                  <Button size="sm" className="group" asChild>
-                    <Link href={tool.href}>
+                  <Link href={tool.href}>
+                    <Button size="sm" className="group">
                       Try Tool
-                      <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                  </Button>
+                      <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -366,16 +341,15 @@ export default function ToolsPage() {
 
         {/* No Results */}
         {filteredTools.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
-              <Search className="w-12 h-12 mx-auto" />
+          <div className="py-12 text-center">
+            <div className="mb-4 text-gray-400">
+              <Search className="mx-auto h-12 w-12" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            <h3 className="mb-2 font-medium text-gray-900 text-lg dark:text-white">
               No tools found
             </h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Try adjusting your search or filters to find what you're looking
-              for.
+            <p className="mb-4 text-gray-600 dark:text-gray-300">
+              Try adjusting your search or filters to find what you're looking for.
             </p>
             <Button
               variant="outline"

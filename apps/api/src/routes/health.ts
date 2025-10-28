@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
-import { DatabaseHealthMonitor, HealthReport } from '../database/health'
 import { cors } from 'hono/cors'
-import { KVCacheService } from '../services/cloudflare/kv-cache'
-import { R2StorageService } from '../services/cloudflare/r2-storage'
-import { CloudflareService } from '../services/cloudflare/cloudflare-service'
+import type { DatabaseHealthMonitor } from '../database/health'
+import type { CloudflareService } from '../services/cloudflare/cloudflare-service'
+import type { KVCacheService } from '../services/cloudflare/kv-cache'
+import type { R2StorageService } from '../services/cloudflare/r2-storage'
 
 export interface ServiceHealthStatus {
   name: string
@@ -33,11 +33,7 @@ export interface SystemHealthReport {
     averageResponseTime: number
   }
   alerts: Array<{
-    type:
-      | 'service_down'
-      | 'slow_response'
-      | 'high_error_rate'
-      | 'dependency_issue'
+    type: 'service_down' | 'slow_response' | 'high_error_rate' | 'dependency_issue'
     severity: 'info' | 'warning' | 'error' | 'critical'
     message: string
     service: string
@@ -219,7 +215,7 @@ export function createHealthRoutes(options: HealthRouteOptions) {
     }
 
     try {
-      const limit = parseInt(c.req.query('limit') || '50')
+      const limit = parseInt(c.req.query('limit') || '50', 10)
       const alerts = options.healthMonitor.getAlerts(limit)
 
       return c.json({
@@ -492,10 +488,8 @@ export function setupHealthMonitoring(
 /**
  * Get comprehensive system health status
  */
-async function getSystemHealth(
-  options: HealthRouteOptions
-): Promise<SystemHealthReport> {
-  const startTime = Date.now()
+async function getSystemHealth(options: HealthRouteOptions): Promise<SystemHealthReport> {
+  const _startTime = Date.now()
   const alerts: SystemHealthReport['alerts'] = []
   const recommendations: string[] = []
 
@@ -521,9 +515,7 @@ async function getSystemHealth(
 
   const healthyCount = allServices.filter(s => s.status === 'healthy').length
   const degradedCount = allServices.filter(s => s.status === 'degraded').length
-  const unhealthyCount = allServices.filter(
-    s => s.status === 'unhealthy'
-  ).length
+  const unhealthyCount = allServices.filter(s => s.status === 'unhealthy').length
 
   // Determine overall system health
   let overallStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy'
@@ -538,12 +530,7 @@ async function getSystemHealth(
 
   // Generate recommendations
   recommendations.push(
-    ...generateRecommendations(
-      databaseStatus,
-      cacheStatus,
-      storageStatus,
-      imagesStatus
-    )
+    ...generateRecommendations(databaseStatus, cacheStatus, storageStatus, imagesStatus)
   )
 
   const uptime = Date.now() - options.healthMonitor.getHealthStatus().uptime
@@ -565,8 +552,7 @@ async function getSystemHealth(
       degradedServices: degradedCount,
       unhealthyServices: unhealthyCount,
       averageResponseTime:
-        allServices.reduce((sum, s) => sum + s.responseTime, 0) /
-        allServices.length,
+        allServices.reduce((sum, s) => sum + s.responseTime, 0) / allServices.length,
     },
     alerts,
     recommendations,
@@ -592,8 +578,7 @@ async function checkDatabaseHealth(
       lastCheck: Date.now(),
       error: healthCheck.error,
       details: {
-        consecutiveFailures:
-          healthMonitor.getHealthStatus().consecutiveFailures,
+        consecutiveFailures: healthMonitor.getHealthStatus().consecutiveFailures,
         uptime: healthMonitor.getHealthStatus().uptime,
       },
     }
@@ -611,9 +596,7 @@ async function checkDatabaseHealth(
 /**
  * Check cache (KV) health
  */
-async function checkCacheHealth(
-  cacheService?: KVCacheService
-): Promise<ServiceHealthStatus> {
+async function checkCacheHealth(cacheService?: KVCacheService): Promise<ServiceHealthStatus> {
   const startTime = Date.now()
 
   if (!cacheService) {
@@ -651,9 +634,7 @@ async function checkCacheHealth(
 /**
  * Check storage (R2) health
  */
-async function checkStorageHealth(
-  storageService?: R2StorageService
-): Promise<ServiceHealthStatus> {
+async function checkStorageHealth(storageService?: R2StorageService): Promise<ServiceHealthStatus> {
   const startTime = Date.now()
 
   if (!storageService) {
@@ -831,9 +812,7 @@ function generateRecommendations(
     recommendations.push('Check database connectivity and configuration')
   }
   if (database.responseTime > 1000) {
-    recommendations.push(
-      'Consider optimizing database queries or adding indexes'
-    )
+    recommendations.push('Consider optimizing database queries or adding indexes')
   }
 
   // Cache recommendations
@@ -841,16 +820,12 @@ function generateRecommendations(
     recommendations.push('Check KV cache service and namespace configuration')
   }
   if (cache.responseTime > 500) {
-    recommendations.push(
-      'Consider cache warming strategies or优化 cache key patterns'
-    )
+    recommendations.push('Consider cache warming strategies or优化 cache key patterns')
   }
 
   // Storage recommendations
   if (storage.status !== 'healthy') {
-    recommendations.push(
-      'Check R2 storage configuration and bucket permissions'
-    )
+    recommendations.push('Check R2 storage configuration and bucket permissions')
   }
   if (storage.responseTime > 2000) {
     recommendations.push('Consider implementing CDN or multi-region storage')
@@ -876,22 +851,15 @@ function calculateHealthScore(systemHealth: SystemHealthReport): number {
 
   // Deduct points for slow response times
   if (systemHealth.metrics.averageResponseTime > 1000) {
-    score -= Math.min(
-      20,
-      (systemHealth.metrics.averageResponseTime - 1000) / 100
-    )
+    score -= Math.min(20, (systemHealth.metrics.averageResponseTime - 1000) / 100)
   }
 
   // Deduct points for critical alerts
-  const criticalAlerts = systemHealth.alerts.filter(
-    a => a.severity === 'critical'
-  ).length
+  const criticalAlerts = systemHealth.alerts.filter(a => a.severity === 'critical').length
   score -= criticalAlerts * 25
 
   // Deduct points for error alerts
-  const errorAlerts = systemHealth.alerts.filter(
-    a => a.severity === 'error'
-  ).length
+  const errorAlerts = systemHealth.alerts.filter(a => a.severity === 'error').length
   score -= errorAlerts * 10
 
   return Math.max(0, Math.min(100, score))

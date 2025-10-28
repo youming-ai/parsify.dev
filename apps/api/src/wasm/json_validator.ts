@@ -16,16 +16,20 @@ export const JsonValidationOptionsSchema = z.object({
   allErrors: z.boolean().default(true),
   verbose: z.boolean().default(true),
   format: z.enum(['fast', 'full']).default('fast'),
-  schemas: z.array(z.object({
-    $id: z.string(),
-    $schema: z.string().optional(),
-    type: z.string().optional(),
-    properties: z.record(z.any()).optional(),
-    required: z.array(z.string()).optional(),
-    additionalProperties: z.union([z.boolean(), z.record(z.any())]).optional(),
-    definitions: z.record(z.any()).optional(),
-    $ref: z.string().optional(),
-  })).optional(),
+  schemas: z
+    .array(
+      z.object({
+        $id: z.string(),
+        $schema: z.string().optional(),
+        type: z.string().optional(),
+        properties: z.record(z.any()).optional(),
+        required: z.array(z.string()).optional(),
+        additionalProperties: z.union([z.boolean(), z.record(z.any())]).optional(),
+        definitions: z.record(z.any()).optional(),
+        $ref: z.string().optional(),
+      })
+    )
+    .optional(),
 })
 
 export type JsonValidationOptions = z.infer<typeof JsonValidationOptionsSchema>
@@ -48,31 +52,41 @@ export type CustomValidationRule = z.infer<typeof CustomValidationRuleSchema>
 // Result schema for JSON validation
 export const JsonValidationResultSchema = z.object({
   valid: z.boolean(),
-  errors: z.array(z.object({
-    keyword: z.string(),
-    instancePath: z.string(),
-    schemaPath: z.string(),
-    message: z.string(),
-    params: z.record(z.any()),
-    data: z.any(),
-    dataPath: z.string(),
-    propertyName: z.string().optional(),
-    line: z.number().optional(),
-    column: z.number().optional(),
-    position: z.number().optional(),
-  })).optional(),
-  warnings: z.array(z.object({
-    message: z.string(),
-    path: z.string(),
-    line: z.number().optional(),
-    column: z.number().optional(),
-    position: z.number().optional(),
-  })).optional(),
-  schema: z.object({
-    $id: z.string(),
-    $schema: z.string().optional(),
-    valid: z.boolean(),
-  }).optional(),
+  errors: z
+    .array(
+      z.object({
+        keyword: z.string(),
+        instancePath: z.string(),
+        schemaPath: z.string(),
+        message: z.string(),
+        params: z.record(z.any()),
+        data: z.any(),
+        dataPath: z.string(),
+        propertyName: z.string().optional(),
+        line: z.number().optional(),
+        column: z.number().optional(),
+        position: z.number().optional(),
+      })
+    )
+    .optional(),
+  warnings: z
+    .array(
+      z.object({
+        message: z.string(),
+        path: z.string(),
+        line: z.number().optional(),
+        column: z.number().optional(),
+        position: z.number().optional(),
+      })
+    )
+    .optional(),
+  schema: z
+    .object({
+      $id: z.string(),
+      $schema: z.string().optional(),
+      valid: z.boolean(),
+    })
+    .optional(),
   metadata: z.object({
     validationTime: z.number(),
     parsingTime: z.number(),
@@ -126,7 +140,7 @@ export class JsonSizeError extends JsonValidationError {
 }
 
 export class JsonDepthError extends JsonValidationError {
-  constructor(message: string, depth: number) {
+  constructor(message: string, _depth: number) {
     super(message, 'DEPTH_ERROR')
     this.name = 'JsonDepthError'
   }
@@ -242,29 +256,29 @@ export class JsonValidator {
 
       // Validate against schema
       const validationStartTime = performance.now()
-      const schemaValidationResult = await this.validateAgainstSchema(parsedData, schema, validatedOptions)
+      const schemaValidationResult = await this.validateAgainstSchema(
+        parsedData,
+        schema,
+        validatedOptions
+      )
       const validationTime = performance.now() - validationStartTime
 
       // Apply custom validation rules
       const customRuleResults = await this.applyCustomRules(parsedData, schema, validatedOptions)
 
       // Combine results
-      const result = this.combineResults(
-        schemaValidationResult,
-        customRuleResults,
-        {
-          validationTime,
-          parsingTime: parseTime,
-          totalTime: performance.now() - startTime,
-          dataSize: JSON.stringify(parsedData).length,
-          schemaSize: JSON.stringify(schema).length,
-          wasWasmUsed: this.wasmModule !== null,
-        }
-      )
+      const result = this.combineResults(schemaValidationResult, customRuleResults, {
+        validationTime,
+        parsingTime: parseTime,
+        totalTime: performance.now() - startTime,
+        dataSize: JSON.stringify(parsedData).length,
+        schemaSize: JSON.stringify(schema).length,
+        wasWasmUsed: this.wasmModule !== null,
+      })
 
       return result
     } catch (error) {
-      const totalTime = performance.now() - startTime
+      const _totalTime = performance.now() - startTime
 
       if (error instanceof JsonValidationError) {
         throw error
@@ -378,13 +392,14 @@ export class JsonValidator {
         keyword: validatedRule.name,
         type: 'object',
         schemaType: 'boolean',
-        compile: (schemaVal: boolean) => {
+        compile: (_schemaVal: boolean) => {
           return function validate(data: any) {
             return validatedRule.validator(data)
           }
         },
         error: {
-          message: validatedRule.errorMessage || `Custom validation failed for ${validatedRule.name}`,
+          message:
+            validatedRule.errorMessage || `Custom validation failed for ${validatedRule.name}`,
         },
       })
     }
@@ -435,16 +450,12 @@ export class JsonValidator {
     // Validate schema
     if (typeof schema === 'string') {
       if (schema.length > this.maxSchemaSize) {
-        throw new JsonSizeError(
-          `Schema exceeds maximum size limit of ${this.maxSchemaSize} bytes`
-        )
+        throw new JsonSizeError(`Schema exceeds maximum size limit of ${this.maxSchemaSize} bytes`)
       }
     } else if (typeof schema === 'object') {
       const schemaString = JSON.stringify(schema)
       if (schemaString.length > this.maxSchemaSize) {
-        throw new JsonSizeError(
-          `Schema exceeds maximum size limit of ${this.maxSchemaSize} bytes`
-        )
+        throw new JsonSizeError(`Schema exceeds maximum size limit of ${this.maxSchemaSize} bytes`)
       }
     }
 
@@ -465,25 +476,18 @@ export class JsonValidator {
     }
 
     if (jsonString.length > this.maxInputSize) {
-      throw new JsonSizeError(
-        `Input exceeds maximum size limit of ${this.maxInputSize} bytes`
-      )
+      throw new JsonSizeError(`Input exceeds maximum size limit of ${this.maxInputSize} bytes`)
     }
 
     // Check for depth
     const depth = this.getMaxBracketDepth(jsonString)
     if (depth > options.maxDepth) {
-      throw new JsonDepthError(
-        `Input exceeds maximum depth limit of ${options.maxDepth}`,
-        depth
-      )
+      throw new JsonDepthError(`Input exceeds maximum depth limit of ${options.maxDepth}`, depth)
     }
 
     // Check for potentially malicious content
     if (this.containsSuspiciousContent(jsonString)) {
-      throw new JsonValidationError(
-        'Input contains potentially malicious content'
-      )
+      throw new JsonValidationError('Input contains potentially malicious content')
     }
   }
 
@@ -500,7 +504,10 @@ export class JsonValidator {
     }
 
     // Basic JSON Schema validation
-    if (schema.type && !['object', 'array', 'string', 'number', 'boolean', 'null'].includes(schema.type)) {
+    if (
+      schema.type &&
+      !['object', 'array', 'string', 'number', 'boolean', 'null'].includes(schema.type)
+    ) {
       throw new JsonValidationError(`Invalid schema type: ${schema.type}`, 'INVALID_SCHEMA')
     }
   }
@@ -558,8 +565,8 @@ export class JsonValidator {
    */
   private async applyCustomRules(
     data: any,
-    schema: any | null,
-    options: JsonValidationOptions
+    _schema: any | null,
+    _options: JsonValidationOptions
   ): Promise<{
     errors?: any[]
     warnings?: any[]
@@ -570,8 +577,9 @@ export class JsonValidator {
     let rulesApplied = 0
 
     // Get rules sorted by priority
-    const sortedRules = Array.from(this.customRules.values())
-      .sort((a, b) => b.priority - a.priority)
+    const sortedRules = Array.from(this.customRules.values()).sort(
+      (a, b) => b.priority - a.priority
+    )
 
     for (const rule of sortedRules) {
       try {
@@ -622,13 +630,14 @@ export class JsonValidator {
    */
   private combineResults(
     schemaResult: { valid: boolean; errors?: any[] },
-    customRuleResult: { errors?: any[]; warnings?: any[]; rulesApplied: number },
+    customRuleResult: {
+      errors?: any[]
+      warnings?: any[]
+      rulesApplied: number
+    },
     metrics: any
   ): JsonValidationResult {
-    const allErrors = [
-      ...(schemaResult.errors || []),
-      ...(customRuleResult.errors || []),
-    ]
+    const allErrors = [...(schemaResult.errors || []), ...(customRuleResult.errors || [])]
 
     const errorCount = allErrors.length
     const warningCount = customRuleResult.warnings?.length || 0
@@ -656,9 +665,7 @@ export class JsonValidator {
     }
 
     if (Array.isArray(data)) {
-      return Math.max(
-        ...data.map(item => this.calculateDepth(item, currentDepth + 1))
-      )
+      return Math.max(...data.map(item => this.calculateDepth(item, currentDepth + 1)))
     }
 
     return Math.max(
@@ -686,9 +693,9 @@ export class JsonValidator {
         .replace(/line\s+\d+/i, '')
         .replace(/column\s+\d+/i, '')
         .trim(),
-      line: lineMatch ? parseInt(lineMatch[1]) : undefined,
-      column: columnMatch ? parseInt(columnMatch[1]) : undefined,
-      position: positionMatch ? parseInt(positionMatch[1]) : undefined,
+      line: lineMatch ? parseInt(lineMatch[1], 10) : undefined,
+      column: columnMatch ? parseInt(columnMatch[1], 10) : undefined,
+      position: positionMatch ? parseInt(positionMatch[1], 10) : undefined,
     }
   }
 
@@ -746,9 +753,9 @@ export class JsonValidator {
   /**
    * Get line number for a JSON path
    */
-  private getLineForPath(jsonString: string, path: string): number | undefined {
+  private getLineForPath(jsonString: string, _path: string): number | undefined {
     try {
-      const lines = jsonString.split('\n')
+      const _lines = jsonString.split('\n')
       // This is a simplified implementation
       // A more robust implementation would parse the JSON and track positions
       return 1
@@ -760,7 +767,7 @@ export class JsonValidator {
   /**
    * Get column number for a JSON path
    */
-  private getColumnForPath(jsonString: string, path: string): number | undefined {
+  private getColumnForPath(_jsonString: string, _path: string): number | undefined {
     try {
       // This is a simplified implementation
       // A more robust implementation would parse the JSON and track positions
@@ -781,13 +788,7 @@ export class JsonValidator {
       priority: 10,
       validator: (data: any) => {
         const jsonString = JSON.stringify(data)
-        const xssPatterns = [
-          /<script/i,
-          /javascript:/i,
-          /vbscript:/i,
-          /onload=/i,
-          /onerror=/i,
-        ]
+        const xssPatterns = [/<script/i, /javascript:/i, /vbscript:/i, /onload=/i, /onerror=/i]
         return !xssPatterns.some(pattern => pattern.test(jsonString))
       },
       errorMessage: 'Data contains potentially dangerous content',

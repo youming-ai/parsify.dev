@@ -1,21 +1,15 @@
-import { D1Database } from '@cloudflare/workers-types'
+import type { D1Database } from '@cloudflare/workers-types'
+import { createDatabaseConnection, type DatabaseConnection } from './connection'
 import {
-  DatabaseConnection,
-  createDatabaseConnection,
-  DEFAULT_DATABASE_CONFIG,
-} from './connection'
-import {
-  EnhancedTransaction,
-  TransactionManager,
+  type EnhancedTransaction,
   globalTransactionManager,
-  TransactionUtils,
-  TransactionConfig,
   IsolationLevel,
-  TransactionOptions,
-  TransactionResult,
+  type TransactionConfig,
+  type TransactionManager,
+  TransactionUtils,
 } from './transaction'
-import { TransactionHelper, TransactionTemplates } from './transaction-utils'
 import { globalTransactionMonitor } from './transaction-monitoring'
+import { TransactionHelper, TransactionTemplates } from './transaction-utils'
 
 export interface DatabaseClientConfig {
   maxConnections?: number
@@ -24,21 +18,13 @@ export interface DatabaseClientConfig {
   retryDelayMs?: number
   enableMetrics?: boolean
   enableTransactions?: boolean
-  isolationLevel?:
-    | 'READ_UNCOMMITTED'
-    | 'READ_COMMITTED'
-    | 'REPEATABLE_READ'
-    | 'SERIALIZABLE'
+  isolationLevel?: 'READ_UNCOMMITTED' | 'READ_COMMITTED' | 'REPEATABLE_READ' | 'SERIALIZABLE'
 }
 
 export interface TransactionOptions {
   timeout?: number
   retries?: number
-  isolationLevel?:
-    | 'READ_UNCOMMITTED'
-    | 'READ_COMMITTED'
-    | 'REPEATABLE_READ'
-    | 'SERIALIZABLE'
+  isolationLevel?: 'READ_UNCOMMITTED' | 'READ_COMMITTED' | 'REPEATABLE_READ' | 'SERIALIZABLE'
 }
 
 export interface TransactionResult<T = any> {
@@ -192,11 +178,7 @@ export class DatabaseClient {
       ...config,
     }
 
-    return TransactionUtils.withRetryableTransaction(
-      this.connection,
-      callback,
-      enhancedConfig
-    )
+    return TransactionUtils.withRetryableTransaction(this.connection, callback, enhancedConfig)
   }
 
   /**
@@ -239,11 +221,7 @@ export class DatabaseClient {
       templateObj = template
     }
 
-    return TransactionHelper.executeTemplate<T>(
-      this.connection,
-      templateObj,
-      context
-    )
+    return TransactionHelper.executeTemplate<T>(this.connection, templateObj, context)
   }
 
   /**
@@ -259,11 +237,7 @@ export class DatabaseClient {
       expectedResult: op.expectedResult as any,
     }))
 
-    return TransactionHelper.executeBatch<T>(
-      this.connection,
-      batchOperations,
-      config
-    )
+    return TransactionHelper.executeBatch<T>(this.connection, batchOperations, config)
   }
 
   /**
@@ -388,17 +362,12 @@ export class DatabaseClient {
  */
 export class Transaction {
   private connection: DatabaseConnection
-  private transactionId: number
   private options: TransactionOptions
   private isCommitted: boolean = false
   private isRolledBack: boolean = false
   private queries: Array<{ sql: string; params?: any[] }> = []
 
-  constructor(
-    connection: DatabaseConnection,
-    transactionId: number,
-    options: TransactionOptions
-  ) {
+  constructor(connection: DatabaseConnection, transactionId: number, options: TransactionOptions) {
     this.connection = connection
     this.transactionId = transactionId
     this.options = options
@@ -451,10 +420,7 @@ export class Transaction {
   /**
    * Execute a statement within the transaction
    */
-  async execute(
-    sql: string,
-    params?: any[]
-  ): Promise<{ changes: number; lastRowId?: number }> {
+  async execute(sql: string, params?: any[]): Promise<{ changes: number; lastRowId?: number }> {
     if (this.isCommitted || this.isRolledBack) {
       throw new Error('Transaction has already been completed')
     }
@@ -538,11 +504,7 @@ export class DatabasePool {
   private currentIndex: number = 0
   private config: DatabaseClientConfig
 
-  constructor(
-    db: D1Database,
-    poolSize: number = 5,
-    config: DatabaseClientConfig = {}
-  ) {
+  constructor(db: D1Database, poolSize: number = 5, config: DatabaseClientConfig = {}) {
     this.config = config
     this.initializePool(db, poolSize)
   }
@@ -602,9 +564,7 @@ export class DatabasePool {
    * Check health of all connections
    */
   async healthCheck(): Promise<boolean> {
-    const results = await Promise.all(
-      this.connections.map(client => client.healthCheck())
-    )
+    const results = await Promise.all(this.connections.map(client => client.healthCheck()))
     return results.every(healthy => healthy)
   }
 
@@ -618,18 +578,10 @@ export class DatabasePool {
       totalConnections: this.connections.length,
       healthyConnections: metrics.filter(m => m.isHealthy).length,
       totalQueries: metrics.reduce((sum, m) => sum + m.totalQueries, 0),
-      successfulQueries: metrics.reduce(
-        (sum, m) => sum + m.successfulQueries,
-        0
-      ),
+      successfulQueries: metrics.reduce((sum, m) => sum + m.successfulQueries, 0),
       failedQueries: metrics.reduce((sum, m) => sum + m.failedQueries, 0),
-      averageQueryTime:
-        metrics.reduce((sum, m) => sum + m.averageQueryTime, 0) /
-        metrics.length,
-      connectionPoolSize: metrics.reduce(
-        (sum, m) => sum + m.connectionPoolSize,
-        0
-      ),
+      averageQueryTime: metrics.reduce((sum, m) => sum + m.averageQueryTime, 0) / metrics.length,
+      connectionPoolSize: metrics.reduce((sum, m) => sum + m.connectionPoolSize, 0),
     }
   }
 
@@ -685,33 +637,33 @@ export const DEFAULT_DATABASE_CLIENT_CONFIG: DatabaseClientConfig = {
 
 // Enhanced transaction exports
 export {
+  type BatchOperation,
   EnhancedTransaction,
-  TransactionManager,
-  TransactionUtils,
-  TransactionHelper,
-  TransactionTemplates,
   globalTransactionManager,
   IsolationLevel,
-  TransactionStatus,
-  TransactionError,
   type TransactionConfig,
-  type TransactionMetrics,
-  type BatchOperation,
-  type TransactionTemplate,
-  type TransactionWorkflow,
   type TransactionContext,
+  TransactionError,
+  TransactionHelper,
+  TransactionManager,
+  type TransactionMetrics,
+  TransactionStatus,
+  type TransactionTemplate,
+  TransactionTemplates,
+  TransactionUtils,
+  type TransactionWorkflow,
 } from './transaction'
 
 export {
   globalTransactionMonitor,
-  type TransactionMonitoringConfig,
   type TransactionAlert,
-  type TransactionSnapshot,
+  type TransactionMonitoringConfig,
   type TransactionReport,
+  type TransactionSnapshot,
 } from './transaction-monitoring'
 
 export {
   DistributedTransactionCoordinator,
-  TransactionOptimizer,
   type DistributedTransactionCoordinator as DistributedTxCoordinator,
+  TransactionOptimizer,
 } from './transaction-utils'

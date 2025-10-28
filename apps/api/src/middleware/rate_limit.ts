@@ -1,12 +1,12 @@
-import { Context, Next } from 'hono'
-import { RateLimitService, RateLimitCheck, RateLimitOptions } from '../services/rate_limit_service'
-import { AuthContext } from './auth'
+import type { Context, Next } from 'hono'
+import { type RateLimitCheck, RateLimitService } from '../services/rate_limit_service'
+import type { AuthContext } from './auth'
 
 // Rate limiting strategies
 export enum RateLimitStrategy {
   TOKEN_BUCKET = 'token_bucket',
   SLIDING_WINDOW = 'sliding_window',
-  FIXED_WINDOW = 'fixed_window'
+  FIXED_WINDOW = 'fixed_window',
 }
 
 // Rate limiting algorithm types
@@ -108,7 +108,7 @@ export const rateLimitMiddleware = (config: RateLimitMiddlewareConfig = {}) => {
         anonymous: 100,
         free: 1000,
         pro: 5000,
-        enterprise: 50000
+        enterprise: 50000,
       },
       route = {},
       quotaType = 'api_requests',
@@ -119,24 +119,25 @@ export const rateLimitMiddleware = (config: RateLimitMiddlewareConfig = {}) => {
       distributed = true,
       cacheTTL = 300, // 5 minutes
       bypassUsers = [],
-      headers = true
+      headers = true,
     } = config
 
     // Skip rate limiting if condition is met
-    if (skip && await skip(c)) {
+    if (skip && (await skip(c))) {
       await next()
       return
     }
 
     const requestId = c.get('requestId')
-    const cloudflare = c.get('cloudflare')
+    const _cloudflare = c.get('cloudflare')
     const auth = c.get('auth') as AuthContext
 
     // Get client IP
-    const clientIP = c.req.header('CF-Connecting-IP') ||
-                    c.req.header('X-Forwarded-For') ||
-                    c.req.header('X-Real-IP') ||
-                    'unknown'
+    const clientIP =
+      c.req.header('CF-Connecting-IP') ||
+      c.req.header('X-Forwarded-For') ||
+      c.req.header('X-Real-IP') ||
+      'unknown'
 
     try {
       // Generate rate limit key
@@ -155,7 +156,7 @@ export const rateLimitMiddleware = (config: RateLimitMiddlewareConfig = {}) => {
         db: c.env.DB,
         kv: c.env.CACHE,
         auditEnabled: true,
-        enableDistributedLimiting: distributed
+        enableDistributedLimiting: distributed,
       })
 
       // Determine appropriate limit based on user tier
@@ -216,7 +217,7 @@ export const rateLimitMiddleware = (config: RateLimitMiddlewareConfig = {}) => {
             quotaType,
             amount: weight,
             customLimit: limit,
-            customPeriod: period
+            customPeriod: period,
           })
       }
 
@@ -243,7 +244,6 @@ export const rateLimitMiddleware = (config: RateLimitMiddlewareConfig = {}) => {
 
       // Continue to next middleware
       await next()
-
     } catch (error) {
       console.error('Rate limiting middleware error:', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -280,8 +280,8 @@ async function checkTokenBucketRateLimit(
     // Try to get existing bucket state from cache
     let bucket: TokenBucketState
 
-    if (distributed && service['kv']) {
-      const cached = await service['kv'].get(bucketKey)
+    if (distributed && service.kv) {
+      const cached = await service.kv.get(bucketKey)
       if (cached) {
         bucket = JSON.parse(cached) as TokenBucketState
       } else {
@@ -289,7 +289,7 @@ async function checkTokenBucketRateLimit(
           tokens: maxTokens,
           lastRefill: now,
           refillRate,
-          maxTokens
+          maxTokens,
         }
       }
     } else {
@@ -297,7 +297,7 @@ async function checkTokenBucketRateLimit(
         tokens: maxTokens,
         lastRefill: now,
         refillRate,
-        maxTokens
+        maxTokens,
       }
     }
 
@@ -312,9 +312,9 @@ async function checkTokenBucketRateLimit(
       bucket.tokens -= weight
 
       // Save updated bucket state
-      if (distributed && service['kv']) {
-        await service['kv'].put(bucketKey, JSON.stringify(bucket), {
-          expirationTtl: cacheTTL
+      if (distributed && service.kv) {
+        await service.kv.put(bucketKey, JSON.stringify(bucket), {
+          expirationTtl: cacheTTL,
         })
       }
 
@@ -322,7 +322,7 @@ async function checkTokenBucketRateLimit(
         allowed: true,
         remaining: Math.floor(bucket.tokens),
         limit: maxTokens,
-        resetTime: now + (window * 1000)
+        resetTime: now + window * 1000,
       }
     } else {
       // Not enough tokens - calculate when tokens will be available
@@ -330,9 +330,9 @@ async function checkTokenBucketRateLimit(
       const waitTime = (tokensNeeded / refillRate) * 1000 // in milliseconds
 
       // Save current bucket state
-      if (distributed && service['kv']) {
-        await service['kv'].put(bucketKey, JSON.stringify(bucket), {
-          expirationTtl: cacheTTL
+      if (distributed && service.kv) {
+        await service.kv.put(bucketKey, JSON.stringify(bucket), {
+          expirationTtl: cacheTTL,
         })
       }
 
@@ -341,7 +341,7 @@ async function checkTokenBucketRateLimit(
         remaining: 0,
         limit: maxTokens,
         resetTime: now + waitTime,
-        retryAfter: waitTime
+        retryAfter: waitTime,
       }
     }
   } catch (error) {
@@ -352,7 +352,7 @@ async function checkTokenBucketRateLimit(
       identifier: key,
       quotaType: 'api_requests',
       amount: weight,
-      customLimit: limit
+      customLimit: limit,
     })
   }
 }
@@ -377,22 +377,22 @@ async function checkSlidingWindowRateLimit(
     // Try to get existing window state from cache
     let state: SlidingWindowState
 
-    if (distributed && service['kv']) {
-      const cached = await service['kv'].get(windowKey)
+    if (distributed && service.kv) {
+      const cached = await service.kv.get(windowKey)
       if (cached) {
         state = JSON.parse(cached) as SlidingWindowState
       } else {
         state = {
           requests: [],
           windowSizeMs,
-          maxRequests: limit
+          maxRequests: limit,
         }
       }
     } else {
       state = {
         requests: [],
         windowSizeMs,
-        maxRequests: limit
+        maxRequests: limit,
       }
     }
 
@@ -408,13 +408,13 @@ async function checkSlidingWindowRateLimit(
       // Add current request
       state.requests.push({
         timestamp: now,
-        count: weight
+        count: weight,
       })
 
       // Save updated state
-      if (distributed && service['kv']) {
-        await service['kv'].put(windowKey, JSON.stringify(state), {
-          expirationTtl: cacheTTL
+      if (distributed && service.kv) {
+        await service.kv.put(windowKey, JSON.stringify(state), {
+          expirationTtl: cacheTTL,
         })
       }
 
@@ -422,18 +422,20 @@ async function checkSlidingWindowRateLimit(
         allowed: true,
         remaining: state.maxRequests - currentUsage - weight,
         limit: state.maxRequests,
-        resetTime: now + state.windowSizeMs
+        resetTime: now + state.windowSizeMs,
       }
     } else {
       // Rate limit exceeded - calculate when the oldest request will expire
       const oldestRequest = state.requests[0]
-      const resetTime = oldestRequest ? oldestRequest.timestamp + state.windowSizeMs : now + state.windowSizeMs
+      const resetTime = oldestRequest
+        ? oldestRequest.timestamp + state.windowSizeMs
+        : now + state.windowSizeMs
       const retryAfter = Math.max(0, resetTime - now)
 
       // Save current state
-      if (distributed && service['kv']) {
-        await service['kv'].put(windowKey, JSON.stringify(state), {
-          expirationTtl: cacheTTL
+      if (distributed && service.kv) {
+        await service.kv.put(windowKey, JSON.stringify(state), {
+          expirationTtl: cacheTTL,
         })
       }
 
@@ -442,7 +444,7 @@ async function checkSlidingWindowRateLimit(
         remaining: 0,
         limit: state.maxRequests,
         resetTime,
-        retryAfter
+        retryAfter,
       }
     }
   } catch (error) {
@@ -453,7 +455,7 @@ async function checkSlidingWindowRateLimit(
       identifier: key,
       quotaType: 'api_requests',
       amount: weight,
-      customLimit: limit
+      customLimit: limit,
     })
   }
 }
@@ -480,8 +482,8 @@ async function checkFixedWindowRateLimit(
     // Try to get existing window state from cache
     let state: FixedWindowState
 
-    if (distributed && service['kv']) {
-      const cached = await service['kv'].get(windowKey)
+    if (distributed && service.kv) {
+      const cached = await service.kv.get(windowKey)
       if (cached) {
         state = JSON.parse(cached) as FixedWindowState
       } else {
@@ -489,7 +491,7 @@ async function checkFixedWindowRateLimit(
           count: 0,
           windowStart: currentWindowStart,
           windowSizeMs,
-          maxRequests: limit
+          maxRequests: limit,
         }
       }
     } else {
@@ -497,7 +499,7 @@ async function checkFixedWindowRateLimit(
         count: 0,
         windowStart: currentWindowStart,
         windowSizeMs,
-        maxRequests: limit
+        maxRequests: limit,
       }
     }
 
@@ -512,9 +514,9 @@ async function checkFixedWindowRateLimit(
       state.count += weight
 
       // Save updated state
-      if (distributed && service['kv']) {
-        await service['kv'].put(windowKey, JSON.stringify(state), {
-          expirationTtl: cacheTTL
+      if (distributed && service.kv) {
+        await service.kv.put(windowKey, JSON.stringify(state), {
+          expirationTtl: cacheTTL,
         })
       }
 
@@ -522,16 +524,16 @@ async function checkFixedWindowRateLimit(
         allowed: true,
         remaining: state.maxRequests - state.count,
         limit: state.maxRequests,
-        resetTime: windowEnd
+        resetTime: windowEnd,
       }
     } else {
       // Rate limit exceeded
       const retryAfter = windowEnd - now
 
       // Save current state
-      if (distributed && service['kv']) {
-        await service['kv'].put(windowKey, JSON.stringify(state), {
-          expirationTtl: cacheTTL
+      if (distributed && service.kv) {
+        await service.kv.put(windowKey, JSON.stringify(state), {
+          expirationTtl: cacheTTL,
         })
       }
 
@@ -540,7 +542,7 @@ async function checkFixedWindowRateLimit(
         remaining: 0,
         limit: state.maxRequests,
         resetTime: windowEnd,
-        retryAfter
+        retryAfter,
       }
     }
   } catch (error) {
@@ -551,7 +553,7 @@ async function checkFixedWindowRateLimit(
       identifier: key,
       quotaType: 'api_requests',
       amount: weight,
-      customLimit: limit
+      customLimit: limit,
     })
   }
 }
@@ -560,7 +562,7 @@ async function checkFixedWindowRateLimit(
  * Generate default rate limit key based on request context
  */
 function generateDefaultRateLimitKey(
-  c: Context,
+  _c: Context,
   auth: AuthContext,
   clientIP: string,
   route: { path?: string; method?: string }
@@ -601,7 +603,7 @@ function handleRateLimitError(
     remaining: check.remaining,
     resetTime: check.resetTime,
     strategy,
-    requestId
+    requestId,
   }
 
   if (check.retryAfter) {
@@ -622,11 +624,11 @@ export const RateLimitPresets = {
       anonymous: 100,
       free: 1000,
       pro: 5000,
-      enterprise: 50000
+      enterprise: 50000,
     },
     strategy: RateLimitStrategy.TOKEN_BUCKET,
     quotaType: 'api_requests',
-    period: 'hour' as const
+    period: 'hour' as const,
   },
 
   API_HEAVY: {
@@ -636,12 +638,12 @@ export const RateLimitPresets = {
       anonymous: 10,
       free: 100,
       pro: 500,
-      enterprise: 5000
+      enterprise: 5000,
     },
     strategy: RateLimitStrategy.TOKEN_BUCKET,
     quotaType: 'api_requests',
     period: 'hour' as const,
-    route: { weight: 10 }
+    route: { weight: 10 },
   },
 
   // File upload endpoints
@@ -652,11 +654,11 @@ export const RateLimitPresets = {
       anonymous: 5,
       free: 50,
       pro: 250,
-      enterprise: 2500
+      enterprise: 2500,
     },
     strategy: RateLimitStrategy.SLIDING_WINDOW,
     quotaType: 'file_uploads',
-    period: 'hour' as const
+    period: 'hour' as const,
   },
 
   // Job execution endpoints
@@ -667,11 +669,11 @@ export const RateLimitPresets = {
       anonymous: 2,
       free: 20,
       pro: 100,
-      enterprise: 1000
+      enterprise: 1000,
     },
     strategy: RateLimitStrategy.FIXED_WINDOW,
     quotaType: 'jobs_per_hour',
-    period: 'hour' as const
+    period: 'hour' as const,
   },
 
   // Authentication endpoints
@@ -682,63 +684,65 @@ export const RateLimitPresets = {
       anonymous: 5,
       free: 10,
       pro: 20,
-      enterprise: 50
+      enterprise: 50,
     },
     strategy: RateLimitStrategy.SLIDING_WINDOW,
     quotaType: 'auth_attempts',
-    period: 'minute' as const
-  }
+    period: 'minute' as const,
+  },
 }
 
 // Middleware factory functions
 export const createApiRateLimit = (customConfig?: Partial<RateLimitMiddlewareConfig>) => {
   return rateLimitMiddleware({
     ...RateLimitPresets.API_DEFAULT,
-    ...customConfig
+    ...customConfig,
   })
 }
 
 export const createHeavyApiRateLimit = (customConfig?: Partial<RateLimitMiddlewareConfig>) => {
   return rateLimitMiddleware({
     ...RateLimitPresets.API_HEAVY,
-    ...customConfig
+    ...customConfig,
   })
 }
 
 export const createFileUploadRateLimit = (customConfig?: Partial<RateLimitMiddlewareConfig>) => {
   return rateLimitMiddleware({
     ...RateLimitPresets.FILE_UPLOAD,
-    ...customConfig
+    ...customConfig,
   })
 }
 
 export const createJobExecutionRateLimit = (customConfig?: Partial<RateLimitMiddlewareConfig>) => {
   return rateLimitMiddleware({
     ...RateLimitPresets.JOB_EXECUTION,
-    ...customConfig
+    ...customConfig,
   })
 }
 
 export const createAuthRateLimit = (customConfig?: Partial<RateLimitMiddlewareConfig>) => {
   return rateLimitMiddleware({
     ...RateLimitPresets.AUTH,
-    ...customConfig
+    ...customConfig,
   })
 }
 
 // Helper functions
 export const getClientIP = (c: Context): string => {
-  return c.req.header('CF-Connecting-IP') ||
-         c.req.header('X-Forwarded-For') ||
-         c.req.header('X-Real-IP') ||
-         'unknown'
+  return (
+    c.req.header('CF-Connecting-IP') ||
+    c.req.header('X-Forwarded-For') ||
+    c.req.header('X-Real-IP') ||
+    'unknown'
+  )
 }
 
 export const getUserTierMultiplier = (tier: string): number => {
   const multipliers: Record<string, number> = {
     free: 1,
     pro: 5,
-    enterprise: 20
+    enterprise: 20,
   }
   return multipliers[tier] || 1
 }

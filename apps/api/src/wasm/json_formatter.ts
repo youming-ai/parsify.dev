@@ -64,12 +64,7 @@ export class JsonFormattingError extends Error {
 }
 
 export class JsonValidationError extends JsonFormattingError {
-  constructor(
-    message: string,
-    line?: number,
-    column?: number,
-    position?: number
-  ) {
+  constructor(message: string, line?: number, column?: number, position?: number) {
     super(message, 'VALIDATION_ERROR', line, column, position)
     this.name = 'JsonValidationError'
   }
@@ -83,7 +78,7 @@ export class JsonSizeError extends JsonFormattingError {
 }
 
 export class JsonDepthError extends JsonFormattingError {
-  constructor(message: string, depth: number) {
+  constructor(message: string, _depth: number) {
     super(message, 'DEPTH_ERROR')
     this.name = 'JsonDepthError'
   }
@@ -177,10 +172,7 @@ export class JsonFormatter {
       const statistics = this.analyzeJson(parsed)
 
       // Apply transformations based on options
-      const transformed = await this.applyTransformations(
-        parsed,
-        validatedOptions
-      )
+      const transformed = await this.applyTransformations(parsed, validatedOptions)
 
       // Format JSON
       const formatStartTime = performance.now()
@@ -202,8 +194,7 @@ export class JsonFormatter {
         original: jsonString,
         originalSize: jsonString.length,
         formattedSize: formatted.length,
-        compressionRatio:
-          jsonString.length > 0 ? formatted.length / jsonString.length : 1,
+        compressionRatio: jsonString.length > 0 ? formatted.length / jsonString.length : 1,
         errors: null,
         metadata: {
           parsingTime: parseTime,
@@ -213,7 +204,7 @@ export class JsonFormatter {
         },
       }
     } catch (error) {
-      const totalTime = performance.now() - startTime
+      const _totalTime = performance.now() - startTime
 
       if (error instanceof JsonFormattingError) {
         throw error
@@ -250,16 +241,12 @@ export class JsonFormatter {
     }
 
     if (jsonString.length > this.maxInputSize) {
-      throw new JsonSizeError(
-        `Input exceeds maximum size limit of ${this.maxInputSize} bytes`
-      )
+      throw new JsonSizeError(`Input exceeds maximum size limit of ${this.maxInputSize} bytes`)
     }
 
     // Check for potentially malicious content
     if (this.containsSuspiciousContent(jsonString)) {
-      throw new JsonValidationError(
-        'Input contains potentially malicious content'
-      )
+      throw new JsonValidationError('Input contains potentially malicious content')
     }
   }
 
@@ -272,13 +259,8 @@ export class JsonFormatter {
       // Use SIMDJSON for high-performance parsing
       const parsed = this.wasmModule.parse(jsonString)
       return parsed
-    } catch (error) {
-      // Fallback to native JSON parsing if custom parser fails
-      try {
-        return JSON.parse(jsonString)
-      } catch (fallbackError) {
-        throw fallbackError
-      }
+    } catch (_error) {
+      return JSON.parse(jsonString)
     }
   }
 
@@ -328,17 +310,14 @@ export class JsonFormatter {
         stats.numberCount += itemStats.numberCount
         stats.booleanCount += itemStats.booleanCount
         stats.nullCount += itemStats.nullCount
-        stats.maxStringLength = Math.max(
-          stats.maxStringLength,
-          itemStats.maxStringLength
-        )
+        stats.maxStringLength = Math.max(stats.maxStringLength, itemStats.maxStringLength)
         stats.truncated = stats.truncated || itemStats.truncated
       }
     } else if (typeof data === 'object' && data !== null) {
       stats.objectCount++
       stats.valueCount++
 
-      for (const [key, value] of Object.entries(data)) {
+      for (const [_key, value] of Object.entries(data)) {
         stats.keyCount++
         const valueStats = this.analyzeJson(value, currentDepth + 1)
         stats.depth = Math.max(stats.depth, valueStats.depth)
@@ -350,10 +329,7 @@ export class JsonFormatter {
         stats.numberCount += valueStats.numberCount
         stats.booleanCount += valueStats.booleanCount
         stats.nullCount += valueStats.nullCount
-        stats.maxStringLength = Math.max(
-          stats.maxStringLength,
-          valueStats.maxStringLength
-        )
+        stats.maxStringLength = Math.max(stats.maxStringLength, valueStats.maxStringLength)
         stats.truncated = stats.truncated || valueStats.truncated
       }
     }
@@ -364,10 +340,7 @@ export class JsonFormatter {
   /**
    * Apply transformations based on formatting options
    */
-  private async applyTransformations(
-    data: any,
-    options: JsonFormattingOptions
-  ): Promise<any> {
+  private async applyTransformations(data: any, options: JsonFormattingOptions): Promise<any> {
     if (options.removeNulls || options.removeUndefined) {
       data = this.removeNullishValues(data, options)
     }
@@ -414,13 +387,9 @@ export class JsonFormatter {
   /**
    * Truncate long strings to prevent memory issues
    */
-  private truncateLongStrings(
-    data: any,
-    maxLength: number,
-    truncated = false
-  ): any {
+  private truncateLongStrings(data: any, maxLength: number, _truncated = false): any {
     if (typeof data === 'string' && data.length > maxLength) {
-      return data.substring(0, maxLength) + '... [truncated]'
+      return `${data.substring(0, maxLength)}... [truncated]`
     }
 
     if (Array.isArray(data)) {
@@ -441,10 +410,7 @@ export class JsonFormatter {
   /**
    * Format JSON object with specified options
    */
-  private async formatJson(
-    data: any,
-    options: JsonFormattingOptions
-  ): Promise<string> {
+  private async formatJson(data: any, options: JsonFormattingOptions): Promise<string> {
     if (options.compact) {
       return JSON.stringify(data)
     }
@@ -454,7 +420,7 @@ export class JsonFormatter {
     // Custom replacer function for sorting keys if needed
     const replacer =
       options.sortKeys && !options.preserveOrder
-        ? (key: string, value: any) => {
+        ? (_key: string, value: any) => {
             if (value && typeof value === 'object' && !Array.isArray(value)) {
               const sortedKeys = Object.keys(value).sort()
               const sortedObj: any = {}
@@ -518,9 +484,9 @@ export class JsonFormatter {
         .replace(/line\s+\d+/i, '')
         .replace(/column\s+\d+/i, '')
         .trim(),
-      line: lineMatch ? parseInt(lineMatch[1]) : undefined,
-      column: columnMatch ? parseInt(columnMatch[1]) : undefined,
-      position: positionMatch ? parseInt(positionMatch[1]) : undefined,
+      line: lineMatch ? parseInt(lineMatch[1], 10) : undefined,
+      column: columnMatch ? parseInt(columnMatch[1], 10) : undefined,
+      position: positionMatch ? parseInt(positionMatch[1], 10) : undefined,
     }
   }
 
@@ -653,10 +619,7 @@ export async function prettifyJson(
 ): Promise<string> {
   const result = await formatJson(jsonString, { indent, sortKeys })
   if (!result.success || !result.formatted) {
-    throw new JsonFormattingError(
-      'Failed to prettify JSON',
-      'PRETTIFICATION_ERROR'
-    )
+    throw new JsonFormattingError('Failed to prettify JSON', 'PRETTIFICATION_ERROR')
   }
   return result.formatted
 }

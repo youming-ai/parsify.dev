@@ -10,66 +10,62 @@
  * - Automated execution hooks
  */
 
-// Core types and interfaces
-export {
-  Migration,
-  MigrationStatus,
-  MigrationRecord,
-  MigrationFile,
-  MigrationResult,
-  RollbackResult,
-  MigrationOptions,
-  MigrationRunnerConfig,
-  MigrationLogEntry,
-  MigrationValidationError,
-  MigrationPlan,
-  MigrationHealthCheck,
-  MigrationStats,
-  DatabaseSchemaInfo,
-  MigrationHook,
-  MigrationContext,
-  MigrationLogger,
-  MigrationStorage
-} from './types'
-
-// Migration runner - core execution engine
-export {
-  MigrationRunner,
-  createMigrationRunner
-} from './runner'
-
-// Migration validator - validation and dry-run
-export {
-  MigrationValidator,
-  createMigrationValidator
-} from './validator'
-
-// Migration storage - version tracking
-export {
-  D1MigrationStorage,
-  createMigrationStorage
-} from './storage'
-
-// Migration monitoring - logging and health checks
-export {
-  MigrationMonitor,
-  createMigrationMonitor
-} from './monitoring'
-
-// Migration service - main orchestrator
-export {
-  MigrationService,
-  createMigrationService
-} from './service'
+import type { D1Database } from '@cloudflare/workers-types'
 
 // Migration hooks - automated execution
 export {
-  MigrationHooks,
   BuiltInHooks,
-  MigrationHookRegistry,
   createMigrationHooks,
-  getMigrationHookRegistry
+  getMigrationHookRegistry,
+  MigrationHookRegistry,
+  MigrationHooks,
 } from './hooks'
+// Migration monitoring - logging and health checks
+export {
+  createMigrationMonitor,
+  MigrationMonitor,
+} from './monitoring'
+// Migration runner - core execution engine
+export {
+  createMigrationRunner,
+  MigrationRunner,
+} from './runner'
+// Migration service - main orchestrator
+export {
+  createMigrationService,
+  MigrationService,
+} from './service'
+// Migration storage - version tracking
+export {
+  createMigrationStorage,
+  D1MigrationStorage,
+} from './storage'
+// Core types and interfaces
+export {
+  DatabaseSchemaInfo,
+  Migration,
+  MigrationContext,
+  MigrationFile,
+  MigrationHealthCheck,
+  MigrationHook,
+  MigrationLogEntry,
+  MigrationLogger,
+  MigrationOptions,
+  MigrationPlan,
+  MigrationRecord,
+  MigrationResult,
+  MigrationRunnerConfig,
+  MigrationStats,
+  MigrationStatus,
+  MigrationStorage,
+  MigrationValidationError,
+  RollbackResult,
+} from './types'
+// Migration validator - validation and dry-run
+export {
+  createMigrationValidator,
+  MigrationValidator,
+} from './validator'
 
 // Default configurations
 export const DEFAULT_MIGRATION_CONFIG = {
@@ -85,7 +81,7 @@ export const DEFAULT_MIGRATION_CONFIG = {
   enableBatchMode: false,
   maxConcurrentMigrations: 1,
   enableHealthChecks: true,
-  healthCheckInterval: 60000
+  healthCheckInterval: 60000,
 }
 
 export const DEFAULT_MIGRATION_OPTIONS = {
@@ -95,14 +91,14 @@ export const DEFAULT_MIGRATION_OPTIONS = {
   retries: 3,
   validateChecksums: true,
   stopOnFirstError: true,
-  batch: false
+  batch: false,
 }
 
 /**
  * Create a complete migration system with all components
  */
 export function createMigrationSystem(
-  db: any, // D1Database type from @cloudflare/workers-types
+  db: D1Database,
   config: {
     // Service configuration
     migrationsPath?: string
@@ -121,18 +117,23 @@ export function createMigrationSystem(
 
     // Hook configuration
     hooks?: {
-      beforeMigration?: any[]
-      afterMigration?: any[]
-      beforeRollback?: any[]
-      afterRollback?: any[]
-      onValidationError?: any[]
-      onMigrationStart?: any[]
-      onMigrationComplete?: any[]
-      onMigrationFail?: any[]
+      beforeMigration?: Array<(migration: Migration) => Promise<void>>
+      afterMigration?: Array<(migration: Migration) => Promise<void>>
+      beforeRollback?: Array<(migration: Migration) => Promise<void>>
+      afterRollback?: Array<(migration: Migration) => Promise<void>>
+      onValidationError?: Array<(error: Error) => Promise<void>>
+      onMigrationStart?: Array<(migration: Migration) => Promise<void>>
+      onMigrationComplete?: Array<(migration: Migration) => Promise<void>>
+      onMigrationFail?: Array<(error: Error, migration: Migration) => Promise<void>>
     }
 
     // Logger override
-    logger?: any
+    logger?: {
+      info: (message: string, meta?: unknown) => void
+      warn: (message: string, meta?: unknown) => void
+      error: (message: string, error?: Error, meta?: unknown) => void
+      debug: (message: string, meta?: unknown) => void
+    }
   } = {}
 ) {
   const migrationService = createMigrationService(db, config)
@@ -142,25 +143,25 @@ export function createMigrationSystem(
     service: migrationService,
 
     // Individual components (for advanced usage)
-    runner: migrationService['runner'],
-    validator: migrationService['validator'],
-    monitor: migrationService['monitor'],
-    storage: migrationService['storage'],
+    runner: migrationService.runner,
+    validator: migrationService.validator,
+    monitor: migrationService.monitor,
+    storage: migrationService.storage,
 
     // Convenience methods
     async initialize() {
       await migrationService.initialize()
     },
 
-    async runMigrations(options?: any) {
+    async runMigrations(options?: { dryRun?: boolean; force?: boolean; targetVersion?: string }) {
       return migrationService.runMigrations(options)
     },
 
-    async rollbackMigrations(options?: any) {
+    async rollbackMigrations(options?: { dryRun?: boolean; force?: boolean; targetVersion?: string }) {
       return migrationService.rollbackMigrations(options)
     },
 
-    async validateMigrations(options?: any) {
+    async validateMigrations(options?: { strict?: boolean; targetVersion?: string }) {
       return migrationService.validateMigrations(options)
     },
 
@@ -172,7 +173,7 @@ export function createMigrationSystem(
       return migrationService.getStats()
     },
 
-    getLogs(options?: any) {
+    getLogs(options?: { limit?: number; level?: 'debug' | 'info' | 'warn' | 'error' }) {
       return migrationService.getLogs(options)
     },
 
@@ -180,13 +181,22 @@ export function createMigrationSystem(
       return migrationService.getHistory(limit)
     },
 
-    setHooks(hooks: any) {
+    setHooks(hooks: {
+      beforeMigration?: Array<(migration: Migration) => Promise<void>>
+      afterMigration?: Array<(migration: Migration) => Promise<void>>
+      beforeRollback?: Array<(migration: Migration) => Promise<void>>
+      afterRollback?: Array<(migration: Migration) => Promise<void>>
+      onValidationError?: Array<(error: Error) => Promise<void>>
+      onMigrationStart?: Array<(migration: Migration) => Promise<void>>
+      onMigrationComplete?: Array<(migration: Migration) => Promise<void>>
+      onMigrationFail?: Array<(error: Error, migration: Migration) => Promise<void>>
+    }) {
       migrationService.setHooks(hooks)
     },
 
     async cleanup() {
       await migrationService.cleanup()
-    }
+    },
   }
 }
 
@@ -207,7 +217,7 @@ export const MigrationUtils = {
       dependencies?: string[]
     } = {}
   ) => {
-    const crypto = globalThis.crypto || (globalThis as any).webcrypto
+    const crypto = globalThis.crypto || (globalThis as { webcrypto?: Crypto }).webcrypto
 
     // Generate ID
     const id = crypto.randomUUID()
@@ -221,7 +231,7 @@ export const MigrationUtils = {
     let hash = 0
     for (let i = 0; i < bytes.length; i++) {
       const char = bytes[i]
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash
     }
     const checksum = Math.abs(hash).toString(16)
@@ -236,7 +246,7 @@ export const MigrationUtils = {
       checksum,
       dependencies: options.dependencies,
       createdAt: Date.now(),
-      status: 'pending' as const
+      status: 'pending' as const,
     }
   },
 
@@ -269,7 +279,7 @@ export const MigrationUtils = {
       /DROP\s+TABLE/i,
       /DELETE\s+FROM\s+\w+\s*$/i,
       /TRUNCATE/i,
-      /DROP\s+DATABASE/i
+      /DROP\s+DATABASE/i,
     ]
 
     return !unsafePatterns.some(pattern => pattern.test(migration.up))
@@ -280,7 +290,7 @@ export const MigrationUtils = {
    */
   estimateExecutionTime: (migration: any): number => {
     // Base time: 1000ms
-    let baseTime = 1000
+    const baseTime = 1000
 
     // Add time based on SQL complexity
     const sqlLength = migration.up.length
@@ -306,11 +316,11 @@ export const MigrationUtils = {
    */
   sortMigrationsByVersion: (migrations: any[]): any[] => {
     return migrations.sort((a, b) => {
-      const aVersion = parseInt(a.version)
-      const bVersion = parseInt(b.version)
+      const aVersion = parseInt(a.version, 10)
+      const bVersion = parseInt(b.version, 10)
       return aVersion - bVersion
     })
-  }
+  },
 }
 
 // Export version information

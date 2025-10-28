@@ -1,30 +1,28 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   CodeFormatter,
-  BaseFormattingOptions,
-  JavaScriptFormattingOptions,
-  TypeScriptFormattingOptions,
-  PythonFormattingOptions,
-  JavaFormattingOptions,
-  RustFormattingOptions,
-  GoFormattingOptions,
-  CssFormattingOptions,
-  HtmlFormattingOptions,
   CodeFormattingError,
-  UnsupportedLanguageError,
-  CodeFormattingResult,
+  type CssFormattingOptions,
   codeFormatter,
   formatCode,
-  formatJavaScript,
-  formatTypeScript,
-  formatPython,
-  formatJava,
-  formatRust,
-  formatGo,
   formatCss,
+  formatGo,
   formatHtml,
+  formatJava,
+  formatJavaScript,
+  formatPython,
+  formatRust,
+  formatTypeScript,
+  type GoFormattingOptions,
+  type HtmlFormattingOptions,
+  type JavaFormattingOptions,
+  type JavaScriptFormattingOptions,
+  type PythonFormattingOptions,
+  type RustFormattingOptions,
   SUPPORTED_LANGUAGES,
-  SupportedLanguage
+  type SupportedLanguage,
+  type TypeScriptFormattingOptions,
+  UnsupportedLanguageError,
 } from '../../../apps/api/src/wasm/code_formatter'
 
 describe('CodeFormatter', () => {
@@ -88,7 +86,7 @@ describe('CodeFormatter', () => {
       const options: JavaScriptFormattingOptions = {
         indentSize: 2,
         semicolons: true,
-        quotes: 'single'
+        quotes: 'single',
       }
 
       const result = await formatter.format(code, 'javascript', options)
@@ -107,7 +105,7 @@ describe('CodeFormatter', () => {
       const options: TypeScriptFormattingOptions = {
         indentSize: 2,
         strict: true,
-        semicolons: true
+        semicolons: true,
       }
 
       const result = await formatter.format(code, 'typescript', options)
@@ -122,7 +120,7 @@ describe('CodeFormatter', () => {
       const options: PythonFormattingOptions = {
         indentSize: 4,
         lineLength: 88,
-        targetVersion: 'py311'
+        targetVersion: 'py311',
       }
 
       const result = await formatter.format(code, 'python', options)
@@ -133,11 +131,12 @@ describe('CodeFormatter', () => {
     })
 
     it('should format Java code', async () => {
-      const code = 'public class Test{public static void main(String[] args){System.out.println("Hello");}}'
+      const code =
+        'public class Test{public static void main(String[] args){System.out.println("Hello");}}'
       const options: JavaFormattingOptions = {
         indentSize: 4,
         maxLineLength: 100,
-        sortImports: true
+        sortImports: true,
       }
 
       const result = await formatter.format(code, 'java', options)
@@ -152,7 +151,7 @@ describe('CodeFormatter', () => {
       const options: RustFormattingOptions = {
         indentSize: 4,
         edition: '2021',
-        maxWidth: 100
+        maxWidth: 100,
       }
 
       const result = await formatter.format(code, 'rust', options)
@@ -167,7 +166,7 @@ describe('CodeFormatter', () => {
       const options: GoFormattingOptions = {
         tabWidth: 8,
         useTabs: true,
-        maxWidth: 120
+        maxWidth: 120,
       }
 
       const result = await formatter.format(code, 'go', options)
@@ -182,7 +181,7 @@ describe('CodeFormatter', () => {
       const options: CssFormattingOptions = {
         indentSize: 2,
         singleQuote: false,
-        sortProperties: false
+        sortProperties: false,
       }
 
       const result = await formatter.format(code, 'css', options)
@@ -197,7 +196,7 @@ describe('CodeFormatter', () => {
       const options: HtmlFormattingOptions = {
         indentSize: 2,
         indentInnerHtml: false,
-        wrapAttributes: 'auto'
+        wrapAttributes: 'auto',
       }
 
       const result = await formatter.format(code, 'html', options)
@@ -217,17 +216,17 @@ describe('CodeFormatter', () => {
       const code = 'const message = "Hello World";'
 
       const singleQuoteResult = await formatter.format(code, 'javascript', {
-        quotes: 'single'
+        quotes: 'single',
       })
       expect(singleQuoteResult.formatted).toContain("'Hello World'")
 
       const doubleQuoteResult = await formatter.format(code, 'javascript', {
-        quotes: 'double'
+        quotes: 'double',
       })
       expect(doubleQuoteResult.formatted).toContain('"Hello World"')
 
       const preserveResult = await formatter.format(code, 'javascript', {
-        quotes: 'preserve'
+        quotes: 'preserve',
       })
       expect(preserveResult.formatted).toContain('"Hello World"')
     })
@@ -236,12 +235,12 @@ describe('CodeFormatter', () => {
       const code = 'const x = 1\nconst y = 2\nconsole.log(x + y)'
 
       const withSemicolons = await formatter.format(code, 'javascript', {
-        semicolons: true
+        semicolons: true,
       })
       expect(withSemicolons.formatted).toContain(';')
 
       const withoutSemicolons = await formatter.format(code, 'javascript', {
-        semicolons: false
+        semicolons: false,
       })
       // The exact behavior depends on the formatter implementation
       expect(withoutSemicolons.formatted).toBeDefined()
@@ -251,17 +250,17 @@ describe('CodeFormatter', () => {
       const code = 'const arr = [1, 2, 3]'
 
       const es5Trailing = await formatter.format(code, 'javascript', {
-        trailingCommas: 'es5'
+        trailingCommas: 'es5',
       })
       expect(es5Trailing.formatted).toBeDefined()
 
       const allTrailing = await formatter.format(code, 'javascript', {
-        trailingCommas: 'all'
+        trailingCommas: 'all',
       })
       expect(allTrailing.formatted).toBeDefined()
 
       const noneTrailing = await formatter.format(code, 'javascript', {
-        trailingCommas: 'none'
+        trailingCommas: 'none',
       })
       expect(noneTrailing.formatted).toBeDefined()
     })
@@ -270,12 +269,12 @@ describe('CodeFormatter', () => {
       const code = 'if (true) { console.log("test") }'
 
       const sameLine = await formatter.format(code, 'javascript', {
-        bracketSameLine: true
+        bracketSameLine: true,
       })
       expect(sameLine.formatted).toBeDefined()
 
       const newLine = await formatter.format(code, 'javascript', {
-        bracketSameLine: false
+        bracketSameLine: false,
       })
       expect(newLine.formatted).toBeDefined()
     })
@@ -284,12 +283,12 @@ describe('CodeFormatter', () => {
       const code = 'const add = (x, y) => x + y'
 
       const alwaysParens = await formatter.format(code, 'javascript', {
-        arrowParens: 'always'
+        arrowParens: 'always',
       })
       expect(alwaysParens.formatted).toBeDefined()
 
       const avoidParens = await formatter.format(code, 'javascript', {
-        arrowParens: 'avoid'
+        arrowParens: 'avoid',
       })
       expect(avoidParens.formatted).toBeDefined()
     })
@@ -298,12 +297,12 @@ describe('CodeFormatter', () => {
       const jsxCode = 'const Component = () => <div className="test">Hello</div>'
 
       const jsxSingleQuote = await formatter.format(jsxCode, 'javascript', {
-        jsxSingleQuote: true
+        jsxSingleQuote: true,
       })
       expect(jsxSingleQuote.formatted).toBeDefined()
 
       const jsxBracketSameLine = await formatter.format(jsxCode, 'javascript', {
-        jsxBracketSameLine: true
+        jsxBracketSameLine: true,
       })
       expect(jsxBracketSameLine.formatted).toBeDefined()
     })
@@ -312,17 +311,17 @@ describe('CodeFormatter', () => {
       const code = 'const obj = { key: "value", "with-space": "value" }'
 
       const asNeeded = await formatter.format(code, 'javascript', {
-        quoteProps: 'as-needed'
+        quoteProps: 'as-needed',
       })
       expect(asNeeded.formatted).toBeDefined()
 
       const consistent = await formatter.format(code, 'javascript', {
-        quoteProps: 'consistent'
+        quoteProps: 'consistent',
       })
       expect(consistent.formatted).toBeDefined()
 
       const preserve = await formatter.format(code, 'javascript', {
-        quoteProps: 'preserve'
+        quoteProps: 'preserve',
       })
       expect(preserve.formatted).toBeDefined()
     })
@@ -338,13 +337,13 @@ describe('CodeFormatter', () => {
 
       const strictMode = await formatter.format(code, 'typescript', {
         strict: true,
-        noImplicitAny: true
+        noImplicitAny: true,
       })
       expect(strictMode.formatted).toBeDefined()
 
       const nonStrictMode = await formatter.format(code, 'typescript', {
         strict: false,
-        noImplicitAny: false
+        noImplicitAny: false,
       })
       expect(nonStrictMode.formatted).toBeDefined()
     })
@@ -353,12 +352,12 @@ describe('CodeFormatter', () => {
       const code = 'function test(): number { return 42 }'
 
       const withImplicitReturns = await formatter.format(code, 'typescript', {
-        noImplicitReturns: true
+        noImplicitReturns: true,
       })
       expect(withImplicitReturns.formatted).toBeDefined()
 
       const withoutImplicitReturns = await formatter.format(code, 'typescript', {
-        noImplicitReturns: false
+        noImplicitReturns: false,
       })
       expect(withoutImplicitReturns.formatted).toBeDefined()
     })
@@ -368,13 +367,13 @@ describe('CodeFormatter', () => {
 
       const checkUnused = await formatter.format(code, 'typescript', {
         noUnusedLocals: true,
-        noUnusedParameters: true
+        noUnusedParameters: true,
       })
       expect(checkUnused.formatted).toBeDefined()
 
       const ignoreUnused = await formatter.format(code, 'typescript', {
         noUnusedLocals: false,
-        noUnusedParameters: false
+        noUnusedParameters: false,
       })
       expect(ignoreUnused.formatted).toBeDefined()
     })
@@ -392,7 +391,7 @@ describe('CodeFormatter', () => {
 
       for (const version of versions) {
         const result = await formatter.format(code, 'python', {
-          targetVersion: version
+          targetVersion: version,
         })
         expect(result.success).toBe(true)
         expect(result.formatted).toBeDefined()
@@ -400,15 +399,16 @@ describe('CodeFormatter', () => {
     })
 
     it('should handle line length options', async () => {
-      const longCode = 'def very_long_function_name_that_exceeds_normal_line_length(parameter_one, parameter_two, parameter_three): pass'
+      const longCode =
+        'def very_long_function_name_that_exceeds_normal_line_length(parameter_one, parameter_two, parameter_three): pass'
 
       const shortLine = await formatter.format(longCode, 'python', {
-        lineLength: 40
+        lineLength: 40,
       })
       expect(shortLine.formatted).toBeDefined()
 
       const longLine = await formatter.format(longCode, 'python', {
-        lineLength: 120
+        lineLength: 120,
       })
       expect(longLine.formatted).toBeDefined()
     })
@@ -417,12 +417,12 @@ describe('CodeFormatter', () => {
       const code = 's = "double quotes"\ns2 = \'single quotes\''
 
       const withNormalization = await formatter.format(code, 'python', {
-        skipStringNormalization: false
+        skipStringNormalization: false,
       })
       expect(withNormalization.formatted).toBeDefined()
 
       const withoutNormalization = await formatter.format(code, 'python', {
-        skipStringNormalization: true
+        skipStringNormalization: true,
       })
       expect(withoutNormalization.formatted).toBeDefined()
     })
@@ -431,12 +431,12 @@ describe('CodeFormatter', () => {
       const code = 'def test():\n    for i in range(100):\n        print(i)'
 
       const fastMode = await formatter.format(code, 'python', {
-        fast: true
+        fast: true,
       })
       expect(fastMode.formatted).toBeDefined()
 
       const normalMode = await formatter.format(code, 'python', {
-        fast: false
+        fast: false,
       })
       expect(normalMode.formatted).toBeDefined()
     })
@@ -452,38 +452,40 @@ describe('CodeFormatter', () => {
 
       const customOrder = await formatter.format(code, 'java', {
         importOrder: ['javax', 'java', 'com'],
-        sortImports: true
+        sortImports: true,
       })
       expect(customOrder.formatted).toBeDefined()
 
       const defaultOrder = await formatter.format(code, 'java', {
-        sortImports: true
+        sortImports: true,
       })
       expect(defaultOrder.formatted).toBeDefined()
     })
 
     it('should handle blank lines configuration', async () => {
-      const code = 'package test;\n\nimport java.util.*;\n\npublic class Test {\n    public void method() {}\n}'
+      const code =
+        'package test;\n\nimport java.util.*;\n\npublic class Test {\n    public void method() {}\n}'
 
       const customBlankLines = await formatter.format(code, 'java', {
         blankLinesBeforePackage: 2,
         blankLinesBeforeImports: 1,
         blankLinesBeforeClass: 3,
-        blankLinesBeforeMethod: 2
+        blankLinesBeforeMethod: 2,
       })
       expect(customBlankLines.formatted).toBeDefined()
     })
 
     it('should handle Javadoc formatting', async () => {
-      const code = '/**\n * Test method\n * @param x parameter\n * @return result\n */\npublic int test(int x) { return x * 2; }'
+      const code =
+        '/**\n * Test method\n * @param x parameter\n * @return result\n */\npublic int test(int x) { return x * 2; }'
 
       const withJavadoc = await formatter.format(code, 'java', {
-        formatJavadoc: true
+        formatJavadoc: true,
       })
       expect(withJavadoc.formatted).toBeDefined()
 
       const withoutJavadoc = await formatter.format(code, 'java', {
-        formatJavadoc: false
+        formatJavadoc: false,
       })
       expect(withoutJavadoc.formatted).toBeDefined()
     })
@@ -501,7 +503,7 @@ describe('CodeFormatter', () => {
 
       for (const edition of editions) {
         const result = await formatter.format(code, 'rust', {
-          edition
+          edition,
         })
         expect(result.success).toBe(true)
         expect(result.formatted).toBeDefined()
@@ -513,13 +515,13 @@ describe('CodeFormatter', () => {
 
       const withTabs = await formatter.format(code, 'rust', {
         hardTabs: true,
-        tabSpaces: 4
+        tabSpaces: 4,
       })
       expect(withTabs.formatted).toBeDefined()
 
       const withSpaces = await formatter.format(code, 'rust', {
         hardTabs: false,
-        tabSpaces: 4
+        tabSpaces: 4,
       })
       expect(withSpaces.formatted).toBeDefined()
     })
@@ -529,12 +531,12 @@ describe('CodeFormatter', () => {
 
       const wrapComments = await formatter.format(code, 'rust', {
         wrapComments: true,
-        commentWidth: 80
+        commentWidth: 80,
       })
       expect(wrapComments.formatted).toBeDefined()
 
       const normalizeComments = await formatter.format(code, 'rust', {
-        normalizeComments: true
+        normalizeComments: true,
       })
       expect(normalizeComments.formatted).toBeDefined()
     })
@@ -544,12 +546,12 @@ describe('CodeFormatter', () => {
 
       const reorderImports = await formatter.format(code, 'rust', {
         reorderImports: true,
-        mergeImports: true
+        mergeImports: true,
       })
       expect(reorderImports.formatted).toBeDefined()
 
       const reorderModules = await formatter.format(code, 'rust', {
-        reorderModules: true
+        reorderModules: true,
       })
       expect(reorderModules.formatted).toBeDefined()
     })
@@ -565,27 +567,28 @@ describe('CodeFormatter', () => {
 
       const withTabs = await formatter.format(code, 'go', {
         useTabs: true,
-        tabWidth: 8
+        tabWidth: 8,
       })
       expect(withTabs.formatted).toBeDefined()
 
       const withSpaces = await formatter.format(code, 'go', {
         useTabs: false,
-        tabWidth: 4
+        tabWidth: 4,
       })
       expect(withSpaces.formatted).toBeDefined()
     })
 
     it('should handle simplification', async () => {
-      const code = 'package main\n\nimport "fmt"\n\nfunc main() {\n\tfmt.Println("Hello, World!")\n}'
+      const code =
+        'package main\n\nimport "fmt"\n\nfunc main() {\n\tfmt.Println("Hello, World!")\n}'
 
       const simplify = await formatter.format(code, 'go', {
-        simplify: true
+        simplify: true,
       })
       expect(simplify.formatted).toBeDefined()
 
       const noSimplify = await formatter.format(code, 'go', {
-        simplify: false
+        simplify: false,
       })
       expect(noSimplify.formatted).toBeDefined()
     })
@@ -600,12 +603,12 @@ describe('CodeFormatter', () => {
       const code = '.test { content: "Hello"; font-family: "Arial"; }'
 
       const singleQuote = await formatter.format(code, 'css', {
-        singleQuote: true
+        singleQuote: true,
       })
       expect(singleQuote.formatted).toBeDefined()
 
       const doubleQuote = await formatter.format(code, 'css', {
-        singleQuote: false
+        singleQuote: false,
       })
       expect(doubleQuote.formatted).toBeDefined()
     })
@@ -615,13 +618,13 @@ describe('CodeFormatter', () => {
 
       const lowerCase = await formatter.format(code, 'css', {
         colorCase: 'lower',
-        colorShorthand: true
+        colorShorthand: true,
       })
       expect(lowerCase.formatted).toBeDefined()
 
       const upperCase = await formatter.format(code, 'css', {
         colorCase: 'upper',
-        colorShorthand: false
+        colorShorthand: false,
       })
       expect(upperCase.formatted).toBeDefined()
     })
@@ -630,12 +633,12 @@ describe('CodeFormatter', () => {
       const code = '.empty { }\n.not-empty { color: red; }'
 
       const removeEmpty = await formatter.format(code, 'css', {
-        removeEmptyRulesets: true
+        removeEmptyRulesets: true,
       })
       expect(removeEmpty.formatted).toBeDefined()
 
       const keepEmpty = await formatter.format(code, 'css', {
-        removeEmptyRulesets: false
+        removeEmptyRulesets: false,
       })
       expect(keepEmpty.formatted).toBeDefined()
     })
@@ -644,26 +647,27 @@ describe('CodeFormatter', () => {
       const code = '/* This is a comment */\n.test { color: red; }'
 
       const removeComments = await formatter.format(code, 'css', {
-        removeComments: true
+        removeComments: true,
       })
       expect(removeComments.formatted).toBeDefined()
 
       const keepComments = await formatter.format(code, 'css', {
-        removeComments: false
+        removeComments: false,
       })
       expect(keepComments.formatted).toBeDefined()
     })
 
     it('should handle property and selector sorting', async () => {
-      const code = '.test {\n    z-index: 1;\n    color: red;\n    background: blue;\n    margin: 0;\n}'
+      const code =
+        '.test {\n    z-index: 1;\n    color: red;\n    background: blue;\n    margin: 0;\n}'
 
       const sortProperties = await formatter.format(code, 'css', {
-        sortProperties: true
+        sortProperties: true,
       })
       expect(sortProperties.formatted).toBeDefined()
 
       const sortSelectors = await formatter.format(code, 'css', {
-        sortSelectors: true
+        sortSelectors: true,
       })
       expect(sortSelectors.formatted).toBeDefined()
     })
@@ -678,12 +682,12 @@ describe('CodeFormatter', () => {
       const code = '<div><p>Content</p><span>More</span></div>'
 
       const indentInner = await formatter.format(code, 'html', {
-        indentInnerHtml: true
+        indentInnerHtml: true,
       })
       expect(indentInner.formatted).toBeDefined()
 
       const noIndentInner = await formatter.format(code, 'html', {
-        indentInnerHtml: false
+        indentInnerHtml: false,
       })
       expect(noIndentInner.formatted).toBeDefined()
     })
@@ -691,11 +695,17 @@ describe('CodeFormatter', () => {
     it('should handle attribute wrapping', async () => {
       const code = '<div class="test" id="example" data-value="123" title="tooltip">Content</div>'
 
-      const wrapOptions = ['auto', 'force', 'force-aligned', 'force-expand-multiline', 'preserve'] as const
+      const wrapOptions = [
+        'auto',
+        'force',
+        'force-aligned',
+        'force-expand-multiline',
+        'preserve',
+      ] as const
 
       for (const wrapOption of wrapOptions) {
         const result = await formatter.format(code, 'html', {
-          wrapAttributes: wrapOption
+          wrapAttributes: wrapOption,
         })
         expect(result.success).toBe(true)
         expect(result.formatted).toBeDefined()
@@ -706,7 +716,7 @@ describe('CodeFormatter', () => {
       const code = '<div><pre>    preformatted\n        text    </pre><code>code()</code></div>'
 
       const customUnformatted = await formatter.format(code, 'html', {
-        unformatted: ['pre', 'code', 'textarea']
+        unformatted: ['pre', 'code', 'textarea'],
       })
       expect(customUnformatted.formatted).toBeDefined()
     })
@@ -715,17 +725,17 @@ describe('CodeFormatter', () => {
       const code = '<img src="test.jpg"><br>'
 
       const html5Slash = await formatter.format(code, 'html', {
-        closingSlash: 'html5'
+        closingSlash: 'html5',
       })
       expect(html5Slash.formatted).toBeDefined()
 
       const xhtmlSlash = await formatter.format(code, 'html', {
-        closingSlash: 'xhtml'
+        closingSlash: 'xhtml',
       })
       expect(xhtmlSlash.formatted).toBeDefined()
 
       const noneSlash = await formatter.format(code, 'html', {
-        closingSlash: 'none'
+        closingSlash: 'none',
       })
       expect(noneSlash.formatted).toBeDefined()
     })
@@ -734,12 +744,12 @@ describe('CodeFormatter', () => {
       const code = '<div class="z y x" data-c="3" data-a="1" data-b="2">Content</div>'
 
       const sortAttributes = await formatter.format(code, 'html', {
-        sortAttributes: true
+        sortAttributes: true,
       })
       expect(sortAttributes.formatted).toBeDefined()
 
       const sortClassNames = await formatter.format(code, 'html', {
-        sortClassName: true
+        sortClassName: true,
       })
       expect(sortClassNames.formatted).toBeDefined()
     })
@@ -755,7 +765,7 @@ describe('CodeFormatter', () => {
 
       for (const indentSize of [0, 2, 4, 8]) {
         const result = await formatter.format(code, 'javascript', {
-          indentSize
+          indentSize,
         })
         expect(result.success).toBe(true)
         expect(result.formatted).toBeDefined()
@@ -767,27 +777,28 @@ describe('CodeFormatter', () => {
 
       const spaceIndent = await formatter.format(code, 'javascript', {
         indentStyle: 'space',
-        indentSize: 2
+        indentSize: 2,
       })
       expect(spaceIndent.formatted).toBeDefined()
 
       const tabIndent = await formatter.format(code, 'javascript', {
         indentStyle: 'tab',
-        indentSize: 1
+        indentSize: 1,
       })
       expect(tabIndent.formatted).toBeDefined()
     })
 
     it('should handle max width constraints', async () => {
-      const longCode = 'function veryLongFunctionName(parameterOne, parameterTwo, parameterThree, parameterFour) { return parameterOne + parameterTwo + parameterThree + parameterFour }'
+      const longCode =
+        'function veryLongFunctionName(parameterOne, parameterTwo, parameterThree, parameterFour) { return parameterOne + parameterTwo + parameterThree + parameterFour }'
 
       const narrowWidth = await formatter.format(longCode, 'javascript', {
-        maxWidth: 40
+        maxWidth: 40,
       })
       expect(narrowWidth.formatted).toBeDefined()
 
       const wideWidth = await formatter.format(longCode, 'javascript', {
-        maxWidth: 120
+        maxWidth: 120,
       })
       expect(wideWidth.formatted).toBeDefined()
     })
@@ -796,13 +807,13 @@ describe('CodeFormatter', () => {
       const code = 'function test() { console.log("hello") }'
 
       const withFinalNewline = await formatter.format(code, 'javascript', {
-        insertFinalNewline: true
+        insertFinalNewline: true,
       })
       expect(withFinalNewline.formatted).toBeDefined()
       expect(withFinalNewline.formatted).toMatch(/\n$/)
 
       const withoutFinalNewline = await formatter.format(code, 'javascript', {
-        insertFinalNewline: false
+        insertFinalNewline: false,
       })
       expect(withoutFinalNewline.formatted).toBeDefined()
     })
@@ -811,12 +822,12 @@ describe('CodeFormatter', () => {
       const code = 'function test() { console.log("hello") }   \n   \n'
 
       const trimWhitespace = await formatter.format(code, 'javascript', {
-        trimTrailingWhitespace: true
+        trimTrailingWhitespace: true,
       })
       expect(trimWhitespace.formatted).toBeDefined()
 
       const keepWhitespace = await formatter.format(code, 'javascript', {
-        trimTrailingWhitespace: false
+        trimTrailingWhitespace: false,
       })
       expect(keepWhitespace.formatted).toBeDefined()
     })
@@ -825,12 +836,12 @@ describe('CodeFormatter', () => {
       const code = '\n\nfunction test() {\n\n\n    console.log("hello")\n\n}\n\n'
 
       const preserveNewlines = await formatter.format(code, 'javascript', {
-        preserveNewlines: true
+        preserveNewlines: true,
       })
       expect(preserveNewlines.formatted).toBeDefined()
 
       const ignoreNewlines = await formatter.format(code, 'javascript', {
-        preserveNewlines: false
+        preserveNewlines: false,
       })
       expect(ignoreNewlines.formatted).toBeDefined()
     })
@@ -842,7 +853,7 @@ describe('CodeFormatter', () => {
 
       for (const lineEnding of lineEndings) {
         const result = await formatter.format(code, 'javascript', {
-          lineEnding
+          lineEnding,
         })
         expect(result.success).toBe(true)
         expect(result.formatted).toBeDefined()
@@ -858,13 +869,13 @@ describe('CodeFormatter', () => {
     it('should handle unsupported languages', async () => {
       const code = 'some code'
 
-      await expect(formatter.format(code, 'unsupported' as SupportedLanguage))
-        .rejects.toThrow(UnsupportedLanguageError)
+      await expect(formatter.format(code, 'unsupported' as SupportedLanguage)).rejects.toThrow(
+        UnsupportedLanguageError
+      )
     })
 
     it('should handle empty code', async () => {
-      await expect(formatter.format('', 'javascript'))
-        .rejects.toThrow(CodeFormattingError)
+      await expect(formatter.format('', 'javascript')).rejects.toThrow(CodeFormattingError)
     })
 
     it('should handle malformed code', async () => {
@@ -949,7 +960,8 @@ describe('CodeFormatter', () => {
     })
 
     it('should handle minified code', async () => {
-      const minifiedCode = 'function test(){if(true){console.log("test")}else{console.log("other")}}return'
+      const minifiedCode =
+        'function test(){if(true){console.log("test")}else{console.log("other")}}return'
 
       const result = await formatter.format(minifiedCode, 'javascript')
 
@@ -999,7 +1011,8 @@ describe('CodeFormatter', () => {
     })
 
     it('should handle template literals', async () => {
-      const templateLiteralCode = 'const name = "World"; const message = `Hello, ${name}! ${2 + 2}`;'
+      const templateLiteralCode =
+        'const name = "World"; const message = `Hello, ${name}! ${2 + 2}`;'
 
       const result = await formatter.format(templateLiteralCode, 'javascript')
 
@@ -1009,7 +1022,8 @@ describe('CodeFormatter', () => {
     })
 
     it('should handle JSX syntax', async () => {
-      const jsxCode = 'const Component = ({ name }) => <div className="container"><h1>Hello {name}</h1><p>Content</p></div>'
+      const jsxCode =
+        'const Component = ({ name }) => <div className="container"><h1>Hello {name}</h1><p>Content</p></div>'
 
       const result = await formatter.format(jsxCode, 'javascript')
 
@@ -1027,7 +1041,7 @@ describe('CodeFormatter', () => {
       const defaultOptions: JavaScriptFormattingOptions = {
         indentSize: 4,
         quotes: 'double',
-        semicolons: false
+        semicolons: false,
       }
 
       customFormatter.setDefaultOptions('javascript', defaultOptions)
@@ -1071,9 +1085,7 @@ describe('CodeFormatter', () => {
     it('should handle concurrent formatting', async () => {
       const code = 'function test() { return "concurrent"; }'
 
-      const promises = Array.from({ length: 10 }, () =>
-        formatter.format(code, 'javascript')
-      )
+      const promises = Array.from({ length: 10 }, () => formatter.format(code, 'javascript'))
 
       const results = await Promise.all(promises)
 
@@ -1125,7 +1137,8 @@ describe('Utility functions', () => {
   })
 
   it('formatJava should format Java correctly', async () => {
-    const code = 'public class Test{public static void main(String[] args){System.out.println("Hello");}}'
+    const code =
+      'public class Test{public static void main(String[] args){System.out.println("Hello");}}'
     const result = await formatJava(code, { indentSize: 4 })
 
     expect(result.success).toBe(true)
@@ -1176,8 +1189,22 @@ describe('Supported languages', () => {
 
   it('should include all major languages', () => {
     const majorLanguages = [
-      'javascript', 'typescript', 'python', 'java', 'cpp', 'c', 'csharp',
-      'go', 'rust', 'php', 'ruby', 'html', 'css', 'json', 'yaml', 'xml'
+      'javascript',
+      'typescript',
+      'python',
+      'java',
+      'cpp',
+      'c',
+      'csharp',
+      'go',
+      'rust',
+      'php',
+      'ruby',
+      'html',
+      'css',
+      'json',
+      'yaml',
+      'xml',
     ]
 
     majorLanguages.forEach(lang => {
@@ -1219,7 +1246,9 @@ describe('Performance benchmarks', () => {
     `
 
     const startTime = performance.now()
-    const result = await formatCode(complexCode, 'javascript', { indentSize: 2 })
+    const result = await formatCode(complexCode, 'javascript', {
+      indentSize: 2,
+    })
     const endTime = performance.now()
 
     expect(result.success).toBe(true)
@@ -1252,15 +1281,13 @@ describe('Performance benchmarks', () => {
       'def test2(): return 2',
       'public class Test3 { public int getValue() { return 3; } }',
       'fn test4() -> i32 { 4 }',
-      '.test5 { color: red; margin: 0; }'
+      '.test5 { color: red; margin: 0; }',
     ]
 
     const languages: SupportedLanguage[] = ['javascript', 'python', 'java', 'rust', 'css']
 
     const startTime = performance.now()
-    const promises = codes.map((code, index) =>
-      formatCode(code, languages[index])
-    )
+    const promises = codes.map((code, index) => formatCode(code, languages[index]))
     const results = await Promise.all(promises)
     const endTime = performance.now()
 
@@ -1278,10 +1305,11 @@ describe('Error scenarios and edge cases', () => {
   })
 
   it('should handle code with mixed line endings', async () => {
-    const mixedLineEndings = 'function test() {\r\n  console.log("Windows");\n  return "mixed";\r\n}'
+    const mixedLineEndings =
+      'function test() {\r\n  console.log("Windows");\n  return "mixed";\r\n}'
 
     const result = await formatCode(mixedLineEndings, 'javascript', {
-      lineEnding: 'lf'
+      lineEnding: 'lf',
     })
 
     expect(result.success).toBe(true)
@@ -1299,10 +1327,11 @@ describe('Error scenarios and edge cases', () => {
   })
 
   it('should handle very long lines', async () => {
-    const longLine = 'const veryLongVariableName = "this is a very long string that exceeds normal line length limits and should be wrapped by the formatter";'
+    const longLine =
+      'const veryLongVariableName = "this is a very long string that exceeds normal line length limits and should be wrapped by the formatter";'
 
     const result = await formatCode(longLine, 'javascript', {
-      maxWidth: 80
+      maxWidth: 80,
     })
 
     expect(result.success).toBe(true)
@@ -1312,15 +1341,15 @@ describe('Error scenarios and edge cases', () => {
   it('should handle deeply nested code', async () => {
     let nestedCode = 'function test() {\n'
     for (let i = 0; i < 20; i++) {
-      nestedCode += '  '.repeat(i) + 'if (true) {\n'
+      nestedCode += `${'  '.repeat(i)}if (true) {\n`
     }
     for (let i = 19; i >= 0; i--) {
-      nestedCode += '  '.repeat(i) + '}\n'
+      nestedCode += `${'  '.repeat(i)}}\n`
     }
     nestedCode += '}'
 
     const result = await formatCode(nestedCode, 'javascript', {
-      indentSize: 2
+      indentSize: 2,
     })
 
     expect(result.success).toBe(true)
@@ -1334,7 +1363,7 @@ describe('Error scenarios and edge cases', () => {
     const result = await formatCode(code, 'javascript', {
       indentSize: -1, // Invalid
       maxWidth: 1000, // Valid but large
-      quotes: 'invalid' as any // Invalid
+      quotes: 'invalid' as any, // Invalid
     })
 
     expect(result.success).toBe(true)
@@ -1342,7 +1371,8 @@ describe('Error scenarios and edge cases', () => {
   })
 
   it('should handle code with special characters', async () => {
-    const specialChars = 'function test() {\n  console.log("Special chars: \\\\t\\\\n\\\\r\\\\\\"\\\\\'");\n  return null;\n}'
+    const specialChars =
+      'function test() {\n  console.log("Special chars: \\\\t\\\\n\\\\r\\\\\\"\\\\\'");\n  return null;\n}'
 
     const result = await formatCode(specialChars, 'javascript')
 

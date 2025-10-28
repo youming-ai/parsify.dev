@@ -1,31 +1,33 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen, fireEvent, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { render } from '../test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { JsonValidator } from '@/web/components/tools/json/json-validator'
+import { render } from '../test-utils'
 
 // Mock the json-utils module
 vi.mock('@/web/components/tools/json/json-utils', () => ({
-  validateJson: vi.fn((json) => {
+  validateJson: vi.fn(json => {
     try {
       JSON.parse(json)
       return {
         isValid: true,
-        errors: []
+        errors: [],
       }
     } catch (error) {
       const match = error.message.match(/line (\d+) column (\d+)/)
       return {
         isValid: false,
-        errors: [{
-          line: match ? parseInt(match[1]) : 1,
-          column: match ? parseInt(match[2]) : 1,
-          message: error.message,
-          severity: 'error' as const
-        }]
+        errors: [
+          {
+            line: match ? parseInt(match[1], 10) : 1,
+            column: match ? parseInt(match[2], 10) : 1,
+            message: error.message,
+            severity: 'error' as const,
+          },
+        ],
       }
     }
-  })
+  }),
 }))
 
 // Mock the JsonErrorDisplay component
@@ -38,7 +40,7 @@ vi.mock('@/web/components/tools/json/json-error-display', () => ({
         </div>
       ))}
     </div>
-  )
+  ),
 }))
 
 describe('JsonValidator Component', () => {
@@ -56,24 +58,14 @@ describe('JsonValidator Component', () => {
   })
 
   it('renders validation status for empty input', () => {
-    render(
-      <JsonValidator
-        input=""
-        onValidationChange={mockOnValidationChange}
-      />
-    )
+    render(<JsonValidator input="" onValidationChange={mockOnValidationChange} />)
 
     expect(screen.getByText('Validating...')).toBeInTheDocument()
     expect(screen.getByText('Enter JSON content above to validate')).toBeInTheDocument()
   })
 
   it('validates valid JSON correctly', async () => {
-    render(
-      <JsonValidator
-        input={validJson}
-        onValidationChange={mockOnValidationChange}
-      />
-    )
+    render(<JsonValidator input={validJson} onValidationChange={mockOnValidationChange} />)
 
     // Should show validating state initially
     expect(screen.getByText('Validating...')).toBeInTheDocument()
@@ -84,22 +76,19 @@ describe('JsonValidator Component', () => {
     })
 
     // Should show success message
-    expect(screen.getByText('Your JSON is valid and properly formatted. No syntax errors detected.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Your JSON is valid and properly formatted. No syntax errors detected.')
+    ).toBeInTheDocument()
 
     // Should call onValidationChange with valid result
     expect(mockOnValidationChange).toHaveBeenCalledWith({
       isValid: true,
-      errors: []
+      errors: [],
     })
   })
 
   it('validates invalid JSON correctly', async () => {
-    render(
-      <JsonValidator
-        input={invalidJson}
-        onValidationChange={mockOnValidationChange}
-      />
-    )
+    render(<JsonValidator input={invalidJson} onValidationChange={mockOnValidationChange} />)
 
     // Wait for validation to complete
     await waitFor(() => {
@@ -115,42 +104,29 @@ describe('JsonValidator Component', () => {
       errors: expect.arrayContaining([
         expect.objectContaining({
           message: expect.any(String),
-          severity: 'error'
-        })
-      ])
+          severity: 'error',
+        }),
+      ]),
     })
   })
 
   it('shows correct status icons', async () => {
     const { rerender } = render(
-      <JsonValidator
-        input=""
-        onValidationChange={mockOnValidationChange}
-      />
+      <JsonValidator input="" onValidationChange={mockOnValidationChange} />
     )
 
     // Should show loading/spinning icon initially
     expect(screen.getByTestId('refresh-cw')).toBeInTheDocument()
 
     // Rerender with valid JSON
-    rerender(
-      <JsonValidator
-        input={validJson}
-        onValidationChange={mockOnValidationChange}
-      />
-    )
+    rerender(<JsonValidator input={validJson} onValidationChange={mockOnValidationChange} />)
 
     await waitFor(() => {
       expect(screen.getByTestId('check-circle')).toBeInTheDocument()
     })
 
     // Rerender with invalid JSON
-    rerender(
-      <JsonValidator
-        input={invalidJson}
-        onValidationChange={mockOnValidationChange}
-      />
-    )
+    rerender(<JsonValidator input={invalidJson} onValidationChange={mockOnValidationChange} />)
 
     await waitFor(() => {
       expect(screen.getByTestId('alert-circle')).toBeInTheDocument()
@@ -160,12 +136,7 @@ describe('JsonValidator Component', () => {
   it('displays correct statistics', async () => {
     const multilineJson = '{"name":"test",\n"value":123,\n"nested":{"key":"value"}}'
 
-    render(
-      <JsonValidator
-        input={multilineJson}
-        onValidationChange={mockOnValidationChange}
-      />
-    )
+    render(<JsonValidator input={multilineJson} onValidationChange={mockOnValidationChange} />)
 
     await waitFor(() => {
       expect(screen.getByText('Lines: 3')).toBeInTheDocument()
@@ -178,12 +149,7 @@ describe('JsonValidator Component', () => {
     const user = userEvent.setup()
     const { validateJson } = await import('@/web/components/tools/json/json-utils')
 
-    render(
-      <JsonValidator
-        input={validJson}
-        onValidationChange={mockOnValidationChange}
-      />
-    )
+    render(<JsonValidator input={validJson} onValidationChange={mockOnValidationChange} />)
 
     // Wait for initial validation
     await waitFor(() => {
@@ -201,17 +167,12 @@ describe('JsonValidator Component', () => {
     expect(validateJson).toHaveBeenCalledTimes(2)
     expect(mockOnValidationChange).toHaveBeenCalledWith({
       isValid: true,
-      errors: []
+      errors: [],
     })
   })
 
   it('disables revalidate button during validation', async () => {
-    render(
-      <JsonValidator
-        input={validJson}
-        onValidationChange={mockOnValidationChange}
-      />
-    )
+    render(<JsonValidator input={validJson} onValidationChange={mockOnValidationChange} />)
 
     // Button should be disabled during validation
     const revalidateButton = screen.getByRole('button', { name: /revalidate/i })
@@ -226,12 +187,7 @@ describe('JsonValidator Component', () => {
   it('debounces validation correctly', async () => {
     const { validateJson } = await import('@/web/components/tools/json/json-utils')
 
-    render(
-      <JsonValidator
-        input={validJson}
-        onValidationChange={mockOnValidationChange}
-      />
-    )
+    render(<JsonValidator input={validJson} onValidationChange={mockOnValidationChange} />)
 
     // Should only call validateJson once after debounce
     await vi.advanceTimersByTimeAsync(300)
@@ -243,10 +199,7 @@ describe('JsonValidator Component', () => {
     const { validateJson } = await import('@/web/components/tools/json/json-utils')
 
     const { rerender } = render(
-      <JsonValidator
-        input='{'
-        onValidationChange={mockOnValidationChange}
-      />
+      <JsonValidator input="{" onValidationChange={mockOnValidationChange} />
     )
 
     // Simulate rapid typing
@@ -297,71 +250,59 @@ describe('JsonValidator Component', () => {
       throw new Error('Validation failed')
     })
 
-    render(
-      <JsonValidator
-        input={validJson}
-        onValidationChange={mockOnValidationChange}
-      />
-    )
+    render(<JsonValidator input={validJson} onValidationChange={mockOnValidationChange} />)
 
     await waitFor(() => {
       expect(mockOnValidationChange).toHaveBeenCalledWith({
         isValid: false,
-        errors: [{
-          line: 1,
-          column: 1,
-          message: 'Validation failed',
-          severity: 'error'
-        }]
+        errors: [
+          {
+            line: 1,
+            column: 1,
+            message: 'Validation failed',
+            severity: 'error',
+          },
+        ],
       })
     })
   })
 
   it('displays correct status colors', async () => {
     const { rerender } = render(
-      <JsonValidator
-        input=""
-        onValidationChange={mockOnValidationChange}
-      />
+      <JsonValidator input="" onValidationChange={mockOnValidationChange} />
     )
 
     // Initial validating state - blue
-    expect(screen.getByText('Validating...').closest('div')).toHaveClass('bg-blue-50', 'border-blue-200')
-
-    // Valid state - green
-    rerender(
-      <JsonValidator
-        input={validJson}
-        onValidationChange={mockOnValidationChange}
-      />
+    expect(screen.getByText('Validating...').closest('div')).toHaveClass(
+      'bg-blue-50',
+      'border-blue-200'
     )
 
+    // Valid state - green
+    rerender(<JsonValidator input={validJson} onValidationChange={mockOnValidationChange} />)
+
     await waitFor(() => {
-      expect(screen.getByText('Valid JSON').closest('div')).toHaveClass('bg-green-50', 'border-green-200')
+      expect(screen.getByText('Valid JSON').closest('div')).toHaveClass(
+        'bg-green-50',
+        'border-green-200'
+      )
     })
 
     // Invalid state - red
-    rerender(
-      <JsonValidator
-        input={invalidJson}
-        onValidationChange={mockOnValidationChange}
-      />
-    )
+    rerender(<JsonValidator input={invalidJson} onValidationChange={mockOnValidationChange} />)
 
     await waitFor(() => {
-      expect(screen.getByText(/errors? found/).closest('div')).toHaveClass('bg-red-50', 'border-red-200')
+      expect(screen.getByText(/errors? found/).closest('div')).toHaveClass(
+        'bg-red-50',
+        'border-red-200'
+      )
     })
   })
 
   it('is accessible with keyboard navigation', async () => {
     const user = userEvent.setup()
 
-    render(
-      <JsonValidator
-        input={validJson}
-        onValidationChange={mockOnValidationChange}
-      />
-    )
+    render(<JsonValidator input={validJson} onValidationChange={mockOnValidationChange} />)
 
     await waitFor(() => {
       // Should be able to tab to revalidate button
@@ -376,10 +317,7 @@ describe('JsonValidator Component', () => {
 
   it('handles cleanup on unmount', () => {
     const { unmount } = render(
-      <JsonValidator
-        input={validJson}
-        onValidationChange={mockOnValidationChange}
-      />
+      <JsonValidator input={validJson} onValidationChange={mockOnValidationChange} />
     )
 
     // Should not throw errors on unmount

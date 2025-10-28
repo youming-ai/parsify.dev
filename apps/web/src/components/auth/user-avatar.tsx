@@ -1,15 +1,14 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { cn } from '@/lib/utils';
-import { User } from './auth-types';
+import { cn } from '@/lib/utils'
+import type { User } from './auth-types'
 
 interface UserAvatarProps {
-  user: User;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  className?: string;
-  showStatus?: boolean;
-  status?: 'online' | 'offline' | 'away' | 'busy';
+  user: User
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  className?: string
+  showStatus?: boolean
+  status?: 'online' | 'offline' | 'away' | 'busy'
 }
 
 const sizeClasses = {
@@ -17,28 +16,28 @@ const sizeClasses = {
   md: 'h-8 w-8 text-sm',
   lg: 'h-10 w-10 text-base',
   xl: 'h-12 w-12 text-lg',
-};
+}
 
 const statusSizeClasses = {
   sm: 'h-2 w-2',
   md: 'h-2.5 w-2.5',
   lg: 'h-3 w-3',
   xl: 'h-3.5 w-3.5',
-};
+}
 
 const statusColors = {
   online: 'bg-green-500',
   offline: 'bg-gray-400',
   away: 'bg-yellow-500',
   busy: 'bg-red-500',
-};
+}
 
 function getInitials(name: string): string {
   return name
     .split(' ')
-    .map((word) => word.charAt(0).toUpperCase())
+    .map(word => word.charAt(0).toUpperCase())
     .join('')
-    .slice(0, 2);
+    .slice(0, 2)
 }
 
 function getAvatarColor(name: string): string {
@@ -53,16 +52,16 @@ function getAvatarColor(name: string): string {
     'bg-teal-500',
     'bg-orange-500',
     'bg-cyan-500',
-  ];
+  ]
 
   // Simple hash function to consistently get the same color for the same name
-  let hash = 0;
+  let hash = 0
   for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
   }
 
-  const index = Math.abs(hash) % colors.length;
-  return colors[index];
+  const index = Math.abs(hash) % colors.length
+  return colors[index]
 }
 
 export function UserAvatar({
@@ -72,9 +71,9 @@ export function UserAvatar({
   showStatus = false,
   status = 'offline',
 }: UserAvatarProps) {
-  const sizeClass = sizeClasses[size];
-  const statusSizeClass = statusSizeClasses[size];
-  const statusColorClass = statusColors[status];
+  const sizeClass = sizeClasses[size]
+  const statusSizeClass = statusSizeClasses[size]
+  const statusColorClass = statusColors[status]
 
   if (user.avatar) {
     return (
@@ -82,23 +81,19 @@ export function UserAvatar({
         <img
           src={user.avatar}
           alt={user.name}
-          className={cn(
-            sizeClass,
-            'rounded-full object-cover',
-            className
-          )}
+          className={cn(sizeClass, 'rounded-full object-cover', className)}
         />
         {showStatus && (
           <span
             className={cn(
-              'absolute -bottom-0 -right-0 rounded-full border-2 border-white',
+              '-bottom-0 -right-0 absolute rounded-full border-2 border-white',
               statusSizeClass,
               statusColorClass
             )}
           />
         )}
       </div>
-    );
+    )
   }
 
   return (
@@ -106,7 +101,7 @@ export function UserAvatar({
       <div
         className={cn(
           sizeClass,
-          'rounded-full flex items-center justify-center text-white font-medium',
+          'flex items-center justify-center rounded-full font-medium text-white',
           getAvatarColor(user.name),
           className
         )}
@@ -116,12 +111,12 @@ export function UserAvatar({
       {showStatus && (
         <span
           className={cn(
-            'absolute -bottom-0 -right-0 rounded-full border-2 border-white',
+            '-bottom-0 -right-0 absolute rounded-full border-2 border-white',
             statusSizeClass,
             statusColorClass
           )}
         />
       )}
     </div>
-  );
+  )
 }

@@ -2,21 +2,21 @@
  * Usage examples and integration guide for the error handling middleware
  */
 
+import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { z } from 'zod'
-import { zValidator } from '@hono/zod-validator'
 import {
-  errorMiddleware,
-  handleAsyncError,
-  createValidationError,
+  AuthenticationError,
   createAuthenticationError,
   createDatabaseError,
+  createExternalServiceError,
   createRateLimitError,
   createTimeoutError,
-  createExternalServiceError,
-  ValidationError,
-  AuthenticationError,
+  createValidationError,
   DatabaseError,
+  errorMiddleware,
+  handleAsyncError,
+  ValidationError,
 } from './error'
 
 // Example 1: Basic integration with Hono app
@@ -40,7 +40,7 @@ export function setupRoutes(app: Hono) {
     const userId = c.req.param('id')
 
     // This will be caught by the error middleware
-    if (!userId || isNaN(Number(userId))) {
+    if (!userId || Number.isNaN(Number(userId))) {
       throw createValidationError('Invalid user ID', 'id', { value: userId })
     }
 
@@ -146,7 +146,7 @@ export class UserService {
     }
   }
 
-  private async fetchFromDatabase(id: string): Promise<any> {
+  private async fetchFromDatabase(_id: string): Promise<any> {
     // Simulate database operation
     return null
   }
@@ -156,7 +156,7 @@ export class UserService {
     return { id: '123', ...userData }
   }
 
-  private async emailExists(email: string): Promise<boolean> {
+  private async emailExists(_email: string): Promise<boolean> {
     // Simulate email check
     return false
   }
@@ -170,28 +170,28 @@ export class PaymentService {
       const response = await this.callPaymentAPI(userId, amount)
 
       if (!response.success) {
-        throw createExternalServiceError(
-          'Payment processing failed',
-          'payment-service',
-          { userId, amount, errorCode: response.errorCode }
-        )
+        throw createExternalServiceError('Payment processing failed', 'payment-service', {
+          userId,
+          amount,
+          errorCode: response.errorCode,
+        })
       }
 
       return response
     } catch (error) {
       if (error instanceof Error && error.message.includes('network')) {
-        throw createExternalServiceError(
-          'Payment service unreachable',
-          'payment-service',
-          { userId, amount, originalError: error }
-        )
+        throw createExternalServiceError('Payment service unreachable', 'payment-service', {
+          userId,
+          amount,
+          originalError: error,
+        })
       }
 
       throw error
     }
   }
 
-  private async callPaymentAPI(userId: string, amount: number): Promise<any> {
+  private async callPaymentAPI(_userId: string, _amount: number): Promise<any> {
     // Simulate external API call
     return { success: false, errorCode: 'INSUFFICIENT_FUNDS' }
   }
@@ -200,20 +200,12 @@ export class PaymentService {
 // Example 5: WASM module error handling
 export class JsonFormatterService {
   async formatJson(jsonString: string, options: any) {
-    try {
-      // This would call WASM module
-      const result = await this.callWasmFormatter(jsonString, options)
-      return result
-    } catch (error) {
-      // WASM errors are automatically classified by the error middleware
-      throw error
-    }
+    // This would call WASM module
+    const result = await this.callWasmFormatter(jsonString, options)
+    return result
   }
 
-  private async callWasmFormatter(
-    jsonString: string,
-    options: any
-  ): Promise<any> {
+  private async callWasmFormatter(_jsonString: string, _options: any): Promise<any> {
     // Simulate WASM call that might fail
     throw new Error('WASM compilation failed')
   }
@@ -229,36 +221,29 @@ export class RateLimitService {
       const resetTime = await this.getResetTime(userId, operation)
       const retryAfter = Math.ceil((resetTime - Date.now()) / 1000)
 
-      throw createRateLimitError(
-        `Rate limit exceeded for ${operation}`,
-        retryAfter,
-        { userId, operation, limit, current, resetTime }
-      )
+      throw createRateLimitError(`Rate limit exceeded for ${operation}`, retryAfter, {
+        userId,
+        operation,
+        limit,
+        current,
+        resetTime,
+      })
     }
 
     return true
   }
 
-  private async getUserLimit(
-    userId: string,
-    operation: string
-  ): Promise<number> {
+  private async getUserLimit(_userId: string, _operation: string): Promise<number> {
     // Simulate getting user-specific limits
     return 100
   }
 
-  private async getCurrentUsage(
-    userId: string,
-    operation: string
-  ): Promise<number> {
+  private async getCurrentUsage(_userId: string, _operation: string): Promise<number> {
     // Simulate getting current usage
     return 95
   }
 
-  private async getResetTime(
-    userId: string,
-    operation: string
-  ): Promise<number> {
+  private async getResetTime(_userId: string, _operation: string): Promise<number> {
     // Simulate getting reset time
     return Date.now() + 300000 // 5 minutes from now
   }
@@ -296,30 +281,28 @@ export class AuthService {
     const permissions = await this.getUserPermissions(userId)
 
     if (!this.hasPermission(permissions, resource, action)) {
-      throw new AuthenticationError(
-        `Insufficient permissions for ${action} on ${resource}`,
-        { userId, resource, action, permissions }
-      )
+      throw new AuthenticationError(`Insufficient permissions for ${action} on ${resource}`, {
+        userId,
+        resource,
+        action,
+        permissions,
+      })
     }
 
     return true
   }
 
-  private async verifyToken(token: string): Promise<any> {
+  private async verifyToken(_token: string): Promise<any> {
     // Simulate token verification
     return null
   }
 
-  private async getUserPermissions(userId: string): Promise<string[]> {
+  private async getUserPermissions(_userId: string): Promise<string[]> {
     // Simulate getting user permissions
     return ['read:own']
   }
 
-  private hasPermission(
-    permissions: string[],
-    resource: string,
-    action: string
-  ): boolean {
+  private hasPermission(permissions: string[], resource: string, action: string): boolean {
     return permissions.includes(`${action}:${resource}`)
   }
 }
@@ -380,10 +363,7 @@ export function setupCompleteRoutes(app: Hono) {
       const userData = await c.req.json()
 
       // Check rate limit
-      await rateLimitService.checkRateLimit(
-        c.get('auth')?.user?.id,
-        'create_user'
-      )
+      await rateLimitService.checkRateLimit(c.get('auth')?.user?.id, 'create_user')
 
       const user = await userService.createUser(userData)
       return c.json({ user }, 201)
@@ -397,9 +377,7 @@ export function setupCompleteRoutes(app: Hono) {
       const { userId, amount } = await c.req.json()
 
       // Authenticate and authorize
-      await authService.authenticateUser(
-        c.req.header('Authorization')?.replace('Bearer ', '')!
-      )
+      await authService.authenticateUser(c.req.header('Authorization')?.replace('Bearer ', '')!)
       await authService.authorizeUser(userId, 'payment', 'create')
 
       // Check rate limit
@@ -431,7 +409,7 @@ export function setupCompleteRoutes(app: Hono) {
 }
 
 // Helper functions
-async function fetchUserFromDatabase(id: string): Promise<any> {
+async function fetchUserFromDatabase(_id: string): Promise<any> {
   return null
 }
 

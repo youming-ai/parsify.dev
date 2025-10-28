@@ -1,30 +1,24 @@
 'use client'
 
-import { useState } from 'react'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { UserProfile } from '@/components/auth/user-profile'
-import { ProtectedRoute } from '@/components/auth/auth-guard'
-import { MainLayout } from '@/components/layout/main-layout'
-import { useAuth } from '@/components/auth/auth-context'
-import {
-  BarChart3,
-  FileText,
-  Clock,
-  Zap,
-  Settings,
   Activity,
-  TrendingUp,
-  Download,
+  BarChart3,
   ChevronRight,
+  Clock,
+  Download,
+  FileText,
+  Settings,
+  TrendingUp,
+  Zap,
 } from 'lucide-react'
+import { useState } from 'react'
+import { useAuth } from '@/components/auth/auth-context'
+import { ProtectedRoute } from '@/components/auth/auth-guard'
+import { UserProfile } from '@/components/auth/user-profile'
+import { MainLayout } from '@/components/layout/main-layout'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function DashboardPage() {
   const { user, logout } = useAuth()
@@ -83,32 +77,24 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <MainLayout>
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           {/* Welcome Section */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="font-bold text-3xl text-gray-900">
                   {getWelcomeMessage()}, {user?.name}!
                 </h1>
-                <p className="text-gray-600 mt-2">
-                  Welcome back to your developer dashboard. Here's what's been
-                  happening.
+                <p className="mt-2 text-gray-600">
+                  Welcome back to your developer dashboard. Here's what's been happening.
                 </p>
               </div>
               <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => (window.location.href = '/auth/profile')}
-                >
-                  <Settings className="h-4 w-4 mr-2" />
+                <Button variant="outline" onClick={() => (window.location.href = '/auth/profile')}>
+                  <Settings className="mr-2 h-4 w-4" />
                   Settings
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleLogout}
-                  disabled={isLoading}
-                >
+                <Button variant="outline" onClick={handleLogout} disabled={isLoading}>
                   {isLoading ? 'Signing out...' : 'Sign out'}
                 </Button>
               </div>
@@ -116,20 +102,16 @@ export default function DashboardPage() {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Operations
-                </CardTitle>
+                <CardTitle className="font-medium text-sm">Total Operations</CardTitle>
                 <BarChart3 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {stats.totalOperations}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  <TrendingUp className="inline h-3 w-3 mr-1" />
+                <div className="font-bold text-2xl">{stats.totalOperations}</div>
+                <p className="text-muted-foreground text-xs">
+                  <TrendingUp className="mr-1 inline h-3 w-3" />
                   +12% from last month
                 </p>
               </CardContent>
@@ -137,51 +119,39 @@ export default function DashboardPage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Tools Used
-                </CardTitle>
+                <CardTitle className="font-medium text-sm">Tools Used</CardTitle>
                 <Zap className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.toolsUsed}</div>
-                <p className="text-xs text-muted-foreground">
-                  +2 new tools this week
-                </p>
+                <div className="font-bold text-2xl">{stats.toolsUsed}</div>
+                <p className="text-muted-foreground text-xs">+2 new tools this week</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Files Processed
-                </CardTitle>
+                <CardTitle className="font-medium text-sm">Files Processed</CardTitle>
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.filesProcessed}</div>
-                <p className="text-xs text-muted-foreground">
-                  +8 from yesterday
-                </p>
+                <div className="font-bold text-2xl">{stats.filesProcessed}</div>
+                <p className="text-muted-foreground text-xs">+8 from yesterday</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Time Saved
-                </CardTitle>
+                <CardTitle className="font-medium text-sm">Time Saved</CardTitle>
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.timeSaved}</div>
-                <p className="text-xs text-muted-foreground">
-                  Estimated automation time
-                </p>
+                <div className="font-bold text-2xl">{stats.timeSaved}</div>
+                <p className="text-muted-foreground text-xs">Estimated automation time</p>
               </CardContent>
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Recent Activity */}
             <div className="lg:col-span-2">
               <Card>
@@ -190,32 +160,24 @@ export default function DashboardPage() {
                     <Activity className="h-5 w-5" />
                     <CardTitle>Recent Activity</CardTitle>
                   </div>
-                  <CardDescription>
-                    Your latest tool usage and actions
-                  </CardDescription>
+                  <CardDescription>Your latest tool usage and actions</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {recentActivity.map(activity => (
                       <div
                         key={activity.id}
-                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                        className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-gray-50"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <div className="h-2 w-2 rounded-full bg-blue-500"></div>
                           <div>
-                            <p className="font-medium text-sm">
-                              {activity.action}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {activity.tool}
-                            </p>
+                            <p className="font-medium text-sm">{activity.action}</p>
+                            <p className="text-gray-500 text-xs">{activity.tool}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">
-                            {activity.time}
-                          </span>
+                          <span className="text-gray-500 text-xs">{activity.time}</span>
                           <ChevronRight className="h-4 w-4 text-gray-400" />
                         </div>
                       </div>
@@ -233,78 +195,70 @@ export default function DashboardPage() {
               <Card className="mt-6">
                 <CardHeader>
                   <CardTitle>Quick Actions</CardTitle>
-                  <CardDescription>
-                    Frequently used tools and features
-                  </CardDescription>
+                  <CardDescription>Frequently used tools and features</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
                     <Button
                       variant="outline"
-                      className="justify-start h-auto p-4"
+                      className="h-auto justify-start p-4"
                       onClick={() => (window.location.href = '/tools/json')}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
                           <FileText className="h-4 w-4 text-blue-600" />
                         </div>
                         <div className="text-left">
                           <p className="font-medium">JSON Tools</p>
-                          <p className="text-xs text-gray-500">
-                            Format & validate
-                          </p>
+                          <p className="text-gray-500 text-xs">Format & validate</p>
                         </div>
                       </div>
                     </Button>
 
                     <Button
                       variant="outline"
-                      className="justify-start h-auto p-4"
+                      className="h-auto justify-start p-4"
                       onClick={() => (window.location.href = '/tools/code')}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100">
                           <Zap className="h-4 w-4 text-green-600" />
                         </div>
                         <div className="text-left">
                           <p className="font-medium">Code Runner</p>
-                          <p className="text-xs text-gray-500">Execute code</p>
+                          <p className="text-gray-500 text-xs">Execute code</p>
                         </div>
                       </div>
                     </Button>
 
                     <Button
                       variant="outline"
-                      className="justify-start h-auto p-4"
-                      onClick={() =>
-                        (window.location.href = '/tools/converter')
-                      }
+                      className="h-auto justify-start p-4"
+                      onClick={() => (window.location.href = '/tools/converter')}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
                           <Download className="h-4 w-4 text-purple-600" />
                         </div>
                         <div className="text-left">
                           <p className="font-medium">File Converter</p>
-                          <p className="text-xs text-gray-500">
-                            Convert formats
-                          </p>
+                          <p className="text-gray-500 text-xs">Convert formats</p>
                         </div>
                       </div>
                     </Button>
 
                     <Button
                       variant="outline"
-                      className="justify-start h-auto p-4"
+                      className="h-auto justify-start p-4"
                       onClick={() => (window.location.href = '/auth/profile')}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100">
                           <Settings className="h-4 w-4 text-orange-600" />
                         </div>
                         <div className="text-left">
                           <p className="font-medium">Settings</p>
-                          <p className="text-xs text-gray-500">Account prefs</p>
+                          <p className="text-gray-500 text-xs">Account prefs</p>
                         </div>
                       </div>
                     </Button>
@@ -323,12 +277,12 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Account Type</span>
+                    <span className="text-gray-600 text-sm">Account Type</span>
                     <Badge className="bg-green-100 text-green-800">Free</Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Member Since</span>
-                    <span className="text-sm font-medium">
+                    <span className="text-gray-600 text-sm">Member Since</span>
+                    <span className="font-medium text-sm">
                       {new Date().toLocaleDateString('en-US', {
                         month: 'short',
                         year: 'numeric',
@@ -336,12 +290,8 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">
-                      Email Verified
-                    </span>
-                    <Badge className="bg-blue-100 text-blue-800">
-                      Verified
-                    </Badge>
+                    <span className="text-gray-600 text-sm">Email Verified</span>
+                    <Badge className="bg-blue-100 text-blue-800">Verified</Badge>
                   </div>
                 </CardContent>
               </Card>
@@ -349,22 +299,20 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Upgrade to Pro</CardTitle>
-                  <CardDescription>
-                    Unlock advanced features and remove limitations
-                  </CardDescription>
+                  <CardDescription>Unlock advanced features and remove limitations</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-2 text-sm text-gray-600 mb-4">
+                  <ul className="mb-4 space-y-2 text-gray-600 text-sm">
                     <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                      <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
                       Unlimited tool usage
                     </li>
                     <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                      <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
                       Priority support
                     </li>
                     <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                      <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
                       Advanced features
                     </li>
                   </ul>

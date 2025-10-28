@@ -1,17 +1,17 @@
+import { Copy, Download, Play, Settings2 } from 'lucide-react'
 import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { JsonFormatterProps, JsonFormatOptions } from './json-types'
-import { formatJson, copyToClipboard, downloadFile } from './json-utils'
 import { cn } from '@/lib/utils'
-import { Settings2, Copy, Download, Play } from 'lucide-react'
+import type { JsonFormatOptions, JsonFormatterProps } from './json-types'
+import { copyToClipboard, downloadFile, formatJson } from './json-utils'
 
 export function JsonFormatter({
   input,
   options = defaultFormatOptions,
   onFormat,
   onError,
-  className
+  className,
 }: JsonFormatterProps) {
   const [formatOptions, setFormatOptions] = React.useState<JsonFormatOptions>(options)
   const [isFormatting, setIsFormatting] = React.useState(false)
@@ -69,7 +69,7 @@ export function JsonFormatter({
         const formatted = formatJson(input, newOptions)
         setFormattedOutput(formatted)
         onFormat(formatted)
-      } catch (error) {
+      } catch (_error) {
         // Don't show error for auto-format attempts
       }
     }
@@ -80,7 +80,7 @@ export function JsonFormatter({
     if (input.trim() && formattedOutput) {
       handleFormat()
     }
-  }, [input]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [input, formattedOutput, handleFormat]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -88,15 +88,11 @@ export function JsonFormatter({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Settings2 className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Settings2 className="h-5 w-5" />
               Format Options
             </CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowSettings(!showSettings)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => setShowSettings(!showSettings)}>
               {showSettings ? 'Hide' : 'Show'} Settings
             </Button>
           </div>
@@ -104,10 +100,10 @@ export function JsonFormatter({
 
         {showSettings && (
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {/* Indent Size */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="font-medium text-gray-700 text-sm">
                   Indent Size: {formatOptions.indent}
                 </label>
                 <div className="flex items-center gap-2">
@@ -116,29 +112,25 @@ export function JsonFormatter({
                     min="1"
                     max="8"
                     value={formatOptions.indent}
-                    onChange={(e) => handleOptionChange('indent', parseInt(e.target.value, 10))}
+                    onChange={e => handleOptionChange('indent', parseInt(e.target.value, 10))}
                     className="flex-1"
                   />
-                  <span className="text-sm text-gray-500 w-8">
-                    {formatOptions.indent}
-                  </span>
+                  <span className="w-8 text-gray-500 text-sm">{formatOptions.indent}</span>
                 </div>
               </div>
 
               {/* Sort Keys */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Sort Keys
-                </label>
+                <label className="font-medium text-gray-700 text-sm">Sort Keys</label>
                 <div className="flex items-center">
                   <input
                     type="checkbox"
                     id="sort-keys"
                     checked={formatOptions.sortKeys}
-                    onChange={(e) => handleOptionChange('sortKeys', e.target.checked)}
+                    onChange={e => handleOptionChange('sortKeys', e.target.checked)}
                     className="mr-2"
                   />
-                  <label htmlFor="sort-keys" className="text-sm text-gray-600">
+                  <label htmlFor="sort-keys" className="text-gray-600 text-sm">
                     Alphabetically sort object keys
                   </label>
                 </div>
@@ -146,18 +138,16 @@ export function JsonFormatter({
 
               {/* Compact Mode */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Compact Mode
-                </label>
+                <label className="font-medium text-gray-700 text-sm">Compact Mode</label>
                 <div className="flex items-center">
                   <input
                     type="checkbox"
                     id="compact"
                     checked={formatOptions.compact}
-                    onChange={(e) => handleOptionChange('compact', e.target.checked)}
+                    onChange={e => handleOptionChange('compact', e.target.checked)}
                     className="mr-2"
                   />
-                  <label htmlFor="compact" className="text-sm text-gray-600">
+                  <label htmlFor="compact" className="text-gray-600 text-sm">
                     Remove all whitespace
                   </label>
                 </div>
@@ -165,19 +155,17 @@ export function JsonFormatter({
 
               {/* Trailing Commas */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Trailing Commas
-                </label>
+                <label className="font-medium text-gray-700 text-sm">Trailing Commas</label>
                 <div className="flex items-center">
                   <input
                     type="checkbox"
                     id="trailing-commas"
                     checked={formatOptions.trailingComma}
-                    onChange={(e) => handleOptionChange('trailingComma', e.target.checked)}
+                    onChange={e => handleOptionChange('trailingComma', e.target.checked)}
                     disabled={formatOptions.compact}
                     className="mr-2"
                   />
-                  <label htmlFor="trailing-commas" className="text-sm text-gray-600">
+                  <label htmlFor="trailing-commas" className="text-gray-600 text-sm">
                     Add trailing commas
                   </label>
                 </div>
@@ -194,27 +182,19 @@ export function JsonFormatter({
           disabled={isFormatting || !input.trim()}
           className="flex items-center gap-2"
         >
-          <Play className="w-4 h-4" />
+          <Play className="h-4 w-4" />
           {isFormatting ? 'Formatting...' : 'Format JSON'}
         </Button>
 
         {formattedOutput && (
           <>
-            <Button
-              variant="outline"
-              onClick={handleCopy}
-              className="flex items-center gap-2"
-            >
-              <Copy className="w-4 h-4" />
+            <Button variant="outline" onClick={handleCopy} className="flex items-center gap-2">
+              <Copy className="h-4 w-4" />
               Copy
             </Button>
 
-            <Button
-              variant="outline"
-              onClick={handleDownload}
-              className="flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
+            <Button variant="outline" onClick={handleDownload} className="flex items-center gap-2">
+              <Download className="h-4 w-4" />
               Download
             </Button>
           </>
@@ -228,10 +208,10 @@ export function JsonFormatter({
             <CardTitle className="text-lg">Formatted Output</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="bg-gray-50 border rounded-lg p-4 overflow-auto max-h-96 font-mono text-sm text-gray-800">
+            <pre className="max-h-96 overflow-auto rounded-lg border bg-gray-50 p-4 font-mono text-gray-800 text-sm">
               {formattedOutput}
             </pre>
-            <div className="mt-2 text-sm text-gray-600">
+            <div className="mt-2 text-gray-600 text-sm">
               {formattedOutput.split('\n').length} lines, {formattedOutput.length} characters
             </div>
           </CardContent>
@@ -240,7 +220,7 @@ export function JsonFormatter({
 
       {/* Copy Notification */}
       {showCopyNotification && (
-        <div className="fixed bottom-4 right-4 bg-green-600 text-white px-3 py-2 rounded-lg shadow-lg z-50 flex items-center gap-2">
+        <div className="fixed right-4 bottom-4 z-50 flex items-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-white shadow-lg">
           <span className="text-sm">Copied to clipboard!</span>
         </div>
       )}
@@ -252,5 +232,5 @@ const defaultFormatOptions: JsonFormatOptions = {
   indent: 2,
   sortKeys: false,
   compact: false,
-  trailingComma: false
+  trailingComma: false,
 }

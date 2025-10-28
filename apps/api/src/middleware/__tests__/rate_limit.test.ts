@@ -2,19 +2,18 @@
  * Tests for the rate limiting middleware
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { Hono } from 'hono'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  rateLimitMiddleware,
-  RateLimitStrategy,
-  TokenBucketState,
-  SlidingWindowState,
-  FixedWindowState,
-  RateLimitPresets,
   createApiRateLimit,
+  createAuthRateLimit,
   createFileUploadRateLimit,
   createJobExecutionRateLimit,
-  createAuthRateLimit,
+  type FixedWindowState,
+  RateLimitStrategy,
+  rateLimitMiddleware,
+  type SlidingWindowState,
+  type TokenBucketState,
 } from '../rate_limit'
 
 // Mock environment
@@ -38,10 +37,10 @@ const mockCloudflareService = {
 
 describe('Rate Limit Middleware', () => {
   let app: Hono
-  let requestCount = 0
+  let _requestCount = 0
 
   beforeEach(() => {
-    requestCount = 0
+    _requestCount = 0
     app = new Hono()
 
     // Mock Cloudflare service in context
@@ -90,9 +89,7 @@ describe('Rate Limit Middleware', () => {
         maxTokens: 10,
       }
 
-      mockCloudflareService.cacheGet.mockResolvedValue(
-        JSON.stringify(bucketState)
-      )
+      mockCloudflareService.cacheGet.mockResolvedValue(JSON.stringify(bucketState))
 
       app.use(
         '/test',
@@ -177,9 +174,7 @@ describe('Rate Limit Middleware', () => {
         maxRequests: 5,
       }
 
-      mockCloudflareService.cacheGet.mockResolvedValue(
-        JSON.stringify(windowState)
-      )
+      mockCloudflareService.cacheGet.mockResolvedValue(JSON.stringify(windowState))
 
       app.use(
         '/test',
@@ -259,9 +254,7 @@ describe('Rate Limit Middleware', () => {
         maxRequests: 5,
       }
 
-      mockCloudflareService.cacheGet.mockResolvedValue(
-        JSON.stringify(windowState)
-      )
+      mockCloudflareService.cacheGet.mockResolvedValue(JSON.stringify(windowState))
 
       app.use(
         '/test',
@@ -440,7 +433,7 @@ describe('Rate Limit Middleware', () => {
 
   describe('Custom Error Handling', () => {
     it('should use custom error handler when provided', async () => {
-      const customErrorHandler = vi.fn((c, check) => {
+      const customErrorHandler = vi.fn((c, _check) => {
         return c.json(
           {
             customError: 'Custom Rate Limit Message',
@@ -458,9 +451,7 @@ describe('Rate Limit Middleware', () => {
         maxTokens: 10,
       }
 
-      mockCloudflareService.cacheGet.mockResolvedValue(
-        JSON.stringify(bucketState)
-      )
+      mockCloudflareService.cacheGet.mockResolvedValue(JSON.stringify(bucketState))
 
       app.use(
         '/test',
@@ -557,9 +548,7 @@ describe('Rate Limit Middleware', () => {
         maxTokens: 10,
       }
 
-      mockCloudflareService.cacheGet.mockResolvedValue(
-        JSON.stringify(bucketState)
-      )
+      mockCloudflareService.cacheGet.mockResolvedValue(JSON.stringify(bucketState))
 
       app.use(
         '/test',
@@ -672,9 +661,7 @@ describe('Rate Limit Middleware', () => {
 
   describe('Error Handling', () => {
     it('should fail open when rate limiting service fails', async () => {
-      mockCloudflareService.cacheGet.mockRejectedValue(
-        new Error('KV service unavailable')
-      )
+      mockCloudflareService.cacheGet.mockRejectedValue(new Error('KV service unavailable'))
 
       app.use(
         '/test',
@@ -696,12 +683,10 @@ describe('Rate Limit Middleware', () => {
 
   describe('Integration with RateLimitService', () => {
     it('should fallback to RateLimitService when custom strategies fail', async () => {
-      mockCloudflareService.cacheGet.mockRejectedValue(
-        new Error('Custom strategy failed')
-      )
+      mockCloudflareService.cacheGet.mockRejectedValue(new Error('Custom strategy failed'))
 
       // Mock RateLimitService
-      const mockRateLimitService = {
+      const _mockRateLimitService = {
         checkRateLimit: vi.fn().mockResolvedValue({
           allowed: true,
           remaining: 50,

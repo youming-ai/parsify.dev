@@ -15,7 +15,7 @@ async function basicMigrationExample() {
   const migrationSystem = createMigrationSystem(db, {
     enableLogging: true,
     enableRollback: true,
-    validateChecksums: true
+    validateChecksums: true,
   })
 
   try {
@@ -32,14 +32,18 @@ async function basicMigrationExample() {
       console.log('Running dry run...')
       const dryRunResult = await migrationSystem.runMigrations({ dryRun: true })
 
-      console.log(`Dry run: ${dryRunResult.summary.successful} successful, ${dryRunResult.summary.failed} failed`)
+      console.log(
+        `Dry run: ${dryRunResult.summary.successful} successful, ${dryRunResult.summary.failed} failed`
+      )
 
       if (dryRunResult.summary.failed === 0) {
         // Run actual migrations
         console.log('Running migrations...')
         const result = await migrationSystem.runMigrations()
 
-        console.log(`Completed: ${result.summary.successful} successful, ${result.summary.failed} failed`)
+        console.log(
+          `Completed: ${result.summary.successful} successful, ${result.summary.failed} failed`
+        )
 
         // Get updated statistics
         const stats = await migrationSystem.getStats()
@@ -55,7 +59,6 @@ async function basicMigrationExample() {
       console.log('Issues:', health.issues)
       console.log('Recommendations:', health.recommendations)
     }
-
   } catch (error) {
     console.error('Migration example failed:', error)
   }
@@ -86,7 +89,7 @@ async function customMigrationExample() {
     `,
     {
       description: 'Add user profile functionality',
-      dependencies: ['001'] // Depends on migration 001
+      dependencies: ['001'], // Depends on migration 001
     }
   )
 
@@ -95,7 +98,7 @@ async function customMigrationExample() {
     version: migration.version,
     name: migration.name,
     hasRollback: !!migration.down,
-    checksum: migration.checksum
+    checksum: migration.checksum,
   })
 
   // Validate the migration
@@ -103,7 +106,7 @@ async function customMigrationExample() {
   await migrationSystem.initialize()
 
   const validation = await migrationSystem.service.validateMigrations({
-    versions: [migration.version]
+    versions: [migration.version],
   })
 
   console.log('Validation result:', validation.summary)
@@ -118,7 +121,7 @@ async function hooksExample() {
   console.log('=== Migration Hooks Example ===')
 
   const migrationSystem = createMigrationSystem(db, {
-    enableLogging: true
+    enableLogging: true,
   })
 
   // Create custom hook for logging
@@ -148,7 +151,7 @@ async function hooksExample() {
       migrationId: migration.id,
       version: migration.version,
       executionTime,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     if (executionTime > 5000) {
@@ -159,13 +162,13 @@ async function hooksExample() {
   // Register hooks
   migrationSystem.service.setHooks({
     beforeMigration: [customLoggingHook, backupHook],
-    afterMigration: [performanceHook]
+    afterMigration: [performanceHook],
   })
 
   await migrationSystem.initialize()
 
   // Run migrations with hooks
-  const result = await migrationSystem.runMigrations()
+  const _result = await migrationSystem.runMigrations()
   console.log(`Completed with ${performanceMetrics.length} performance metrics collected`)
 }
 
@@ -185,7 +188,7 @@ async function advancedExample() {
 
     // Execution configuration
     timeout: 60000, // 1 minute timeout
-    retries: 5,      // 5 retry attempts
+    retries: 5, // 5 retry attempts
     validateChecksums: true,
 
     // Rollback configuration
@@ -197,7 +200,7 @@ async function advancedExample() {
 
     // Health monitoring
     enableHealthChecks: true,
-    healthCheckInterval: 30000 // 30 seconds
+    healthCheckInterval: 30000, // 30 seconds
   })
 
   await migrationSystem.initialize()
@@ -206,7 +209,7 @@ async function advancedExample() {
   const [stats, health, history] = await Promise.all([
     migrationSystem.getStats(),
     migrationSystem.healthCheck(),
-    migrationSystem.getHistory(10)
+    migrationSystem.getHistory(10),
   ])
 
   console.log('=== Migration System Status ===')
@@ -215,7 +218,7 @@ async function advancedExample() {
     applied: stats.applied,
     pending: stats.pending,
     failed: stats.failed,
-    averageTime: stats.averageExecutionTime
+    averageTime: stats.averageExecutionTime,
   })
 
   console.log('Health Status:', {
@@ -223,19 +226,19 @@ async function advancedExample() {
     pendingMigrations: health.pendingMigrations,
     failedMigrations: health.failedMigrations,
     issues: health.issues.length,
-    recommendations: health.recommendations.length
+    recommendations: health.recommendations.length,
   })
 
   console.log('Recent History:', {
     migrations: history.migrations.length,
-    logs: history.logs.length
+    logs: history.logs.length,
   })
 
   // Get detailed logs for troubleshooting
   if (!health.isHealthy) {
     const errorLogs = migrationSystem.getLogs({
       level: 'error',
-      limit: 10
+      limit: 10,
     })
 
     console.log('Recent errors:', errorLogs.length)
@@ -255,7 +258,7 @@ async function rollbackExample() {
 
   const migrationSystem = createMigrationSystem(db, {
     enableRollback: true,
-    enableLogging: true
+    enableLogging: true,
   })
 
   await migrationSystem.initialize()
@@ -269,7 +272,7 @@ async function rollbackExample() {
     console.log('Running rollback dry run...')
     const dryRollback = await migrationSystem.rollbackMigrations({
       steps: 1,
-      dryRun: true
+      dryRun: true,
     })
 
     console.log(`Dry rollback: ${dryRollback.results.length} migrations would be rolled back`)
@@ -279,7 +282,7 @@ async function rollbackExample() {
       console.log('Performing actual rollback...')
       const rollbackResult = await migrationSystem.rollbackMigrations({
         steps: 1,
-        dryRun: false
+        dryRun: false,
       })
 
       const successful = rollbackResult.results.filter(r => r.success).length
@@ -291,7 +294,6 @@ async function rollbackExample() {
       const newStats = await migrationSystem.getStats()
       console.log(`Updated status: ${newStats.applied} applied, ${newStats.rolledBack} rolled back`)
     }
-
   } catch (error) {
     console.error('Rollback example failed:', error)
   }
@@ -336,7 +338,9 @@ async function utilitiesExample() {
 
   console.log('Execution time estimates:')
   console.log(`- Safe migration: ${MigrationUtils.estimateExecutionTime(safeMigration)}ms`)
-  console.log(`- Destructive migration: ${MigrationUtils.estimateExecutionTime(destructiveMigration)}ms`)
+  console.log(
+    `- Destructive migration: ${MigrationUtils.estimateExecutionTime(destructiveMigration)}ms`
+  )
 
   // Generate filenames
   const filename1 = MigrationUtils.generateFilename('001', 'Create users table')
@@ -380,7 +384,6 @@ async function runAllExamples() {
     console.log('\n')
 
     console.log('All examples completed successfully!')
-
   } catch (error) {
     console.error('Example execution failed:', error)
   }
@@ -394,7 +397,7 @@ export {
   advancedExample,
   rollbackExample,
   utilitiesExample,
-  runAllExamples
+  runAllExamples,
 }
 
 // Run examples if this file is executed directly

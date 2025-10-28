@@ -1,63 +1,64 @@
 import { Hono } from 'hono'
-import {
-  globalTransactionManager,
-  globalTransactionMonitor,
-  TransactionStatus,
-  IsolationLevel
-} from '../database'
+import { IsolationLevel } from '../database'
 
 export const transactionMonitoringApi = new Hono()
 
 /**
  * Get real-time transaction monitoring dashboard data
  */
-transactionMonitoringApi.get('/dashboard', async (c) => {
+transactionMonitoringApi.get('/dashboard', async c => {
   try {
-    const db = c.get('db')
+    const _db = c.get('db')
     const client = c.get('dbClient')
 
-    const dashboardData = client.getTransactionMonitor().getDashboardData(
-      client.getTransactionManager()
-    )
+    const dashboardData = client
+      .getTransactionMonitor()
+      .getDashboardData(client.getTransactionManager())
 
     return c.json({
       success: true,
-      data: dashboardData
+      data: dashboardData,
     })
   } catch (error) {
-    return c.json({
-      success: false,
-      error: (error as Error).message
-    }, 500)
+    return c.json(
+      {
+        success: false,
+        error: (error as Error).message,
+      },
+      500
+    )
   }
 })
 
 /**
  * Get transaction metrics and analytics
  */
-transactionMonitoringApi.get('/metrics', async (c) => {
+transactionMonitoringApi.get('/metrics', async c => {
   try {
     const client = c.get('dbClient')
-    const timeRange = parseInt(c.req.query('timeRange') || '3600000') // Default 1 hour
+    const timeRange = parseInt(c.req.query('timeRange') || '3600000', 10) // Default 1 hour
 
     const report = client.getTransactionMonitor().generateReport(timeRange)
 
     return c.json({
       success: true,
-      data: report
+      data: report,
     })
   } catch (error) {
-    return c.json({
-      success: false,
-      error: (error as Error).message
-    }, 500)
+    return c.json(
+      {
+        success: false,
+        error: (error as Error).message,
+      },
+      500
+    )
   }
 })
 
 /**
  * Get active transactions
  */
-transactionMonitoringApi.get('/active', async (c) => {
+transactionMonitoringApi.get('/active', async c => {
   try {
     const client = c.get('dbClient')
     const activeTransactions = client.getTransactionManager().getActiveTransactions()
@@ -70,28 +71,31 @@ transactionMonitoringApi.get('/active', async (c) => {
       isolationLevel: tx.getMetrics().isolationLevel,
       remainingTime: tx.getRemainingTime(),
       hasTimedOut: tx.hasTimedOut(),
-      activeSavepoints: tx.getActiveSavepoints()
+      activeSavepoints: tx.getActiveSavepoints(),
     }))
 
     return c.json({
       success: true,
       data: {
         count: activeTransactions.length,
-        transactions: transactionData
-      }
+        transactions: transactionData,
+      },
     })
   } catch (error) {
-    return c.json({
-      success: false,
-      error: (error as Error).message
-    }, 500)
+    return c.json(
+      {
+        success: false,
+        error: (error as Error).message,
+      },
+      500
+    )
   }
 })
 
 /**
  * Get transaction alerts
  */
-transactionMonitoringApi.get('/alerts', async (c) => {
+transactionMonitoringApi.get('/alerts', async c => {
   try {
     const monitor = c.get('dbClient').getTransactionMonitor()
     const activeOnly = c.req.query('activeOnly') === 'true'
@@ -110,22 +114,25 @@ transactionMonitoringApi.get('/alerts', async (c) => {
           message: alert.message,
           timestamp: alert.timestamp,
           resolved: alert.resolved,
-          resolvedAt: alert.resolvedAt
-        }))
-      }
+          resolvedAt: alert.resolvedAt,
+        })),
+      },
     })
   } catch (error) {
-    return c.json({
-      success: false,
-      error: (error as Error).message
-    }, 500)
+    return c.json(
+      {
+        success: false,
+        error: (error as Error).message,
+      },
+      500
+    )
   }
 })
 
 /**
  * Resolve an alert
  */
-transactionMonitoringApi.post('/alerts/:alertId/resolve', async (c) => {
+transactionMonitoringApi.post('/alerts/:alertId/resolve', async c => {
   try {
     const alertId = c.req.param('alertId')
     const monitor = c.get('dbClient').getTransactionMonitor()
@@ -133,65 +140,76 @@ transactionMonitoringApi.post('/alerts/:alertId/resolve', async (c) => {
     const resolved = monitor.resolveAlert(alertId)
 
     if (!resolved) {
-      return c.json({
-        success: false,
-        error: 'Alert not found or already resolved'
-      }, 404)
+      return c.json(
+        {
+          success: false,
+          error: 'Alert not found or already resolved',
+        },
+        404
+      )
     }
 
     return c.json({
       success: true,
-      message: 'Alert resolved successfully'
+      message: 'Alert resolved successfully',
     })
   } catch (error) {
-    return c.json({
-      success: false,
-      error: (error as Error).message
-    }, 500)
+    return c.json(
+      {
+        success: false,
+        error: (error as Error).message,
+      },
+      500
+    )
   }
 })
 
 /**
  * Export transaction metrics in different formats
  */
-transactionMonitoringApi.get('/export/:format', async (c) => {
+transactionMonitoringApi.get('/export/:format', async c => {
   try {
     const format = c.req.param('format') as 'json' | 'prometheus' | 'csv'
     const monitor = c.get('dbClient').getTransactionMonitor()
 
     if (!['json', 'prometheus', 'csv'].includes(format)) {
-      return c.json({
-        success: false,
-        error: 'Invalid format. Supported formats: json, prometheus, csv'
-      }, 400)
+      return c.json(
+        {
+          success: false,
+          error: 'Invalid format. Supported formats: json, prometheus, csv',
+        },
+        400
+      )
     }
 
     const exportedData = monitor.exportMetrics(format)
 
     // Set appropriate content type
-    const contentType = format === 'json' ? 'application/json' :
-                       format === 'csv' ? 'text/csv' :
-                       'text/plain'
+    const contentType =
+      format === 'json' ? 'application/json' : format === 'csv' ? 'text/csv' : 'text/plain'
 
     return c.text(exportedData, 200, {
       'Content-Type': contentType,
-      'Content-Disposition': `attachment; filename="transaction-metrics.${format}"`
+      'Content-Disposition': `attachment; filename="transaction-metrics.${format}"`,
     })
   } catch (error) {
-    return c.json({
-      success: false,
-      error: (error as Error).message
-    }, 500)
+    return c.json(
+      {
+        success: false,
+        error: (error as Error).message,
+      },
+      500
+    )
   }
 })
 
 /**
  * Get transaction performance analysis
  */
-transactionMonitoringApi.get('/performance', async (c) => {
+transactionMonitoringApi.get('/performance', async c => {
   try {
     const client = c.get('dbClient')
-    const timeRange = parseInt(c.req.query('timeRange') || '3600000') // Default 1 hour
+    const timeRange = parseInt(c.req.query('timeRange') || '3600000', 10) // Default 1 hour
 
     const report = client.getTransactionMonitor().generateReport(timeRange)
     const activeTransactions = client.getTransactionManager().getActiveTransactions()
@@ -206,7 +224,7 @@ transactionMonitoringApi.get('/performance', async (c) => {
         type: 'long_running_transactions',
         count: longRunningTransactions.length,
         severity: longRunningTransactions.length > 5 ? 'high' : 'medium',
-        message: `${longRunningTransactions.length} transactions running for more than 10 seconds`
+        message: `${longRunningTransactions.length} transactions running for more than 10 seconds`,
       })
     }
 
@@ -216,7 +234,7 @@ transactionMonitoringApi.get('/performance', async (c) => {
         type: 'low_success_rate',
         value: report.summary.successRate,
         severity: report.summary.successRate < 90 ? 'high' : 'medium',
-        message: `Transaction success rate is ${report.summary.successRate.toFixed(2)}%`
+        message: `Transaction success rate is ${report.summary.successRate.toFixed(2)}%`,
       })
     }
 
@@ -226,7 +244,7 @@ transactionMonitoringApi.get('/performance', async (c) => {
         type: 'high_average_duration',
         value: report.summary.averageDuration,
         severity: report.summary.averageDuration > 10000 ? 'high' : 'medium',
-        message: `Average transaction duration is ${report.summary.averageDuration}ms`
+        message: `Average transaction duration is ${report.summary.averageDuration}ms`,
       })
     }
 
@@ -236,7 +254,7 @@ transactionMonitoringApi.get('/performance', async (c) => {
         type: 'high_deadlock_rate',
         value: report.summary.deadlockRate,
         severity: report.summary.deadlockRate > 5 ? 'high' : 'medium',
-        message: `Deadlock rate is ${report.summary.deadlockRate.toFixed(2)}%`
+        message: `Deadlock rate is ${report.summary.deadlockRate.toFixed(2)}%`,
       })
     }
 
@@ -246,21 +264,24 @@ transactionMonitoringApi.get('/performance', async (c) => {
         performance: report.performance,
         issues: performanceIssues,
         recommendations: report.recommendations,
-        summary: report.summary
-      }
+        summary: report.summary,
+      },
     })
   } catch (error) {
-    return c.json({
-      success: false,
-      error: (error as Error).message
-    }, 500)
+    return c.json(
+      {
+        success: false,
+        error: (error as Error).message,
+      },
+      500
+    )
   }
 })
 
 /**
  * Kill a specific transaction (emergency use only)
  */
-transactionMonitoringApi.delete('/transactions/:transactionId', async (c) => {
+transactionMonitoringApi.delete('/transactions/:transactionId', async c => {
   try {
     const transactionId = c.req.param('transactionId')
     const reason = c.req.query('reason') || 'Manual termination via API'
@@ -269,17 +290,23 @@ transactionMonitoringApi.delete('/transactions/:transactionId', async (c) => {
     const transaction = transactionManager.getTransaction(transactionId)
 
     if (!transaction) {
-      return c.json({
-        success: false,
-        error: 'Transaction not found'
-      }, 404)
+      return c.json(
+        {
+          success: false,
+          error: 'Transaction not found',
+        },
+        404
+      )
     }
 
     if (!transaction.isActive) {
-      return c.json({
-        success: false,
-        error: 'Transaction is not active'
-      }, 400)
+      return c.json(
+        {
+          success: false,
+          error: 'Transaction is not active',
+        },
+        400
+      )
     }
 
     await transaction.rollback(reason)
@@ -291,21 +318,24 @@ transactionMonitoringApi.delete('/transactions/:transactionId', async (c) => {
       data: {
         transactionId,
         reason,
-        duration: transaction.getDuration()
-      }
+        duration: transaction.getDuration(),
+      },
     })
   } catch (error) {
-    return c.json({
-      success: false,
-      error: (error as Error).message
-    }, 500)
+    return c.json(
+      {
+        success: false,
+        error: (error as Error).message,
+      },
+      500
+    )
   }
 })
 
 /**
  * Cleanup completed transactions
  */
-transactionMonitoringApi.post('/cleanup', async (c) => {
+transactionMonitoringApi.post('/cleanup', async c => {
   try {
     const transactionManager = c.get('dbClient').getTransactionManager()
     const cleanedCount = transactionManager.cleanup()
@@ -313,23 +343,26 @@ transactionMonitoringApi.post('/cleanup', async (c) => {
     return c.json({
       success: true,
       message: `Cleaned up ${cleanedCount} completed transactions`,
-      data: { cleanedCount }
+      data: { cleanedCount },
     })
   } catch (error) {
-    return c.json({
-      success: false,
-      error: (error as Error).message
-    }, 500)
+    return c.json(
+      {
+        success: false,
+        error: (error as Error).message,
+      },
+      500
+    )
   }
 })
 
 /**
  * Get transaction statistics by isolation level
  */
-transactionMonitoringApi.get('/isolation-levels', async (c) => {
+transactionMonitoringApi.get('/isolation-levels', async c => {
   try {
     const monitor = c.get('dbClient').getTransactionMonitor()
-    const timeRange = parseInt(c.req.query('timeRange') || '3600000') // Default 1 hour
+    const timeRange = parseInt(c.req.query('timeRange') || '3600000', 10) // Default 1 hour
 
     const report = monitor.generateReport(timeRange)
 
@@ -342,25 +375,28 @@ transactionMonitoringApi.get('/isolation-levels', async (c) => {
           .map(([level, count]) => ({
             level,
             count,
-            recommendation: `Consider using lower isolation level for some transactions to improve performance`
-          }))
-      }
+            recommendation: `Consider using lower isolation level for some transactions to improve performance`,
+          })),
+      },
     })
   } catch (error) {
-    return c.json({
-      success: false,
-      error: (error as Error).message
-    }, 500)
+    return c.json(
+      {
+        success: false,
+        error: (error as Error).message,
+      },
+      500
+    )
   }
 })
 
 /**
  * Configure monitoring settings
  */
-transactionMonitoringApi.post('/config', async (c) => {
+transactionMonitoringApi.post('/config', async c => {
   try {
-    const body = await c.req.json()
-    const monitor = c.get('dbClient').getTransactionMonitor()
+    const _body = await c.req.json()
+    const _monitor = c.get('dbClient').getTransactionMonitor()
 
     // Update monitoring configuration (this would require extending the monitor)
     // For now, just return success with current config
@@ -372,13 +408,16 @@ transactionMonitoringApi.post('/config', async (c) => {
         slowTransactionThreshold: 5000,
         maxQueryHistory: 10000,
         enableAlerts: true,
-        enableMetricsExport: true
-      }
+        enableMetricsExport: true,
+      },
     })
   } catch (error) {
-    return c.json({
-      success: false,
-      error: (error as Error).message
-    }, 500)
+    return c.json(
+      {
+        success: false,
+        error: (error as Error).message,
+      },
+      500
+    )
   }
 })

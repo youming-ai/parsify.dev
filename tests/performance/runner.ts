@@ -7,12 +7,16 @@
  * and can be integrated into CI/CD pipelines.
  */
 
+import { promises as fs } from 'node:fs'
+import path from 'node:path'
 import { program } from 'commander'
-import { runLoadTest, runConcurrencyTest, generatePerformanceReport, savePerformanceResults } from './utils/performance-utils.js'
-import { API_BASE_URL, PERFORMANCE_TEST_SCENARIOS, ALL_ENDPOINTS, TestDataGenerator } from './utils/endpoint-configs.js'
-import { performanceMonitor, PerformanceAnalyzer } from './metrics/performance-collector.js'
-import { promises as fs } from 'fs'
-import path from 'path'
+import { performanceMonitor } from './metrics/performance-collector.js'
+import {
+  API_BASE_URL,
+  PERFORMANCE_TEST_SCENARIOS,
+  TestDataGenerator,
+} from './utils/endpoint-configs.js'
+import { runLoadTest } from './utils/performance-utils.js'
 
 interface TestRunConfig {
   baseUrl: string
@@ -72,7 +76,6 @@ class PerformanceTestRunner {
 
       const duration = Date.now() - this.startTime
       console.log(`✅ Performance tests completed in ${(duration / 1000).toFixed(1)}s`)
-
     } catch (error) {
       console.error(`❌ Performance test run failed:`, error)
       process.exit(1)
@@ -84,7 +87,7 @@ class PerformanceTestRunner {
 
     try {
       const response = await fetch(`${this.config.baseUrl}/health`, {
-        timeout: 5000
+        timeout: 5000,
       })
 
       if (!response.ok) {
@@ -135,8 +138,8 @@ class PerformanceTestRunner {
         totalFailed: 0,
         averageP95: 0,
         averageSuccessRate: 0,
-        totalThroughput: 0
-      }
+        totalThroughput: 0,
+      },
     }
 
     for (const endpoint of scenario.endpoints) {
@@ -164,7 +167,9 @@ class PerformanceTestRunner {
       }
 
       if (this.config.verbose) {
-        console.log(`     P95: ${endpointResult.p95.toFixed(2)}ms, Success: ${((endpointResult.successfulRequests / endpointResult.totalRequests) * 100).toFixed(1)}%`)
+        console.log(
+          `     P95: ${endpointResult.p95.toFixed(2)}ms, Success: ${((endpointResult.successfulRequests / endpointResult.totalRequests) * 100).toFixed(1)}%`
+        )
       }
     }
 
@@ -172,12 +177,15 @@ class PerformanceTestRunner {
     const endpointCount = scenarioResults.endpoints.length
     if (endpointCount > 0) {
       scenarioResults.summary.averageP95 /= endpointCount
-      scenarioResults.summary.averageSuccessRate = scenarioResults.summary.totalSuccessful / scenarioResults.summary.totalRequests
+      scenarioResults.summary.averageSuccessRate =
+        scenarioResults.summary.totalSuccessful / scenarioResults.summary.totalRequests
     }
 
     this.results.push(scenarioResults)
 
-    console.log(`   ✅ Scenario completed - P95 avg: ${scenarioResults.summary.averageP95.toFixed(2)}ms, Success: ${(scenarioResults.summary.averageSuccessRate * 100).toFixed(1)}%`)
+    console.log(
+      `   ✅ Scenario completed - P95 avg: ${scenarioResults.summary.averageP95.toFixed(2)}ms, Success: ${(scenarioResults.summary.averageSuccessRate * 100).toFixed(1)}%`
+    )
   }
 
   private async testEndpoint(endpoint: any, scenario: any): Promise<any> {
@@ -188,7 +196,7 @@ class PerformanceTestRunner {
       body: this.generateRequestBody(endpoint),
       concurrentRequests: this.config.concurrency || scenario.concurrentRequests,
       totalRequests: this.config.requests || scenario.totalRequests,
-      timeout: this.config.duration || 30000
+      timeout: this.config.duration || 30000,
     }
 
     return await runLoadTest(config)
@@ -201,12 +209,12 @@ class PerformanceTestRunner {
     if (endpoint.path.includes('/tools/json/format')) {
       return {
         ...endpoint.body,
-        json: TestDataGenerator.generateJsonData('medium')
+        json: TestDataGenerator.generateJsonData('medium'),
       }
     } else if (endpoint.path.includes('/tools/code/format')) {
       return {
         ...endpoint.body,
-        code: TestDataGenerator.generateCodeSamples('javascript')
+        code: TestDataGenerator.generateCodeSamples('javascript'),
       }
     } else if (endpoint.path.includes('/upload/sign')) {
       return TestDataGenerator.generateUploadData(`test-${Date.now()}.json`, 1024)
@@ -222,16 +230,22 @@ class PerformanceTestRunner {
     const failures: string[] = []
 
     if (result.p95 > thresholds.maxP95ResponseTime) {
-      failures.push(`P95 response time ${result.p95.toFixed(2)}ms exceeds threshold ${thresholds.maxP95ResponseTime}ms`)
+      failures.push(
+        `P95 response time ${result.p95.toFixed(2)}ms exceeds threshold ${thresholds.maxP95ResponseTime}ms`
+      )
     }
 
     const successRate = result.successfulRequests / result.totalRequests
     if (successRate < thresholds.minSuccessRate) {
-      failures.push(`Success rate ${(successRate * 100).toFixed(1)}% below threshold ${(thresholds.minSuccessRate * 100).toFixed(1)}%`)
+      failures.push(
+        `Success rate ${(successRate * 100).toFixed(1)}% below threshold ${(thresholds.minSuccessRate * 100).toFixed(1)}%`
+      )
     }
 
     if (result.requestsPerSecond < thresholds.minRequestsPerSecond) {
-      failures.push(`Throughput ${result.requestsPerSecond.toFixed(2)} req/s below threshold ${thresholds.minRequestsPerSecond} req/s`)
+      failures.push(
+        `Throughput ${result.requestsPerSecond.toFixed(2)} req/s below threshold ${thresholds.minRequestsPerSecond} req/s`
+      )
     }
 
     if (failures.length > 0) {
@@ -275,10 +289,10 @@ class PerformanceTestRunner {
         timestamp: new Date().toISOString(),
         duration: Date.now() - this.startTime,
         config: this.config,
-        baseUrl: this.config.baseUrl
+        baseUrl: this.config.baseUrl,
       },
       results: this.results,
-      summary: this.calculateOverallSummary()
+      summary: this.calculateOverallSummary(),
     }
 
     const filepath = path.join(this.config.outputDir, filename)
@@ -287,11 +301,15 @@ class PerformanceTestRunner {
   }
 
   private async saveCSVReport(filename: string): Promise<void> {
-    let csv = 'Scenario,Endpoint,Method,Total Requests,Successful Requests,Failed Requests,P95 (ms),P90 (ms),P50 (ms),Success Rate,Throughput (req/s)\n'
+    let csv =
+      'Scenario,Endpoint,Method,Total Requests,Successful Requests,Failed Requests,P95 (ms),P90 (ms),P50 (ms),Success Rate,Throughput (req/s)\n'
 
     for (const scenarioResult of this.results) {
       for (const endpointResult of scenarioResult.endpoints) {
-        const successRate = (endpointResult.successfulRequests / endpointResult.totalRequests * 100).toFixed(2)
+        const successRate = (
+          (endpointResult.successfulRequests / endpointResult.totalRequests) *
+          100
+        ).toFixed(2)
 
         csv += `"${scenarioResult.scenario}","${endpointResult.url}","${endpointResult.method}",`
         csv += `${endpointResult.totalRequests},${endpointResult.successfulRequests},${endpointResult.failedRequests},`
@@ -367,13 +385,17 @@ class PerformanceTestRunner {
             </div>
         </div>
 
-        ${this.results.map(scenario => `
+        ${this.results
+          .map(
+            scenario => `
         <div class="scenario">
             <div class="scenario-header">
                 📋 ${scenario.scenario}: ${scenario.description}
             </div>
             <div class="scenario-content">
-                ${scenario.endpoints.map((endpoint: any) => `
+                ${scenario.endpoints
+                  .map(
+                    (endpoint: any) => `
                 <div class="endpoint">
                     <div class="endpoint-name">${endpoint.url} (${endpoint.method})</div>
                     <div class="endpoint-stats">
@@ -397,10 +419,14 @@ class PerformanceTestRunner {
                         </div>
                     </div>
                 </div>
-                `).join('')}
+                `
+                  )
+                  .join('')}
             </div>
         </div>
-        `).join('')}
+        `
+          )
+          .join('')}
 
         <div class="footer">
             <p>Report generated by Performance Test Runner</p>
@@ -436,8 +462,12 @@ class PerformanceTestRunner {
       report += `${scenarioResult.description}\n\n`
 
       for (const endpointResult of scenarioResult.endpoints) {
-        const successRate = (endpointResult.successfulRequests / endpointResult.totalRequests * 100).toFixed(1)
-        const status = endpointResult.successfulRequests / endpointResult.totalRequests > 0.95 ? '✅' : '❌'
+        const successRate = (
+          (endpointResult.successfulRequests / endpointResult.totalRequests) *
+          100
+        ).toFixed(1)
+        const status =
+          endpointResult.successfulRequests / endpointResult.totalRequests > 0.95 ? '✅' : '❌'
 
         report += `- ${status} **${endpointResult.url}** (${endpointResult.method})\n`
         report += `  - Requests: ${endpointResult.totalRequests}\n`
@@ -459,7 +489,7 @@ class PerformanceTestRunner {
       totalFailed: 0,
       averageP95: 0,
       averageSuccessRate: 0,
-      totalThroughput: 0
+      totalThroughput: 0,
     }
 
     let totalEndpoints = 0
@@ -479,8 +509,8 @@ class PerformanceTestRunner {
       }
     }
 
-    summary.averageSuccessRate = summary.totalRequests > 0 ?
-      summary.totalSuccessful / summary.totalRequests : 0
+    summary.averageSuccessRate =
+      summary.totalRequests > 0 ? summary.totalSuccessful / summary.totalRequests : 0
     summary.averageP95 = totalEndpoints > 0 ? totalP95 / totalEndpoints : 0
 
     return summary
@@ -506,7 +536,7 @@ program
   .option('-r, --requests <number>', 'Total requests per test', '50')
   .option('-d, --duration <ms>', 'Test duration in milliseconds', '30000')
   .option('-s, --scenarios <scenarios>', 'Comma-separated list of scenarios to run', '')
-  .action(async (options) => {
+  .action(async options => {
     const config: TestRunConfig = {
       baseUrl: options.url,
       outputDir: options.output,
@@ -514,14 +544,14 @@ program
       verbose: options.verbose,
       failOnThreshold: options.failOnThreshold,
       thresholds: {
-        maxP95ResponseTime: parseInt(options.maxP95),
+        maxP95ResponseTime: parseInt(options.maxP95, 10),
         minSuccessRate: parseFloat(options.minSuccessRate),
-        minRequestsPerSecond: parseFloat(options.minRps)
+        minRequestsPerSecond: parseFloat(options.minRps),
       },
-      concurrency: parseInt(options.concurrency),
-      requests: parseInt(options.requests),
-      duration: options.duration ? parseInt(options.duration) : undefined,
-      scenarios: options.scenarios ? options.scenarios.split(',').map((s: string) => s.trim()) : []
+      concurrency: parseInt(options.concurrency, 10),
+      requests: parseInt(options.requests, 10),
+      duration: options.duration ? parseInt(options.duration, 10) : undefined,
+      scenarios: options.scenarios ? options.scenarios.split(',').map((s: string) => s.trim()) : [],
     }
 
     const runner = new PerformanceTestRunner(config)

@@ -2,8 +2,7 @@
  * Memory usage limits and garbage collection for WASM modules
  */
 
-import { IWasmModule } from '../modules/interfaces/wasm-module.interface'
-import { MemoryStats } from './memory-monitor'
+import type { IWasmModule } from '../modules/interfaces/wasm-module.interface'
 
 /**
  * Memory limit configuration
@@ -213,7 +212,7 @@ export class WasmMemoryManager {
         growthRateLimit: 1024 * 1024, // 1MB/s
         maxAllocationSize: 10 * 1024 * 1024, // 10MB
         quotaResetInterval: 60000, // 1 minute
-        enableQuotas: true
+        enableQuotas: true,
       },
       gc: {
         autoGC: true,
@@ -224,14 +223,14 @@ export class WasmMemoryManager {
         incrementalGC: true,
         strategy: 'balanced',
         enableCompaction: true,
-        compactionThreshold: 70 // 70% fragmentation
+        compactionThreshold: 70, // 70% fragmentation
       },
       monitoringInterval: 1000, // 1 second
       enablePressureHandling: true,
       pressureHandlers: [],
       enableBudgetTracking: true,
       memoryBudget: 100 * 1024 * 1024, // 100MB per minute
-      budgetWindow: 60000 // 1 minute
+      budgetWindow: 60000, // 1 minute
     }
 
     if (config) {
@@ -254,12 +253,7 @@ export class WasmMemoryManager {
     const moduleId = module.id
     const limits = { ...this.config.limits, ...customLimits }
 
-    const managedModule = new ManagedModule(
-      module,
-      limits,
-      this.config.gc,
-      this.budgetTracker
-    )
+    const managedModule = new ManagedModule(module, limits, this.config.gc, this.budgetTracker)
 
     this.modules.set(moduleId, managedModule)
     console.log(`Registered module ${moduleId} with memory limits`)
@@ -329,7 +323,7 @@ export class WasmMemoryManager {
       fragmentationRatio: 0,
       gcStats: this.gcScheduler.getStats(),
       quotaUtilization: this.budgetTracker.getUtilization(),
-      pressureDistribution: this.calculatePressureDistribution()
+      pressureDistribution: this.calculatePressureDistribution(),
     }
 
     let totalUsage = 0
@@ -364,7 +358,7 @@ export class WasmMemoryManager {
         memoryReclaimed: 0,
         duration: 0,
         type: aggressive ? 'major' : 'minor',
-        error: 'Module not found'
+        error: 'Module not found',
       })
     }
 
@@ -461,8 +455,8 @@ export class WasmMemoryManager {
     console.warn(`Memory pressure detected for module ${moduleId}: ${pressure.level}`)
 
     // Find applicable handlers
-    const applicableHandlers = this.pressureHandlers.filter(
-      handler => this.isPressureLevelMatch(handler.level, pressure.level)
+    const applicableHandlers = this.pressureHandlers.filter(handler =>
+      this.isPressureLevelMatch(handler.level, pressure.level)
     )
 
     // Execute handlers in priority order
@@ -485,7 +479,10 @@ export class WasmMemoryManager {
   /**
    * Check if pressure level matches handler level
    */
-  private isPressureLevelMatch(handlerLevel: MemoryPressureLevel, currentLevel: MemoryPressureLevel): boolean {
+  private isPressureLevelMatch(
+    handlerLevel: MemoryPressureLevel,
+    currentLevel: MemoryPressureLevel
+  ): boolean {
     const levels: MemoryPressureLevel[] = ['normal', 'moderate', 'high', 'critical']
     const handlerIndex = levels.indexOf(handlerLevel)
     const currentIndex = levels.indexOf(currentLevel)
@@ -501,30 +498,30 @@ export class WasmMemoryManager {
     this.addPressureHandler({
       level: 'moderate',
       priority: 1,
-      handler: (context) => {
+      handler: context => {
         console.log(`Moderate pressure for ${context.moduleId}, initiating cleanup`)
         // Trigger cleanup actions
-      }
+      },
     })
 
     // High pressure handler
     this.addPressureHandler({
       level: 'high',
       priority: 2,
-      handler: (context) => {
+      handler: context => {
         console.log(`High pressure for ${context.moduleId}, clearing caches`)
         // Clear caches and non-essential data
-      }
+      },
     })
 
     // Critical pressure handler
     this.addPressureHandler({
       level: 'critical',
       priority: 3,
-      handler: (context) => {
+      handler: context => {
         console.log(`Critical pressure for ${context.moduleId}, emergency cleanup`)
         // Emergency cleanup actions
-      }
+      },
     })
   }
 
@@ -536,7 +533,7 @@ export class WasmMemoryManager {
       normal: 0,
       moderate: 0,
       high: 0,
-      critical: 0
+      critical: 0,
     }
 
     for (const module of this.modules.values()) {
@@ -550,7 +547,10 @@ export class WasmMemoryManager {
   /**
    * Merge configuration objects
    */
-  private mergeConfig(base: MemoryManagerConfig, override: Partial<MemoryManagerConfig>): MemoryManagerConfig {
+  private mergeConfig(
+    base: MemoryManagerConfig,
+    override: Partial<MemoryManagerConfig>
+  ): MemoryManagerConfig {
     return {
       ...base,
       limits: { ...base.limits, ...override.limits },
@@ -560,7 +560,7 @@ export class WasmMemoryManager {
       pressureHandlers: override.pressureHandlers ?? base.pressureHandlers,
       enableBudgetTracking: override.enableBudgetTracking ?? base.enableBudgetTracking,
       memoryBudget: override.memoryBudget ?? base.memoryBudget,
-      budgetWindow: override.budgetWindow ?? base.budgetWindow
+      budgetWindow: override.budgetWindow ?? base.budgetWindow,
     }
   }
 
@@ -570,7 +570,7 @@ export class WasmMemoryManager {
   dispose(): void {
     this.stopMonitoring()
 
-    for (const [moduleId, module] of this.modules) {
+    for (const [_moduleId, module] of this.modules) {
       module.dispose()
     }
 
@@ -586,10 +586,8 @@ export class WasmMemoryManager {
 class ManagedModule {
   private module: IWasmModule
   private limits: MemoryLimitConfig
-  private gcConfig: GarbageCollectionConfig
   private budgetTracker: MemoryBudgetTracker
   private currentUsage: MemoryUsage
-  private lastGC = 0
   private gcStats: GCStats = {
     totalGCs: 0,
     totalGCTime: 0,
@@ -597,7 +595,7 @@ class ManagedModule {
     lastGCTime: 0,
     lastGCType: 'minor',
     memoryReclaimed: 0,
-    gcEfficiency: 0
+    gcEfficiency: 0,
   }
 
   constructor(
@@ -707,7 +705,7 @@ class ManagedModule {
       pressureLevel: level,
       growthRate,
       fragmentation,
-      availableActions: this.getAvailableActions(level)
+      availableActions: this.getAvailableActions(level),
     }
   }
 
@@ -755,7 +753,7 @@ class ManagedModule {
       available: this.limits.hardLimit - (metadata.memoryUsage || 0),
       peakUsage: metadata.memoryUsage || 0,
       deallocated: 0,
-      fragmentationRatio: 0
+      fragmentationRatio: 0,
     }
   }
 
@@ -774,7 +772,7 @@ class ManagedModule {
     const allocated = this.currentUsage.allocated
     const used = this.currentUsage.used
 
-    return allocated > 0 ? 1 - (used / allocated) : 0
+    return allocated > 0 ? 1 - used / allocated : 0
   }
 
   /**
@@ -855,7 +853,7 @@ class GCScheduler {
       lastGCTime: 0,
       lastGCType: 'minor',
       memoryReclaimed: 0,
-      gcEfficiency: 0
+      gcEfficiency: 0,
     }
   }
 
@@ -869,7 +867,7 @@ class GCScheduler {
         memoryReclaimed: 0,
         duration: 0,
         type: aggressive ? 'major' : 'minor',
-        error: 'GC already in progress'
+        error: 'GC already in progress',
       }
     }
 
@@ -880,7 +878,7 @@ class GCScheduler {
       this.isRunning = true
 
       // Simulate GC process
-      const memoryBefore = module.getMemoryUsage().used
+      const _memoryBefore = module.getMemoryUsage().used
       const memoryReclaimed = this.simulateGC(aggressive)
       const duration = Date.now() - startTime
 
@@ -888,7 +886,7 @@ class GCScheduler {
         success: true,
         memoryReclaimed,
         duration,
-        type
+        type,
       }
 
       // Update statistics
@@ -903,7 +901,7 @@ class GCScheduler {
         memoryReclaimed: 0,
         duration,
         type,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       }
     } finally {
       this.isRunning = false
@@ -1010,7 +1008,7 @@ class MemoryBudgetTracker {
         remaining: this.config.memoryBudget,
         resetTime: now + this.config.budgetWindow,
         windowStart: now,
-        windowEnd: now + this.config.budgetWindow
+        windowEnd: now + this.config.budgetWindow,
       }
 
       this.quotas.set(moduleId, quota)
@@ -1069,7 +1067,10 @@ export function createMemoryManager(config?: Partial<MemoryManagerConfig>): Wasm
   return new WasmMemoryManager(config)
 }
 
-export function registerModule(module: IWasmModule, customLimits?: Partial<MemoryLimitConfig>): void {
+export function registerModule(
+  module: IWasmModule,
+  customLimits?: Partial<MemoryLimitConfig>
+): void {
   wasmMemoryManager.registerModule(module, customLimits)
 }
 

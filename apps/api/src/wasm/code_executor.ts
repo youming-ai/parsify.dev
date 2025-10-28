@@ -1,11 +1,7 @@
 import { z } from 'zod'
 
 // Supported execution languages
-export const EXECUTION_LANGUAGES = [
-  'javascript',
-  'python',
-  'typescript',
-] as const
+export const EXECUTION_LANGUAGES = ['javascript', 'python', 'typescript'] as const
 
 export type ExecutionLanguage = (typeof EXECUTION_LANGUAGES)[number]
 
@@ -106,24 +102,14 @@ export class CodeExecutionError extends Error {
 
 export class TimeoutError extends CodeExecutionError {
   constructor(timeout: number, language: ExecutionLanguage) {
-    super(
-      `Execution timed out after ${timeout}ms`,
-      'TIMEOUT_ERROR',
-      language,
-      124
-    )
+    super(`Execution timed out after ${timeout}ms`, 'TIMEOUT_ERROR', language, 124)
     this.name = 'TimeoutError'
   }
 }
 
 export class MemoryLimitError extends CodeExecutionError {
   constructor(limit: number, language: ExecutionLanguage) {
-    super(
-      `Memory limit exceeded: ${limit}MB`,
-      'MEMORY_LIMIT_ERROR',
-      language,
-      137
-    )
+    super(`Memory limit exceeded: ${limit}MB`, 'MEMORY_LIMIT_ERROR', language, 137)
     this.name = 'MemoryLimitError'
   }
 }
@@ -227,17 +213,10 @@ export class CodeExecutor {
       this.statistics.lastExecutionTime = Date.now()
 
       // Prepare execution environment
-      const environment = this.prepareEnvironment(
-        validatedRequest.language,
-        limits
-      )
+      const environment = this.prepareEnvironment(validatedRequest.language, limits)
 
       // Execute code in sandbox
-      const result = await this.executeInSandbox(
-        validatedRequest,
-        environment,
-        limits
-      )
+      const result = await this.executeInSandbox(validatedRequest, environment, limits)
 
       const endTime = performance.now()
       const executionTime = endTime - startTime
@@ -266,7 +245,7 @@ export class CodeExecutor {
       }
     } catch (error) {
       const endTime = performance.now()
-      const executionTime = endTime - startTime
+      const _executionTime = endTime - startTime
 
       this.statistics.failedExecutions++
       this.statistics.lastExecutionTime = Date.now()
@@ -286,9 +265,7 @@ export class CodeExecutor {
   /**
    * Execute multiple code snippets in parallel
    */
-  async executeMultiple(
-    requests: ExecutionRequest[]
-  ): Promise<ExecutionResult[]> {
+  async executeMultiple(requests: ExecutionRequest[]): Promise<ExecutionResult[]> {
     const maxConcurrent = 5 // Limit concurrent executions for resource management
     const results: ExecutionResult[] = []
 
@@ -352,22 +329,16 @@ export class CodeExecutor {
   /**
    * Validate code for security violations
    */
-  private validateCodeSecurity(
-    code: string,
-    language: ExecutionLanguage
-  ): void {
+  private validateCodeSecurity(code: string, language: ExecutionLanguage): void {
     // Check for code size limits
     if (code.length > 100000) {
-      throw new CodeSizeError(
-        'Code exceeds maximum size limit of 100KB',
-        language
-      )
+      throw new CodeSizeError('Code exceeds maximum size limit of 100KB', language)
     }
 
     // Language-specific security checks
     switch (language) {
       case 'javascript':
-      case 'typescript':
+      case 'typescript': {
         // Check for potentially dangerous JavaScript patterns
         const dangerousPatterns = [
           /eval\s*\(/,
@@ -395,8 +366,9 @@ export class CodeExecutor {
           }
         }
         break
+      }
 
-      case 'python':
+      case 'python': {
         // Check for potentially dangerous Python patterns
         const pythonDangerousPatterns = [
           /eval\s*\(/,
@@ -426,6 +398,7 @@ export class CodeExecutor {
           }
         }
         break
+      }
     }
 
     // Check for extremely deep nesting or repetitive patterns
@@ -451,10 +424,7 @@ export class CodeExecutor {
 
     for (const pattern of injectionPatterns) {
       if (pattern.test(input)) {
-        throw new SecurityError(
-          'Input contains potentially dangerous content',
-          'javascript'
-        )
+        throw new SecurityError('Input contains potentially dangerous content', 'javascript')
       }
     }
   }
@@ -502,18 +472,12 @@ export class CodeExecutor {
    */
   private validateEnvSecurity(env: Record<string, string>): void {
     if (Object.keys(env).length > 50) {
-      throw new SecurityError(
-        'Too many environment variables provided',
-        'javascript'
-      )
+      throw new SecurityError('Too many environment variables provided', 'javascript')
     }
 
     for (const [key, value] of Object.entries(env)) {
       if (key.length > 100 || value.length > 1000) {
-        throw new SecurityError(
-          'Environment variable exceeds maximum length',
-          'javascript'
-        )
+        throw new SecurityError('Environment variable exceeds maximum length', 'javascript')
       }
 
       // Check for dangerous environment variable patterns
@@ -602,7 +566,7 @@ export class CodeExecutor {
 
       // For now, use a simulated WASM module
       this.wasmModule = {
-        execute: async (code: string, options: any) => {
+        execute: async (_code: string, _options: any) => {
           // Simulated execution - would be replaced with actual WASM implementation
           return {
             exitCode: 0,
@@ -693,8 +657,7 @@ export class CodeExecutor {
       ...environment,
       capabilities: {
         network: environment.capabilities.network && limits.allowNetwork,
-        fileSystem:
-          environment.capabilities.fileSystem && limits.allowFileSystem,
+        fileSystem: environment.capabilities.fileSystem && limits.allowFileSystem,
         environment: environment.capabilities.environment && limits.allowEnv,
         processes: environment.capabilities.processes && limits.allowProcess,
       },
@@ -715,11 +678,7 @@ export class CodeExecutor {
 
     try {
       // Create execution context
-      const context = await this.createExecutionContext(
-        request,
-        environment,
-        limits
-      )
+      const context = await this.createExecutionContext(request, environment, limits)
 
       // Set up timeout
       const timeoutPromise = this.createTimeoutPromise(limits.timeoutMs)
@@ -734,12 +693,7 @@ export class CodeExecutor {
       const executionTime = endTime - startTime
 
       // Process result
-      return this.processExecutionResult(
-        result,
-        request,
-        environment,
-        executionTime
-      )
+      return this.processExecutionResult(result, request, environment, executionTime)
     } catch (error) {
       if (error instanceof TimeoutError) {
         throw error
@@ -799,7 +753,7 @@ export class CodeExecutor {
     result: any,
     request: ExecutionRequest,
     environment: ExecutionEnvironment,
-    executionTime: number
+    _executionTime: number
   ): Omit<ExecutionResult, 'executionTime'> {
     const success = result.exitCode === 0
     const output = result.stdout + result.stderr
@@ -831,9 +785,7 @@ export class CodeExecutor {
   /**
    * Create error result
    */
-  private createErrorResult(
-    error: CodeExecutionError
-  ): Omit<ExecutionResult, 'executionTime'> {
+  private createErrorResult(error: CodeExecutionError): Omit<ExecutionResult, 'executionTime'> {
     return {
       success: false,
       exitCode: error.exitCode || 1,
@@ -867,17 +819,14 @@ export class CodeExecutor {
     // Update average execution time
     const totalExecutions = this.statistics.totalExecutions
     this.statistics.averageExecutionTime =
-      (this.statistics.averageExecutionTime * (totalExecutions - 1) +
-        executionTime) /
+      (this.statistics.averageExecutionTime * (totalExecutions - 1) + executionTime) /
       totalExecutions
 
     // Update average memory usage
     if (result.memoryUsed) {
       const memoryMB = result.memoryUsed / (1024 * 1024)
       this.statistics.averageMemoryUsage =
-        (this.statistics.averageMemoryUsage * (totalExecutions - 1) +
-          memoryMB) /
-        totalExecutions
+        (this.statistics.averageMemoryUsage * (totalExecutions - 1) + memoryMB) / totalExecutions
     }
 
     // Update most used language
@@ -966,9 +915,7 @@ export class CodeExecutor {
 export const codeExecutor = new CodeExecutor()
 
 // Export utility functions
-export async function executeCode(
-  request: ExecutionRequest
-): Promise<ExecutionResult> {
+export async function executeCode(request: ExecutionRequest): Promise<ExecutionResult> {
   return codeExecutor.execute(request)
 }
 

@@ -6,9 +6,9 @@
  * Simple command-line interface for running performance tests
  */
 
+import { promises as fs } from 'node:fs'
+import path from 'node:path'
 import { program } from 'commander'
-import { promises as fs } from 'fs'
-import path from 'path'
 
 // Simple performance test implementation for the runner
 async function runSimpleLoadTest(url, options = {}) {
@@ -18,11 +18,11 @@ async function runSimpleLoadTest(url, options = {}) {
     body = null,
     concurrentRequests = 10,
     totalRequests = 50,
-    timeout = 30000
+    timeout = 30000,
   } = options
 
   const metrics = []
-  const startTime = Date.now()
+  const _startTime = Date.now()
 
   console.log(`  Running ${totalRequests} requests with ${concurrentRequests} concurrency...`)
 
@@ -54,7 +54,7 @@ async function measureRequest(url, options = {}) {
       method: options.method || 'GET',
       headers: options.headers || {},
       body: options.body,
-      signal: AbortSignal.timeout(options.timeout || 30000)
+      signal: AbortSignal.timeout(options.timeout || 30000),
     })
 
     const endTime = performance.now()
@@ -66,7 +66,7 @@ async function measureRequest(url, options = {}) {
       responseTime,
       statusCode: response.status,
       success: response.status >= 200 && response.status < 400,
-      timestamp
+      timestamp,
     }
   } catch (error) {
     const endTime = performance.now()
@@ -79,7 +79,7 @@ async function measureRequest(url, options = {}) {
       statusCode: 0,
       success: false,
       timestamp,
-      error: error.message
+      error: error.message,
     }
   }
 }
@@ -90,7 +90,8 @@ function calculateMetrics(metrics) {
 
   const responseTimes = successful.map(m => m.responseTime).sort((a, b) => a - b)
 
-  const totalTestTime = Math.max(...metrics.map(m => m.timestamp)) - Math.min(...metrics.map(m => m.timestamp)) || 1
+  const totalTestTime =
+    Math.max(...metrics.map(m => m.timestamp)) - Math.min(...metrics.map(m => m.timestamp)) || 1
 
   return {
     url: metrics[0]?.url || 'unknown',
@@ -98,8 +99,10 @@ function calculateMetrics(metrics) {
     totalRequests: metrics.length,
     successfulRequests: successful.length,
     failedRequests: failed.length,
-    averageResponseTime: responseTimes.length > 0 ?
-      responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length : 0,
+    averageResponseTime:
+      responseTimes.length > 0
+        ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
+        : 0,
     minResponseTime: responseTimes.length > 0 ? responseTimes[0] : 0,
     maxResponseTime: responseTimes.length > 0 ? responseTimes[responseTimes.length - 1] : 0,
     p50: responseTimes[Math.floor(responseTimes.length * 0.5)] || 0,
@@ -107,7 +110,7 @@ function calculateMetrics(metrics) {
     p95: responseTimes[Math.floor(responseTimes.length * 0.95)] || 0,
     p99: responseTimes[Math.floor(responseTimes.length * 0.99)] || 0,
     requestsPerSecond: metrics.length / (totalTestTime / 1000),
-    metrics
+    metrics,
   }
 }
 
@@ -131,7 +134,6 @@ class PerformanceTestRunner {
 
       const duration = Date.now() - this.startTime
       console.log(`✅ Performance tests completed in ${(duration / 1000).toFixed(1)}s`)
-
     } catch (error) {
       console.error(`❌ Performance test run failed:`, error)
       process.exit(1)
@@ -143,7 +145,7 @@ class PerformanceTestRunner {
 
     try {
       const response = await fetch(`${this.config.baseUrl}/health`, {
-        timeout: 5000
+        timeout: 5000,
       })
 
       if (!response.ok) {
@@ -166,27 +168,24 @@ class PerformanceTestRunner {
       { path: '/auth/validate', method: 'GET', description: 'Auth Validation' },
       { path: '/users/profile', method: 'GET', description: 'User Profile' },
       { path: '/jobs', method: 'GET', description: 'Jobs List' },
-      { path: '/upload/', method: 'GET', description: 'Upload List' }
+      { path: '/upload/', method: 'GET', description: 'Upload List' },
     ]
 
     for (const endpoint of endpoints) {
       console.log(`   • Testing ${endpoint.description}...`)
 
-      const result = await runSimpleLoadTest(
-        `${this.config.baseUrl}${endpoint.path}`,
-        {
-          method: endpoint.method,
-          concurrentRequests: this.config.concurrency,
-          totalRequests: this.config.requests,
-          timeout: this.config.duration
-        }
-      )
+      const result = await runSimpleLoadTest(`${this.config.baseUrl}${endpoint.path}`, {
+        method: endpoint.method,
+        concurrentRequests: this.config.concurrency,
+        totalRequests: this.config.requests,
+        timeout: this.config.duration,
+      })
 
       const endpointResult = {
         endpoint: endpoint.description,
         path: endpoint.path,
         method: endpoint.method,
-        ...result
+        ...result,
       }
 
       this.results.push(endpointResult)
@@ -194,7 +193,9 @@ class PerformanceTestRunner {
       const successRate = result.successfulRequests / result.totalRequests
       const status = successRate > 0.95 ? '✅' : successRate > 0.8 ? '⚠️' : '❌'
 
-      console.log(`     ${status} P95: ${result.p95.toFixed(2)}ms, Success: ${(successRate * 100).toFixed(1)}%`)
+      console.log(
+        `     ${status} P95: ${result.p95.toFixed(2)}ms, Success: ${(successRate * 100).toFixed(1)}%`
+      )
 
       if (this.config.failOnThreshold) {
         this.checkThresholds(result, endpoint.description)
@@ -206,16 +207,22 @@ class PerformanceTestRunner {
     const failures = []
 
     if (result.p95 > this.config.thresholds.maxP95ResponseTime) {
-      failures.push(`P95 response time ${result.p95.toFixed(2)}ms exceeds threshold ${this.config.thresholds.maxP95ResponseTime}ms`)
+      failures.push(
+        `P95 response time ${result.p95.toFixed(2)}ms exceeds threshold ${this.config.thresholds.maxP95ResponseTime}ms`
+      )
     }
 
     const successRate = result.successfulRequests / result.totalRequests
     if (successRate < this.config.thresholds.minSuccessRate) {
-      failures.push(`Success rate ${(successRate * 100).toFixed(1)}% below threshold ${(this.config.thresholds.minSuccessRate * 100).toFixed(1)}%`)
+      failures.push(
+        `Success rate ${(successRate * 100).toFixed(1)}% below threshold ${(this.config.thresholds.minSuccessRate * 100).toFixed(1)}%`
+      )
     }
 
     if (result.requestsPerSecond < this.config.thresholds.minRequestsPerSecond) {
-      failures.push(`Throughput ${result.requestsPerSecond.toFixed(2)} req/s below threshold ${this.config.thresholds.minRequestsPerSecond} req/s`)
+      failures.push(
+        `Throughput ${result.requestsPerSecond.toFixed(2)} req/s below threshold ${this.config.thresholds.minRequestsPerSecond} req/s`
+      )
     }
 
     if (failures.length > 0) {
@@ -245,10 +252,10 @@ class PerformanceTestRunner {
         timestamp: new Date().toISOString(),
         duration: Date.now() - this.startTime,
         config: this.config,
-        baseUrl: this.config.baseUrl
+        baseUrl: this.config.baseUrl,
       },
       results: this.results,
-      summary
+      summary,
     }
 
     const filepath = path.join(this.config.outputDir, filename)
@@ -272,7 +279,7 @@ class PerformanceTestRunner {
 
     report += `## Endpoint Results\n\n`
     for (const result of this.results) {
-      const successRate = (result.successfulRequests / result.totalRequests * 100).toFixed(1)
+      const successRate = ((result.successfulRequests / result.totalRequests) * 100).toFixed(1)
       const status = result.successfulRequests / result.totalRequests > 0.95 ? '✅' : '❌'
 
       report += `- ${status} **${result.endpoint}** (${result.method})\n`
@@ -294,7 +301,7 @@ class PerformanceTestRunner {
       totalFailed: 0,
       averageP95: 0,
       averageSuccessRate: 0,
-      totalThroughput: 0
+      totalThroughput: 0,
     }
 
     let totalP95 = 0
@@ -307,8 +314,8 @@ class PerformanceTestRunner {
       totalP95 += result.p95
     }
 
-    summary.averageSuccessRate = summary.totalRequests > 0 ?
-      summary.totalSuccessful / summary.totalRequests : 0
+    summary.averageSuccessRate =
+      summary.totalRequests > 0 ? summary.totalSuccessful / summary.totalRequests : 0
     summary.averageP95 = this.results.length > 0 ? totalP95 / this.results.length : 0
 
     return summary
@@ -332,20 +339,20 @@ program
   .option('-c, --concurrency <number>', 'Concurrent requests per test', '10')
   .option('-r, --requests <number>', 'Total requests per test', '50')
   .option('-d, --duration <ms>', 'Test duration in milliseconds', '30000')
-  .action(async (options) => {
+  .action(async options => {
     const config = {
       baseUrl: options.url,
       outputDir: options.output,
       verbose: options.verbose,
       failOnThreshold: options.failOnThreshold,
       thresholds: {
-        maxP95ResponseTime: parseInt(options.maxP95),
+        maxP95ResponseTime: parseInt(options.maxP95, 10),
         minSuccessRate: parseFloat(options.minSuccessRate),
-        minRequestsPerSecond: parseFloat(options.minRps)
+        minRequestsPerSecond: parseFloat(options.minRps),
       },
-      concurrency: parseInt(options.concurrency),
-      requests: parseInt(options.requests),
-      duration: parseInt(options.duration)
+      concurrency: parseInt(options.concurrency, 10),
+      requests: parseInt(options.requests, 10),
+      duration: parseInt(options.duration, 10),
     }
 
     const runner = new PerformanceTestRunner(config)

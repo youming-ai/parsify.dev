@@ -1,4 +1,4 @@
-import type { JsonNode, JsonObject, JsonArray, JsonPrimitive } from '../types'
+import type { JsonNode, JsonObject } from '../types'
 
 export class JsonNodeModel {
   static getType(node: JsonNode): string {
@@ -32,7 +32,7 @@ export class JsonNodeModel {
           if (current && typeof current === 'object' && !Array.isArray(current)) {
             const obj = current as JsonObject
             if (key in obj && Array.isArray(obj[key])) {
-              current = obj[key][parseInt(index)]
+              current = obj[key][parseInt(index, 10)]
             } else {
               return null
             }
@@ -42,8 +42,8 @@ export class JsonNodeModel {
         } else {
           if (current && typeof current === 'object') {
             if (Array.isArray(current)) {
-              const index = parseInt(part)
-              if (!isNaN(index) && index >= 0 && index < current.length) {
+              const index = parseInt(part, 10)
+              if (!Number.isNaN(index) && index >= 0 && index < current.length) {
                 current = current[index]
               } else {
                 return null
@@ -85,7 +85,7 @@ export class JsonNodeModel {
           const [, key, index] = arrayMatch
           if (current && typeof current === 'object' && !Array.isArray(current)) {
             if (key in current && Array.isArray(current[key])) {
-              current = current[key][parseInt(index)]
+              current = current[key][parseInt(index, 10)]
             } else {
               return null
             }
@@ -95,8 +95,8 @@ export class JsonNodeModel {
         } else {
           if (current && typeof current === 'object') {
             if (Array.isArray(current)) {
-              const index = parseInt(part)
-              if (!isNaN(index) && index >= 0 && index < current.length) {
+              const index = parseInt(part, 10)
+              if (!Number.isNaN(index) && index >= 0 && index < current.length) {
                 current = current[index]
               } else {
                 return null
@@ -116,8 +116,8 @@ export class JsonNodeModel {
       // Set the value
       if (current && typeof current === 'object') {
         if (Array.isArray(current)) {
-          const index = parseInt(lastPart)
-          if (!isNaN(index) && index >= 0) {
+          const index = parseInt(lastPart, 10)
+          if (!Number.isNaN(index) && index >= 0) {
             current[index] = value
           } else {
             return null
@@ -134,7 +134,11 @@ export class JsonNodeModel {
     }
   }
 
-  static search(node: JsonNode, searchTerm: string, path: string = ''): Array<{ path: string; node: JsonNode; match: string }> {
+  static search(
+    node: JsonNode,
+    searchTerm: string,
+    path: string = ''
+  ): Array<{ path: string; node: JsonNode; match: string }> {
     const results: Array<{ path: string; node: JsonNode; match: string }> = []
     const term = searchTerm.toLowerCase()
 
@@ -148,7 +152,7 @@ export class JsonNodeModel {
           results.push({
             path: currentPath,
             node: current,
-            match: current
+            match: current,
           })
         }
       } else if (typeof current === 'number' || typeof current === 'boolean') {
@@ -157,7 +161,7 @@ export class JsonNodeModel {
           results.push({
             path: currentPath,
             node: current,
-            match: strValue
+            match: strValue,
           })
         }
       } else if (Array.isArray(current)) {
@@ -171,7 +175,7 @@ export class JsonNodeModel {
             results.push({
               path: `${currentPath}.${key}`,
               node: value,
-              match: key
+              match: key,
             })
           }
           // Recursively search value
@@ -193,7 +197,7 @@ export class JsonNodeModel {
       if (node.length === 0) {
         return currentDepth
       }
-      return Math.max(...node.map(item => this.getDepth(item, currentDepth + 1)))
+      return Math.max(...node.map(item => JsonNodeModel.getDepth(item, currentDepth + 1)))
     }
 
     const keys = Object.keys(node)
@@ -201,7 +205,9 @@ export class JsonNodeModel {
       return currentDepth
     }
 
-    return Math.max(...keys.map(key => this.getDepth((node as JsonObject)[key], currentDepth + 1)))
+    return Math.max(
+      ...keys.map(key => JsonNodeModel.getDepth((node as JsonObject)[key], currentDepth + 1))
+    )
   }
 
   static getSize(node: JsonNode): number {
@@ -210,11 +216,11 @@ export class JsonNodeModel {
     }
 
     if (Array.isArray(node)) {
-      return node.reduce((total, item) => total + this.getSize(item), 1)
+      return node.reduce((total, item) => total + JsonNodeModel.getSize(item), 1)
     }
 
     return Object.keys(node).reduce((total, key) => {
-      return total + this.getSize((node as JsonObject)[key])
+      return total + JsonNodeModel.getSize((node as JsonObject)[key])
     }, 1)
   }
 
@@ -238,10 +244,12 @@ export class JsonNodeModel {
         return '[]'
       }
 
-      const items = node.map(item => {
-        const formatted = this.formatValue(item, indent + 1)
-        return `${spaces}  ${formatted}`
-      }).join(',\n')
+      const items = node
+        .map(item => {
+          const formatted = JsonNodeModel.formatValue(item, indent + 1)
+          return `${spaces}  ${formatted}`
+        })
+        .join(',\n')
 
       return `[\n${items}\n${spaces}]`
     }
@@ -252,11 +260,13 @@ export class JsonNodeModel {
         return '{}'
       }
 
-      const items = keys.map(key => {
-        const value = (node as JsonObject)[key]
-        const formatted = this.formatValue(value, indent + 1)
-        return `${spaces}  "${key}": ${formatted}`
-      }).join(',\n')
+      const items = keys
+        .map(key => {
+          const value = (node as JsonObject)[key]
+          const formatted = JsonNodeModel.formatValue(value, indent + 1)
+          return `${spaces}  "${key}": ${formatted}`
+        })
+        .join(',\n')
 
       return `{\n${items}\n${spaces}}`
     }

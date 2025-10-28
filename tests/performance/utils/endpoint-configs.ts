@@ -23,7 +23,7 @@ export const TOOL_ENDPOINTS: EndpointConfig[] = [
     description: 'Get available tools list',
     expectedStatus: 200,
     maxP95ResponseTime: 100,
-    minSuccessRate: 0.99
+    minSuccessRate: 0.99,
   },
   {
     path: '/tools?category=json',
@@ -31,7 +31,7 @@ export const TOOL_ENDPOINTS: EndpointConfig[] = [
     description: 'Get JSON tools',
     expectedStatus: 200,
     maxP95ResponseTime: 100,
-    minSuccessRate: 0.99
+    minSuccessRate: 0.99,
   },
   {
     path: '/tools/json/format',
@@ -40,22 +40,22 @@ export const TOOL_ENDPOINTS: EndpointConfig[] = [
     body: {
       json: '{"name":"test","value":123,"nested":{"array":[1,2,3]}}',
       indent: 2,
-      sort_keys: true
+      sort_keys: true,
     },
     expectedStatus: 200,
     maxP95ResponseTime: 150,
-    minSuccessRate: 0.98
+    minSuccessRate: 0.98,
   },
   {
     path: '/tools/json/validate',
     method: 'POST',
     description: 'Validate JSON',
     body: {
-      json: '{"name":"test","value":123}'
+      json: '{"name":"test","value":123}',
     },
     expectedStatus: 200,
     maxP95ResponseTime: 150,
-    minSuccessRate: 0.98
+    minSuccessRate: 0.98,
   },
   {
     path: '/tools/json/convert',
@@ -63,11 +63,11 @@ export const TOOL_ENDPOINTS: EndpointConfig[] = [
     description: 'Convert JSON to CSV',
     body: {
       json: '[{"name":"test","value":123},{"name":"test2","value":456}]',
-      target_format: 'csv'
+      target_format: 'csv',
     },
     expectedStatus: 200,
     maxP95ResponseTime: 200,
-    minSuccessRate: 0.95
+    minSuccessRate: 0.95,
   },
   {
     path: '/tools/code/format',
@@ -75,12 +75,12 @@ export const TOOL_ENDPOINTS: EndpointConfig[] = [
     description: 'Format JavaScript code',
     body: {
       code: 'function test(){return 1+1;}',
-      language: 'javascript'
+      language: 'javascript',
     },
     expectedStatus: 200,
     maxP95ResponseTime: 200,
-    minSuccessRate: 0.95
-  }
+    minSuccessRate: 0.95,
+  },
 ]
 
 export const AUTH_ENDPOINTS: EndpointConfig[] = [
@@ -90,8 +90,8 @@ export const AUTH_ENDPOINTS: EndpointConfig[] = [
     description: 'Validate session (no auth)',
     expectedStatus: 401,
     maxP95ResponseTime: 50,
-    minSuccessRate: 1.0 // Expect consistent 401 response
-  }
+    minSuccessRate: 1.0, // Expect consistent 401 response
+  },
 ]
 
 export const USER_ENDPOINTS: EndpointConfig[] = [
@@ -101,7 +101,7 @@ export const USER_ENDPOINTS: EndpointConfig[] = [
     description: 'Get user profile (no auth)',
     expectedStatus: 401,
     maxP95ResponseTime: 50,
-    minSuccessRate: 1.0 // Expect consistent 401 response
+    minSuccessRate: 1.0, // Expect consistent 401 response
   },
   {
     path: '/users/test-user-id',
@@ -109,8 +109,8 @@ export const USER_ENDPOINTS: EndpointConfig[] = [
     description: 'Get public user info',
     expectedStatus: 200,
     maxP95ResponseTime: 100,
-    minSuccessRate: 0.99
-  }
+    minSuccessRate: 0.99,
+  },
 ]
 
 export const JOB_ENDPOINTS: EndpointConfig[] = [
@@ -121,12 +121,12 @@ export const JOB_ENDPOINTS: EndpointConfig[] = [
     body: {
       tool_id: 'json-format',
       input_data: {
-        json: '{"test": "data"}'
-      }
+        json: '{"test": "data"}',
+      },
     },
     expectedStatus: 201,
     maxP95ResponseTime: 150,
-    minSuccessRate: 0.95
+    minSuccessRate: 0.95,
   },
   {
     path: '/jobs',
@@ -134,8 +134,8 @@ export const JOB_ENDPOINTS: EndpointConfig[] = [
     description: 'List jobs',
     expectedStatus: 200,
     maxP95ResponseTime: 100,
-    minSuccessRate: 0.99
-  }
+    minSuccessRate: 0.99,
+  },
 ]
 
 export const UPLOAD_ENDPOINTS: EndpointConfig[] = [
@@ -146,11 +146,11 @@ export const UPLOAD_ENDPOINTS: EndpointConfig[] = [
     body: {
       filename: 'test.json',
       content_type: 'application/json',
-      size: 1024
+      size: 1024,
     },
     expectedStatus: 200,
     maxP95ResponseTime: 150,
-    minSuccessRate: 0.95
+    minSuccessRate: 0.95,
   },
   {
     path: '/upload/status/test-file-id',
@@ -158,8 +158,8 @@ export const UPLOAD_ENDPOINTS: EndpointConfig[] = [
     description: 'Get upload status',
     expectedStatus: 404,
     maxP95ResponseTime: 50,
-    minSuccessRate: 1.0 // Expect consistent 404 for non-existent file
-  }
+    minSuccessRate: 1.0, // Expect consistent 404 for non-existent file
+  },
 ]
 
 export const HEALTH_ENDPOINTS: EndpointConfig[] = [
@@ -169,8 +169,8 @@ export const HEALTH_ENDPOINTS: EndpointConfig[] = [
     description: 'Health check',
     expectedStatus: 200,
     maxP95ResponseTime: 20,
-    minSuccessRate: 1.0
-  }
+    minSuccessRate: 1.0,
+  },
 ]
 
 export const ALL_ENDPOINTS = [
@@ -179,7 +179,7 @@ export const ALL_ENDPOINTS = [
   ...USER_ENDPOINTS,
   ...JOB_ENDPOINTS,
   ...UPLOAD_ENDPOINTS,
-  ...HEALTH_ENDPOINTS
+  ...HEALTH_ENDPOINTS,
 ]
 
 /**
@@ -198,15 +198,15 @@ export class TestDataGenerator {
       nested: {
         array: Array.from({ length: 10 }, (_, i) => ({
           index: i,
-          data: Math.random().toString(36)
-        }))
-      }
+          data: Math.random().toString(36),
+        })),
+      },
     }
 
     const multiplier = size === 'small' ? 1 : size === 'medium' ? 10 : 100
     const data = Array.from({ length: multiplier }, () => ({
       ...baseObject,
-      id: Math.random().toString(36).substr(2, 9)
+      id: Math.random().toString(36).substr(2, 9),
     }))
 
     return JSON.stringify(data)
@@ -247,7 +247,7 @@ print(fibonacci(10))
       filename,
       content_type: 'application/json',
       size,
-      checksum: Math.random().toString(36).substr(2, 16)
+      checksum: Math.random().toString(36).substr(2, 16),
     }
   }
 
@@ -258,12 +258,12 @@ print(fibonacci(10))
     return {
       tool_id: toolId,
       input_data: {
-        json: this.generateJsonData(dataSize),
+        json: TestDataGenerator.generateJsonData(dataSize),
         options: {
           indent: 2,
-          sort_keys: true
-        }
-      }
+          sort_keys: true,
+        },
+      },
     }
   }
 }
@@ -294,8 +294,8 @@ export const PERFORMANCE_TEST_SCENARIOS: TestScenario[] = [
     requirements: {
       maxP95ResponseTime: 50,
       minSuccessRate: 1.0,
-      minRequestsPerSecond: 1
-    }
+      minRequestsPerSecond: 1,
+    },
   },
   {
     name: 'tools-basic',
@@ -306,8 +306,8 @@ export const PERFORMANCE_TEST_SCENARIOS: TestScenario[] = [
     requirements: {
       maxP95ResponseTime: 150,
       minSuccessRate: 0.98,
-      minRequestsPerSecond: 5
-    }
+      minRequestsPerSecond: 5,
+    },
   },
   {
     name: 'tools-intensive',
@@ -318,8 +318,8 @@ export const PERFORMANCE_TEST_SCENARIOS: TestScenario[] = [
     requirements: {
       maxP95ResponseTime: 300,
       minSuccessRate: 0.95,
-      minRequestsPerSecond: 10
-    }
+      minRequestsPerSecond: 10,
+    },
   },
   {
     name: 'concurrency-test',
@@ -330,8 +330,8 @@ export const PERFORMANCE_TEST_SCENARIOS: TestScenario[] = [
     requirements: {
       maxP95ResponseTime: 100,
       minSuccessRate: 0.99,
-      minRequestsPerSecond: 5
-    }
+      minRequestsPerSecond: 5,
+    },
   },
   {
     name: 'load-test',
@@ -341,8 +341,8 @@ export const PERFORMANCE_TEST_SCENARIOS: TestScenario[] = [
     totalRequests: 200,
     requirements: {
       maxP95ResponseTime: 500,
-      minSuccessRate: 0.90,
-      minRequestsPerSecond: 20
-    }
-  }
+      minSuccessRate: 0.9,
+      minRequestsPerSecond: 20,
+    },
+  },
 ]

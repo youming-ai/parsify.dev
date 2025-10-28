@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FileSelector } from '../../src/components/FileSelector/FileSelector'
 
 // Mock File API
@@ -50,22 +50,16 @@ describe('File Upload Workflow Integration', () => {
   })
 
   const renderWithQuery = (component: React.ReactElement) => {
-    return render(
-      <QueryClientProvider client={queryClient}>
-        {component}
-      </QueryClientProvider>
-    )
+    return render(<QueryClientProvider client={queryClient}>{component}</QueryClientProvider>)
   }
 
   it('should handle successful file upload and validation', async () => {
     renderWithQuery(<FileSelector onFileSelect={vi.fn()} />)
 
     const fileInput = screen.getByLabelText(/select file/i)
-    const validFile = new global.File(
-      ['{"name": "test", "value": 123}'],
-      'test.md',
-      { type: 'text/markdown' }
-    )
+    const validFile = new global.File(['{"name": "test", "value": 123}'], 'test.md', {
+      type: 'text/markdown',
+    })
 
     await user.upload(fileInput, validFile)
 
@@ -100,11 +94,9 @@ describe('File Upload Workflow Integration', () => {
     renderWithQuery(<FileSelector onFileSelect={vi.fn()} />)
 
     const fileInput = screen.getByLabelText(/select file/i)
-    const unsupportedFile = new global.File(
-      ['some content'],
-      'test.exe',
-      { type: 'application/octet-stream' }
-    )
+    const unsupportedFile = new global.File(['some content'], 'test.exe', {
+      type: 'application/octet-stream',
+    })
 
     await user.upload(fileInput, unsupportedFile)
 
@@ -118,11 +110,9 @@ describe('File Upload Workflow Integration', () => {
     renderWithQuery(<FileSelector onFileSelect={vi.fn()} />)
 
     const dropZone = screen.getByTestId(/drop-zone/i)
-    const validFile = new global.File(
-      ['{"test": true}'],
-      'test.md',
-      { type: 'text/markdown' }
-    )
+    const validFile = new global.File(['{"test": true}'], 'test.md', {
+      type: 'text/markdown',
+    })
 
     // Simulate drag and drop
     fireEvent.dragEnter(dropZone)

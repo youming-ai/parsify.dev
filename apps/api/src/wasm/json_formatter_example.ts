@@ -7,11 +7,10 @@
 
 import {
   JsonFormatter,
-  formatJson,
-  validateJson,
+  type JsonFormattingOptions,
   minifyJson,
   prettifyJson,
-  JsonFormattingOptions
+  validateJson,
 } from './json_formatter'
 
 async function demonstrateJsonFormatter() {
@@ -22,23 +21,23 @@ async function demonstrateJsonFormatter() {
   const sampleJson = {
     user: {
       id: 12345,
-      name: "John Doe",
-      email: "john.doe@example.com",
+      name: 'John Doe',
+      email: 'john.doe@example.com',
       preferences: {
-        theme: "dark",
+        theme: 'dark',
         notifications: true,
-        language: "en"
-      }
+        language: 'en',
+      },
     },
     orders: [
-      { id: "ORD-001", total: 99.99, items: ["item1", "item2"] },
-      { id: "ORD-002", total: 149.99, items: ["item3", "item4", "item5"] }
+      { id: 'ORD-001', total: 99.99, items: ['item1', 'item2'] },
+      { id: 'ORD-002', total: 149.99, items: ['item3', 'item4', 'item5'] },
     ],
     metadata: {
-      created: "2024-01-15T10:30:00Z",
-      updated: "2024-01-20T14:22:00Z",
-      version: 1
-    }
+      created: '2024-01-15T10:30:00Z',
+      updated: '2024-01-20T14:22:00Z',
+      version: 1,
+    },
   }
 
   const jsonString = JSON.stringify(sampleJson, null, 0)
@@ -58,7 +57,9 @@ async function demonstrateJsonFormatter() {
     console.log(`Compression ratio: ${basicResult.compressionRatio.toFixed(2)}`)
     console.log(`Processing time: ${basicResult.metadata.totalTime.toFixed(2)}ms`)
     console.log(`Depth: ${basicResult.metadata.depth}`)
-    console.log(`Objects: ${basicResult.metadata.objectCount}, Arrays: ${basicResult.metadata.arrayCount}`)
+    console.log(
+      `Objects: ${basicResult.metadata.objectCount}, Arrays: ${basicResult.metadata.arrayCount}`
+    )
 
     // 2. Compact formatting
     console.log('\n2. Compact Formatting:')
@@ -72,7 +73,7 @@ async function demonstrateJsonFormatter() {
     const customOptions: JsonFormattingOptions = {
       indent: 4,
       sortKeys: true,
-      insertFinalNewline: true
+      insertFinalNewline: true,
     }
     const customResult = await formatter.format(jsonString, customOptions)
     console.log(`Success: ${customResult.success}`)
@@ -81,7 +82,9 @@ async function demonstrateJsonFormatter() {
 
     // 4. ASCII-only formatting
     console.log('\n4. ASCII-only Formatting:')
-    const asciiResult = await formatter.format(jsonString, { ensureAscii: true })
+    const asciiResult = await formatter.format(jsonString, {
+      ensureAscii: true,
+    })
     console.log(`Success: ${asciiResult.success}`)
     console.log(`ASCII-only formatting with escaped Unicode characters`)
 
@@ -128,7 +131,6 @@ async function demonstrateJsonFormatter() {
     // Cleanup
     formatter.dispose()
     console.log('\n✅ Demo completed successfully!')
-
   } catch (error) {
     console.error('❌ Error during demo:', error)
   }

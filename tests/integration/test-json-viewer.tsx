@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { JsonViewer } from '../../src/components/JsonViewer/JsonViewer'
 
 describe('JSON Viewer Integration', () => {
@@ -19,11 +19,7 @@ describe('JSON Viewer Integration', () => {
   })
 
   const renderWithQuery = (component: React.ReactElement) => {
-    return render(
-      <QueryClientProvider client={queryClient}>
-        {component}
-      </QueryClientProvider>
-    )
+    return render(<QueryClientProvider client={queryClient}>{component}</QueryClientProvider>)
   }
 
   const sampleJson = {
@@ -32,12 +28,12 @@ describe('JSON Viewer Integration', () => {
     settings: {
       theme: 'dark',
       autoSave: true,
-      features: ['search', 'export', 'import']
+      features: ['search', 'export', 'import'],
     },
     users: [
       { id: 1, name: 'Alice', active: true },
-      { id: 2, name: 'Bob', active: false }
-    ]
+      { id: 2, name: 'Bob', active: false },
+    ],
   }
 
   it('should render JSON data in tree structure', () => {
@@ -136,7 +132,7 @@ describe('JSON Viewer Integration', () => {
   it('should handle invalid JSON gracefully', () => {
     const invalidData = {
       valid: true,
-      circular: null as any
+      circular: null as any,
     }
     invalidData.circular = invalidData
 

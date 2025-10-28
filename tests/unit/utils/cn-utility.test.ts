@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 // Mock clsx and tailwind-merge
 vi.mock('clsx', () => ({
@@ -28,9 +28,7 @@ describe('Utils', () => {
     })
 
     it('should handle conditional classes', () => {
-      expect(cn('class1', true && 'class2', false && 'class3')).toBe(
-        'class1 class2'
-      )
+      expect(cn('class1', true && 'class2', false && 'class3')).toBe('class1 class2')
     })
 
     it('should handle empty inputs', () => {
@@ -45,20 +43,13 @@ describe('Utils', () => {
     })
 
     it('should handle objects with boolean values', () => {
-      expect(cn({ class1: true, class2: false, class3: true })).toBe(
-        'class1 class3'
-      )
+      expect(cn({ class1: true, class2: false, class3: true })).toBe('class1 class3')
     })
 
     it('should handle mixed input types', () => {
-      expect(
-        cn(
-          'class1',
-          { class2: true, class3: false },
-          ['class4', null],
-          'class5'
-        )
-      ).toBe('class1 class2 class4 class5')
+      expect(cn('class1', { class2: true, class3: false }, ['class4', null], 'class5')).toBe(
+        'class1 class2 class4 class5'
+      )
     })
 
     it('should handle Tailwind class merging', () => {
@@ -83,21 +74,21 @@ describe('Utils', () => {
     })
 
     it('should handle utility-first CSS patterns', () => {
-      expect(cn('flex items-center justify-between p-4 m-2')).toBe(
+      expect(cn('m-2 flex items-center justify-between p-4')).toBe(
         'flex items-center justify-between p-4 m-2'
       )
     })
 
     it('should handle state variants', () => {
-      expect(
-        cn('border-gray-300 focus:border-blue-500 focus:ring-blue-500')
-      ).toBe('border-gray-300 focus:border-blue-500 focus:ring-blue-500')
+      expect(cn('border-gray-300 focus:border-blue-500 focus:ring-blue-500')).toBe(
+        'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+      )
     })
 
     it('should handle dark mode classes', () => {
-      expect(
-        cn('bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100')
-      ).toBe('bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100')
+      expect(cn('bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100')).toBe(
+        'bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100'
+      )
     })
 
     it('should handle responsive classes', () => {
@@ -112,8 +103,7 @@ describe('Utils', () => {
         'inline-flex items-center justify-center rounded-md font-medium transition-colors',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         'disabled:pointer-events-none disabled:opacity-50',
-        variant === 'primary' &&
-          'bg-primary text-primary-foreground hover:bg-primary/90',
+        variant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary/90',
         size === 'medium' && 'h-10 px-4 py-2'
       )
 

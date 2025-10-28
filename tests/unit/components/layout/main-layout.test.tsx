@@ -1,19 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen } from '@testing-library/react'
-import { render } from '../test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MainLayout } from '@/web/components/layout/main-layout'
+import { render } from '../test-utils'
 
 // Mock the layout components
 vi.mock('@/web/components/layout/header', () => ({
-  Header: () => <header data-testid="header">Header</header>
+  Header: () => <header data-testid="header">Header</header>,
 }))
 
 vi.mock('@/web/components/layout/sidebar', () => ({
-  Sidebar: () => <aside data-testid="sidebar">Sidebar</aside>
+  Sidebar: () => <aside data-testid="sidebar">Sidebar</aside>,
 }))
 
 vi.mock('@/web/components/layout/footer', () => ({
-  Footer: () => <footer data-testid="footer">Footer</footer>
+  Footer: () => <footer data-testid="footer">Footer</footer>,
 }))
 
 describe('MainLayout Component', () => {
@@ -129,7 +129,7 @@ describe('MainLayout Component', () => {
   it('has proper semantic HTML structure', () => {
     render(
       <MainLayout>
-        <main role="main">Main Content</main>
+        <main>Main Content</main>
       </MainLayout>
     )
 
@@ -192,9 +192,7 @@ describe('MainLayout Component', () => {
   it('is accessible with proper ARIA structure', () => {
     render(
       <MainLayout showSidebar={true}>
-        <main role="main" aria-label="Main content">
-          Content
-        </main>
+        <main aria-label="Main content">Content</main>
       </MainLayout>
     )
 
@@ -252,10 +250,8 @@ describe('MainLayout Component', () => {
 
     rerender(
       <MainLayout>
-        <>
-          <span data-testid="fragment-1">Fragment 1</span>
-          <span data-testid="fragment-2">Fragment 2</span>
-        </>
+        <span data-testid="fragment-1">Fragment 1</span>
+        <span data-testid="fragment-2">Fragment 2</span>
       </MainLayout>
     )
 

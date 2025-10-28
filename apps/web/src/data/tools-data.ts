@@ -6,17 +6,24 @@ export const toolsData: Tool[] = [
   {
     id: 'json-formatter',
     name: 'JSON Formatter',
-    description: 'Format, beautify, and validate JSON data with customizable indentation and sorting options',
+    description:
+      'Format, beautify, and validate JSON data with customizable indentation and sorting options',
     category: 'JSON Processing',
     icon: 'FileJson',
-    features: ['Format & Beautify', 'Syntax Validation', 'Custom Indentation', 'Key Sorting', 'Error Detection'],
+    features: [
+      'Format & Beautify',
+      'Syntax Validation',
+      'Custom Indentation',
+      'Key Sorting',
+      'Error Detection',
+    ],
     tags: ['json', 'formatter', 'validator', 'beautifier'],
     difficulty: 'beginner',
     status: 'stable',
     href: '/tools/json/formatter',
     isPopular: true,
     processingType: 'client-side',
-    security: 'local-only'
+    security: 'local-only',
   },
   {
     id: 'json-validator',
@@ -30,7 +37,7 @@ export const toolsData: Tool[] = [
     status: 'stable',
     href: '/tools/json/validator',
     processingType: 'client-side',
-    security: 'local-only'
+    security: 'local-only',
   },
   {
     id: 'json-converter',
@@ -45,7 +52,7 @@ export const toolsData: Tool[] = [
     href: '/tools/json/converter',
     isNew: true,
     processingType: 'hybrid',
-    security: 'local-only'
+    security: 'local-only',
   },
   {
     id: 'json-path-queries',
@@ -59,7 +66,7 @@ export const toolsData: Tool[] = [
     status: 'beta',
     href: '/tools/json/path-queries',
     processingType: 'client-side',
-    security: 'local-only'
+    security: 'local-only',
   },
 
   // Code Execution Tools
@@ -76,7 +83,7 @@ export const toolsData: Tool[] = [
     href: '/tools/code/executor',
     isPopular: true,
     processingType: 'client-side',
-    security: 'secure-sandbox'
+    security: 'secure-sandbox',
   },
   {
     id: 'code-formatter',
@@ -90,7 +97,7 @@ export const toolsData: Tool[] = [
     status: 'stable',
     href: '/tools/code/formatter',
     processingType: 'client-side',
-    security: 'local-only'
+    security: 'local-only',
   },
   {
     id: 'regex-tester',
@@ -104,14 +111,15 @@ export const toolsData: Tool[] = [
     status: 'stable',
     href: '/tools/code/regex',
     processingType: 'client-side',
-    security: 'local-only'
+    security: 'local-only',
   },
 
   // File Processing Tools
   {
     id: 'file-converter',
     name: 'File Converter',
-    description: 'Convert between different file formats including images, documents, and data files',
+    description:
+      'Convert between different file formats including images, documents, and data files',
     category: 'File Processing',
     icon: 'FileText',
     features: ['Multiple Formats', 'Batch Processing', 'Preview Mode', 'Quality Settings'],
@@ -121,7 +129,7 @@ export const toolsData: Tool[] = [
     href: '/tools/file/converter',
     isNew: true,
     processingType: 'client-side',
-    security: 'local-only'
+    security: 'local-only',
   },
   {
     id: 'text-processor',
@@ -135,7 +143,7 @@ export const toolsData: Tool[] = [
     status: 'stable',
     href: '/tools/file/text-processor',
     processingType: 'client-side',
-    security: 'local-only'
+    security: 'local-only',
   },
   {
     id: 'csv-processor',
@@ -149,7 +157,7 @@ export const toolsData: Tool[] = [
     status: 'stable',
     href: '/tools/file/csv-processor',
     processingType: 'client-side',
-    security: 'local-only'
+    security: 'local-only',
   },
 
   // Data Validation Tools
@@ -165,7 +173,7 @@ export const toolsData: Tool[] = [
     status: 'stable',
     href: '/tools/data/hash-generator',
     processingType: 'client-side',
-    security: 'local-only'
+    security: 'local-only',
   },
   {
     id: 'data-validator',
@@ -179,7 +187,7 @@ export const toolsData: Tool[] = [
     status: 'experimental',
     href: '/tools/data/validator',
     processingType: 'hybrid',
-    security: 'local-only'
+    security: 'local-only',
   },
 
   // Utility Tools
@@ -195,7 +203,7 @@ export const toolsData: Tool[] = [
     status: 'stable',
     href: '/tools/utilities/url-encoder',
     processingType: 'client-side',
-    security: 'local-only'
+    security: 'local-only',
   },
   {
     id: 'base64-converter',
@@ -209,8 +217,8 @@ export const toolsData: Tool[] = [
     status: 'stable',
     href: '/tools/utilities/base64-converter',
     processingType: 'client-side',
-    security: 'local-only'
-  }
+    security: 'local-only',
+  },
 ]
 
 // Categories extraction
@@ -243,11 +251,12 @@ export const getNewTools = (): Tool[] => {
 // Search tools
 export const searchTools = (query: string): Tool[] => {
   const lowercaseQuery = query.toLowerCase()
-  return toolsData.filter(tool =>
-    tool.name.toLowerCase().includes(lowercaseQuery) ||
-    tool.description.toLowerCase().includes(lowercaseQuery) ||
-    tool.tags.some(tag => tag.toLowerCase().includes(lowercaseQuery)) ||
-    tool.category.toLowerCase().includes(lowercaseQuery)
+  return toolsData.filter(
+    tool =>
+      tool.name.toLowerCase().includes(lowercaseQuery) ||
+      tool.description.toLowerCase().includes(lowercaseQuery) ||
+      tool.tags.some(tag => tag.toLowerCase().includes(lowercaseQuery)) ||
+      tool.category.toLowerCase().includes(lowercaseQuery)
   )
 }
 

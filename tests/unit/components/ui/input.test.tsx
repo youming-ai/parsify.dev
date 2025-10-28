@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
-import { screen, fireEvent } from '@testing-library/react'
-import { render } from '../test-utils'
+import { fireEvent, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
 import { Input } from '@/web/components/ui/input'
+import { render } from '../test-utils'
 
 describe('Input Component', () => {
   it('renders input with default props', () => {
@@ -145,7 +145,7 @@ describe('Input Component', () => {
   })
 
   it('handles form integration', () => {
-    const handleSubmit = vi.fn((e) => e.preventDefault())
+    const handleSubmit = vi.fn(e => e.preventDefault())
 
     render(
       <form onSubmit={handleSubmit}>

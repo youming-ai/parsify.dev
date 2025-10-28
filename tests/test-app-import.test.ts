@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../../apps/api/src/index'
 
 describe('Test with app import', () => {
-  let testEnv: any
+  let _testEnv: any
 
   beforeAll(() => {
-    testEnv = {
+    _testEnv = {
       ENVIRONMENT: 'test',
     }
   })

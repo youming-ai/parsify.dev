@@ -1,7 +1,14 @@
-import { describe, it, expect } from 'vitest'
 import { screen } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/web/components/ui/card'
 import { render } from '../test-utils'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/web/components/ui/card'
 
 describe('Card Components', () => {
   describe('Card', () => {
@@ -9,7 +16,14 @@ describe('Card Components', () => {
       render(<Card>Card content</Card>)
       const card = screen.getByText('Card content')
       expect(card).toBeInTheDocument()
-      expect(card).toHaveClass('rounded-lg', 'border', 'border-gray-200', 'bg-white', 'text-gray-900', 'shadow-sm')
+      expect(card).toHaveClass(
+        'rounded-lg',
+        'border',
+        'border-gray-200',
+        'bg-white',
+        'text-gray-900',
+        'shadow-sm'
+      )
     })
 
     it('applies custom className', () => {
@@ -61,7 +75,10 @@ describe('Card Components', () => {
   describe('CardTitle', () => {
     it('renders title as h3 with default styles', () => {
       render(<CardTitle>Card Title</CardTitle>)
-      const title = screen.getByRole('heading', { level: 3, name: 'Card Title' })
+      const title = screen.getByRole('heading', {
+        level: 3,
+        name: 'Card Title',
+      })
       expect(title).toBeInTheDocument()
       expect(title).toHaveClass('text-2xl', 'font-semibold', 'leading-none', 'tracking-tight')
     })
@@ -79,7 +96,11 @@ describe('Card Components', () => {
     })
 
     it('handles accessibility attributes', () => {
-      render(<CardTitle id="title-id" aria-describedby="desc-id">Card Title</CardTitle>)
+      render(
+        <CardTitle id="title-id" aria-describedby="desc-id">
+          Card Title
+        </CardTitle>
+      )
       const title = screen.getByRole('heading', { level: 3 })
       expect(title).toHaveAttribute('id', 'title-id')
       expect(title).toHaveAttribute('aria-describedby', 'desc-id')

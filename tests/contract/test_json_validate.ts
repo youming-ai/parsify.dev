@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../../apps/api/src/index'
 
 describe('POST /api/v1/tools/json/validate', () => {
@@ -13,15 +13,19 @@ describe('POST /api/v1/tools/json/validate', () => {
   it('should validate valid JSON without schema', async () => {
     const inputJson = '{"name":"John","age":30}'
 
-    const res = await app.request('/api/v1/tools/json/validate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/json/validate',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: inputJson,
+        }),
       },
-      body: JSON.stringify({
-        json: inputJson
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -36,21 +40,25 @@ describe('POST /api/v1/tools/json/validate', () => {
       type: 'object',
       properties: {
         name: { type: 'string' },
-        age: { type: 'number' }
+        age: { type: 'number' },
       },
-      required: ['name', 'age']
+      required: ['name', 'age'],
     }
 
-    const res = await app.request('/api/v1/tools/json/validate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/json/validate',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: inputJson,
+          schema: schema,
+        }),
       },
-      body: JSON.stringify({
-        json: inputJson,
-        schema: schema
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -65,21 +73,25 @@ describe('POST /api/v1/tools/json/validate', () => {
       type: 'object',
       properties: {
         name: { type: 'string' },
-        age: { type: 'number' }
+        age: { type: 'number' },
       },
-      required: ['name', 'age']
+      required: ['name', 'age'],
     }
 
-    const res = await app.request('/api/v1/tools/json/validate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/json/validate',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: inputJson,
+          schema: schema,
+        }),
       },
-      body: JSON.stringify({
-        json: inputJson,
-        schema: schema
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -93,15 +105,19 @@ describe('POST /api/v1/tools/json/validate', () => {
   it('should handle invalid JSON syntax', async () => {
     const invalidJson = '{"name":"John","age":30,' // Missing closing brace
 
-    const res = await app.request('/api/v1/tools/json/validate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/json/validate',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: invalidJson,
+        }),
       },
-      body: JSON.stringify({
-        json: invalidJson
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -112,15 +128,19 @@ describe('POST /api/v1/tools/json/validate', () => {
   })
 
   it('should validate required parameters', async () => {
-    const res = await app.request('/api/v1/tools/json/validate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/json/validate',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // Missing required 'json' parameter
+        }),
       },
-      body: JSON.stringify({
-        // Missing required 'json' parameter
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(400)
 
@@ -141,27 +161,31 @@ describe('POST /api/v1/tools/json/validate', () => {
               type: 'object',
               properties: {
                 city: { type: 'string' },
-                zip: { type: 'string' }
+                zip: { type: 'string' },
               },
-              required: ['city']
-            }
+              required: ['city'],
+            },
           },
-          required: ['name', 'address']
-        }
+          required: ['name', 'address'],
+        },
       },
-      required: ['user']
+      required: ['user'],
     }
 
-    const res = await app.request('/api/v1/tools/json/validate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/json/validate',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: inputJson,
+          schema: schema,
+        }),
       },
-      body: JSON.stringify({
-        json: inputJson,
-        schema: schema
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 

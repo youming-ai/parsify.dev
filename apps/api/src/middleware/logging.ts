@@ -1,8 +1,6 @@
-import { Context, Next } from 'hono'
-import {
-  CloudflareService,
-} from '../services/cloudflare'
-import { AuthContext } from './auth'
+import type { Context, Next } from 'hono'
+import type { CloudflareService } from '../services/cloudflare'
+import type { AuthContext } from './auth'
 
 // Log levels
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
@@ -78,16 +76,11 @@ const DEFAULT_SENSITIVE_FIELDS = [
   'session',
   'credential',
   'private',
-  'confidential'
+  'confidential',
 ]
 
 // Default paths to exclude from detailed logging
-const DEFAULT_EXCLUDE_PATHS = [
-  '/health',
-  '/metrics',
-  '/favicon.ico',
-  '/robots.txt'
-]
+const DEFAULT_EXCLUDE_PATHS = ['/health', '/metrics', '/favicon.ico', '/robots.txt']
 
 /**
  * Request logging middleware for Hono
@@ -111,7 +104,7 @@ export const loggingMiddleware = (options: LoggingMiddlewareOptions = {}) => {
     customLogger,
     analyticsEndpoint,
     enableStructuredLogging = true,
-    logFormat = 'json'
+    logFormat = 'json',
   } = options
 
   return async (c: Context<{ Bindings: Env }>, next: Next) => {
@@ -123,10 +116,11 @@ export const loggingMiddleware = (options: LoggingMiddlewareOptions = {}) => {
     const method = c.req.method
     const url = c.req.url
     const userAgent = c.req.header('User-Agent')
-    const ipAddress = c.req.header('CF-Connecting-IP') ||
-                     c.req.header('X-Forwarded-For') ||
-                     c.req.header('X-Real-IP') ||
-                     'unknown'
+    const ipAddress =
+      c.req.header('CF-Connecting-IP') ||
+      c.req.header('X-Forwarded-For') ||
+      c.req.header('X-Real-IP') ||
+      'unknown'
 
     // Get user context if available
     let userContext: AuthContext | undefined
@@ -156,7 +150,7 @@ export const loggingMiddleware = (options: LoggingMiddlewareOptions = {}) => {
       userId,
       sessionId,
       subscriptionTier,
-      endpoint: c.req.path
+      endpoint: c.req.path,
     }
 
     // Get request headers if specified
@@ -189,15 +183,13 @@ export const loggingMiddleware = (options: LoggingMiddlewareOptions = {}) => {
         if (contentType.includes('application/json')) {
           try {
             const body = await c.req.json()
-            requestBody = sanitizeRequestBody ?
-              sanitizeSensitiveData(body, sensitiveFields) :
-              body
+            requestBody = sanitizeRequestBody ? sanitizeSensitiveData(body, sensitiveFields) : body
           } catch {
             // Failed to parse JSON, ignore
           }
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Failed to read request body, continue without it
     }
 
@@ -217,9 +209,7 @@ export const loggingMiddleware = (options: LoggingMiddlewareOptions = {}) => {
     // Override response methods to capture response data
     c.json = (data: any, status?: number, headers?: Record<string, string>) => {
       responseStatus = status || 200
-      responseData = sanitizeResponseBody ?
-        sanitizeSensitiveData(data, sensitiveFields) :
-        data
+      responseData = sanitizeResponseBody ? sanitizeSensitiveData(data, sensitiveFields) : data
 
       const jsonString = JSON.stringify(data)
       responseSize = new Blob([jsonString]).size
@@ -301,7 +291,7 @@ export const loggingMiddleware = (options: LoggingMiddlewareOptions = {}) => {
     if (responseData && logLevel === 'debug' && responseSize <= maxResponseSize) {
       logEntry.metadata = {
         ...logEntry.metadata,
-        responseBody: responseData
+        responseBody: responseData,
       }
     }
 
@@ -315,9 +305,7 @@ export const loggingMiddleware = (options: LoggingMiddlewareOptions = {}) => {
     }
 
     // Check if this path should be excluded from detailed logging
-    const shouldExcludePath = excludePaths.some(path =>
-      c.req.path.startsWith(path)
-    )
+    const shouldExcludePath = excludePaths.some(path => c.req.path.startsWith(path))
 
     // Log the request
     if (!shouldExcludePath || logEntry.level === 'error') {
@@ -326,7 +314,7 @@ export const loggingMiddleware = (options: LoggingMiddlewareOptions = {}) => {
         enableStructuredLogging,
         logFormat,
         enableAnalyticsTracking,
-        analyticsEndpoint
+        analyticsEndpoint,
       })
     }
 
@@ -356,7 +344,7 @@ async function logRequest(
     enableStructuredLogging,
     logFormat,
     enableAnalyticsTracking,
-    analyticsEndpoint
+    analyticsEndpoint,
   } = options
 
   try {
@@ -379,13 +367,12 @@ async function logRequest(
     if (cloudflare && enableAnalyticsTracking) {
       const analyticsKey = `request_log:${logEntry.requestId}`
       await cloudflare.cacheSet('analytics', analyticsKey, logEntry, {
-        ttl: 86400 // 24 hours
+        ttl: 86400, // 24 hours
       })
 
       // Store aggregated metrics
       await updateRequestMetrics(cloudflare, logEntry)
     }
-
   } catch (error) {
     console.error('Failed to log request:', error)
   }
@@ -433,12 +420,11 @@ async function storeAnalyticsData(
     // Store analytics event
     const eventKey = `analytics_event:${logEntry.requestId}`
     await cloudflare.cacheSet('analytics', eventKey, analyticsEvent, {
-      ttl: 86400 * 7 // 7 days for analytics
+      ttl: 86400 * 7, // 7 days for analytics
     })
 
     // Update aggregated analytics
     await updateAggregatedAnalytics(cloudflare, analyticsEvent)
-
   } catch (error) {
     console.error('Failed to store analytics data:', error)
   }
@@ -457,7 +443,7 @@ async function updateRequestMetrics(
 
     // Update daily metrics
     const dailyKey = `metrics:daily:${date}`
-    const dailyMetrics = await cloudflare.cacheGet<any>('analytics', dailyKey) || {
+    const dailyMetrics = (await cloudflare.cacheGet<any>('analytics', dailyKey)) || {
       totalRequests: 0,
       totalResponseTime: 0,
       errors: 0,
@@ -488,22 +474,26 @@ async function updateRequestMetrics(
 
     // User distribution
     if (logEntry.userId) {
-      dailyMetrics.requestsByUser[logEntry.userId] = (dailyMetrics.requestsByUser[logEntry.userId] || 0) + 1
+      dailyMetrics.requestsByUser[logEntry.userId] =
+        (dailyMetrics.requestsByUser[logEntry.userId] || 0) + 1
     }
 
     // Update top endpoints
-    if (!dailyMetrics.topEndpoints[endpoint] ||
-        dailyMetrics.topEndpoints[endpoint].count < dailyMetrics.requestsByEndpoint[endpoint]) {
+    if (
+      !dailyMetrics.topEndpoints[endpoint] ||
+      dailyMetrics.topEndpoints[endpoint].count < dailyMetrics.requestsByEndpoint[endpoint]
+    ) {
       dailyMetrics.topEndpoints[endpoint] = {
         count: dailyMetrics.requestsByEndpoint[endpoint],
-        avgResponseTime: (dailyMetrics.topEndpoints[endpoint]?.avgResponseTime || 0) + (logEntry.responseTime || 0) / 2
+        avgResponseTime:
+          (dailyMetrics.topEndpoints[endpoint]?.avgResponseTime || 0) +
+          (logEntry.responseTime || 0) / 2,
       }
     }
 
     await cloudflare.cacheSet('analytics', dailyKey, dailyMetrics, {
-      ttl: 86400 * 30 // Keep for 30 days
+      ttl: 86400 * 30, // Keep for 30 days
     })
-
   } catch (error) {
     console.error('Failed to update request metrics:', error)
   }
@@ -512,16 +502,13 @@ async function updateRequestMetrics(
 /**
  * Update aggregated analytics data
  */
-async function updateAggregatedAnalytics(
-  cloudflare: CloudflareService,
-  event: any
-): Promise<void> {
+async function updateAggregatedAnalytics(cloudflare: CloudflareService, event: any): Promise<void> {
   try {
     const date = new Date().toISOString().split('T')[0]
 
     // Update performance metrics
     const perfKey = `performance:${date}`
-    const perfMetrics = await cloudflare.cacheGet<any>('analytics', perfKey) || {
+    const perfMetrics = (await cloudflare.cacheGet<any>('analytics', perfKey)) || {
       avgResponseTime: 0,
       totalRequests: 0,
       slowRequests: 0,
@@ -531,15 +518,19 @@ async function updateAggregatedAnalytics(
     }
 
     perfMetrics.totalRequests++
-    perfMetrics.avgResponseTime = ((perfMetrics.avgResponseTime * (perfMetrics.totalRequests - 1)) + event.value) / perfMetrics.totalRequests
+    perfMetrics.avgResponseTime =
+      (perfMetrics.avgResponseTime * (perfMetrics.totalRequests - 1) + event.value) /
+      perfMetrics.totalRequests
 
-    if (event.value > 1000) { // Slow requests > 1s
+    if (event.value > 1000) {
+      // Slow requests > 1s
       perfMetrics.slowRequests++
-    } else if (event.value < 100) { // Fast requests < 100ms
+    } else if (event.value < 100) {
+      // Fast requests < 100ms
       perfMetrics.fastRequests++
     }
 
-    if (parseInt(event.customDimensions.statusCode || '0') >= 400) {
+    if (parseInt(event.customDimensions.statusCode || '0', 10) >= 400) {
       perfMetrics.errors++
     }
 
@@ -552,9 +543,8 @@ async function updateAggregatedAnalytics(
     }
 
     await cloudflare.cacheSet('analytics', perfKey, perfMetrics, {
-      ttl: 86400 * 30
+      ttl: 86400 * 30,
     })
-
   } catch (error) {
     console.error('Failed to update aggregated analytics:', error)
   }
@@ -563,10 +553,7 @@ async function updateAggregatedAnalytics(
 /**
  * Sanitize sensitive data from objects
  */
-function sanitizeSensitiveData(
-  data: any,
-  sensitiveFields: string[]
-): any {
+function sanitizeSensitiveData(data: any, sensitiveFields: string[]): any {
   if (!data || typeof data !== 'object') {
     return data
   }
@@ -642,7 +629,7 @@ function formatLogEntryAsText(logEntry: LogEntry): string {
     statusCode,
     responseTime,
     userId,
-    endpoint
+    endpoint,
   } = logEntry
 
   const statusEmoji = statusCode && statusCode >= 400 ? '❌' : '✅'
@@ -679,10 +666,10 @@ export const createApiLogger = (options?: Partial<LoggingMiddlewareOptions>) =>
       '/metrics',
       '/admin',
       '/favicon.ico',
-      '/robots.txt'
+      '/robots.txt',
     ],
     enableAnalyticsTracking: true,
-    enablePerformanceMetrics: true
+    enablePerformanceMetrics: true,
   })
 
 /**
@@ -696,7 +683,7 @@ export const createDevelopmentLogger = (options?: Partial<LoggingMiddlewareOptio
     logFormat: 'json',
     maxRequestSize: 10 * 1024 * 1024, // 10MB
     maxResponseSize: 10 * 1024 * 1024, // 10MB
-    includeHeaders: ['Content-Type', 'Authorization', 'X-Request-ID', 'User-Agent']
+    includeHeaders: ['Content-Type', 'Authorization', 'X-Request-ID', 'User-Agent'],
   })
 
 /**
@@ -710,17 +697,11 @@ export const createProductionLogger = (options?: Partial<LoggingMiddlewareOption
     logFormat: 'json',
     enablePerformanceMetrics: true,
     enableAnalyticsTracking: true,
-    excludePaths: [
-      ...DEFAULT_EXCLUDE_PATHS,
-      '/health',
-      '/metrics',
-      '/favicon.ico',
-      '/robots.txt'
-    ],
+    excludePaths: [...DEFAULT_EXCLUDE_PATHS, '/health', '/metrics', '/favicon.ico', '/robots.txt'],
     sanitizeRequestBody: true,
     sanitizeResponseBody: true,
     maxRequestSize: 1024 * 1024, // 1MB
-    maxResponseSize: 1024 * 1024 // 1MB
+    maxResponseSize: 1024 * 1024, // 1MB
   })
 
 /**
@@ -754,20 +735,19 @@ export const logCustomEvent = async (
         customDimensions: {
           userId: auth?.user?.id,
           sessionId: auth?.sessionId,
-        }
-      }
+        },
+      },
     }
 
     // Store the custom event
     if (cloudflare) {
       const eventKey = `custom_event:${requestId}:${Date.now()}`
       await cloudflare.cacheSet('analytics', eventKey, logEntry, {
-        ttl: 86400 * 7 // 7 days
+        ttl: 86400 * 7, // 7 days
       })
     }
 
     console.log(JSON.stringify(logEntry))
-
   } catch (error) {
     console.error('Failed to log custom event:', error)
   }

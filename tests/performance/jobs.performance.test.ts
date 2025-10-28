@@ -1,18 +1,14 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
+import { API_BASE_URL, JOB_ENDPOINTS, TestDataGenerator } from '../utils/endpoint-configs'
 import {
-  runLoadTest,
-  runConcurrencyTest,
   assertPerformanceRequirements,
   generatePerformanceReport,
+  runConcurrencyTest,
+  runLoadTest,
 } from '../utils/performance-utils'
-import {
-  JOB_ENDPOINTS,
-  API_BASE_URL,
-  TestDataGenerator,
-} from '../utils/endpoint-configs'
 
 describe('Jobs API Performance Tests', () => {
-  let createdJobIds: string[] = []
+  const createdJobIds: string[] = []
 
   beforeAll(async () => {
     // Ensure the API server is running before tests
@@ -32,9 +28,7 @@ describe('Jobs API Performance Tests', () => {
 
   describe('POST /jobs - Create new job', () => {
     it('should create jobs efficiently under load', async () => {
-      const endpoint = JOB_ENDPOINTS.find(
-        e => e.path === '/jobs' && e.method === 'POST'
-      )
+      const endpoint = JOB_ENDPOINTS.find(e => e.path === '/jobs' && e.method === 'POST')
       if (!endpoint) throw new Error('Endpoint configuration not found')
 
       const result = await runLoadTest({
@@ -63,15 +57,11 @@ describe('Jobs API Performance Tests', () => {
       expect(result.successfulRequests).toBeGreaterThan(0)
 
       // Store some job IDs for later tests
-      const successfulResponses = result.metrics.filter(
-        m => m.statusCode === 201
-      )
+      const successfulResponses = result.metrics.filter(m => m.statusCode === 201)
       if (successfulResponses.length > 0) {
         // Note: In a real implementation, we'd parse the response to get job IDs
         // For now, we'll just note that jobs were created successfully
-        createdJobIds.push(
-          `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-        )
+        createdJobIds.push(`job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
       }
     })
 
@@ -105,18 +95,13 @@ describe('Jobs API Performance Tests', () => {
 
       console.log('\n=== Job Creation Performance by Data Size ===')
       results.forEach(({ dataSize, result }) => {
-        const successRate = (
-          (result.successfulRequests / result.totalRequests) *
-          100
-        ).toFixed(1)
-        console.log(
-          `${dataSize}: P95=${result.p95.toFixed(2)}ms, Success Rate=${successRate}%`
-        )
+        const successRate = ((result.successfulRequests / result.totalRequests) * 100).toFixed(1)
+        console.log(`${dataSize}: P95=${result.p95.toFixed(2)}ms, Success Rate=${successRate}%`)
       })
 
       // Larger data should not significantly impact performance
-      const smallP95 = results.find(r => r.dataSize === 'small')!.result.p95
-      const largeP95 = results.find(r => r.dataSize === 'large')!.result.p95
+      const smallP95 = results.find(r => r.dataSize === 'small')?.result.p95
+      const largeP95 = results.find(r => r.dataSize === 'large')?.result.p95
       expect(largeP95 / smallP95).toBeLessThan(3) // Large data shouldn't be more than 3x slower
     })
 
@@ -151,13 +136,8 @@ describe('Jobs API Performance Tests', () => {
 
       console.log('\n=== Job Creation Performance by Tool Type ===')
       results.forEach(({ tool, result }) => {
-        const successRate = (
-          (result.successfulRequests / result.totalRequests) *
-          100
-        ).toFixed(1)
-        console.log(
-          `${tool}: P95=${result.p95.toFixed(2)}ms, Success Rate=${successRate}%`
-        )
+        const successRate = ((result.successfulRequests / result.totalRequests) * 100).toFixed(1)
+        console.log(`${tool}: P95=${result.p95.toFixed(2)}ms, Success Rate=${successRate}%`)
       })
     })
 
@@ -194,9 +174,7 @@ describe('Jobs API Performance Tests', () => {
         expect(result.p95).toBeLessThan(200)
 
         // Should handle all requests (even error responses)
-        expect(result.successfulRequests + result.failedRequests).toBe(
-          result.totalRequests
-        )
+        expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
 
         // Should get appropriate error status codes
         const errorResponses = result.metrics.filter(m => m.statusCode >= 400)
@@ -207,9 +185,7 @@ describe('Jobs API Performance Tests', () => {
 
   describe('GET /jobs - List jobs', () => {
     it('should list jobs efficiently under load', async () => {
-      const endpoint = JOB_ENDPOINTS.find(
-        e => e.path === '/jobs' && e.method === 'GET'
-      )
+      const endpoint = JOB_ENDPOINTS.find(e => e.path === '/jobs' && e.method === 'GET')
       if (!endpoint) throw new Error('Endpoint configuration not found')
 
       const result = await runLoadTest({
@@ -257,9 +233,7 @@ describe('Jobs API Performance Tests', () => {
         })
 
         expect(result.p95).toBeLessThan(200)
-        expect(result.successfulRequests + result.failedRequests).toBe(
-          result.totalRequests
-        )
+        expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
       }
     })
 
@@ -278,12 +252,10 @@ describe('Jobs API Performance Tests', () => {
 
       // Check that all concurrency levels meet requirements
       Object.entries(concurrencyResults).forEach(([concurrency, result]) => {
-        const maxAllowedTime = parseInt(concurrency) > 25 ? 200 : 150
+        const maxAllowedTime = parseInt(concurrency, 10) > 25 ? 200 : 150
 
         expect(result.p95).toBeLessThan(maxAllowedTime)
-        expect(result.successfulRequests + result.failedRequests).toBe(
-          result.totalRequests
-        )
+        expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
       })
     })
   })
@@ -296,9 +268,7 @@ describe('Jobs API Performance Tests', () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(
-          TestDataGenerator.generateJobData('json-format', 'small')
-        ),
+        body: JSON.stringify(TestDataGenerator.generateJobData('json-format', 'small')),
       })
 
       if (createResponse.ok) {
@@ -344,14 +314,10 @@ describe('Jobs API Performance Tests', () => {
         expect(result.p95).toBeLessThan(100)
 
         // Should handle all requests (even 404 responses)
-        expect(result.successfulRequests + result.failedRequests).toBe(
-          result.totalRequests
-        )
+        expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
 
         // Should get 404 responses for non-existent jobs
-        const notFoundResponses = result.metrics.filter(
-          m => m.statusCode === 404
-        )
+        const notFoundResponses = result.metrics.filter(m => m.statusCode === 404)
         expect(notFoundResponses.length).toBeGreaterThan(0)
       }
     })
@@ -365,9 +331,7 @@ describe('Jobs API Performance Tests', () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(
-          TestDataGenerator.generateJobData('json-format', 'small')
-        ),
+        body: JSON.stringify(TestDataGenerator.generateJobData('json-format', 'small')),
       })
 
       if (createResponse.ok) {
@@ -395,9 +359,7 @@ describe('Jobs API Performance Tests', () => {
         )
 
         expect(result.p95).toBeLessThan(200)
-        expect(result.successfulRequests + result.failedRequests).toBe(
-          result.totalRequests
-        )
+        expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
       } else {
         console.log('Skipping job update test - could not create test job')
       }
@@ -412,9 +374,7 @@ describe('Jobs API Performance Tests', () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(
-          TestDataGenerator.generateJobData('json-format', 'small')
-        ),
+        body: JSON.stringify(TestDataGenerator.generateJobData('json-format', 'small')),
       })
 
       if (createResponse.ok) {
@@ -434,9 +394,7 @@ describe('Jobs API Performance Tests', () => {
         )
 
         expect(result.p95).toBeLessThan(200)
-        expect(result.successfulRequests + result.failedRequests).toBe(
-          result.totalRequests
-        )
+        expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
       } else {
         console.log('Skipping job deletion test - could not create test job')
       }
@@ -465,9 +423,7 @@ describe('Jobs API Performance Tests', () => {
       expect(result.p95).toBeLessThan(100)
 
       // Should handle all requests (even error responses)
-      expect(result.successfulRequests + result.failedRequests).toBe(
-        result.totalRequests
-      )
+      expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
     })
 
     it('should handle requests with invalid HTTP methods efficiently', async () => {
@@ -491,9 +447,7 @@ describe('Jobs API Performance Tests', () => {
       expect(result.p95).toBeLessThan(100)
 
       // Should handle all requests
-      expect(result.successfulRequests + result.failedRequests).toBe(
-        result.totalRequests
-      )
+      expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
     })
   })
 
@@ -517,17 +471,12 @@ describe('Jobs API Performance Tests', () => {
       const results = []
 
       for (const endpoint of jobEndpoints) {
-        console.log(
-          `Testing comprehensive performance for ${endpoint.description}...`
-        )
+        console.log(`Testing comprehensive performance for ${endpoint.description}...`)
 
         const result = await runLoadTest({
           url: `${API_BASE_URL}${endpoint.path}`,
           method: endpoint.method,
-          headers:
-            endpoint.method === 'POST'
-              ? { 'Content-Type': 'application/json' }
-              : {},
+          headers: endpoint.method === 'POST' ? { 'Content-Type': 'application/json' } : {},
           body:
             endpoint.method === 'POST'
               ? TestDataGenerator.generateJobData('json-format', 'small')
@@ -541,36 +490,23 @@ describe('Jobs API Performance Tests', () => {
 
         // Job operations should be reasonably fast
         expect(result.p95).toBeLessThan(500)
-        expect(result.successfulRequests + result.failedRequests).toBe(
-          result.totalRequests
-        )
+        expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
       }
 
       // Log comprehensive results
       console.log('\n=== Comprehensive Jobs Performance Summary ===')
       results.forEach(({ endpoint, result }) => {
-        const successRate = (
-          (result.successfulRequests / result.totalRequests) *
-          100
-        ).toFixed(1)
-        console.log(
-          `${endpoint}: P95=${result.p95.toFixed(2)}ms, Success Rate=${successRate}%`
-        )
+        const successRate = ((result.successfulRequests / result.totalRequests) * 100).toFixed(1)
+        console.log(`${endpoint}: P95=${result.p95.toFixed(2)}ms, Success Rate=${successRate}%`)
       })
 
       // Calculate overall statistics
-      const totalRequests = results.reduce(
-        (sum, { result }) => sum + result.totalRequests,
-        0
-      )
+      const totalRequests = results.reduce((sum, { result }) => sum + result.totalRequests, 0)
       const totalHandled = results.reduce(
-        (sum, { result }) =>
-          sum + result.successfulRequests + result.failedRequests,
+        (sum, { result }) => sum + result.successfulRequests + result.failedRequests,
         0
       )
-      const avgP95 =
-        results.reduce((sum, { result }) => sum + result.p95, 0) /
-        results.length
+      const avgP95 = results.reduce((sum, { result }) => sum + result.p95, 0) / results.length
 
       console.log(
         `\nOverall: P95 avg=${avgP95.toFixed(2)}ms, Handled Rate=${((totalHandled / totalRequests) * 100).toFixed(1)}%`

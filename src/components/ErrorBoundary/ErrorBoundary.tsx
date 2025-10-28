@@ -1,10 +1,15 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react'
+import type React from 'react'
+import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { logError } from '../../lib/errorHandler'
 import './ErrorBoundary.css'
 
 interface ErrorBoundaryProps {
   children: ReactNode
-  fallback?: React.ComponentType<{ error: Error; errorInfo: ErrorInfo; reset: () => void }>
+  fallback?: React.ComponentType<{
+    error: Error
+    errorInfo: ErrorInfo
+    reset: () => void
+  }>
   onError?: (error: Error, errorInfo: ErrorInfo) => void
   showMessage?: boolean
   className?: string
@@ -23,7 +28,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   constructor(props: ErrorBoundaryProps) {
     super(props)
     this.state = {
-      hasError: false
+      hasError: false,
     }
   }
 
@@ -31,7 +36,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return {
       hasError: true,
       error,
-      errorId: ErrorBoundary.generateErrorId()
+      errorId: ErrorBoundary.generateErrorId(),
     }
   }
 
@@ -53,7 +58,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     this.setState({
       error,
       errorInfo,
-      errorId: ErrorBoundary.generateErrorId()
+      errorId: ErrorBoundary.generateErrorId(),
     })
 
     // Auto-reset after 30 seconds for recoverable errors
@@ -79,12 +84,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     const recoverableErrors = [
       'NetworkError',
       'TimeoutError',
-      'ChunkLoadError' // Related to lazy loading
+      'ChunkLoadError', // Related to lazy loading
     ]
 
-    return recoverableErrors.some(recoverableError =>
-      error.name === recoverableError ||
-      error.message.includes(recoverableError)
+    return recoverableErrors.some(
+      recoverableError =>
+        error.name === recoverableError || error.message.includes(recoverableError)
     )
   }
 
@@ -93,7 +98,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       hasError: false,
       error: undefined,
       errorInfo: undefined,
-      errorId: undefined
+      errorId: undefined,
     })
 
     if (this.resetTimeoutId) {
@@ -140,20 +145,20 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     actions.push({
       label: 'Try Again',
-      action: this.handleRetry
+      action: this.handleRetry,
     })
 
     if (category === 'network') {
       actions.push({
         label: 'Refresh Page',
-        action: () => window.location.reload()
+        action: () => window.location.reload(),
       })
     }
 
     if (category === 'chunk') {
       actions.push({
         label: 'Reload App',
-        action: () => window.location.reload()
+        action: () => window.location.reload(),
       })
     }
 
@@ -186,19 +191,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         const category = this.getErrorCategory(error)
 
         return (
-          <div className={`error-boundary error-boundary--${category} ${this.props.className || ''}`}>
+          <div
+            className={`error-boundary error-boundary--${category} ${this.props.className || ''}`}
+          >
             <div className="error-boundary__container">
               <div className="error-boundary__icon" role="img" aria-label="Error icon">
                 ⚠️
               </div>
 
-              <h1 className="error-boundary__title">
-                Oops! Something went wrong
-              </h1>
+              <h1 className="error-boundary__title">Oops! Something went wrong</h1>
 
-              <p className="error-boundary__message">
-                {errorMessage}
-              </p>
+              <p className="error-boundary__message">{errorMessage}</p>
 
               {process.env.NODE_ENV === 'development' && (
                 <details className="error-boundary__details">
@@ -212,9 +215,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                         {error.name}: {error.message}
                       </pre>
                       {error.stack && (
-                        <pre className="error-boundary__error-stack">
-                          {error.stack}
-                        </pre>
+                        <pre className="error-boundary__error-stack">{error.stack}</pre>
                       )}
                     </div>
 
@@ -263,7 +264,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 // Functional wrapper for easier usage
 interface ErrorBoundaryWrapperProps {
   children: ReactNode
-  fallback?: React.ComponentType<{ error: Error; errorInfo: ErrorInfo; reset: () => void }>
+  fallback?: React.ComponentType<{
+    error: Error
+    errorInfo: ErrorInfo
+    reset: () => void
+  }>
   onError?: (error: Error, errorInfo: ErrorInfo) => void
   showMessage?: boolean
 }

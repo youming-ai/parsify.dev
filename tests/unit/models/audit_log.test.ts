@@ -1,20 +1,17 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
+  AUDIT_LOG_QUERIES,
+  AuditContextSchema,
+  AuditFilterSchema,
   AuditLog,
   AuditLogSchema,
   CreateAuditLogSchema,
-  UpdateAuditLogSchema,
-  AuditActionSchema,
-  ResourceTypeSchema,
-  AuditContextSchema,
-  AuditFilterSchema,
-  AUDIT_LOG_QUERIES
 } from '../../../../apps/api/src/models/audit_log'
 import {
-  createTestDatabase,
+  cleanupTestEnvironment,
   createMockAuditLog,
+  createTestDatabase,
   setupTestEnvironment,
-  cleanupTestEnvironment
 } from './database.mock'
 
 describe('AuditLog Model', () => {
@@ -53,7 +50,9 @@ describe('AuditLog Model', () => {
     })
 
     it('should reject invalid resource type', () => {
-      const invalidAudit = createMockAuditLog({ resource_type: 'invalid' as any })
+      const invalidAudit = createMockAuditLog({
+        resource_type: 'invalid' as any,
+      })
       const result = AuditLogSchema.safeParse(invalidAudit)
 
       expect(result.success).toBe(false)
@@ -64,11 +63,26 @@ describe('AuditLog Model', () => {
 
     it('should accept valid actions', () => {
       const validActions = [
-        'login', 'logout', 'register', 'tool_execute', 'file_upload',
-        'file_download', 'job_create', 'job_complete', 'job_fail',
-        'quota_exceeded', 'auth_failure', 'permission_denied',
-        'admin_action', 'data_export', 'data_delete', 'config_change',
-        'api_access', 'rate_limit_hit', 'security_event', 'error_occurred'
+        'login',
+        'logout',
+        'register',
+        'tool_execute',
+        'file_upload',
+        'file_download',
+        'job_create',
+        'job_complete',
+        'job_fail',
+        'quota_exceeded',
+        'auth_failure',
+        'permission_denied',
+        'admin_action',
+        'data_export',
+        'data_delete',
+        'config_change',
+        'api_access',
+        'rate_limit_hit',
+        'security_event',
+        'error_occurred',
       ]
 
       validActions.forEach(action => {
@@ -80,9 +94,17 @@ describe('AuditLog Model', () => {
 
     it('should accept valid resource types', () => {
       const validTypes = [
-        'user', 'auth_identity', 'tool', 'tool_usage', 'job',
-        'file_upload', 'quota_counter', 'session', 'api_key',
-        'system_config', 'admin_log'
+        'user',
+        'auth_identity',
+        'tool',
+        'tool_usage',
+        'job',
+        'file_upload',
+        'quota_counter',
+        'session',
+        'api_key',
+        'system_config',
+        'admin_log',
       ]
 
       validTypes.forEach(type => {
@@ -99,7 +121,7 @@ describe('AuditLog Model', () => {
         resource_type: 'user' as const,
         resource_id: 'user-123',
         ip_address: '127.0.0.1',
-        user_agent: 'test-agent'
+        user_agent: 'test-agent',
       }
 
       const result = CreateAuditLogSchema.safeParse(createData)
@@ -118,8 +140,8 @@ describe('AuditLog Model', () => {
           region: 'CA',
           city: 'San Francisco',
           latitude: 37.7749,
-          longitude: -122.4194
-        }
+          longitude: -122.4194,
+        },
       }
 
       const result = AuditContextSchema.safeParse(context)
@@ -135,7 +157,7 @@ describe('AuditLog Model', () => {
         date_from: Math.floor(Date.now() / 1000) - 86400,
         date_to: Math.floor(Date.now() / 1000),
         limit: 50,
-        offset: 0
+        offset: 0,
       }
 
       const result = AuditFilterSchema.safeParse(filter)
@@ -161,7 +183,7 @@ describe('AuditLog Model', () => {
         action: 'logout' as const,
         resource_type: 'user' as const,
         resource_id: 'user-456',
-        ip_address: '192.168.1.1'
+        ip_address: '192.168.1.1',
       }
 
       const audit = AuditLog.create(createData)
@@ -189,7 +211,7 @@ describe('AuditLog Model', () => {
       const newValues = { name: 'New Name' }
       const rowData = createMockAuditLog({
         old_values: JSON.stringify(oldValues),
-        new_values: JSON.stringify(newValues)
+        new_values: JSON.stringify(newValues),
       })
 
       const audit = AuditLog.fromRow(rowData)
@@ -203,7 +225,7 @@ describe('AuditLog Model', () => {
         new_values: null,
         user_id: null,
         ip_address: null,
-        user_agent: null
+        user_agent: null,
       })
 
       const audit = AuditLog.fromRow(rowData)
@@ -251,7 +273,9 @@ describe('AuditLog Model', () => {
       expect(audit.resource_type).toBe('tool')
       expect(audit.resource_id).toBe('tool-456')
       expect(audit.success).toBe(true)
-      expect(audit.new_values).toEqual({ input_size: JSON.stringify(inputData).length })
+      expect(audit.new_values).toEqual({
+        input_size: JSON.stringify(inputData).length,
+      })
     })
 
     it('should create failed tool execution audit log', () => {
@@ -286,7 +310,10 @@ describe('AuditLog Model', () => {
       expect(audit.resource_type).toBe('file_upload')
       expect(audit.resource_id).toBe('file-456')
       expect(audit.success).toBe(true)
-      expect(audit.new_values).toEqual({ filename: 'document.pdf', file_size: 1024 * 1024 })
+      expect(audit.new_values).toEqual({
+        filename: 'document.pdf',
+        file_size: 1024 * 1024,
+      })
     })
 
     it('should create auth failure audit log', () => {
@@ -300,17 +327,15 @@ describe('AuditLog Model', () => {
       expect(audit.action).toBe('auth_failure')
       expect(audit.user_id).toBeNull()
       expect(audit.success).toBe(false)
-      expect(audit.new_values).toEqual({ identifier: 'test@example.com', reason: 'Invalid password' })
+      expect(audit.new_values).toEqual({
+        identifier: 'test@example.com',
+        reason: 'Invalid password',
+      })
       expect(audit.error_message).toBe('Invalid password')
     })
 
     it('should create quota exceeded audit log', () => {
-      const audit = AuditLog.quotaExceeded(
-        'user-123',
-        'api_requests',
-        '127.0.0.1',
-        'test-agent'
-      )
+      const audit = AuditLog.quotaExceeded('user-123', 'api_requests', '127.0.0.1', 'test-agent')
 
       expect(audit.action).toBe('quota_exceeded')
       expect(audit.resource_type).toBe('quota_counter')
@@ -331,7 +356,10 @@ describe('AuditLog Model', () => {
       expect(audit.action).toBe('security_event')
       expect(audit.resource_type).toBe('system_config')
       expect(audit.success).toBe(true)
-      expect(audit.new_values).toEqual({ event: 'suspicious_activity', ...details })
+      expect(audit.new_values).toEqual({
+        event: 'suspicious_activity',
+        ...details,
+      })
     })
 
     it('should create data change audit log', () => {
@@ -375,7 +403,13 @@ describe('AuditLog Model', () => {
     })
 
     it('should correctly identify security events', () => {
-      const securityEvents = ['auth_failure', 'permission_denied', 'quota_exceeded', 'rate_limit_hit', 'security_event']
+      const securityEvents = [
+        'auth_failure',
+        'permission_denied',
+        'quota_exceeded',
+        'rate_limit_hit',
+        'security_event',
+      ]
 
       securityEvents.forEach(action => {
         const audit = new AuditLog(createMockAuditLog({ action: action as any }))
@@ -416,7 +450,7 @@ describe('AuditLog Model', () => {
         tool_execute: 'Tool execution',
         file_upload: 'File upload',
         auth_failure: 'Authentication failure',
-        security_event: 'Security event'
+        security_event: 'Security event',
       }
 
       Object.entries(descriptions).forEach(([action, expectedDesc]) => {
@@ -426,14 +460,18 @@ describe('AuditLog Model', () => {
     })
 
     it('should return correct resource descriptions', () => {
-      const auditWithId = new AuditLog(createMockAuditLog({
-        resource_type: 'tool',
-        resource_id: 'tool-123'
-      }))
-      const auditWithoutId = new AuditLog(createMockAuditLog({
-        resource_type: 'user',
-        resource_id: null
-      }))
+      const auditWithId = new AuditLog(
+        createMockAuditLog({
+          resource_type: 'tool',
+          resource_id: 'tool-123',
+        })
+      )
+      const auditWithoutId = new AuditLog(
+        createMockAuditLog({
+          resource_type: 'user',
+          resource_id: null,
+        })
+      )
 
       expect(auditWithId.resourceDescription).toBe('tool:tool-123')
       expect(auditWithoutId.resourceDescription).toBe('user')
@@ -470,7 +508,7 @@ describe('AuditLog Model', () => {
         new AuditLog(createMockAuditLog({ action: 'login' })),
         new AuditLog(createMockAuditLog({ action: 'auth_failure' })),
         new AuditLog(createMockAuditLog({ action: 'security_event' })),
-        new AuditLog(createMockAuditLog({ action: 'tool_execute' }))
+        new AuditLog(createMockAuditLog({ action: 'tool_execute' })),
       ]
 
       const securityEvents = AuditLog.getSecurityEvents(audits)
@@ -485,13 +523,15 @@ describe('AuditLog Model', () => {
         new AuditLog(createMockAuditLog({ action: 'login', success: true })),
         new AuditLog(createMockAuditLog({ action: 'login', success: false })),
         new AuditLog(createMockAuditLog({ action: 'login', success: false })),
-        new AuditLog(createMockAuditLog({ action: 'logout', success: true }))
+        new AuditLog(createMockAuditLog({ action: 'logout', success: true })),
       ]
 
       const failedLogins = AuditLog.getFailedLogins(audits)
 
       expect(failedLogins).toHaveLength(2)
-      expect(failedLogins.every(audit => audit.action === 'login' && audit.success === false)).toBe(true)
+      expect(failedLogins.every(audit => audit.action === 'login' && audit.success === false)).toBe(
+        true
+      )
     })
 
     it('should filter data access logs correctly', () => {
@@ -499,7 +539,7 @@ describe('AuditLog Model', () => {
         new AuditLog(createMockAuditLog({ action: 'file_upload' })),
         new AuditLog(createMockAuditLog({ action: 'file_download' })),
         new AuditLog(createMockAuditLog({ action: 'data_export' })),
-        new AuditLog(createMockAuditLog({ action: 'tool_execute' }))
+        new AuditLog(createMockAuditLog({ action: 'tool_execute' })),
       ]
 
       const dataAccessLogs = AuditLog.getDataAccessLogs(audits)
@@ -512,7 +552,7 @@ describe('AuditLog Model', () => {
       const audits = [
         new AuditLog(createMockAuditLog({ action: 'admin_action' })),
         new AuditLog(createMockAuditLog({ action: 'config_change' })),
-        new AuditLog(createMockAuditLog({ action: 'login' }))
+        new AuditLog(createMockAuditLog({ action: 'login' })),
       ]
 
       const adminActions = AuditLog.getAdminActions(audits)
@@ -526,7 +566,7 @@ describe('AuditLog Model', () => {
         new AuditLog(createMockAuditLog({ action: 'login', success: true })),
         new AuditLog(createMockAuditLog({ action: 'login', success: false })),
         new AuditLog(createMockAuditLog({ action: 'tool_execute', success: true })),
-        new AuditLog(createMockAuditLog({ action: 'tool_execute', success: true }))
+        new AuditLog(createMockAuditLog({ action: 'tool_execute', success: true })),
       ]
 
       const stats = AuditLog.getActionStats(audits)
@@ -539,26 +579,34 @@ describe('AuditLog Model', () => {
 
     it('should generate user activity summary correctly', () => {
       const audits = [
-        new AuditLog(createMockAuditLog({
-          user_id: 'user-1',
-          action: 'login',
-          created_at: Math.floor(Date.now() / 1000) - 3600
-        })),
-        new AuditLog(createMockAuditLog({
-          user_id: 'user-1',
-          action: 'tool_execute',
-          success: false,
-          created_at: Math.floor(Date.now() / 1000) - 1800
-        })),
-        new AuditLog(createMockAuditLog({
-          user_id: 'user-2',
-          action: 'login',
-          created_at: Math.floor(Date.now() / 1000) - 900
-        })),
-        new AuditLog(createMockAuditLog({
-          user_id: null,
-          action: 'auth_failure'
-        }))
+        new AuditLog(
+          createMockAuditLog({
+            user_id: 'user-1',
+            action: 'login',
+            created_at: Math.floor(Date.now() / 1000) - 3600,
+          })
+        ),
+        new AuditLog(
+          createMockAuditLog({
+            user_id: 'user-1',
+            action: 'tool_execute',
+            success: false,
+            created_at: Math.floor(Date.now() / 1000) - 1800,
+          })
+        ),
+        new AuditLog(
+          createMockAuditLog({
+            user_id: 'user-2',
+            action: 'login',
+            created_at: Math.floor(Date.now() / 1000) - 900,
+          })
+        ),
+        new AuditLog(
+          createMockAuditLog({
+            user_id: null,
+            action: 'auth_failure',
+          })
+        ),
       ]
 
       const summary = AuditLog.getUserActivitySummary(audits)
@@ -588,7 +636,7 @@ describe('AuditLog Model', () => {
         user_agent: null,
         success: true,
         error_message: null,
-        created_at: 1234567890
+        created_at: 1234567890,
       }
 
       const audit = new AuditLog(minimalAuditData)
@@ -607,7 +655,7 @@ describe('AuditLog Model', () => {
         user_id: 'invalid-uuid',
         action: 'invalid',
         resource_type: 'invalid',
-        success: 'not_boolean'
+        success: 'not_boolean',
       }
 
       expect(() => AuditLog.fromRow(invalidRow)).toThrow()
@@ -616,17 +664,19 @@ describe('AuditLog Model', () => {
     it('should handle malformed JSON in values fields', () => {
       const rowData = createMockAuditLog({
         old_values: 'invalid json string',
-        new_values: 'also invalid'
+        new_values: 'also invalid',
       })
 
       expect(() => AuditLog.fromRow(rowData)).toThrow()
     })
 
     it('should handle empty change objects', () => {
-      const audit = new AuditLog(createMockAuditLog({
-        old_values: {},
-        new_values: {}
-      }))
+      const audit = new AuditLog(
+        createMockAuditLog({
+          old_values: {},
+          new_values: {},
+        })
+      )
 
       expect(audit.changeSummary).toBeNull()
     })
@@ -675,20 +725,22 @@ describe('AuditLog Model', () => {
       const auditData = createMockAuditLog()
 
       // Test INSERT
-      const insertStmt = mockDb.prepare(AUDIT_LOG_QUERIES.INSERT).bind(
-        auditData.id,
-        auditData.user_id,
-        auditData.action,
-        auditData.resource_type,
-        auditData.resource_id,
-        JSON.stringify(auditData.old_values),
-        JSON.stringify(auditData.new_values),
-        auditData.ip_address,
-        auditData.user_agent,
-        auditData.success,
-        auditData.error_message,
-        auditData.created_at
-      )
+      const insertStmt = mockDb
+        .prepare(AUDIT_LOG_QUERIES.INSERT)
+        .bind(
+          auditData.id,
+          auditData.user_id,
+          auditData.action,
+          auditData.resource_type,
+          auditData.resource_id,
+          JSON.stringify(auditData.old_values),
+          JSON.stringify(auditData.new_values),
+          auditData.ip_address,
+          auditData.user_agent,
+          auditData.success,
+          auditData.error_message,
+          auditData.created_at
+        )
 
       const result = await insertStmt.run()
       expect(result.success).toBe(true)
@@ -700,9 +752,7 @@ describe('AuditLog Model', () => {
       mockDb.setTableData('audit_logs', [auditData])
 
       // Test SELECT by user
-      const selectStmt = mockDb.prepare(AUDIT_LOG_QUERIES.SELECT_BY_USER).bind(
-        'user-123', 10, 0
-      )
+      const selectStmt = mockDb.prepare(AUDIT_LOG_QUERIES.SELECT_BY_USER).bind('user-123', 10, 0)
       const result = await selectStmt.all()
 
       expect(result.results).toHaveLength(1)
@@ -714,9 +764,7 @@ describe('AuditLog Model', () => {
       mockDb.setTableData('audit_logs', [auditData])
 
       // Test SELECT by action
-      const selectStmt = mockDb.prepare(AUDIT_LOG_QUERIES.SELECT_BY_ACTION).bind(
-        'login', 10, 0
-      )
+      const selectStmt = mockDb.prepare(AUDIT_LOG_QUERIES.SELECT_BY_ACTION).bind('login', 10, 0)
       const result = await selectStmt.all()
 
       expect(result.results).toHaveLength(1)
@@ -727,7 +775,7 @@ describe('AuditLog Model', () => {
       const securityEvents = [
         createMockAuditLog({ action: 'auth_failure' }),
         createMockAuditLog({ action: 'security_event' }),
-        createMockAuditLog({ action: 'login' })
+        createMockAuditLog({ action: 'login' }),
       ]
       mockDb.setTableData('audit_logs', securityEvents)
 
@@ -736,9 +784,11 @@ describe('AuditLog Model', () => {
       const result = await selectStmt.all()
 
       expect(result.results).toHaveLength(2)
-      expect(result.results.every(row =>
-        row.action === 'auth_failure' || row.action === 'security_event'
-      )).toBe(true)
+      expect(
+        result.results.every(
+          row => row.action === 'auth_failure' || row.action === 'security_event'
+        )
+      ).toBe(true)
     })
   })
 })

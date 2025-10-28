@@ -21,7 +21,7 @@ export class FileValidationService {
 
     return {
       isValid,
-      errors
+      errors,
     }
   }
 
@@ -30,7 +30,7 @@ export class FileValidationService {
       errors.push({
         code: 'EMPTY_FILENAME',
         message: 'Filename cannot be empty.',
-        severity: 'error'
+        severity: 'error',
       })
       return
     }
@@ -39,7 +39,7 @@ export class FileValidationService {
       errors.push({
         code: 'FILENAME_TOO_LONG',
         message: `Filename exceeds maximum length of ${this.MAX_FILENAME_LENGTH} characters.`,
-        severity: 'error'
+        severity: 'error',
       })
     }
 
@@ -49,15 +49,34 @@ export class FileValidationService {
       errors.push({
         code: 'INVALID_FILENAME_CHARACTERS',
         message: 'Filename contains invalid characters: < > : " / \\ | ? *',
-        severity: 'error'
+        severity: 'error',
       })
     }
 
     // Check for reserved names (Windows)
     const reservedNames = [
-      'CON', 'PRN', 'AUX', 'NUL',
-      'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
-      'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
+      'CON',
+      'PRN',
+      'AUX',
+      'NUL',
+      'COM1',
+      'COM2',
+      'COM3',
+      'COM4',
+      'COM5',
+      'COM6',
+      'COM7',
+      'COM8',
+      'COM9',
+      'LPT1',
+      'LPT2',
+      'LPT3',
+      'LPT4',
+      'LPT5',
+      'LPT6',
+      'LPT7',
+      'LPT8',
+      'LPT9',
     ]
 
     const nameWithoutExt = name.split('.')[0].toUpperCase()
@@ -65,7 +84,7 @@ export class FileValidationService {
       errors.push({
         code: 'RESERVED_FILENAME',
         message: `Filename "${nameWithoutExt}" is reserved and cannot be used.`,
-        severity: 'error'
+        severity: 'error',
       })
     }
 
@@ -74,8 +93,8 @@ export class FileValidationService {
     if (!extension || !this.SUPPORTED_EXTENSIONS.includes(extension)) {
       errors.push({
         code: 'UNSUPPORTED_EXTENSION',
-        message: `Unsupported file extension ".${extension}". Supported extensions: ${this.SUPPORTED_EXTENSIONS.map(ext => '.' + ext).join(', ')}`,
-        severity: 'error'
+        message: `Unsupported file extension ".${extension}". Supported extensions: ${this.SUPPORTED_EXTENSIONS.map(ext => `.${ext}`).join(', ')}`,
+        severity: 'error',
       })
     }
   }
@@ -85,7 +104,7 @@ export class FileValidationService {
       errors.push({
         code: 'EMPTY_FILE',
         message: 'File is empty.',
-        severity: 'warning'
+        severity: 'warning',
       })
       return
     }
@@ -95,7 +114,7 @@ export class FileValidationService {
       errors.push({
         code: 'FILE_TOO_LARGE',
         message: `File size (${sizeMB}MB) exceeds maximum allowed size of 1MB.`,
-        severity: 'error'
+        severity: 'error',
       })
     }
 
@@ -106,7 +125,7 @@ export class FileValidationService {
       errors.push({
         code: 'LARGE_FILE',
         message: `File is large (${sizeKB}KB). Consider reducing file size for better performance.`,
-        severity: 'warning'
+        severity: 'warning',
       })
     }
   }
@@ -116,7 +135,7 @@ export class FileValidationService {
       errors.push({
         code: 'UNKNOWN_FILE_TYPE',
         message: 'File type could not be determined.',
-        severity: 'warning'
+        severity: 'warning',
       })
       return
     }
@@ -126,7 +145,7 @@ export class FileValidationService {
       errors.push({
         code: 'UNSUPPORTED_FILE_TYPE',
         message: `File type "${type}" is not supported.`,
-        severity: 'error'
+        severity: 'error',
       })
     }
   }
@@ -144,7 +163,7 @@ export class FileValidationService {
       errors.push({
         code: 'EMPTY_CONTENT',
         message: 'File content is empty.',
-        severity: 'error'
+        severity: 'error',
       })
       return { isValid: false, errors, warnings }
     }
@@ -155,14 +174,14 @@ export class FileValidationService {
       warnings.push({
         code: 'NO_JSON_FOUND',
         message: 'No JSON content found in the file.',
-        severity: 'warning'
+        severity: 'warning',
       })
     }
 
     // Check for very long lines
     const lines = content.split('\n')
     const maxLineLength = 1000
-    const longLines = lines.filter((line, index) => {
+    const longLines = lines.filter((line, _index) => {
       return line.length > maxLineLength
     })
 
@@ -170,7 +189,7 @@ export class FileValidationService {
       warnings.push({
         code: 'LONG_LINES',
         message: `Found ${longLines.length} line(s) longer than ${maxLineLength} characters. This may affect JSON parsing.`,
-        severity: 'warning'
+        severity: 'warning',
       })
     }
 
@@ -180,14 +199,14 @@ export class FileValidationService {
       warnings.push({
         code: 'UNICODE_CHARACTERS',
         message: 'File contains Unicode characters. Ensure proper encoding.',
-        severity: 'info'
+        severity: 'info',
       })
     }
 
     // Check for binary content indicators
     const binaryPatterns = [
       /\x00/, // null bytes
-      /[\x01-\x08\x0B\x0C\x0E-\x1F\x7F]/ // control characters
+      /[\x01-\x08\x0B\x0C\x0E-\x1F\x7F]/, // control characters
     ]
 
     const hasBinaryContent = binaryPatterns.some(pattern => pattern.test(content))
@@ -195,11 +214,11 @@ export class FileValidationService {
       errors.push({
         code: 'BINARY_CONTENT',
         message: 'File appears to contain binary content. Only text files are supported.',
-        severity: 'error'
+        severity: 'error',
       })
     }
 
-    const allErrors = [...errors, ...warnings]
+    const _allErrors = [...errors, ...warnings]
     const isValid = errors.length === 0
 
     return { isValid, errors, warnings }
@@ -226,7 +245,7 @@ export class FileValidationService {
     return {
       maxFileSize: this.MAX_FILE_SIZE,
       supportedExtensions: [...this.SUPPORTED_EXTENSIONS],
-      maxFilenameLength: this.MAX_FILENAME_LENGTH
+      maxFilenameLength: this.MAX_FILENAME_LENGTH,
     }
   }
 

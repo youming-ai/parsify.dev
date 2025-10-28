@@ -2,8 +2,8 @@
  * Memory leak detection and prevention for WASM modules
  */
 
-import { MemoryStats } from './memory-monitor'
-import { IWasmModule } from '../modules/interfaces/wasm-module.interface'
+import type { IWasmModule } from '../modules/interfaces/wasm-module.interface'
+import type { MemoryStats } from './memory-monitor'
 
 /**
  * Memory leak detection result
@@ -204,10 +204,10 @@ export class MemoryLeakDetector {
         'garbage_collection',
         'memory_compaction',
         'cache_clearing',
-        'event_listener_cleanup'
+        'event_listener_cleanup',
       ],
       maxSnapshots: 100,
-      ...config
+      ...config,
     }
   }
 
@@ -268,7 +268,7 @@ export class MemoryLeakDetector {
       timestamp: Date.now(),
       memoryStats: this.measureMemoryStats(module),
       heapAnalysis: this.analyzeHeap(module),
-      resourceTracking: this.trackResources(module)
+      resourceTracking: this.trackResources(module),
     }
 
     snapshots.push(snapshot)
@@ -303,7 +303,7 @@ export class MemoryLeakDetector {
         patterns: [],
         suspectedCauses: [],
         recommendations: [],
-        timestamp: new Date()
+        timestamp: new Date(),
       }
     }
 
@@ -358,7 +358,7 @@ export class MemoryLeakDetector {
       patterns,
       suspectedCauses,
       recommendations,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     // Store in history
@@ -380,8 +380,8 @@ export class MemoryLeakDetector {
 
     // Get recent snapshots within detection window
     const now = Date.now()
-    const recentSnapshots = snapshots.filter(s =>
-      now - s.timestamp <= this.config.detectionWindowMs
+    const recentSnapshots = snapshots.filter(
+      s => now - s.timestamp <= this.config.detectionWindowMs
     )
 
     if (recentSnapshots.length < 3) return null
@@ -404,8 +404,8 @@ export class MemoryLeakDetector {
         evidence: {
           growthRate,
           estimatedLeak,
-          samples: recentSnapshots.length
-        }
+          samples: recentSnapshots.length,
+        },
       }
     }
 
@@ -428,8 +428,8 @@ export class MemoryLeakDetector {
         evidence: {
           fragmentationRatio: fragmentation,
           allocated: recentSnapshot.memoryStats.allocated,
-          used: recentSnapshot.memoryStats.used
-        }
+          used: recentSnapshot.memoryStats.used,
+        },
       }
     }
 
@@ -446,9 +446,10 @@ export class MemoryLeakDetector {
     if (!heapAnalysis) return null
 
     // Look for unusual retention patterns
-    const suspiciousPaths = heapAnalysis.retentionPaths.filter(path =>
-      path.size > 1024 * 1024 && // > 1MB
-      path.count > 100 // Many objects
+    const suspiciousPaths = heapAnalysis.retentionPaths.filter(
+      path =>
+        path.size > 1024 * 1024 && // > 1MB
+        path.count > 100 // Many objects
     )
 
     if (suspiciousPaths.length > 0) {
@@ -460,8 +461,8 @@ export class MemoryLeakDetector {
         evidence: {
           suspiciousPaths,
           totalObjects: heapAnalysis.totalObjects,
-          totalSize: heapAnalysis.totalSize
-        }
+          totalSize: heapAnalysis.totalSize,
+        },
       }
     }
 
@@ -503,8 +504,8 @@ export class MemoryLeakDetector {
         description: issues.join(', '),
         evidence: {
           resourceTracking,
-          issues
-        }
+          issues,
+        },
       }
     }
 
@@ -530,8 +531,8 @@ export class MemoryLeakDetector {
           evidence: {
             allocationCount: stats.allocationCount,
             deallocationCount: stats.deallocationCount,
-            ratio
-          }
+            ratio,
+          },
         }
       }
     }
@@ -546,7 +547,10 @@ export class MemoryLeakDetector {
     if (xValues.length < 2) return 0
 
     const n = xValues.length
-    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0
+    let sumX = 0
+    let sumY = 0
+    let sumXY = 0
+    let sumX2 = 0
 
     for (let i = 0; i < n; i++) {
       sumX += xValues[i]
@@ -656,7 +660,7 @@ export class MemoryLeakDetector {
   /**
    * Apply prevention actions
    */
-  private applyPreventionActions(moduleId: string, leakResult: MemoryLeakResult): void {
+  private applyPreventionActions(moduleId: string, _leakResult: MemoryLeakResult): void {
     const appliedActions = this.preventionActions.get(moduleId) || new Set()
 
     for (const action of this.config.preventionActions) {
@@ -734,34 +738,34 @@ export class MemoryLeakDetector {
       gcCount: Math.floor(Math.random() * 10),
       gcTime: Math.floor(Math.random() * 1000),
       growthRate: 0,
-      leakProbability: 0
+      leakProbability: 0,
     }
   }
 
   /**
    * Analyze heap structure
    */
-  private analyzeHeap(module: IWasmModule): HeapAnalysis | undefined {
+  private analyzeHeap(_module: IWasmModule): HeapAnalysis | undefined {
     // In a real implementation, this would analyze the actual heap
     // For now, return simulated data
     return {
       totalObjects: Math.floor(1000 + Math.random() * 5000),
       totalSize: Math.floor(1024 * 1024 + Math.random() * 10 * 1024 * 1024),
       objectTypes: {
-        'Object': { count: 500, size: 1024 * 100 },
-        'Array': { count: 300, size: 1024 * 200 },
-        'String': { count: 1000, size: 1024 * 50 },
-        'Function': { count: 50, size: 1024 * 10 }
+        Object: { count: 500, size: 1024 * 100 },
+        Array: { count: 300, size: 1024 * 200 },
+        String: { count: 1000, size: 1024 * 50 },
+        Function: { count: 50, size: 1024 * 10 },
       },
       retentionPaths: [],
-      gcRoots: []
+      gcRoots: [],
     }
   }
 
   /**
    * Track resource usage
    */
-  private trackResources(module: IWasmModule): ResourceTracking | undefined {
+  private trackResources(_module: IWasmModule): ResourceTracking | undefined {
     // In a real implementation, this would track actual resources
     return {
       openFiles: Math.floor(Math.random() * 10),
@@ -769,7 +773,7 @@ export class MemoryLeakDetector {
       activeTimers: Math.floor(Math.random() * 20),
       eventListeners: Math.floor(Math.random() * 50),
       buffers: Math.floor(Math.random() * 100),
-      images: Math.floor(Math.random() * 10)
+      images: Math.floor(Math.random() * 10),
     }
   }
 

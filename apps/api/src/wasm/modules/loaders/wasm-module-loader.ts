@@ -1,8 +1,8 @@
 import {
-  IWasmModule,
-  IWasmModuleLoader,
-  WasmModuleConfig,
-  WasmModuleError
+  type IWasmModule,
+  type IWasmModuleLoader,
+  type WasmModuleConfig,
+  WasmModuleError,
 } from '../interfaces/wasm-module.interface'
 
 /**
@@ -17,7 +17,7 @@ export class WasmModuleLoader implements IWasmModuleLoader {
     maxMemory: 64 * 1024 * 1024, // 64MB
     timeout: 30000, // 30 seconds
     debug: false,
-    logLevel: 'error'
+    logLevel: 'error',
   }
 
   /**
@@ -84,8 +84,8 @@ export class WasmModuleLoader implements IWasmModuleLoader {
           'Check if the module file exists and is accessible',
           'Verify the module format is correct',
           'Ensure sufficient memory is available',
-          'Check for compatibility issues'
-        ]
+          'Check for compatibility issues',
+        ],
       })
     }
   }
@@ -107,7 +107,9 @@ export class WasmModuleLoader implements IWasmModuleLoader {
         return this.loadBuiltinModule(identifier)
       }
     } catch (error) {
-      throw new Error(`Failed to resolve module source '${identifier}': ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to resolve module source '${identifier}': ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -118,9 +120,9 @@ export class WasmModuleLoader implements IWasmModuleLoader {
     const response = await fetch(url, {
       method: 'GET',
       headers: {
-        'Accept': 'application/wasm',
-        'Cache-Control': 'no-cache'
-      }
+        Accept: 'application/wasm',
+        'Cache-Control': 'no-cache',
+      },
     })
 
     if (!response.ok) {
@@ -137,7 +139,7 @@ export class WasmModuleLoader implements IWasmModuleLoader {
   /**
    * Load module from file path
    */
-  private async loadModuleFromFile(path: string): Promise<ArrayBuffer> {
+  private async loadModuleFromFile(_path: string): Promise<ArrayBuffer> {
     // In a real implementation, this would use the file system API
     // For Cloudflare Workers, this might load from assets or KV storage
     throw new Error('File loading not yet implemented in this environment')
@@ -153,7 +155,7 @@ export class WasmModuleLoader implements IWasmModuleLoader {
       'json-formatter': 'builtin:json-formatter',
       'json-validator': 'builtin:json-validator',
       'code-executor': 'builtin:code-executor',
-      'code-formatter': 'builtin:code-formatter'
+      'code-formatter': 'builtin:code-formatter',
     }
 
     const moduleKey = builtinModules[moduleId]
@@ -178,7 +180,7 @@ export class WasmModuleLoader implements IWasmModuleLoader {
       const memory = new WebAssembly.Memory({
         initial: Math.ceil((config.maxMemory || this.defaultConfig.maxMemory!) / (64 * 1024)),
         maximum: Math.ceil((config.maxMemory || this.defaultConfig.maxMemory!) / (64 * 1024)),
-        shared: false
+        shared: false,
       })
 
       // Create import object
@@ -210,7 +212,9 @@ export class WasmModuleLoader implements IWasmModuleLoader {
     const env = {
       memory,
       // Common WASM imports
-      abort: () => { throw new Error('WASM module aborted') },
+      abort: () => {
+        throw new Error('WASM module aborted')
+      },
       log: (ptr: number, len: number) => {
         if (config.debug || config.logLevel !== 'none') {
           const message = this.readStringFromMemory(memory, ptr, len)
@@ -222,7 +226,11 @@ export class WasmModuleLoader implements IWasmModuleLoader {
         console.error(`[WASM Error] ${message}`)
       },
       warn: (ptr: number, len: number) => {
-        if (config.logLevel === 'warn' || config.logLevel === 'info' || config.logLevel === 'debug') {
+        if (
+          config.logLevel === 'warn' ||
+          config.logLevel === 'info' ||
+          config.logLevel === 'debug'
+        ) {
           const message = this.readStringFromMemory(memory, ptr, len)
           console.warn(`[WASM Warning] ${message}`)
         }
@@ -249,7 +257,7 @@ export class WasmModuleLoader implements IWasmModuleLoader {
         trace: (ptr: number, len: number) => {
           const message = this.readStringFromMemory(memory, ptr, len)
           console.trace(`[WASM Trace] ${message}`)
-        }
+        },
       }
     }
 
@@ -309,7 +317,9 @@ export class WasmModuleLoader implements IWasmModuleLoader {
         global.gc()
       }
     } catch (error) {
-      throw new Error(`Failed to unload module '${moduleId}': ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to unload module '${moduleId}': ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -377,7 +387,7 @@ export class WasmModuleLoader implements IWasmModuleLoader {
     return {
       loadedModules: this.loadedModules.size,
       totalMemoryUsage,
-      loadingInProgress: this.loadingPromises.size
+      loadingInProgress: this.loadingPromises.size,
     }
   }
 
@@ -457,7 +467,7 @@ class WasmModuleWrapper implements IWasmModule {
       // Check API version compatibility
       const currentApiVersion = '1.0.0' // This should match the runtime API version
       return this.isVersionCompatible(this.apiVersion, currentApiVersion)
-    } catch (error) {
+    } catch (_error) {
       return false
     }
   }
@@ -482,7 +492,9 @@ class WasmModuleWrapper implements IWasmModule {
 
       this._initialized = true
     } catch (error) {
-      throw new Error(`Module initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Module initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -502,7 +514,7 @@ class WasmModuleWrapper implements IWasmModule {
       checksum: '', // This would be calculated during loading
       supportedFormats: [], // This would be extracted from the module
       capabilities: [], // This would be extracted from the module
-      limitations: [] // This would be extracted from the module
+      limitations: [], // This would be extracted from the module
     }
   }
 
@@ -537,7 +549,9 @@ class WasmModuleWrapper implements IWasmModule {
       // Parse result
       return JSON.parse(resultData)
     } catch (error) {
-      throw new Error(`Module execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Module execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -567,12 +581,12 @@ class WasmModuleWrapper implements IWasmModule {
       responseTime: 0, // This would be measured
       memoryUsage: this.memory.buffer.byteLength,
       errorRate: 0, // This would be calculated
-      uptime: this._initialized ? Date.now() - this.createdAt.getTime() : 0
+      uptime: this._initialized ? Date.now() - this.createdAt.getTime() : 0,
     }
   }
 
   private extractMetadata(): WasmModuleMetadata {
-    const exports = this.instance.exports as any
+    const _exports = this.instance.exports as any
 
     // Try to extract metadata from WASM exports
     // This is a simplified implementation
@@ -592,7 +606,7 @@ class WasmModuleWrapper implements IWasmModule {
       checksum: '',
       supportedFormats: [],
       capabilities: [],
-      limitations: []
+      limitations: [],
     }
   }
 

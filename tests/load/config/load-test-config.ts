@@ -123,16 +123,16 @@ export const USER_BEHAVIOR_PATTERNS: Record<string, UserBehavior> = {
       jsonValidate: 0.3,
       jsonConvert: 0.1,
       codeFormat: 0.2,
-      codeExecute: 0.05
+      codeExecute: 0.05,
     },
     fileOperations: {
       upload: 2,
       download: 3,
-      size: 'small'
+      size: 'small',
     },
     sessionDuration: 15, // 15 minutes
     requestInterval: 30, // 30 seconds between requests
-    concurrencyLevel: 1
+    concurrencyLevel: 1,
   },
 
   // Moderate usage - regular tool usage
@@ -142,16 +142,16 @@ export const USER_BEHAVIOR_PATTERNS: Record<string, UserBehavior> = {
       jsonValidate: 0.5,
       jsonConvert: 0.3,
       codeFormat: 0.4,
-      codeExecute: 0.2
+      codeExecute: 0.2,
     },
     fileOperations: {
       upload: 5,
       download: 8,
-      size: 'medium'
+      size: 'medium',
     },
     sessionDuration: 30, // 30 minutes
     requestInterval: 15, // 15 seconds between requests
-    concurrencyLevel: 2
+    concurrencyLevel: 2,
   },
 
   // Heavy usage - intensive tool usage
@@ -161,16 +161,16 @@ export const USER_BEHAVIOR_PATTERNS: Record<string, UserBehavior> = {
       jsonValidate: 0.8,
       jsonConvert: 0.6,
       codeFormat: 0.7,
-      codeExecute: 0.5
+      codeExecute: 0.5,
     },
     fileOperations: {
       upload: 10,
       download: 15,
-      size: 'large'
+      size: 'large',
     },
     sessionDuration: 60, // 60 minutes
     requestInterval: 5, // 5 seconds between requests
-    concurrencyLevel: 3
+    concurrencyLevel: 3,
   },
 
   // Developer pattern - code-heavy usage
@@ -180,16 +180,16 @@ export const USER_BEHAVIOR_PATTERNS: Record<string, UserBehavior> = {
       jsonValidate: 0.3,
       jsonConvert: 0.2,
       codeFormat: 0.9,
-      codeExecute: 0.7
+      codeExecute: 0.7,
     },
     fileOperations: {
       upload: 8,
       download: 12,
-      size: 'medium'
+      size: 'medium',
     },
     sessionDuration: 45, // 45 minutes
     requestInterval: 8, // 8 seconds between requests
-    concurrencyLevel: 2
+    concurrencyLevel: 2,
   },
 
   // Data analyst pattern - JSON-heavy usage
@@ -199,17 +199,17 @@ export const USER_BEHAVIOR_PATTERNS: Record<string, UserBehavior> = {
       jsonValidate: 0.8,
       jsonConvert: 0.8,
       codeFormat: 0.3,
-      codeExecute: 0.1
+      codeExecute: 0.1,
     },
     fileOperations: {
       upload: 15,
       download: 20,
-      size: 'large'
+      size: 'large',
     },
     sessionDuration: 90, // 90 minutes
     requestInterval: 10, // 10 seconds between requests
-    concurrencyLevel: 3
-  }
+    concurrencyLevel: 3,
+  },
 }
 
 // Load testing scenarios for different concurrent user levels
@@ -225,8 +225,8 @@ export const CONCURRENT_USER_SCENARIOS: ConcurrentUserScenario[] = [
       maxP95ResponseTime: 300,
       minSuccessRate: 0.98,
       minThroughput: 50,
-      maxErrorRate: 0.02
-    }
+      maxErrorRate: 0.02,
+    },
   },
   {
     name: 'medium-team',
@@ -239,8 +239,8 @@ export const CONCURRENT_USER_SCENARIOS: ConcurrentUserScenario[] = [
       maxP95ResponseTime: 500,
       minSuccessRate: 0.95,
       minThroughput: 100,
-      maxErrorRate: 0.05
-    }
+      maxErrorRate: 0.05,
+    },
   },
   {
     name: 'large-team',
@@ -251,10 +251,10 @@ export const CONCURRENT_USER_SCENARIOS: ConcurrentUserScenario[] = [
     behavior: USER_BEHAVIOR_PATTERNS.heavy,
     requirements: {
       maxP95ResponseTime: 750,
-      minSuccessRate: 0.90,
+      minSuccessRate: 0.9,
       minThroughput: 150,
-      maxErrorRate: 0.10
-    }
+      maxErrorRate: 0.1,
+    },
   },
   {
     name: 'enterprise-scale',
@@ -267,8 +267,8 @@ export const CONCURRENT_USER_SCENARIOS: ConcurrentUserScenario[] = [
       maxP95ResponseTime: 1000,
       minSuccessRate: 0.85,
       minThroughput: 300,
-      maxErrorRate: 0.15
-    }
+      maxErrorRate: 0.15,
+    },
   },
   {
     name: 'stress-test',
@@ -279,10 +279,10 @@ export const CONCURRENT_USER_SCENARIOS: ConcurrentUserScenario[] = [
     behavior: USER_BEHAVIOR_PATTERNS.heavy,
     requirements: {
       maxP95ResponseTime: 2000,
-      minSuccessRate: 0.70,
+      minSuccessRate: 0.7,
       minThroughput: 200,
-      maxErrorRate: 0.30
-    }
+      maxErrorRate: 0.3,
+    },
   },
   {
     name: 'endurance-test',
@@ -295,8 +295,8 @@ export const CONCURRENT_USER_SCENARIOS: ConcurrentUserScenario[] = [
       maxP95ResponseTime: 600,
       minSuccessRate: 0.92,
       minThroughput: 120,
-      maxErrorRate: 0.08
-    }
+      maxErrorRate: 0.08,
+    },
   },
   {
     name: 'developer-workflow',
@@ -309,8 +309,8 @@ export const CONCURRENT_USER_SCENARIOS: ConcurrentUserScenario[] = [
       maxP95ResponseTime: 400,
       minSuccessRate: 0.95,
       minThroughput: 75,
-      maxErrorRate: 0.05
-    }
+      maxErrorRate: 0.05,
+    },
   },
   {
     name: 'analyst-workflow',
@@ -323,28 +323,28 @@ export const CONCURRENT_USER_SCENARIOS: ConcurrentUserScenario[] = [
       maxP95ResponseTime: 600,
       minSuccessRate: 0.93,
       minThroughput: 60,
-      maxErrorRate: 0.07
-    }
-  }
+      maxErrorRate: 0.07,
+    },
+  },
 ]
 
 // File size configurations for load testing
 export const FILE_SIZE_CONFIGS = {
   small: {
-    min: 1024,      // 1 KB
-    max: 10240,     // 10 KB
-    average: 4096   // 4 KB
+    min: 1024, // 1 KB
+    max: 10240, // 10 KB
+    average: 4096, // 4 KB
   },
   medium: {
-    min: 10240,     // 10 KB
-    max: 1048576,   // 1 MB
-    average: 262144 // 256 KB
+    min: 10240, // 10 KB
+    max: 1048576, // 1 MB
+    average: 262144, // 256 KB
   },
   large: {
-    min: 1048576,   // 1 MB
-    max: 10485760,  // 10 MB
-    average: 5242880 // 5 MB
-  }
+    min: 1048576, // 1 MB
+    max: 10485760, // 10 MB
+    average: 5242880, // 5 MB
+  },
 }
 
 // Load testing configuration
@@ -353,39 +353,39 @@ export const LOAD_TEST_CONFIG = {
     baseUrl: process.env.API_BASE_URL || 'http://localhost:8787',
     timeout: 30000,
     retries: 3,
-    retryDelay: 1000
+    retryDelay: 1000,
   },
   reporting: {
     outputDir: './tests/load/reports',
     formats: ['json', 'html', 'csv'] as const,
     includeRawData: true,
     includeCharts: true,
-    includeRecommendations: true
+    includeRecommendations: true,
   },
   monitoring: {
     metricsInterval: 5000, // 5 seconds
     resourceMonitoring: true,
     databaseMonitoring: true,
-    networkMonitoring: true
+    networkMonitoring: true,
   },
   thresholds: {
     responseTime: {
       excellent: 100,
       good: 200,
       acceptable: 500,
-      poor: 1000
+      poor: 1000,
     },
     successRate: {
       excellent: 0.99,
       good: 0.95,
-      acceptable: 0.90,
-      poor: 0.80
+      acceptable: 0.9,
+      poor: 0.8,
     },
     throughput: {
       excellent: 1000,
       good: 500,
       acceptable: 200,
-      poor: 100
-    }
-  }
+      poor: 100,
+    },
+  },
 }

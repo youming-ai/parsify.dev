@@ -8,7 +8,7 @@ const app = new Hono()
 const fileUploads = new Map<string, any>()
 
 // Get presigned URL for file upload
-app.post('/sign', async (c) => {
+app.post('/sign', async c => {
   try {
     const body = await c.req.json()
 
@@ -31,7 +31,7 @@ app.post('/sign', async (c) => {
       'text/csv',
       'application/xml',
       'text/xml',
-      'text/plain'
+      'text/plain',
     ]
 
     if (!allowedTypes.includes(content_type)) {
@@ -41,9 +41,12 @@ app.post('/sign', async (c) => {
     // Validate file size (10MB limit for free users in MVP)
     const maxSize = 10 * 1024 * 1024 // 10MB
     if (size > maxSize) {
-      return c.json({
-        error: `File size ${size} bytes exceeds maximum allowed size of ${maxSize} bytes`
-      }, 413) // Payload Too Large
+      return c.json(
+        {
+          error: `File size ${size} bytes exceeds maximum allowed size of ${maxSize} bytes`,
+        },
+        413
+      ) // Payload Too Large
     }
 
     // Validate filename
@@ -52,8 +55,23 @@ app.post('/sign', async (c) => {
     }
 
     // Check for prohibited file extensions
-    const prohibitedExtensions = ['.exe', '.bat', '.cmd', '.com', '.pif', '.scr', '.vbs', '.js', '.jar', '.zip', '.tar', '.gz']
-    const hasProhibitedExtension = prohibitedExtensions.some(ext => filename.toLowerCase().endsWith(ext))
+    const prohibitedExtensions = [
+      '.exe',
+      '.bat',
+      '.cmd',
+      '.com',
+      '.pif',
+      '.scr',
+      '.vbs',
+      '.js',
+      '.jar',
+      '.zip',
+      '.tar',
+      '.gz',
+    ]
+    const hasProhibitedExtension = prohibitedExtensions.some(ext =>
+      filename.toLowerCase().endsWith(ext)
+    )
 
     if (hasProhibitedExtension) {
       return c.json({ error: 'File type not allowed for security reasons' }, 400)
@@ -74,7 +92,7 @@ app.post('/sign', async (c) => {
       checksum: null, // Would be calculated when file is uploaded
       status: 'uploading',
       expires_at: expiresAt,
-      created_at: now
+      created_at: now,
     }
 
     fileUploads.set(fileId, fileUpload)
@@ -86,25 +104,24 @@ app.post('/sign', async (c) => {
     // Generate mock signature and headers for presigned URL
     const headers = {
       'Content-Type': content_type,
-      'Authorization': `AWS4-HMAC-SHA256 Credential=mock/20231201/us-east-1/s3/aws4_request,SignedHeaders=content-type;host;x-amz-date,Signature=mock-signature-${fileId}`,
-      'X-Amz-Date': new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '') + 'Z',
-      'X-Amz-Expires': '3600'
+      Authorization: `AWS4-HMAC-SHA256 Credential=mock/20231201/us-east-1/s3/aws4_request,SignedHeaders=content-type;host;x-amz-date,Signature=mock-signature-${fileId}`,
+      'X-Amz-Date': `${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '')}Z`,
+      'X-Amz-Expires': '3600',
     }
 
     return c.json({
       upload_url: uploadUrl,
       file_id: fileId,
       expires_at: expiresAt,
-      headers: headers
+      headers: headers,
     })
-
-  } catch (error) {
+  } catch (_error) {
     return c.json({ error: 'Invalid request format' }, 400)
   }
 })
 
 // Get upload status
-app.get('/status/:fileId', async (c) => {
+app.get('/status/:fileId', async c => {
   const fileId = c.req.param('fileId')
 
   // Validate file ID format
@@ -124,12 +141,12 @@ app.get('/status/:fileId', async (c) => {
     status: fileUpload.status,
     size_bytes: fileUpload.size_bytes,
     created_at: fileUpload.created_at,
-    expires_at: fileUpload.expires_at
+    expires_at: fileUpload.expires_at,
   })
 })
 
 // Confirm file upload completion
-app.post('/confirm/:fileId', async (c) => {
+app.post('/confirm/:fileId', async c => {
   const fileId = c.req.param('fileId')
   const body = await c.req.json()
 
@@ -148,12 +165,12 @@ app.post('/confirm/:fileId', async (c) => {
   return c.json({
     file_id: fileId,
     status: 'completed',
-    message: 'File upload confirmed successfully'
+    message: 'File upload confirmed successfully',
   })
 })
 
 // Get file download URL (not implemented in MVP)
-app.get('/download/:fileId', async (c) => {
+app.get('/download/:fileId', async c => {
   const fileId = c.req.param('fileId')
 
   const fileUpload = fileUploads.get(fileId)
@@ -178,12 +195,12 @@ app.get('/download/:fileId', async (c) => {
     download_url: downloadUrl,
     filename: fileUpload.filename,
     size_bytes: fileUpload.size_bytes,
-    content_type: fileUpload.mime_type
+    content_type: fileUpload.mime_type,
   })
 })
 
 // Delete file upload
-app.delete('/:fileId', async (c) => {
+app.delete('/:fileId', async c => {
   const fileId = c.req.param('fileId')
 
   const fileUpload = fileUploads.get(fileId)
@@ -194,15 +211,15 @@ app.delete('/:fileId', async (c) => {
   fileUploads.delete(fileId)
 
   return c.json({
-    message: 'File upload deleted successfully'
+    message: 'File upload deleted successfully',
   })
 })
 
 // List uploads (for admin/debug)
-app.get('/', async (c) => {
+app.get('/', async c => {
   const status = c.req.query('status')
-  const limit = parseInt(c.req.query('limit') || '10')
-  const offset = parseInt(c.req.query('offset') || '0')
+  const limit = parseInt(c.req.query('limit') || '10', 10)
+  const offset = parseInt(c.req.query('offset') || '0', 10)
 
   let allUploads = Array.from(fileUploads.values())
 
@@ -221,7 +238,7 @@ app.get('/', async (c) => {
     uploads: paginatedUploads,
     total: allUploads.length,
     limit,
-    offset
+    offset,
   })
 })
 

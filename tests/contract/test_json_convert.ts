@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../../apps/api/src/index'
 
 describe('POST /api/v1/tools/json/convert', () => {
@@ -13,20 +13,24 @@ describe('POST /api/v1/tools/json/convert', () => {
   it('should convert JSON to CSV format', async () => {
     const inputJson = [
       { name: 'John', age: 30, city: 'New York' },
-      { name: 'Jane', age: 25, city: 'San Francisco' }
+      { name: 'Jane', age: 25, city: 'San Francisco' },
     ]
 
-    const res = await app.request('/api/v1/tools/json/convert', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/json/convert',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        name: 'json_convert_to_csv',
+        body: JSON.stringify({
+          json: JSON.stringify(inputJson),
+          target_format: 'csv',
+        }),
       },
-      name: 'json_convert_to_csv',
-      body: JSON.stringify({
-        json: JSON.stringify(inputJson),
-        target_format: 'csv'
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -43,20 +47,24 @@ describe('POST /api/v1/tools/json/convert', () => {
       user: {
         name: 'John',
         age: 30,
-        active: true
-      }
+        active: true,
+      },
     }
 
-    const res = await app.request('/api/v1/tools/json/convert', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/json/convert',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: JSON.stringify(inputJson),
+          target_format: 'xml',
+        }),
       },
-      body: JSON.stringify({
-        json: JSON.stringify(inputJson),
-        target_format: 'xml'
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -72,19 +80,23 @@ describe('POST /api/v1/tools/json/convert', () => {
   it('should handle array JSON to CSV conversion', async () => {
     const inputJson = [
       { id: 1, product: 'Laptop', price: 999.99 },
-      { id: 2, product: 'Mouse', price: 29.99 }
+      { id: 2, product: 'Mouse', price: 29.99 },
     ]
 
-    const res = await app.request('/api/v1/tools/json/convert', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/json/convert',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: JSON.stringify(inputJson),
+          target_format: 'csv',
+        }),
       },
-      body: JSON.stringify({
-        json: JSON.stringify(inputJson),
-        target_format: 'csv'
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -94,16 +106,20 @@ describe('POST /api/v1/tools/json/convert', () => {
   })
 
   it('should validate required parameters', async () => {
-    const res = await app.request('/api/v1/tools/json/convert', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/json/convert',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // Missing required 'json' parameter
+          target_format: 'csv',
+        }),
       },
-      body: JSON.stringify({
-        // Missing required 'json' parameter
-        target_format: 'csv'
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(400)
 
@@ -114,16 +130,20 @@ describe('POST /api/v1/tools/json/convert', () => {
   it('should handle invalid JSON input', async () => {
     const invalidJson = '{"name":"John","age":30,' // Missing closing brace
 
-    const res = await app.request('/api/v1/tools/json/convert', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/json/convert',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: invalidJson,
+          target_format: 'csv',
+        }),
       },
-      body: JSON.stringify({
-        json: invalidJson,
-        target_format: 'csv'
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(400)
 
@@ -133,16 +153,20 @@ describe('POST /api/v1/tools/json/convert', () => {
   })
 
   it('should reject unsupported target formats in MVP', async () => {
-    const res = await app.request('/api/v1/tools/json/convert', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/json/convert',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: '{"test": true}',
+          target_format: 'yaml', // Not supported in MVP
+        }),
       },
-      body: JSON.stringify({
-        json: '{"test": true}',
-        target_format: 'yaml' // Not supported in MVP
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(400)
 
@@ -157,27 +181,31 @@ describe('POST /api/v1/tools/json/convert', () => {
         name: 'John',
         contact: {
           email: 'john@example.com',
-          phone: '555-1234'
-        }
+          phone: '555-1234',
+        },
       },
       meta: {
-        created: '2023-01-01'
-      }
+        created: '2023-01-01',
+      },
     }
 
-    const res = await app.request('/api/v1/tools/json/convert', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/json/convert',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: JSON.stringify(nestedJson),
+          target_format: 'csv',
+          options: {
+            flatten: true,
+          },
+        }),
       },
-      body: JSON.stringify({
-        json: JSON.stringify(nestedJson),
-        target_format: 'csv',
-        options: {
-          flatten: true
-        }
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 

@@ -47,12 +47,12 @@ export class JsonDocumentModel implements JsonDocument {
       if (error instanceof SyntaxError) {
         // Extract line and column information from error message
         const match = error.message.match(/position (\d+)/)
-        const position = match ? parseInt(match[1]) : 0
+        const position = match ? parseInt(match[1], 10) : 0
 
         // Calculate approximate line and column
         const lines = this.rawJson.substring(0, position).split('\n')
-        const line = lines.length
-        const column = lines[lines.length - 1].length + 1
+        const _line = lines.length
+        const _column = lines[lines.length - 1].length + 1
 
         this.errorMessage = `Invalid JSON syntax: ${error.message}`
       } else {
@@ -69,7 +69,7 @@ export class JsonDocumentModel implements JsonDocument {
         code: 'INVALID_JSON_SYNTAX',
         message: this.errorMessage,
         line: this.lineNumber,
-        severity: 'error'
+        severity: 'error',
       })
     }
 
@@ -88,7 +88,7 @@ export class JsonDocumentModel implements JsonDocument {
         errors.push({
           code: 'MAX_DEPTH_EXCEEDED',
           message: `Maximum nesting depth (${maxDepth}) exceeded at path: ${path}`,
-          severity: 'warning'
+          severity: 'warning',
         })
         return
       }
@@ -115,7 +115,7 @@ export class JsonDocumentModel implements JsonDocument {
           errors.push({
             code: 'ARRAY_TOO_LARGE',
             message: `Array at ${path} is too large (${node.length} items). Maximum allowed: 10,000`,
-            severity: 'warning'
+            severity: 'warning',
           })
         }
 
@@ -143,7 +143,7 @@ export class JsonDocumentModel implements JsonDocument {
       const pathParts = jsonPath.split('.').map(part => {
         const arrayMatch = part.match(/^(\w+)\[(\d+)\]$/)
         if (arrayMatch) {
-          return { key: arrayMatch[1], index: parseInt(arrayMatch[2]) }
+          return { key: arrayMatch[1], index: parseInt(arrayMatch[2], 10) }
         }
         return { key: part, index: null }
       })

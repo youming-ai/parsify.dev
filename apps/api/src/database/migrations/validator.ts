@@ -1,12 +1,11 @@
-import { D1Database } from '@cloudflare/workers-types'
+import type { D1Database } from '@cloudflare/workers-types'
 import { DatabaseClient } from '../client'
 import {
-  Migration,
-  MigrationStatus,
-  MigrationValidationError,
-  MigrationContext,
-  MigrationLogger,
-  DEFAULT_DATABASE_CLIENT_CONFIG
+  DEFAULT_DATABASE_CLIENT_CONFIG,
+  type Migration,
+  type MigrationContext,
+  type MigrationLogger,
+  type MigrationValidationError,
 } from './types'
 
 /**
@@ -41,14 +40,14 @@ export class MigrationValidator {
     this.logger.debug('Validating migration', {
       id: migration.id,
       version: migration.version,
-      name: migration.name
+      name: migration.name,
     })
 
     // Basic validation
     errors.push(...this.validateBasicStructure(migration))
 
     // SQL syntax validation
-    errors.push(...await this.validateSQLSyntax(migration))
+    errors.push(...(await this.validateSQLSyntax(migration)))
 
     // Checksum validation
     errors.push(...this.validateChecksum(migration))
@@ -63,20 +62,20 @@ export class MigrationValidator {
 
     // Contextual validation
     if (context) {
-      errors.push(...await this.validateContext(migration, context))
+      errors.push(...(await this.validateContext(migration, context)))
     }
 
     if (errors.length === 0) {
       this.logger.debug('Migration validation passed', {
         id: migration.id,
-        version: migration.version
+        version: migration.version,
       })
     } else {
       this.logger.warn('Migration validation failed', {
         id: migration.id,
         version: migration.version,
         errorCount: errors.length,
-        errors: errors.map(e => ({ type: e.type, message: e.message }))
+        errors: errors.map(e => ({ type: e.type, message: e.message })),
       })
     }
 
@@ -99,7 +98,7 @@ export class MigrationValidator {
     const invalidMigrations: Migration[] = []
 
     this.logger.info('Validating migrations', {
-      count: migrations.length
+      count: migrations.length,
     })
 
     for (const migration of migrations) {
@@ -121,13 +120,13 @@ export class MigrationValidator {
       total: migrations.length,
       valid: validMigrations.length,
       invalid: invalidMigrations.length,
-      totalErrors: allErrors.length
+      totalErrors: allErrors.length,
     })
 
     return {
       errors: allErrors,
       validMigrations,
-      invalidMigrations
+      invalidMigrations,
     }
   }
 
@@ -160,7 +159,7 @@ export class MigrationValidator {
     this.logger.info('Starting migration dry run', {
       count: migrations.length,
       stopOnFirstError,
-      includeRollback
+      includeRollback,
     })
 
     for (const migration of migrations) {
@@ -169,20 +168,20 @@ export class MigrationValidator {
         dryRun: true,
         options: { dryRun: true },
         startTime: Date.now(),
-        logger: this.logger
+        logger: this.logger,
       })
 
       const success = errors.length === 0
       results.push({
         migration,
         success,
-        errors
+        errors,
       })
 
       if (!success && stopOnFirstError) {
         this.logger.warn('Dry run stopped due to validation errors', {
           migration: migration.version,
-          errors: errors.length
+          errors: errors.length,
         })
         break
       }
@@ -192,7 +191,7 @@ export class MigrationValidator {
       total: results.length,
       successful: results.filter(r => r.success).length,
       failed: results.filter(r => !r.success).length,
-      totalErrors: results.reduce((sum, r) => sum + r.errors.length, 0)
+      totalErrors: results.reduce((sum, r) => sum + r.errors.length, 0),
     }
 
     this.logger.info('Migration dry run completed', summary)
@@ -211,7 +210,7 @@ export class MigrationValidator {
       errors.push({
         migration,
         type: 'sql_syntax_error',
-        message: 'Migration ID is required'
+        message: 'Migration ID is required',
       })
     }
 
@@ -219,7 +218,7 @@ export class MigrationValidator {
       errors.push({
         migration,
         type: 'sql_syntax_error',
-        message: 'Migration version is required'
+        message: 'Migration version is required',
       })
     }
 
@@ -227,7 +226,7 @@ export class MigrationValidator {
       errors.push({
         migration,
         type: 'sql_syntax_error',
-        message: 'Migration name is required'
+        message: 'Migration name is required',
       })
     }
 
@@ -235,7 +234,7 @@ export class MigrationValidator {
       errors.push({
         migration,
         type: 'sql_syntax_error',
-        message: 'Migration UP SQL is required'
+        message: 'Migration UP SQL is required',
       })
     }
 
@@ -245,7 +244,7 @@ export class MigrationValidator {
       errors.push({
         migration,
         type: 'sql_syntax_error',
-        message: 'Version should follow semantic versioning (e.g., 1.0.0)'
+        message: 'Version should follow semantic versioning (e.g., 1.0.0)',
       })
     }
 
@@ -280,12 +279,11 @@ export class MigrationValidator {
           errors.push(...this.validateSQLStatement(migration, statement, true))
         }
       }
-
     } catch (error) {
       errors.push({
         migration,
         type: 'sql_syntax_error',
-        message: `SQL parsing error: ${(error as Error).message}`
+        message: `SQL parsing error: ${(error as Error).message}`,
       })
     }
 
@@ -298,7 +296,7 @@ export class MigrationValidator {
   private validateSQLStatement(
     migration: Migration,
     statement: string,
-    isRollback: boolean = false
+    _isRollback: boolean = false
   ): MigrationValidationError[] {
     const errors: MigrationValidationError[] = []
 
@@ -311,7 +309,7 @@ export class MigrationValidator {
         migration,
         type: 'sql_syntax_error',
         message: 'Unbalanced single quotes in SQL statement',
-        details: { statement: statement.substring(0, 100) }
+        details: { statement: statement.substring(0, 100) },
       })
     }
 
@@ -320,14 +318,12 @@ export class MigrationValidator {
         migration,
         type: 'sql_syntax_error',
         message: 'Unbalanced double quotes in SQL statement',
-        details: { statement: statement.substring(0, 100) }
+        details: { statement: statement.substring(0, 100) },
       })
     }
 
     // Check for common SQLite keywords
-    const sqliteKeywords = [
-      'PRAGMA', 'VACUUM', 'ANALYZE', 'REINDEX'
-    ]
+    const sqliteKeywords = ['PRAGMA', 'VACUUM', 'ANALYZE', 'REINDEX']
 
     for (const keyword of sqliteKeywords) {
       if (new RegExp(`\\b${keyword}\\b`, 'i').test(statement)) {
@@ -335,7 +331,7 @@ export class MigrationValidator {
           migration,
           type: 'sql_syntax_error',
           message: `SQLite keyword "${keyword}" may cause issues in D1`,
-          details: { statement: statement.substring(0, 100) }
+          details: { statement: statement.substring(0, 100) },
         })
       }
     }
@@ -343,9 +339,9 @@ export class MigrationValidator {
     // Check for unsupported features
     const unsupportedPatterns = [
       /CREATE\s+TRIGGER/i,
-      /CREATE\s+VIEW\s+WITH/i,  // Recursive views
+      /CREATE\s+VIEW\s+WITH/i, // Recursive views
       /ATTACH\s+DATABASE/i,
-      /DETACH\s+DATABASE/i
+      /DETACH\s+DATABASE/i,
     ]
 
     for (const pattern of unsupportedPatterns) {
@@ -354,7 +350,7 @@ export class MigrationValidator {
           migration,
           type: 'sql_syntax_error',
           message: 'Unsupported SQLite feature for D1',
-          details: { statement: statement.substring(0, 100) }
+          details: { statement: statement.substring(0, 100) },
         })
       }
     }
@@ -368,13 +364,7 @@ export class MigrationValidator {
   private validateChecksum(migration: Migration): MigrationValidationError[] {
     const errors: MigrationValidationError[] = []
 
-    if (!migration.checksum) {
-      errors.push({
-        migration,
-        type: 'checksum_mismatch',
-        message: 'Migration checksum is missing'
-      })
-    } else {
+    if (migration.checksum) {
       // Verify checksum consistency
       const expectedChecksum = this.calculateChecksum(migration.up, migration.down)
       if (migration.checksum !== expectedChecksum) {
@@ -384,10 +374,16 @@ export class MigrationValidator {
           message: 'Migration checksum does not match calculated checksum',
           details: {
             provided: migration.checksum,
-            calculated: expectedChecksum
-          }
+            calculated: expectedChecksum,
+          },
         })
       }
+    } else {
+      errors.push({
+        migration,
+        type: 'checksum_mismatch',
+        message: 'Migration checksum is missing',
+      })
     }
 
     return errors
@@ -410,17 +406,17 @@ export class MigrationValidator {
       const destructivePatterns = [
         {
           pattern: /DROP\s+TABLE\s+(?!IF\s+EXISTS|__schema_migrations)/i,
-          message: 'DROP TABLE without IF EXISTS may cause errors'
+          message: 'DROP TABLE without IF EXISTS may cause errors',
         },
         {
           pattern: /DELETE\s+FROM\s+\w+\s*(?!WHERE)/i,
-          message: 'DELETE without WHERE clause will delete all rows'
+          message: 'DELETE without WHERE clause will delete all rows',
         },
         {
           pattern: /UPDATE\s+\w+\s*SET/i,
           message: 'UPDATE without WHERE clause will update all rows',
-          shouldHaveWhere: true
-        }
+          shouldHaveWhere: true,
+        },
       ]
 
       for (const { pattern, message, shouldHaveWhere } of destructivePatterns) {
@@ -430,14 +426,14 @@ export class MigrationValidator {
               migration,
               type: 'unsafe_operation',
               message,
-              details: { statement: statement.substring(0, 100) }
+              details: { statement: statement.substring(0, 100) },
             })
           } else if (!shouldHaveWhere) {
             errors.push({
               migration,
               type: 'unsafe_operation',
               message,
-              details: { statement: statement.substring(0, 100) }
+              details: { statement: statement.substring(0, 100) },
             })
           }
         }
@@ -451,8 +447,8 @@ export class MigrationValidator {
           message: 'Large SQL statement detected, consider breaking into smaller statements',
           details: {
             statement: statement.substring(0, 100),
-            length: statement.length
-          }
+            length: statement.length,
+          },
         })
       }
     }
@@ -470,7 +466,7 @@ export class MigrationValidator {
       errors.push({
         migration,
         type: 'rollback_missing',
-        message: 'Migration does not have rollback SQL'
+        message: 'Migration does not have rollback SQL',
       })
       return errors
     }
@@ -480,7 +476,7 @@ export class MigrationValidator {
       errors.push({
         migration,
         type: 'rollback_missing',
-        message: 'Rollback SQL is identical to up SQL'
+        message: 'Rollback SQL is identical to up SQL',
       })
     }
 
@@ -529,7 +525,7 @@ export class MigrationValidator {
           migration,
           type: 'rollback_missing',
           message: `Table "${table}" is created but not dropped in rollback`,
-          details: { table }
+          details: { table },
         })
       }
     }
@@ -554,7 +550,7 @@ export class MigrationValidator {
             migration,
             type: 'dependency_missing',
             message: `Dependency "${dependency}" not found in available migrations`,
-            details: { dependency }
+            details: { dependency },
           })
         }
       }
@@ -582,7 +578,7 @@ export class MigrationValidator {
           migration,
           type: 'dependency_missing',
           message: `Circular dependency detected: ${cycle}`,
-          details: { cycle }
+          details: { cycle },
         })
         return true
       }
@@ -630,13 +626,13 @@ export class MigrationValidator {
       errors.push({
         migration,
         type: 'rollback_missing',
-        message: 'Cannot rollback migration without rollback SQL'
+        message: 'Cannot rollback migration without rollback SQL',
       })
     }
 
     // Validate database state if needed
     if (context.action === 'up') {
-      errors.push(...await this.validateDatabaseState(migration))
+      errors.push(...(await this.validateDatabaseState(migration)))
     }
 
     return errors
@@ -662,25 +658,28 @@ export class MigrationValidator {
           const tableName = createTableMatch[1]
 
           try {
-            const tableInfo = await this.db.queryFirst(`
+            const tableInfo = await this.db.queryFirst(
+              `
               SELECT name FROM sqlite_master
               WHERE type='table' AND name=?
-            `, [tableName])
+            `,
+              [tableName]
+            )
 
             if (tableInfo) {
               errors.push({
                 migration,
                 type: 'unsafe_operation',
                 message: `Table "${tableName}" already exists but migration doesn't use IF NOT EXISTS`,
-                details: { tableName }
+                details: { tableName },
               })
             }
-          } catch (error) {
+          } catch (_error) {
             // Ignore errors during validation
           }
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Ignore validation errors
     }
 
@@ -742,7 +741,7 @@ export class MigrationValidator {
    * Calculate migration checksum
    */
   private calculateChecksum(upSQL: string, downSQL?: string): string {
-    const crypto = globalThis.crypto || (globalThis as any).webcrypto
+    const _crypto = globalThis.crypto || (globalThis as any).webcrypto
     const data = upSQL + (downSQL || '')
     const encoder = new TextEncoder()
     const bytes = encoder.encode(data)
@@ -752,7 +751,7 @@ export class MigrationValidator {
     let hash = 0
     for (let i = 0; i < bytes.length; i++) {
       const char = bytes[i]
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32-bit integer
     }
 
@@ -780,7 +779,7 @@ export class MigrationValidator {
       },
       log: (level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: any[]) => {
         console[level](`[MigrationValidator] ${message}`, ...args)
-      }
+      },
     }
   }
 }

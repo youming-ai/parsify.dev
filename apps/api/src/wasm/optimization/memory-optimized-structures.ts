@@ -13,7 +13,7 @@ export class CompactString {
     this.length = str.length
     this.buffer = new Uint8Array(this.length)
     for (let i = 0; i < this.length; i++) {
-      this.buffer[i] = str.charCodeAt(i) & 0xFF
+      this.buffer[i] = str.charCodeAt(i) & 0xff
     }
   }
 
@@ -104,7 +104,7 @@ export class CompactArray<T> {
       // For other types, store as string representation
       const str = String(value)
       for (let i = 0; i < Math.min(str.length, 8); i++) {
-        this.view.setUint8(offset + i, str.charCodeAt(i) & 0xFF)
+        this.view.setUint8(offset + i, str.charCodeAt(i) & 0xff)
       }
     }
   }
@@ -113,7 +113,7 @@ export class CompactArray<T> {
     const offset = index * this.typeSize
     const numValue = this.view.getFloat64(offset)
 
-    if (!isNaN(numValue)) {
+    if (!Number.isNaN(numValue)) {
       return numValue as T
     }
 
@@ -297,7 +297,7 @@ export class CompactMap<K, V> {
 
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32-bit integer
     }
 
@@ -485,7 +485,8 @@ export class MemoryEfficientCache<K, V> {
   private maxSize: number
   private ttl: number // Time to live in milliseconds
 
-  constructor(maxSize: number = 100, ttl: number = 300000) { // 5 minutes default TTL
+  constructor(maxSize: number = 100, ttl: number = 300000) {
+    // 5 minutes default TTL
     this.cache = new CompactMap()
     this.maxSize = maxSize
     this.ttl = ttl
@@ -500,7 +501,7 @@ export class MemoryEfficientCache<K, V> {
     this.cache.set(key, {
       value,
       timestamp: Date.now(),
-      accessCount: 1
+      accessCount: 1,
     })
   }
 
@@ -571,7 +572,8 @@ export class MemoryEfficientCache<K, V> {
 export class CompactJsonParser {
   private static parse(json: string): any {
     // Use streaming parser for large JSON to reduce memory usage
-    if (json.length > 1024 * 1024) { // 1MB threshold
+    if (json.length > 1024 * 1024) {
+      // 1MB threshold
       return CompactJsonParser.parseStreaming(json)
     }
 
@@ -611,9 +613,9 @@ export class CompactJsonParser {
 export class StringBuilder {
   private chunks: string[] = []
   private totalLength = 0
-  private chunkSize: number
 
-  constructor(chunkSize: number = 8192) { // 8KB chunks
+  constructor(chunkSize: number = 8192) {
+    // 8KB chunks
     this.chunkSize = chunkSize
   }
 
@@ -681,7 +683,7 @@ export class MemoryTracker {
     return Array.from(this.allocations.entries()).map(([id, allocation]) => ({
       id,
       size: allocation.size,
-      age: now - allocation.timestamp
+      age: now - allocation.timestamp,
     }))
   }
 

@@ -1,6 +1,6 @@
-import type { JsonFile, JsonDocument, ValidationError } from './types'
-import { JsonFileModel } from './models/JsonFile'
 import { JsonExtractor } from './jsonExtractor'
+import { JsonFileModel } from './models/JsonFile'
+import type { JsonDocument, JsonFile, ValidationError } from './types'
 
 export class FileParser {
   private jsonExtractor: JsonExtractor
@@ -21,16 +21,13 @@ export class FileParser {
 
       // Only extract JSON if file passes basic validation
       if (jsonFile.isValid()) {
-        documents = this.jsonExtractor.extractJsonFromMarkdown(
-          jsonFile.content,
-          'mixed'
-        )
+        documents = this.jsonExtractor.extractJsonFromMarkdown(jsonFile.content, 'mixed')
       }
 
       return {
         jsonFile,
         documents,
-        errors
+        errors,
       }
     } catch (error) {
       return {
@@ -39,14 +36,16 @@ export class FileParser {
           content: '',
           size: file.size,
           lastModified: new Date(file.lastModified),
-          type: file.name.toLowerCase().endsWith('.md') ? 'markdown' : 'text'
+          type: file.name.toLowerCase().endsWith('.md') ? 'markdown' : 'text',
         },
         documents: [],
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read file: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          severity: 'error'
-        }]
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            severity: 'error',
+          },
+        ],
       }
     }
   }
@@ -63,7 +62,7 @@ export class FileParser {
       errors.push({
         code: 'UNSUPPORTED_FORMAT',
         message: `Unsupported file format: .${extension}. Only .md and .txt files are supported.`,
-        severity: 'error'
+        severity: 'error',
       })
     }
 
@@ -73,7 +72,7 @@ export class FileParser {
       errors.push({
         code: 'FILE_TOO_LARGE',
         message: `File size (${Math.round(file.size / 1024)}KB) exceeds 1MB limit.`,
-        severity: 'error'
+        severity: 'error',
       })
     }
 
@@ -82,13 +81,13 @@ export class FileParser {
       errors.push({
         code: 'INVALID_FILENAME',
         message: 'File name is empty or invalid.',
-        severity: 'error'
+        severity: 'error',
       })
     }
 
     return {
       isValid: errors.filter(error => error.severity === 'error').length === 0,
-      errors
+      errors,
     }
   }
 
@@ -110,7 +109,7 @@ export class FileParser {
             code: 'INVALID_JSON_SYNTAX',
             message: doc.errorMessage || 'Invalid JSON syntax',
             line: doc.lineNumber,
-            severity: 'error'
+            severity: 'error',
           })
         }
       })
@@ -119,11 +118,13 @@ export class FileParser {
     } catch (error) {
       return {
         documents: [],
-        errors: [{
-          code: 'EXTRACTION_ERROR',
-          message: `Failed to extract JSON: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          severity: 'error'
-        }]
+        errors: [
+          {
+            code: 'EXTRACTION_ERROR',
+            message: `Failed to extract JSON: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            severity: 'error',
+          },
+        ],
       }
     }
   }
@@ -132,14 +133,18 @@ export class FileParser {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
 
-      reader.onload = (event) => {
+      reader.onload = event => {
         try {
           const content = event.target?.result as string
           const previewLines = content.split('\n').slice(0, lines)
           const preview = previewLines.join('\n')
           resolve(preview)
         } catch (error) {
-          reject(new Error(`Failed to generate preview: ${error instanceof Error ? error.message : 'Unknown error'}`))
+          reject(
+            new Error(
+              `Failed to generate preview: ${error instanceof Error ? error.message : 'Unknown error'}`
+            )
+          )
         }
       }
 
@@ -193,13 +198,16 @@ export class FileParser {
       totalFiles: files.length,
       validFiles: results.filter(r => r.jsonFile.isValid()).length,
       totalDocuments: results.reduce((sum, r) => sum + r.documents.length, 0),
-      validDocuments: results.reduce((sum, r) => sum + r.documents.filter(d => d.isValid).length, 0)
+      validDocuments: results.reduce(
+        (sum, r) => sum + r.documents.filter(d => d.isValid).length,
+        0
+      ),
     }
 
     return {
       results,
       totalErrors: allErrors,
-      summary
+      summary,
     }
   }
 
@@ -226,7 +234,7 @@ export class FileParser {
       name: file.name,
       size: file.size,
       type: file.type || 'text/plain',
-      lastModified: new Date(file.lastModified)
+      lastModified: new Date(file.lastModified),
     }
 
     try {
@@ -238,7 +246,7 @@ export class FileParser {
         ...metadata,
         encoding: 'utf-8',
         lineCount: lines.length,
-        wordCount: words.length
+        wordCount: words.length,
       }
     } catch {
       return metadata
@@ -249,7 +257,7 @@ export class FileParser {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
 
-      reader.onload = (event) => {
+      reader.onload = event => {
         const content = event.target?.result as string
         resolve(content)
       }

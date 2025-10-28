@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../../apps/api/src/index'
 
 describe('File Upload/Download Workflow Integration', () => {
@@ -10,7 +10,7 @@ describe('File Upload/Download Workflow Integration', () => {
     testEnv = {
       ENVIRONMENT: 'test',
       R2: {
-        sign: (key: string, options: any) => {
+        sign: (_key: string, _options: any) => {
           // Mock R2 sign function
           const mockFileId = `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
           fileId = mockFileId
@@ -20,8 +20,8 @@ describe('File Upload/Download Workflow Integration', () => {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/octet-stream',
-              'Authorization': `AWS4-HMAC-SHA256 mock_signature_${mockFileId}`
-            }
+              Authorization: `AWS4-HMAC-SHA256 mock_signature_${mockFileId}`,
+            },
           }
         },
         upload: async (key: string, data: any) => {
@@ -29,7 +29,7 @@ describe('File Upload/Download Workflow Integration', () => {
           return {
             key,
             etag: `etag_${Math.random().toString(36)}`,
-            size: JSON.stringify(data).length
+            size: JSON.stringify(data).length,
           }
         },
         head: async (key: string) => {
@@ -38,7 +38,7 @@ describe('File Upload/Download Workflow Integration', () => {
             key,
             size: 1024,
             etag: `etag_${Math.random().toString(36)}`,
-            lastModified: new Date().toISOString()
+            lastModified: new Date().toISOString(),
           }
         },
         get: async (key: string) => {
@@ -46,12 +46,12 @@ describe('File Upload/Download Workflow Integration', () => {
           if (key === fileId) {
             return {
               key,
-              body: '{"name":"Test File","type":"json","data":"test content"}'
+              body: '{"name":"Test File","type":"json","data":"test content"}',
             }
           }
           return null
-        }
-      }
+        },
+      },
     }
   })
 
@@ -60,16 +60,20 @@ describe('File Upload/Download Workflow Integration', () => {
     const fileInfo = {
       filename: 'test-data.json',
       content_type: 'application/json',
-      size: 1024
+      size: 1024,
     }
 
-    const signRes = await app.request('/api/v1/upload/sign', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const signRes = await app.request(
+      '/api/v1/upload/sign',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(fileInfo),
       },
-      body: JSON.stringify(fileInfo)
-    }, testEnv)
+      testEnv
+    )
 
     expect(signRes.status).toBe(200)
     const signData = await signRes.json()
@@ -85,7 +89,7 @@ describe('File Upload/Download Workflow Integration', () => {
       name: 'Test File',
       type: 'json',
       data: 'test content',
-      created: new Date().toISOString()
+      created: new Date().toISOString(),
     }
 
     const uploadResult = await testEnv.R2.upload(fileId, uploadData)
@@ -112,16 +116,20 @@ describe('File Upload/Download Workflow Integration', () => {
     const largeFileInfo = {
       filename: 'large-file.json',
       content_type: 'application/json',
-      size: 15 * 1024 * 1024 // 15MB
+      size: 15 * 1024 * 1024, // 15MB
     }
 
-    const signRes = await app.request('/api/v1/upload/sign', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const signRes = await app.request(
+      '/api/v1/upload/sign',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(largeFileInfo),
       },
-      body: JSON.stringify(largeFileInfo)
-    }, testEnv)
+      testEnv
+    )
 
     // Should be rejected due to size limit
     expect(signRes.status).toBe(413)
@@ -135,16 +143,20 @@ describe('File Upload/Download Workflow Integration', () => {
     const fileInfo = {
       filename: 'expiring-file.json',
       content_type: 'application/json',
-      size: 512
+      size: 512,
     }
 
-    const signRes = await app.request('/api/v1/upload/sign', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const signRes = await app.request(
+      '/api/v1/upload/sign',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(fileInfo),
       },
-      body: JSON.stringify(fileInfo)
-    }, testEnv)
+      testEnv
+    )
 
     expect(signRes.status).toBe(200)
     const signData = await signRes.json()
@@ -161,17 +173,21 @@ describe('File Upload/Download Workflow Integration', () => {
     const fileTypes = [
       { filename: 'data.json', content_type: 'application/json', size: 512 },
       { filename: 'data.csv', content_type: 'text/csv', size: 1024 },
-      { filename: 'config.xml', content_type: 'application/xml', size: 768 }
+      { filename: 'config.xml', content_type: 'application/xml', size: 768 },
     ]
 
     for (const fileInfo of fileTypes) {
-      const signRes = await app.request('/api/v1/upload/sign', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const signRes = await app.request(
+        '/api/v1/upload/sign',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(fileInfo),
         },
-        body: JSON.stringify(fileInfo)
-      }, testEnv)
+        testEnv
+      )
 
       expect(signRes.status).toBe(200)
 
@@ -183,7 +199,7 @@ describe('File Upload/Download Workflow Integration', () => {
       const uploadData = {
         filename: fileInfo.filename,
         content_type: fileInfo.content_type,
-        created: new Date().toISOString()
+        created: new Date().toISOString(),
       }
 
       const uploadResult = await testEnv.R2.upload(signData.file_id, uploadData)
@@ -192,40 +208,46 @@ describe('File Upload/Download Workflow Integration', () => {
   })
 
   it('should handle concurrent file uploads', async () => {
-    const files = Array(5).fill(null).map((_, i) => ({
-      filename: `concurrent-file-${i}.json`,
-      content_type: 'application/json',
-      size: 256
-    }))
+    const files = Array(5)
+      .fill(null)
+      .map((_, i) => ({
+        filename: `concurrent-file-${i}.json`,
+        content_type: 'application/json',
+        size: 256,
+      }))
 
     // Generate presigned URLs for all files
     const signPromises = files.map(fileInfo =>
-      app.request('/api/v1/upload/sign', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      app.request(
+        '/api/v1/upload/sign',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(fileInfo),
         },
-        body: JSON.stringify(fileInfo)
-      }, testEnv)
+        testEnv
+      )
     )
 
     const signResults = await Promise.all(signPromises)
 
     // All should succeed
-    signResults.forEach(res => {
+    for (const res of signResults) {
       expect(res.status).toBe(200)
       const data = await res.json()
       expect(data).toHaveProperty('upload_url')
       expect(data).toHaveProperty('file_id')
-    })
+    }
 
     // Upload all files concurrently
-    const uploadPromises = signResults.map(async (res) => {
+    const uploadPromises = signResults.map(async res => {
       const data = await res.json()
       const uploadData = {
         filename: JSON.parse(res.request.body).filename,
         concurrent: true,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       }
 
       return testEnv.R2.upload(data.file_id, uploadData)
@@ -250,16 +272,20 @@ describe('File Upload/Download Workflow Integration', () => {
     const fileInfo = {
       filename: 'cleanup-test.json',
       content_type: 'application/json',
-      size: 256
+      size: 256,
     }
 
-    const signRes = await app.request('/api/v1/upload/sign', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const signRes = await app.request(
+      '/api/v1/upload/sign',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(fileInfo),
       },
-      body: JSON.stringify(fileInfo)
-    }, testEnv)
+      testEnv
+    )
 
     expect(signRes.status).toBe(200)
     const signData = await signRes.json()

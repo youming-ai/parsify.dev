@@ -6,14 +6,14 @@
  */
 
 import {
-  SessionData,
-  SessionMessage,
-  DurableObjectHealthCheck,
-  DurableObjectConfig,
-  getDurableObjectConfig
+  type DurableObjectConfig,
+  type DurableObjectHealthCheck,
+  getDurableObjectConfig,
+  type SessionData,
+  type SessionMessage,
 } from '../config/cloudflare/durable-objects-config'
-import { User } from '../models/user'
-import { RateLimitService, RateLimitCheck } from '../services/rate_limit_service'
+import type { User } from '../models/user'
+import { RateLimitService } from '../services/rate_limit_service'
 
 // Enhanced session data with authentication and rate limiting integration
 export interface EnhancedSessionData extends SessionData {
@@ -90,9 +90,17 @@ export interface CollaborationRoom {
 
 // Session management events
 export interface SessionEvent {
-  type: 'session_created' | 'session_updated' | 'session_deleted' |
-        'user_connected' | 'user_disconnected' | 'room_created' |
-        'room_joined' | 'room_left' | 'room_updated' | 'security_alert'
+  type:
+    | 'session_created'
+    | 'session_updated'
+    | 'session_deleted'
+    | 'user_connected'
+    | 'user_disconnected'
+    | 'room_created'
+    | 'room_joined'
+    | 'room_left'
+    | 'room_updated'
+    | 'security_alert'
   sessionId: string
   userId?: string
   connectionId?: string
@@ -140,7 +148,7 @@ export class SessionManagerDurableObject {
       db: env.DB,
       kv: env.CACHE,
       auditEnabled: true,
-      enableDistributedLimiting: true
+      enableDistributedLimiting: true,
     })
 
     // Initialize metrics
@@ -150,7 +158,7 @@ export class SessionManagerDurableObject {
       totalMessages: 0,
       totalErrors: 0,
       averageSessionDuration: 0,
-      peakConnections: 0
+      peakConnections: 0,
     }
 
     // Initialize alarm for cleanup and monitoring
@@ -198,11 +206,11 @@ export class SessionManagerDurableObject {
       return new Response(
         JSON.stringify({
           error: error instanceof Error ? error.message : 'Unknown error',
-          timestamp: Date.now()
+          timestamp: Date.now(),
         }),
         {
           status: 500,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       )
     }
@@ -225,7 +233,7 @@ export class SessionManagerDurableObject {
     const userAgent = request.headers.get('User-Agent') || 'unknown'
 
     switch (request.method) {
-      case 'GET':
+      case 'GET': {
         const session = await this.getSession(sessionId)
         if (!session) {
           return new Response('Session not found', { status: 404 })
@@ -234,10 +242,11 @@ export class SessionManagerDurableObject {
         // Filter sensitive data for non-admin requests
         const filteredSession = this.filterSessionData(session, userId)
         return new Response(JSON.stringify(filteredSession), {
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         })
+      }
 
-      case 'POST':
+      case 'POST': {
         const createData = await request.json()
         const newSession = await this.createSession(
           sessionId,
@@ -249,10 +258,11 @@ export class SessionManagerDurableObject {
 
         return new Response(JSON.stringify(newSession), {
           status: 201,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         })
+      }
 
-      case 'PUT':
+      case 'PUT': {
         const updateData = await request.json()
         const updatedSession = await this.updateSession(sessionId, updateData, userId)
 
@@ -261,14 +271,16 @@ export class SessionManagerDurableObject {
         }
 
         return new Response(JSON.stringify(updatedSession), {
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         })
+      }
 
-      case 'DELETE':
+      case 'DELETE': {
         const success = await this.deleteSession(sessionId, userId)
         return new Response(JSON.stringify({ success }), {
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         })
+      }
 
       default:
         return new Response('Method Not Allowed', { status: 405 })
@@ -313,11 +325,14 @@ export class SessionManagerDurableObject {
           sessionTimeoutMinutes: 30,
         })
 
-        const payload = await authService.verifyToken(token, request.headers.get('CF-Connecting-IP') || 'unknown')
+        const payload = await authService.verifyToken(
+          token,
+          request.headers.get('CF-Connecting-IP') || 'unknown'
+        )
         if (!payload || payload.sessionId !== sessionId) {
           return new Response('Invalid token', { status: 401 })
         }
-      } catch (error) {
+      } catch (_error) {
         return new Response('Token validation failed', { status: 401 })
       }
     }
@@ -342,12 +357,12 @@ export class SessionManagerDurableObject {
         ipAddress: request.headers.get('CF-Connecting-IP') || 'unknown',
         userAgent: request.headers.get('User-Agent') || 'unknown',
         origin: request.headers.get('Origin') || 'unknown',
-        protocol: server.protocol || 'unknown'
+        protocol: server.protocol || 'unknown',
       },
       subscriptionTier: session.user?.subscription_tier || 'free',
       rateLimitKey: this.generateRateLimitKey(sessionId, userId),
       isActive: true,
-      rooms: new Set(roomId ? [roomId] : [])
+      rooms: new Set(roomId ? [roomId] : []),
     }
 
     // Add connection to session
@@ -363,17 +378,19 @@ export class SessionManagerDurableObject {
     this.setupWebSocketHandlers(connection, sessionId, userId)
 
     // Send welcome message
-    server.send(JSON.stringify({
-      type: 'connected',
-      connectionId,
-      sessionId,
-      timestamp: Date.now(),
-      features: {
-        collaboration: true,
-        rateLimiting: true,
-        authentication: !!userId
-      }
-    }))
+    server.send(
+      JSON.stringify({
+        type: 'connected',
+        connectionId,
+        sessionId,
+        timestamp: Date.now(),
+        features: {
+          collaboration: true,
+          rateLimiting: true,
+          authentication: !!userId,
+        },
+      })
+    )
 
     // Start ping/pong heartbeat
     this.startHeartbeat(connection)
@@ -394,24 +411,26 @@ export class SessionManagerDurableObject {
   ): void {
     const { websocket } = connection
 
-    websocket.addEventListener('message', async (event) => {
+    websocket.addEventListener('message', async event => {
       try {
         await this.handleWebSocketMessage(connection, event.data, sessionId, userId)
       } catch (error) {
         console.error('WebSocket message error:', error)
-        websocket.send(JSON.stringify({
-          type: 'error',
-          error: error instanceof Error ? error.message : 'Unknown error',
-          timestamp: Date.now()
-        }))
+        websocket.send(
+          JSON.stringify({
+            type: 'error',
+            error: error instanceof Error ? error.message : 'Unknown error',
+            timestamp: Date.now(),
+          })
+        )
       }
     })
 
-    websocket.addEventListener('close', async (event) => {
+    websocket.addEventListener('close', async event => {
       await this.handleWebSocketClose(connection, sessionId, userId, event)
     })
 
-    websocket.addEventListener('error', (error) => {
+    websocket.addEventListener('error', error => {
       console.error('WebSocket error:', error)
       this.metrics.totalErrors++
     })
@@ -439,15 +458,17 @@ export class SessionManagerDurableObject {
         identifier: connection.rateLimitKey,
         quotaType: 'websocket_messages',
         amount: 1,
-        customLimit: this.getMessageRateLimit(connection.subscriptionTier)
+        customLimit: this.getMessageRateLimit(connection.subscriptionTier),
       })
 
       if (!rateLimitCheck.allowed) {
-        connection.websocket.send(JSON.stringify({
-          type: 'rate_limited',
-          retryAfter: rateLimitCheck.retryAfter,
-          timestamp: Date.now()
-        }))
+        connection.websocket.send(
+          JSON.stringify({
+            type: 'rate_limited',
+            retryAfter: rateLimitCheck.retryAfter,
+            timestamp: Date.now(),
+          })
+        )
         return
       }
     }
@@ -460,10 +481,12 @@ export class SessionManagerDurableObject {
       case 'heartbeat':
       case 'ping':
         connection.lastPong = Date.now()
-        connection.websocket.send(JSON.stringify({
-          type: 'pong',
-          timestamp: Date.now()
-        }))
+        connection.websocket.send(
+          JSON.stringify({
+            type: 'pong',
+            timestamp: Date.now(),
+          })
+        )
         break
 
       case 'join_room':
@@ -498,7 +521,7 @@ export class SessionManagerDurableObject {
       connectionId: connection.connectionId,
       userId,
       timestamp: Date.now(),
-      sessionId
+      sessionId,
     }
 
     // Broadcast to session or specific rooms
@@ -519,7 +542,7 @@ export class SessionManagerDurableObject {
       userId,
       connectionId: connection.connectionId,
       timestamp: Date.now(),
-      data: { messageType: message.data?.type }
+      data: { messageType: message.data?.type },
     })
   }
 
@@ -529,16 +552,18 @@ export class SessionManagerDurableObject {
   private async handleJoinRoom(
     connection: EnhancedConnection,
     message: SessionMessage,
-    sessionId: string,
+    _sessionId: string,
     userId?: string
   ): Promise<void> {
     const roomId = message.data?.roomId
     if (!roomId) {
-      connection.websocket.send(JSON.stringify({
-        type: 'error',
-        error: 'Room ID required',
-        timestamp: Date.now()
-      }))
+      connection.websocket.send(
+        JSON.stringify({
+          type: 'error',
+          error: 'Room ID required',
+          timestamp: Date.now(),
+        })
+      )
       return
     }
 
@@ -546,17 +571,21 @@ export class SessionManagerDurableObject {
       await this.joinRoom(roomId, connection.connectionId, userId)
       connection.rooms.add(roomId)
 
-      connection.websocket.send(JSON.stringify({
-        type: 'room_joined',
-        roomId,
-        timestamp: Date.now()
-      }))
+      connection.websocket.send(
+        JSON.stringify({
+          type: 'room_joined',
+          roomId,
+          timestamp: Date.now(),
+        })
+      )
     } catch (error) {
-      connection.websocket.send(JSON.stringify({
-        type: 'error',
-        error: error instanceof Error ? error.message : 'Failed to join room',
-        timestamp: Date.now()
-      }))
+      connection.websocket.send(
+        JSON.stringify({
+          type: 'error',
+          error: error instanceof Error ? error.message : 'Failed to join room',
+          timestamp: Date.now(),
+        })
+      )
     }
   }
 
@@ -566,27 +595,31 @@ export class SessionManagerDurableObject {
   private async handleLeaveRoom(
     connection: EnhancedConnection,
     message: SessionMessage,
-    sessionId: string,
-    userId?: string
+    _sessionId: string,
+    _userId?: string
   ): Promise<void> {
     const roomId = message.data?.roomId
     if (!roomId) {
-      connection.websocket.send(JSON.stringify({
-        type: 'error',
-        error: 'Room ID required',
-        timestamp: Date.now()
-      }))
+      connection.websocket.send(
+        JSON.stringify({
+          type: 'error',
+          error: 'Room ID required',
+          timestamp: Date.now(),
+        })
+      )
       return
     }
 
     await this.leaveRoom(roomId, connection.connectionId)
     connection.rooms.delete(roomId)
 
-    connection.websocket.send(JSON.stringify({
-      type: 'room_left',
-      roomId,
-      timestamp: Date.now()
-    }))
+    connection.websocket.send(
+      JSON.stringify({
+        type: 'room_left',
+        roomId,
+        timestamp: Date.now(),
+      })
+    )
   }
 
   /**
@@ -595,38 +628,44 @@ export class SessionManagerDurableObject {
   private async handleCollaborationMessage(
     connection: EnhancedConnection,
     message: SessionMessage,
-    sessionId: string,
+    _sessionId: string,
     userId?: string
   ): Promise<void> {
     const { roomId, operation, data } = message.data || {}
 
     if (!roomId) {
-      connection.websocket.send(JSON.stringify({
-        type: 'error',
-        error: 'Room ID required for collaboration',
-        timestamp: Date.now()
-      }))
+      connection.websocket.send(
+        JSON.stringify({
+          type: 'error',
+          error: 'Room ID required for collaboration',
+          timestamp: Date.now(),
+        })
+      )
       return
     }
 
     const room = this.rooms.get(roomId)
     if (!room) {
-      connection.websocket.send(JSON.stringify({
-        type: 'error',
-        error: 'Room not found',
-        timestamp: Date.now()
-      }))
+      connection.websocket.send(
+        JSON.stringify({
+          type: 'error',
+          error: 'Room not found',
+          timestamp: Date.now(),
+        })
+      )
       return
     }
 
     // Check if user has permission to perform operation
     const participant = room.participants.find(p => p.connectionId === connection.connectionId)
     if (!participant || !this.hasPermission(participant, operation)) {
-      connection.websocket.send(JSON.stringify({
-        type: 'error',
-        error: 'Insufficient permissions',
-        timestamp: Date.now()
-      }))
+      connection.websocket.send(
+        JSON.stringify({
+          type: 'error',
+          error: 'Insufficient permissions',
+          timestamp: Date.now(),
+        })
+      )
       return
     }
 
@@ -638,7 +677,7 @@ export class SessionManagerDurableObject {
       data,
       userId,
       connectionId: connection.connectionId,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
 
     // Update room data (simplified)
@@ -676,7 +715,7 @@ export class SessionManagerDurableObject {
       userId,
       connectionId: connection.connectionId,
       timestamp: Date.now(),
-      data: { code: event?.code, reason: event?.reason }
+      data: { code: event?.code, reason: event?.reason },
     })
   }
 
@@ -701,10 +740,12 @@ export class SessionManagerDurableObject {
 
       // Send ping
       if (connection.websocket.readyState === WebSocket.OPEN) {
-        connection.websocket.send(JSON.stringify({
-          type: 'ping',
-          timestamp: now
-        }))
+        connection.websocket.send(
+          JSON.stringify({
+            type: 'ping',
+            timestamp: now,
+          })
+        )
         connection.lastPing = now
       } else {
         clearInterval(heartbeatInterval)
@@ -752,17 +793,17 @@ export class SessionManagerDurableObject {
         apiRequests: 0,
         lastReset: now,
         tier: user?.subscription_tier || 'free',
-        customLimits: data.customLimits
+        customLimits: data.customLimits,
       },
       collaborationData: {
         roomIds: [],
         activeCollaborations: 0,
-        lastCollaboration: now
+        lastCollaboration: now,
       },
       securityData: {
         riskScore: 0,
-        suspiciousActivity: []
-      }
+        suspiciousActivity: [],
+      },
     }
 
     await this.storage.put(`session:${sessionId}`, session)
@@ -774,7 +815,7 @@ export class SessionManagerDurableObject {
       sessionId,
       userId,
       timestamp: now,
-      data: { ttl, tier: session.rateLimitData?.tier }
+      data: { ttl, tier: session.rateLimitData?.tier },
     })
 
     return session
@@ -828,16 +869,13 @@ export class SessionManagerDurableObject {
       sessionId,
       userId,
       timestamp: Date.now(),
-      data: { updatedFields: Object.keys(updates) }
+      data: { updatedFields: Object.keys(updates) },
     })
 
     return updatedSession
   }
 
-  private async deleteSession(
-    sessionId: string,
-    userId?: string
-  ): Promise<boolean> {
+  private async deleteSession(sessionId: string, userId?: string): Promise<boolean> {
     const session = await this.getSession(sessionId)
     if (!session) return false
 
@@ -849,7 +887,7 @@ export class SessionManagerDurableObject {
     // Close all connections
     for (const connectionData of session.connections) {
       const connection = this.connections.get(connectionData.connectionId)
-      if (connection && connection.isActive) {
+      if (connection?.isActive) {
         connection.websocket.close(1000, 'Session deleted')
       }
       this.connections.delete(connectionData.connectionId)
@@ -876,7 +914,7 @@ export class SessionManagerDurableObject {
       type: 'session_deleted',
       sessionId,
       userId,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     return true
@@ -904,7 +942,7 @@ export class SessionManagerDurableObject {
       // Create session if it doesn't exist
       session = await this.createSession(sessionId, connection.userId, {
         ipAddress: connection.metadata.ipAddress,
-        userAgent: connection.metadata.userAgent
+        userAgent: connection.metadata.userAgent,
       })
     }
 
@@ -912,7 +950,7 @@ export class SessionManagerDurableObject {
       connectionId: connection.connectionId,
       connectedAt: connection.connectedAt,
       lastActivity: connection.lastActivity,
-      metadata: connection.metadata
+      metadata: connection.metadata,
     }
 
     session.connections.push(connectionData)
@@ -922,19 +960,23 @@ export class SessionManagerDurableObject {
     this.sessions.set(sessionId, session)
 
     // Notify other connections in session
-    await this.broadcastToSession(sessionId, {
-      type: 'data',
-      data: { type: 'user_joined', connectionId: connection.connectionId },
-      connectionId: connection.connectionId,
-      timestamp: Date.now()
-    }, connection.connectionId)
+    await this.broadcastToSession(
+      sessionId,
+      {
+        type: 'data',
+        data: { type: 'user_joined', connectionId: connection.connectionId },
+        connectionId: connection.connectionId,
+        timestamp: Date.now(),
+      },
+      connection.connectionId
+    )
 
     await this.logSessionEvent({
       type: 'user_connected',
       sessionId,
       userId: connection.userId,
       connectionId: connection.connectionId,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
@@ -945,9 +987,7 @@ export class SessionManagerDurableObject {
     const session = await this.getSession(sessionId)
     if (!session) return
 
-    session.connections = session.connections.filter(
-      c => c.connectionId !== connectionId
-    )
+    session.connections = session.connections.filter(c => c.connectionId !== connectionId)
     session.lastAccessed = Date.now()
 
     // Delete session if no connections left and not persistent
@@ -960,11 +1000,15 @@ export class SessionManagerDurableObject {
     this.sessions.set(sessionId, session)
 
     // Notify other connections in session
-    await this.broadcastToSession(sessionId, {
-      type: 'data',
-      data: { type: 'user_left', connectionId },
-      timestamp: Date.now()
-    }, connectionId)
+    await this.broadcastToSession(
+      sessionId,
+      {
+        type: 'data',
+        data: { type: 'user_left', connectionId },
+        timestamp: Date.now(),
+      },
+      connectionId
+    )
   }
 
   /**
@@ -973,45 +1017,49 @@ export class SessionManagerDurableObject {
   private async handleRoomRequest(
     request: Request,
     roomId?: string,
-    searchParams?: URLSearchParams
+    _searchParams?: URLSearchParams
   ): Promise<Response> {
     if (!roomId) {
       return new Response('Room ID required', { status: 400 })
     }
 
     switch (request.method) {
-      case 'GET':
-        const room = this.rooms.get(roomId) || await this.storage.get(`room:${roomId}`)
+      case 'GET': {
+        const room = this.rooms.get(roomId) || (await this.storage.get(`room:${roomId}`))
         if (!room) {
           return new Response('Room not found', { status: 404 })
         }
         return new Response(JSON.stringify(room), {
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         })
+      }
 
-      case 'POST':
+      case 'POST': {
         const createData = await request.json()
         const newRoom = await this.createRoom(roomId, createData)
         return new Response(JSON.stringify(newRoom), {
           status: 201,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         })
+      }
 
-      case 'PUT':
+      case 'PUT': {
         const updateData = await request.json()
         const updatedRoom = await this.updateRoom(roomId, updateData)
         if (!updatedRoom) {
           return new Response('Room not found', { status: 404 })
         }
         return new Response(JSON.stringify(updatedRoom), {
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         })
+      }
 
-      case 'DELETE':
+      case 'DELETE': {
         const success = await this.deleteRoom(roomId)
         return new Response(JSON.stringify({ success }), {
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         })
+      }
 
       default:
         return new Response('Method Not Allowed', { status: 405 })
@@ -1034,8 +1082,8 @@ export class SessionManagerDurableObject {
         allowAnonymous: data.allowAnonymous || false,
         requireAuth: data.requireAuth || true,
         autoSave: data.autoSave !== false,
-        versionHistory: data.versionHistory !== false
-      }
+        versionHistory: data.versionHistory !== false,
+      },
     }
 
     this.rooms.set(roomId, room)
@@ -1047,14 +1095,14 @@ export class SessionManagerDurableObject {
       userId: data.ownerId,
       roomId,
       timestamp: Date.now(),
-      data: { type: room.type, maxParticipants: room.maxParticipants }
+      data: { type: room.type, maxParticipants: room.maxParticipants },
     })
 
     return room
   }
 
   private async updateRoom(roomId: string, updates: any): Promise<CollaborationRoom | null> {
-    let room = this.rooms.get(roomId) || await this.storage.get(`room:${roomId}`)
+    const room = this.rooms.get(roomId) || (await this.storage.get(`room:${roomId}`))
     if (!room) return null
 
     const updatedRoom = { ...room, ...updates, lastActivity: Date.now() }
@@ -1066,14 +1114,14 @@ export class SessionManagerDurableObject {
       sessionId: '',
       roomId,
       timestamp: Date.now(),
-      data: { updatedFields: Object.keys(updates) }
+      data: { updatedFields: Object.keys(updates) },
     })
 
     return updatedRoom
   }
 
   private async deleteRoom(roomId: string): Promise<boolean> {
-    const room = this.rooms.get(roomId) || await this.storage.get(`room:${roomId}`)
+    const room = this.rooms.get(roomId) || (await this.storage.get(`room:${roomId}`))
     if (!room) return false
 
     // Remove all participants
@@ -1081,11 +1129,13 @@ export class SessionManagerDurableObject {
       const connection = this.connections.get(participant.connectionId)
       if (connection) {
         connection.rooms.delete(roomId)
-        connection.websocket.send(JSON.stringify({
-          type: 'room_deleted',
-          roomId,
-          timestamp: Date.now()
-        }))
+        connection.websocket.send(
+          JSON.stringify({
+            type: 'room_deleted',
+            roomId,
+            timestamp: Date.now(),
+          })
+        )
       }
     }
 
@@ -1096,18 +1146,14 @@ export class SessionManagerDurableObject {
       type: 'room_deleted',
       sessionId: '',
       roomId,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     return true
   }
 
-  private async joinRoom(
-    roomId: string,
-    connectionId: string,
-    userId?: string
-  ): Promise<void> {
-    let room = this.rooms.get(roomId) || await this.storage.get(`room:${roomId}`)
+  private async joinRoom(roomId: string, connectionId: string, userId?: string): Promise<void> {
+    const room = this.rooms.get(roomId) || (await this.storage.get(`room:${roomId}`))
     if (!room) {
       throw new Error('Room not found')
     }
@@ -1128,7 +1174,7 @@ export class SessionManagerDurableObject {
       connectionId,
       joinedAt: Date.now(),
       role: userId === room.ownerId ? 'owner' : 'editor',
-      permissions: this.getDefaultPermissions(room.type, 'editor')
+      permissions: this.getDefaultPermissions(room.type, 'editor'),
     }
 
     room.participants.push(participant)
@@ -1138,13 +1184,17 @@ export class SessionManagerDurableObject {
     await this.storage.put(`room:${roomId}`, room)
 
     // Notify other participants
-    await this.broadcastToRoom(roomId, {
-      type: 'user_joined',
+    await this.broadcastToRoom(
       roomId,
-      userId,
-      connectionId,
-      timestamp: Date.now()
-    }, connectionId)
+      {
+        type: 'user_joined',
+        roomId,
+        userId,
+        connectionId,
+        timestamp: Date.now(),
+      },
+      connectionId
+    )
 
     await this.logSessionEvent({
       type: 'room_joined',
@@ -1152,15 +1202,12 @@ export class SessionManagerDurableObject {
       userId,
       roomId,
       connectionId,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
-  private async leaveRoom(
-    roomId: string,
-    connectionId: string
-  ): Promise<void> {
-    const room = this.rooms.get(roomId) || await this.storage.get(`room:${roomId}`)
+  private async leaveRoom(roomId: string, connectionId: string): Promise<void> {
+    const room = this.rooms.get(roomId) || (await this.storage.get(`room:${roomId}`))
     if (!room) return
 
     room.participants = room.participants.filter(p => p.connectionId !== connectionId)
@@ -1180,7 +1227,7 @@ export class SessionManagerDurableObject {
       type: 'user_left',
       roomId,
       connectionId,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     await this.logSessionEvent({
@@ -1188,7 +1235,7 @@ export class SessionManagerDurableObject {
       sessionId: '',
       roomId,
       connectionId,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
@@ -1196,7 +1243,7 @@ export class SessionManagerDurableObject {
    * Collaboration request handler
    */
   private async handleCollaborationRequest(
-    request: Request,
+    _request: Request,
     action?: string,
     searchParams?: URLSearchParams
   ): Promise<Response> {
@@ -1205,19 +1252,21 @@ export class SessionManagerDurableObject {
     }
 
     switch (action) {
-      case 'list-rooms':
+      case 'list-rooms': {
         const userId = searchParams?.get('userId')
         const rooms = await this.listUserRooms(userId)
         return new Response(JSON.stringify({ rooms }), {
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         })
+      }
 
-      case 'room-history':
+      case 'room-history': {
         const roomId = searchParams?.get('roomId')
         const history = await this.getRoomHistory(roomId)
         return new Response(JSON.stringify({ history }), {
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         })
+      }
 
       default:
         return new Response('Invalid action', { status: 400 })
@@ -1241,7 +1290,7 @@ export class SessionManagerDurableObject {
       if (connectionData.connectionId === excludeConnectionId) continue
 
       const connection = this.connections.get(connectionData.connectionId)
-      if (connection && connection.isActive && connection.websocket.readyState === WebSocket.OPEN) {
+      if (connection?.isActive && connection.websocket.readyState === WebSocket.OPEN) {
         try {
           connection.websocket.send(messageStr)
         } catch (error) {
@@ -1267,7 +1316,7 @@ export class SessionManagerDurableObject {
       if (participant.connectionId === excludeConnectionId) continue
 
       const connection = this.connections.get(participant.connectionId)
-      if (connection && connection.isActive && connection.websocket.readyState === WebSocket.OPEN) {
+      if (connection?.isActive && connection.websocket.readyState === WebSocket.OPEN) {
         try {
           connection.websocket.send(messageStr)
         } catch (error) {
@@ -1305,12 +1354,12 @@ export class SessionManagerDurableObject {
           memoryUsage: 0, // Would need actual memory monitoring
           storageUsage,
           cpuUsage: 0, // Would need actual CPU monitoring
-          ...this.metrics
-        }
+          ...this.metrics,
+        },
       }
 
       return new Response(JSON.stringify(this.healthCheckData), {
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       })
     } catch (error) {
       this.healthCheckData = {
@@ -1318,12 +1367,12 @@ export class SessionManagerDurableObject {
         timestamp: Date.now(),
         instanceId: 'session-manager',
         responseTime: Date.now() - startTime,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       }
 
       return new Response(JSON.stringify(this.healthCheckData), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       })
     }
   }
@@ -1337,18 +1386,15 @@ export class SessionManagerDurableObject {
       uptime: Date.now(), // Would need actual uptime tracking
       healthCheck: this.healthCheckData,
       metrics: this.metrics,
-      rateLimitStats: await this.getRateLimitStats()
+      rateLimitStats: await this.getRateLimitStats(),
     }
 
     return new Response(JSON.stringify(stats), {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     })
   }
 
-  private async handleAdminRequest(
-    request: Request,
-    action?: string
-  ): Promise<Response> {
+  private async handleAdminRequest(request: Request, action?: string): Promise<Response> {
     if (!action) {
       return new Response('Action required', { status: 400 })
     }
@@ -1358,18 +1404,19 @@ export class SessionManagerDurableObject {
       case 'cleanup':
         await this.cleanupExpiredSessions()
         return new Response(JSON.stringify({ success: true }), {
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         })
 
-      case 'force-disconnect':
+      case 'force-disconnect': {
         const connectionId = new URL(request.url).searchParams.get('connectionId')
         if (connectionId) {
           await this.forceDisconnect(connectionId)
           return new Response(JSON.stringify({ success: true }), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
           })
         }
         return new Response('Connection ID required', { status: 400 })
+      }
 
       default:
         return new Response('Invalid action', { status: 400 })
@@ -1420,7 +1467,7 @@ export class SessionManagerDurableObject {
     const inactiveThreshold = 300000 // 5 minutes
 
     for (const [connectionId, connection] of this.connections) {
-      if (!connection.isActive || (now - connection.lastActivity > inactiveThreshold)) {
+      if (!connection.isActive || now - connection.lastActivity > inactiveThreshold) {
         inactiveConnections.push(connectionId)
       }
     }
@@ -1455,14 +1502,17 @@ export class SessionManagerDurableObject {
 
   private getMessageRateLimit(tier?: string): number {
     const limits: Record<string, number> = {
-      free: 60,      // 1 message per second
-      pro: 600,      // 10 messages per second
-      enterprise: 6000 // 100 messages per second
+      free: 60, // 1 message per second
+      pro: 600, // 10 messages per second
+      enterprise: 6000, // 100 messages per second
     }
     return limits[tier || 'free'] || 60
   }
 
-  private filterSessionData(session: EnhancedSessionData, requestUserId?: string): EnhancedSessionData {
+  private filterSessionData(
+    session: EnhancedSessionData,
+    requestUserId?: string
+  ): EnhancedSessionData {
     // Remove sensitive data for non-owners
     if (requestUserId !== session.userId) {
       const filtered = { ...session }
@@ -1486,23 +1536,23 @@ export class SessionManagerDurableObject {
       document: {
         owner: ['read', 'write', 'admin', 'share', 'delete'],
         editor: ['read', 'write', 'share'],
-        viewer: ['read']
+        viewer: ['read'],
       },
       chat: {
         owner: ['read', 'write', 'admin', 'delete', 'ban'],
         editor: ['read', 'write'],
-        viewer: ['read']
+        viewer: ['read'],
       },
       whiteboard: {
         owner: ['read', 'write', 'admin', 'share', 'delete'],
         editor: ['read', 'write'],
-        viewer: ['read']
+        viewer: ['read'],
       },
       code: {
         owner: ['read', 'write', 'admin', 'execute', 'share'],
         editor: ['read', 'write', 'execute'],
-        viewer: ['read']
-      }
+        viewer: ['read'],
+      },
     }
 
     return permissions[roomType]?.[role] || ['read']
@@ -1552,7 +1602,7 @@ export class SessionManagerDurableObject {
     return {
       totalChecks: 0,
       blockedRequests: 0,
-      averageResponseTime: 0
+      averageResponseTime: 0,
     }
   }
 

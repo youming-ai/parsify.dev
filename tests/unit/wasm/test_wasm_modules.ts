@@ -1,17 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  WasmModuleLoader,
-  WasmModuleRegistry,
   WasmErrorHandler,
-  IWasmModule,
-  IWasmModuleLoader,
-  IWasmModuleRegistry,
-  WasmModuleConfig,
-  WasmModuleResult,
-  WasmModuleError,
-  WasmModuleMetadata,
-  WasmModuleHealth,
-  ModuleUpdate
+  type WasmModuleConfig,
+  type WasmModuleError,
+  type WasmModuleHealth,
+  WasmModuleLoader,
+  type WasmModuleMetadata,
+  WasmModuleRegistry,
 } from '../../../apps/api/src/wasm/modules'
 import { mockWasmRegistry } from '../mocks/wasm-mocks'
 
@@ -42,8 +37,7 @@ describe('WasmModuleLoader', () => {
     it('should handle module loading errors', async () => {
       const invalidModuleId = 'non-existent-module'
 
-      await expect(loader.loadModule(invalidModuleId))
-        .rejects.toThrow()
+      await expect(loader.loadModule(invalidModuleId)).rejects.toThrow()
     })
 
     it('should prevent loading the same module multiple times', async () => {
@@ -68,7 +62,7 @@ describe('WasmModuleLoader', () => {
       const [module1, module2, module3] = await Promise.all([
         loader.loadModule('concurrent-test'),
         loader.loadModule('concurrent-test'),
-        loader.loadModule('concurrent-test')
+        loader.loadModule('concurrent-test'),
       ])
 
       expect(module1).toBe(module2)
@@ -82,7 +76,7 @@ describe('WasmModuleLoader', () => {
 
       vi.spyOn(loader, 'loadModule').mockResolvedValue(mockModule as any)
 
-      const module = await loader.loadModule('test-unload')
+      const _module = await loader.loadModule('test-unload')
       expect(loader.isModuleLoaded('test-unload')).toBe(true)
 
       await loader.unloadModule('test-unload')
@@ -95,7 +89,7 @@ describe('WasmModuleLoader', () => {
       await mockModule1.initialize()
       await mockModule2.initialize()
 
-      vi.spyOn(loader, 'loadModule').mockImplementation(async (id) => {
+      vi.spyOn(loader, 'loadModule').mockImplementation(async id => {
         if (id === 'module1') return mockModule1 as any
         if (id === 'module2') return mockModule2 as any
         throw new Error('Module not found')
@@ -132,8 +126,8 @@ describe('WasmModuleLoader', () => {
         debug: true,
         logLevel: 'debug',
         options: {
-          customOption: 'value'
-        }
+          customOption: 'value',
+        },
       }
 
       const mockModule = mockWasmRegistry.getModule('json-wasm-mock')!
@@ -151,7 +145,7 @@ describe('WasmModuleLoader', () => {
       const invalidConfig = {
         maxMemory: -1, // Invalid
         timeout: 0, // Invalid
-        logLevel: 'invalid' as any
+        logLevel: 'invalid' as any,
       }
 
       const mockModule = mockWasmRegistry.getModule('json-wasm-mock')!
@@ -169,25 +163,23 @@ describe('WasmModuleLoader', () => {
     it('should handle module loading failures', async () => {
       vi.spyOn(loader, 'loadModule').mockRejectedValue(new Error('Failed to load module'))
 
-      await expect(loader.loadModule('failing-module'))
-        .rejects.toThrow('Failed to load module')
+      await expect(loader.loadModule('failing-module')).rejects.toThrow('Failed to load module')
     })
 
     it('should handle module initialization failures', async () => {
-      const mockModule = {
+      const _mockModule = {
         id: 'failing-module',
         name: 'Failing Module',
         version: '1.0.0',
         isInitialized: false,
         initialize: vi.fn().mockRejectedValue(new Error('Initialization failed')),
         execute: vi.fn(),
-        dispose: vi.fn()
+        dispose: vi.fn(),
       }
 
       vi.spyOn(loader, 'loadModule').mockRejectedValue(new Error('Initialization failed'))
 
-      await expect(loader.loadModule('failing-module'))
-        .rejects.toThrow()
+      await expect(loader.loadModule('failing-module')).rejects.toThrow()
     })
 
     it('should handle module execution failures', async () => {
@@ -201,8 +193,7 @@ describe('WasmModuleLoader', () => {
       // Mock execution failure
       vi.spyOn(mockModule, 'execute').mockRejectedValue(new Error('Execution failed'))
 
-      await expect(module.execute({ test: 'data' }))
-        .rejects.toThrow('Execution failed')
+      await expect(module.execute({ test: 'data' })).rejects.toThrow('Execution failed')
     })
   })
 })
@@ -231,7 +222,7 @@ describe('WasmModuleRegistry', () => {
 
       const retrieved = await registry.getModule('json-wasm-mock')
       expect(retrieved).toBeDefined()
-      expect(retrieved!.id).toBe('json-wasm-mock')
+      expect(retrieved?.id).toBe('json-wasm-mock')
     })
 
     it('should handle duplicate module registration', async () => {
@@ -241,8 +232,7 @@ describe('WasmModuleRegistry', () => {
       await registry.registerModule(mockModule as any)
 
       // Should handle duplicate registration gracefully
-      await expect(registry.registerModule(mockModule as any))
-        .resolves.not.toThrow()
+      await expect(registry.registerModule(mockModule as any)).resolves.not.toThrow()
     })
 
     it('should unregister modules', async () => {
@@ -317,13 +307,11 @@ describe('WasmModuleRegistry', () => {
       await registry.registerModule(mockModule as any)
 
       // Should handle update requests gracefully
-      await expect(registry.updateModule('json-wasm-mock'))
-        .resolves.not.toThrow()
+      await expect(registry.updateModule('json-wasm-mock')).resolves.not.toThrow()
     })
 
     it('should handle update failures', async () => {
-      await expect(registry.updateModule('non-existent-module'))
-        .rejects.toThrow()
+      await expect(registry.updateModule('non-existent-module')).rejects.toThrow()
     })
   })
 
@@ -339,14 +327,14 @@ describe('WasmModuleRegistry', () => {
     it('should handle incompatible modules', async () => {
       const incompatibleModule = {
         ...mockWasmRegistry.getModule('json-wasm-mock')!,
-        isCompatible: vi.fn().mockResolvedValue(false)
+        isCompatible: vi.fn().mockResolvedValue(false),
       }
 
       await registry.registerModule(incompatibleModule as any)
 
       const module = await registry.getModule('json-wasm-mock')
       expect(module).toBeDefined()
-      expect(await module!.isCompatible()).toBe(false)
+      expect(await module?.isCompatible()).toBe(false)
     })
   })
 })
@@ -365,7 +353,7 @@ describe('WasmErrorHandler', () => {
         message: 'Failed to load WASM module',
         details: { moduleId: 'test-module' },
         recoverable: false,
-        suggestions: ['Check module file exists']
+        suggestions: ['Check module file exists'],
       }
 
       const handledError = errorHandler.handleError(error)
@@ -392,7 +380,7 @@ describe('WasmErrorHandler', () => {
         message: 'Failed to load WASM module',
         details: { moduleId: 'test-module' },
         recoverable: true,
-        suggestions: ['Check module file exists', 'Verify module format']
+        suggestions: ['Check module file exists', 'Verify module format'],
       }
 
       const suggestions = errorHandler.getRecoverySuggestions(error)
@@ -406,13 +394,13 @@ describe('WasmErrorHandler', () => {
       const criticalError: WasmModuleError = {
         code: 'INITIALIZATION_ERROR',
         message: 'Critical initialization error',
-        recoverable: false
+        recoverable: false,
       }
 
       const warningError: WasmModuleError = {
         code: 'PERFORMANCE_WARNING',
         message: 'Performance warning',
-        recoverable: true
+        recoverable: true,
       }
 
       const criticalSeverity = errorHandler.getErrorSeverity(criticalError)
@@ -427,7 +415,7 @@ describe('WasmErrorHandler', () => {
         code: 'EXECUTION_ERROR',
         message: 'Module execution failed',
         details: { input: 'test data' },
-        recoverable: true
+        recoverable: true,
       }
 
       const report = errorHandler.createErrorReport(error)
@@ -446,7 +434,7 @@ describe('WasmErrorHandler', () => {
         code: 'TIMEOUT_ERROR',
         message: 'Operation timed out',
         recoverable: true,
-        suggestions: ['Increase timeout', 'Reduce input size']
+        suggestions: ['Increase timeout', 'Reduce input size'],
       }
 
       const recoveryResult = await errorHandler.attemptRecovery(recoverableError)
@@ -459,7 +447,7 @@ describe('WasmErrorHandler', () => {
       const nonRecoverableError: WasmModuleError = {
         code: 'CORRUPTION_ERROR',
         message: 'Module corrupted',
-        recoverable: false
+        recoverable: false,
       }
 
       const recoveryResult = await errorHandler.attemptRecovery(nonRecoverableError)
@@ -473,7 +461,7 @@ describe('WasmErrorHandler', () => {
         code: 'UNKNOWN_ERROR',
         message: 'Unknown error occurred',
         recoverable: true,
-        suggestions: ['Invalid recovery action']
+        suggestions: ['Invalid recovery action'],
       }
 
       const recoveryResult = await errorHandler.attemptRecovery(errorWithInvalidRecovery)
@@ -627,7 +615,7 @@ describe('WASM Module Integration', () => {
       await registry.registerModule(mockModule1 as any)
       await registry.registerModule(mockModule2 as any)
 
-      vi.spyOn(loader, 'loadModule').mockImplementation(async (id) => {
+      vi.spyOn(loader, 'loadModule').mockImplementation(async id => {
         if (id === 'module1') return mockModule1 as any
         if (id === 'module2') return mockModule2 as any
         throw new Error('Module not found')
@@ -639,7 +627,7 @@ describe('WASM Module Integration', () => {
       // Execute both modules concurrently
       const [result1, result2] = await Promise.all([
         loadedModule1.execute({ test: 'data1' }, { operation: 'format' }),
-        loadedModule2.execute({ test: 'data2' }, { operation: 'format' })
+        loadedModule2.execute({ test: 'data2' }, { operation: 'format' }),
       ])
 
       expect(result1.success).toBe(true)
@@ -653,7 +641,7 @@ describe('WASM Module Integration', () => {
     it('should handle memory limits', async () => {
       const config: WasmModuleConfig = {
         maxMemory: 16 * 1024 * 1024, // 16MB limit
-        timeout: 5000
+        timeout: 5000,
       }
 
       const mockModule = mockWasmRegistry.getModule('json-wasm-mock')!
@@ -673,7 +661,7 @@ describe('WASM Module Integration', () => {
 
     it('should enforce execution timeouts', async () => {
       const config: WasmModuleConfig = {
-        timeout: 100 // 100ms timeout
+        timeout: 100, // 100ms timeout
       }
 
       const mockModule = mockWasmRegistry.getModule('json-wasm-mock')!
@@ -690,8 +678,9 @@ describe('WASM Module Integration', () => {
       const loadedModule = await loader.loadModule('timeout-test', config)
 
       // Should handle timeout gracefully
-      await expect(loadedModule.execute({ test: 'data' }, { operation: 'format' }))
-        .rejects.toThrow()
+      await expect(
+        loadedModule.execute({ test: 'data' }, { operation: 'format' })
+      ).rejects.toThrow()
     })
   })
 
@@ -718,7 +707,7 @@ describe('WASM Module Integration', () => {
       await mockModule.initialize()
 
       // Mock URL loading
-      vi.spyOn(loader, 'loadModule').mockImplementation(async (identifier) => {
+      vi.spyOn(loader, 'loadModule').mockImplementation(async identifier => {
         if (identifier.startsWith('http://') || identifier.startsWith('https://')) {
           // Simulate URL loading
           return mockModule as any
@@ -731,8 +720,7 @@ describe('WASM Module Integration', () => {
       expect(urlModule.id).toBe('json-wasm-mock')
 
       // Should fail for invalid sources
-      await expect(loader.loadModule('invalid-source'))
-        .rejects.toThrow('Invalid module source')
+      await expect(loader.loadModule('invalid-source')).rejects.toThrow('Invalid module source')
     })
 
     it('should validate module integrity', async () => {
@@ -743,7 +731,7 @@ describe('WASM Module Integration', () => {
       const originalGetMetadata = mockModule.getMetadata.bind(mockModule)
       mockModule.getMetadata = () => ({
         ...originalGetMetadata(),
-        checksum: 'valid-checksum-123'
+        checksum: 'valid-checksum-123',
       })
 
       await registry.registerModule(mockModule as any)
@@ -808,7 +796,7 @@ describe('Module Lifecycle Management', () => {
     await registry.registerModule(dependencyModule as any)
     await registry.registerModule(dependentModule as any)
 
-    vi.spyOn(loader, 'loadModule').mockImplementation(async (id) => {
+    vi.spyOn(loader, 'loadModule').mockImplementation(async id => {
       if (id === 'dependency') return dependencyModule as any
       if (id === 'dependent') return dependentModule as any
       throw new Error('Module not found')
@@ -825,7 +813,7 @@ describe('Module Lifecycle Management', () => {
     await mockModule.initialize()
 
     // Mock partial failure
-    vi.spyOn(mockModule, 'execute').mockImplementation(async (input, options) => {
+    vi.spyOn(mockModule, 'execute').mockImplementation(async (_input, options) => {
       if (options?.operation === 'failing-operation') {
         throw new Error('Operation not supported')
       }
@@ -850,12 +838,12 @@ describe('Module Lifecycle Management', () => {
 describe('Error Recovery and Resilience', () => {
   let loader: WasmModuleLoader
   let registry: WasmModuleRegistry
-  let errorHandler: WasmErrorHandler
+  let _errorHandler: WasmErrorHandler
 
   beforeEach(() => {
     loader = new WasmModuleLoader()
     registry = new WasmModuleRegistry()
-    errorHandler = new WasmErrorHandler()
+    _errorHandler = new WasmErrorHandler()
   })
 
   afterEach(async () => {
@@ -931,13 +919,13 @@ describe('Error Recovery and Resilience', () => {
     // Mock fallback module success
     vi.spyOn(fallbackModule, 'execute').mockResolvedValue({
       success: true,
-      data: 'fallback result'
+      data: 'fallback result',
     })
 
     await registry.registerModule(primaryModule as any)
     await registry.registerModule(fallbackModule as any)
 
-    vi.spyOn(loader, 'loadModule').mockImplementation(async (id) => {
+    vi.spyOn(loader, 'loadModule').mockImplementation(async id => {
       if (id === 'primary') return primaryModule as any
       if (id === 'fallback') return fallbackModule as any
       throw new Error('Module not found')
@@ -950,7 +938,7 @@ describe('Error Recovery and Resilience', () => {
     let result
     try {
       result = await loadedPrimary.execute({ test: 'data' }, { operation: 'test' })
-    } catch (error) {
+    } catch (_error) {
       result = await loadedFallback.execute({ test: 'data' }, { operation: 'test' })
     }
 

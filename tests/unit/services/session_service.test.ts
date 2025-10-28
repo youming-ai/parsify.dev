@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { SessionService, SessionError } from '@/api/src/services/session_service'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { SessionError, SessionService } from '@/api/src/services/session_service'
 import {
-  createTestDatabase,
-  createMockUser,
-  createMockAuditLog,
-  setupTestEnvironment,
   cleanupTestEnvironment,
+  createMockAuditLog,
+  createMockUser,
+  createTestDatabase,
   type MockD1Database,
+  setupTestEnvironment,
 } from '../models/database.mock'
 
 // Mock the database client module
@@ -78,8 +78,8 @@ describe('SessionService', () => {
   let mockDb: MockD1Database
   let mockSessionManagerDO: any
   let mockCollaborationDO: any
-  let mockAuthService: any
-  let mockRateLimitService: any
+  let _mockAuthService: any
+  let _mockRateLimitService: any
 
   beforeEach(() => {
     setupTestEnvironment()
@@ -95,14 +95,14 @@ describe('SessionService', () => {
     mockCollaborationDO = mockEnv.COLLABORATION_DO
 
     const { AuthService } = require('@/api/src/services/auth_service')
-    mockAuthService = new AuthService({} as any)
+    _mockAuthService = new AuthService({} as any)
 
     const { RateLimitService } = require('@/api/src/services/rate_limit_service')
-    mockRateLimitService = new RateLimitService({} as any)
+    _mockRateLimitService = new RateLimitService({} as any)
 
     sessionService = new SessionService(mockEnv, {
       defaultTTL: 86400000, // 24 hours
-      maxTTL: 604800000,   // 7 days
+      maxTTL: 604800000, // 7 days
       cleanupInterval: 300000, // 5 minutes
       maxConnectionsPerSession: 10,
       enableMetrics: true,
@@ -125,7 +125,7 @@ describe('SessionService', () => {
     it('should initialize with custom configuration', () => {
       const service = new SessionService(mockEnv, {
         defaultTTL: 3600000, // 1 hour
-        maxTTL: 86400000,   // 24 hours
+        maxTTL: 86400000, // 24 hours
         enableMetrics: false,
         enableAuditLog: false,
         collaborationEnabled: false,
@@ -165,22 +165,19 @@ describe('SessionService', () => {
       const result = await sessionService.createSession(options)
 
       expect(result).toEqual(mockSessionData)
-      expect(mockSessionManagerDO.fetch).toHaveBeenCalledWith(
-        'https://session-manager/',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'create',
-            userId: options.userId,
-            ipAddress: options.ipAddress,
-            userAgent: options.userAgent,
-            ttl: options.ttl,
-            persistent: options.persistent,
-            metadata: options.metadata,
-          }),
-        }
-      )
+      expect(mockSessionManagerDO.fetch).toHaveBeenCalledWith('https://session-manager/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create',
+          userId: options.userId,
+          ipAddress: options.ipAddress,
+          userAgent: options.userAgent,
+          ttl: options.ttl,
+          persistent: options.persistent,
+          metadata: options.metadata,
+        }),
+      })
     })
 
     it('should create anonymous session', async () => {
@@ -234,9 +231,7 @@ describe('SessionService', () => {
 
       await sessionService.createSession(options)
 
-      const requestBody = JSON.parse(
-        mockSessionManagerDO.fetch.mock.calls[0][1].body
-      )
+      const requestBody = JSON.parse(mockSessionManagerDO.fetch.mock.calls[0][1].body)
       expect(requestBody.ttl).toBeLessThanOrEqual(maxTTL)
     })
 
@@ -253,8 +248,9 @@ describe('SessionService', () => {
         text: async () => 'Internal server error',
       })
 
-      await expect(sessionService.createSession(options))
-        .rejects.toThrow('Failed to create session')
+      await expect(sessionService.createSession(options)).rejects.toThrow(
+        'Failed to create session'
+      )
     })
   })
 
@@ -350,18 +346,15 @@ describe('SessionService', () => {
       const result = await sessionService.updateSession(sessionId, updates)
 
       expect(result).toEqual(updatedSession)
-      expect(mockSessionManagerDO.fetch).toHaveBeenCalledWith(
-        'https://session-manager/',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'update',
-            sessionId,
-            updates,
-          }),
-        }
-      )
+      expect(mockSessionManagerDO.fetch).toHaveBeenCalledWith('https://session-manager/', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update',
+          sessionId,
+          updates,
+        }),
+      })
     })
 
     it('should throw error for non-existent session', async () => {
@@ -373,8 +366,9 @@ describe('SessionService', () => {
         status: 404,
       })
 
-      await expect(sessionService.updateSession(sessionId, updates))
-        .rejects.toThrow(SessionError.SESSION_NOT_FOUND)
+      await expect(sessionService.updateSession(sessionId, updates)).rejects.toThrow(
+        SessionError.SESSION_NOT_FOUND
+      )
     })
   })
 
@@ -398,17 +392,14 @@ describe('SessionService', () => {
 
       await sessionService.deleteSession(sessionId)
 
-      expect(mockSessionManagerDO.fetch).toHaveBeenCalledWith(
-        'https://session-manager/',
-        {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'delete',
-            sessionId,
-          }),
-        }
-      )
+      expect(mockSessionManagerDO.fetch).toHaveBeenCalledWith('https://session-manager/', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'delete',
+          sessionId,
+        }),
+      })
     })
 
     it('should handle deletion of non-existent session', async () => {
@@ -419,8 +410,9 @@ describe('SessionService', () => {
         status: 404,
       })
 
-      await expect(sessionService.deleteSession(sessionId))
-        .rejects.toThrow(SessionError.SESSION_NOT_FOUND)
+      await expect(sessionService.deleteSession(sessionId)).rejects.toThrow(
+        SessionError.SESSION_NOT_FOUND
+      )
     })
   })
 
@@ -460,24 +452,18 @@ describe('SessionService', () => {
 
       expect(result.sessions).toHaveLength(2)
       expect(result.total).toBe(2)
-      expect(mockSessionManagerDO.fetch).toHaveBeenCalledWith(
-        'https://session-manager/',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'list',
-            ...options,
-          }),
-        }
-      )
+      expect(mockSessionManagerDO.fetch).toHaveBeenCalledWith('https://session-manager/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'list',
+          ...options,
+        }),
+      })
     })
 
     it('should list all sessions without filters', async () => {
-      const mockSessions = [
-        { sessionId: 'session-1' },
-        { sessionId: 'session-2' },
-      ]
+      const mockSessions = [{ sessionId: 'session-1' }, { sessionId: 'session-2' }]
 
       mockSessionManagerDO.fetch.mockResolvedValue({
         ok: true,
@@ -522,18 +508,15 @@ describe('SessionService', () => {
         const result = await sessionService.createCollaborationRoom(sessionId, roomOptions)
 
         expect(result).toEqual(mockRoom)
-        expect(mockCollaborationDO.fetch).toHaveBeenCalledWith(
-          'https://collaboration/',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'createRoom',
-              sessionId,
-              ...roomOptions,
-            }),
-          }
-        )
+        expect(mockCollaborationDO.fetch).toHaveBeenCalledWith('https://collaboration/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'createRoom',
+            sessionId,
+            ...roomOptions,
+          }),
+        })
       })
 
       it('should throw error when collaboration disabled', async () => {
@@ -592,9 +575,9 @@ describe('SessionService', () => {
           status: 404,
         })
 
-        await expect(
-          sessionService.joinCollaborationRoom(sessionId, roomId)
-        ).rejects.toThrow(SessionError.ROOM_NOT_FOUND)
+        await expect(sessionService.joinCollaborationRoom(sessionId, roomId)).rejects.toThrow(
+          SessionError.ROOM_NOT_FOUND
+        )
       })
     })
 
@@ -642,11 +625,7 @@ describe('SessionService', () => {
           json: async () => mockMessage,
         })
 
-        const result = await sessionService.sendCollaborationMessage(
-          sessionId,
-          roomId,
-          message
-        )
+        const result = await sessionService.sendCollaborationMessage(sessionId, roomId, message)
 
         expect(result).toEqual(mockMessage)
       })
@@ -751,17 +730,14 @@ describe('SessionService', () => {
 
         expect(result.deletedSessions).toBe(150)
         expect(result.deletedRooms).toBe(25)
-        expect(mockSessionManagerDO.fetch).toHaveBeenCalledWith(
-          'https://session-manager/',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'cleanup',
-              maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-            }),
-          }
-        )
+        expect(mockSessionManagerDO.fetch).toHaveBeenCalledWith('https://session-manager/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'cleanup',
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+          }),
+        })
       })
     })
 
@@ -913,8 +889,9 @@ describe('SessionService', () => {
 
       mockSessionManagerDO.fetch.mockRejectedValue(new Error('Network error'))
 
-      await expect(sessionService.getSession(sessionId))
-        .rejects.toThrow('Failed to communicate with session manager')
+      await expect(sessionService.getSession(sessionId)).rejects.toThrow(
+        'Failed to communicate with session manager'
+      )
     })
 
     it('should handle malformed session data', async () => {
@@ -925,8 +902,7 @@ describe('SessionService', () => {
         json: async () => ({ invalid: 'data' }),
       })
 
-      await expect(sessionService.getSession(sessionId))
-        .rejects.toThrow('Invalid session data')
+      await expect(sessionService.getSession(sessionId)).rejects.toThrow('Invalid session data')
     })
 
     it('should handle permission errors', async () => {
@@ -944,9 +920,9 @@ describe('SessionService', () => {
         json: async () => mockSession,
       })
 
-      await expect(
-        sessionService.accessPrivateSessionData(sessionId, userId)
-      ).rejects.toThrow(SessionError.INSUFFICIENT_PERMISSIONS)
+      await expect(sessionService.accessPrivateSessionData(sessionId, userId)).rejects.toThrow(
+        SessionError.INSUFFICIENT_PERMISSIONS
+      )
     })
   })
 
@@ -1000,10 +976,7 @@ describe('SessionService', () => {
         json: async () => updatedSession,
       })
 
-      const result = await sessionService.updateSession(
-        createdSession.sessionId,
-        updates
-      )
+      const result = await sessionService.updateSession(createdSession.sessionId, updates)
       expect(result.metadata.lastAction).toBe('login')
 
       // 4. Create collaboration room
@@ -1080,10 +1053,7 @@ describe('SessionService', () => {
         json: async () => emptyRoom,
       })
 
-      await sessionService.leaveCollaborationRoom(
-        createdSession.sessionId,
-        room.roomId
-      )
+      await sessionService.leaveCollaborationRoom(createdSession.sessionId, room.roomId)
 
       // 8. Delete session
       mockSessionManagerDO.fetch.mockResolvedValue({

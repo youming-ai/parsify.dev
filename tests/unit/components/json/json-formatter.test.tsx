@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen, fireEvent, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { render } from '../test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { JsonFormatter } from '@/web/components/tools/json/json-formatter'
+import { render } from '../test-utils'
 
 // Mock the json-utils module
 vi.mock('@/web/components/tools/json/json-utils', () => ({
@@ -18,13 +18,13 @@ vi.mock('@/web/components/tools/json/json-utils', () => ({
     }
   }),
   copyToClipboard: vi.fn(() => Promise.resolve()),
-  downloadFile: vi.fn()
+  downloadFile: vi.fn(),
 }))
 
 // Mock the json-types module
 vi.mock('@/web/components/tools/json/json-types', () => ({
   JsonFormatterProps: {},
-  JsonFormatOptions: {}
+  JsonFormatOptions: {},
 }))
 
 describe('JsonFormatter Component', () => {
@@ -38,13 +38,7 @@ describe('JsonFormatter Component', () => {
   })
 
   it('renders format options panel', () => {
-    render(
-      <JsonFormatter
-        input={sampleJson}
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input={sampleJson} onFormat={mockOnFormat} onError={mockOnError} />)
 
     expect(screen.getByText('Format Options')).toBeInTheDocument()
     expect(screen.getByText('Show Settings')).toBeInTheDocument()
@@ -53,13 +47,7 @@ describe('JsonFormatter Component', () => {
 
   it('shows/hides settings panel', async () => {
     const user = userEvent.setup()
-    render(
-      <JsonFormatter
-        input={sampleJson}
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input={sampleJson} onFormat={mockOnFormat} onError={mockOnError} />)
 
     // Initially settings should be hidden
     expect(screen.queryByText('Indent Size:')).not.toBeInTheDocument()
@@ -79,13 +67,7 @@ describe('JsonFormatter Component', () => {
     const user = userEvent.setup()
     const { formatJson } = await import('@/web/components/tools/json/json-utils')
 
-    render(
-      <JsonFormatter
-        input={sampleJson}
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input={sampleJson} onFormat={mockOnFormat} onError={mockOnError} />)
 
     const formatButton = screen.getByRole('button', { name: /format json/i })
     await user.click(formatButton)
@@ -96,13 +78,7 @@ describe('JsonFormatter Component', () => {
 
   it('shows formatted output when formatting succeeds', async () => {
     const user = userEvent.setup()
-    render(
-      <JsonFormatter
-        input={sampleJson}
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input={sampleJson} onFormat={mockOnFormat} onError={mockOnError} />)
 
     const formatButton = screen.getByRole('button', { name: /format json/i })
     await user.click(formatButton)
@@ -115,13 +91,7 @@ describe('JsonFormatter Component', () => {
 
   it('handles empty input', async () => {
     const user = userEvent.setup()
-    render(
-      <JsonFormatter
-        input=""
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input="" onFormat={mockOnFormat} onError={mockOnError} />)
 
     const formatButton = screen.getByRole('button', { name: /format json/i })
     await user.click(formatButton)
@@ -134,13 +104,7 @@ describe('JsonFormatter Component', () => {
     const user = userEvent.setup()
     const { formatJson } = await import('@/web/components/tools/json/json-utils')
 
-    render(
-      <JsonFormatter
-        input="invalid json"
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input="invalid json" onFormat={mockOnFormat} onError={mockOnError} />)
 
     // Mock formatJson to throw an error
     ;(formatJson as any).mockImplementationOnce(() => {
@@ -157,13 +121,7 @@ describe('JsonFormatter Component', () => {
     const user = userEvent.setup()
     const { copyToClipboard } = await import('@/web/components/tools/json/json-utils')
 
-    render(
-      <JsonFormatter
-        input={sampleJson}
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input={sampleJson} onFormat={mockOnFormat} onError={mockOnError} />)
 
     // First format the JSON
     const formatButton = screen.getByRole('button', { name: /format json/i })
@@ -185,13 +143,7 @@ describe('JsonFormatter Component', () => {
     const user = userEvent.setup()
     const { downloadFile } = await import('@/web/components/tools/json/json-utils')
 
-    render(
-      <JsonFormatter
-        input={sampleJson}
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input={sampleJson} onFormat={mockOnFormat} onError={mockOnError} />)
 
     // First format the JSON
     const formatButton = screen.getByRole('button', { name: /format json/i })
@@ -217,13 +169,7 @@ describe('JsonFormatter Component', () => {
     const user = userEvent.setup()
     const { formatJson } = await import('@/web/components/tools/json/json-utils')
 
-    render(
-      <JsonFormatter
-        input={sampleJson}
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input={sampleJson} onFormat={mockOnFormat} onError={mockOnError} />)
 
     // Show settings
     await user.click(screen.getByText('Show Settings'))
@@ -237,22 +183,19 @@ describe('JsonFormatter Component', () => {
     const formatButton = screen.getByRole('button', { name: /format json/i })
     await user.click(formatButton)
 
-    expect(formatJson).toHaveBeenCalledWith(sampleJson, expect.objectContaining({
-      indent: 4
-    }))
+    expect(formatJson).toHaveBeenCalledWith(
+      sampleJson,
+      expect.objectContaining({
+        indent: 4,
+      })
+    )
   })
 
   it('toggles sort keys option', async () => {
     const user = userEvent.setup()
     const { formatJson } = await import('@/web/components/tools/json/json-utils')
 
-    render(
-      <JsonFormatter
-        input={sampleJson}
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input={sampleJson} onFormat={mockOnFormat} onError={mockOnError} />)
 
     // Show settings
     await user.click(screen.getByText('Show Settings'))
@@ -265,22 +208,19 @@ describe('JsonFormatter Component', () => {
     const formatButton = screen.getByRole('button', { name: /format json/i })
     await user.click(formatButton)
 
-    expect(formatJson).toHaveBeenCalledWith(sampleJson, expect.objectContaining({
-      sortKeys: true
-    }))
+    expect(formatJson).toHaveBeenCalledWith(
+      sampleJson,
+      expect.objectContaining({
+        sortKeys: true,
+      })
+    )
   })
 
   it('toggles compact mode', async () => {
     const user = userEvent.setup()
     const { formatJson } = await import('@/web/components/tools/json/json-utils')
 
-    render(
-      <JsonFormatter
-        input={sampleJson}
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input={sampleJson} onFormat={mockOnFormat} onError={mockOnError} />)
 
     // Show settings
     await user.click(screen.getByText('Show Settings'))
@@ -293,22 +233,19 @@ describe('JsonFormatter Component', () => {
     const formatButton = screen.getByRole('button', { name: /format json/i })
     await user.click(formatButton)
 
-    expect(formatJson).toHaveBeenCalledWith(sampleJson, expect.objectContaining({
-      compact: true
-    }))
+    expect(formatJson).toHaveBeenCalledWith(
+      sampleJson,
+      expect.objectContaining({
+        compact: true,
+      })
+    )
   })
 
   it('toggles trailing commas', async () => {
     const user = userEvent.setup()
     const { formatJson } = await import('@/web/components/tools/json/json-utils')
 
-    render(
-      <JsonFormatter
-        input={sampleJson}
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input={sampleJson} onFormat={mockOnFormat} onError={mockOnError} />)
 
     // Show settings
     await user.click(screen.getByText('Show Settings'))
@@ -321,21 +258,18 @@ describe('JsonFormatter Component', () => {
     const formatButton = screen.getByRole('button', { name: /format json/i })
     await user.click(formatButton)
 
-    expect(formatJson).toHaveBeenCalledWith(sampleJson, expect.objectContaining({
-      trailingComma: true
-    }))
+    expect(formatJson).toHaveBeenCalledWith(
+      sampleJson,
+      expect.objectContaining({
+        trailingComma: true,
+      })
+    )
   })
 
   it('disables trailing commas when compact mode is enabled', async () => {
     const user = userEvent.setup()
 
-    render(
-      <JsonFormatter
-        input={sampleJson}
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input={sampleJson} onFormat={mockOnFormat} onError={mockOnError} />)
 
     // Show settings
     await user.click(screen.getByText('Show Settings'))
@@ -352,13 +286,7 @@ describe('JsonFormatter Component', () => {
   it('shows copy notification', async () => {
     const user = userEvent.setup()
 
-    render(
-      <JsonFormatter
-        input={sampleJson}
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input={sampleJson} onFormat={mockOnFormat} onError={mockOnError} />)
 
     // Format the JSON
     const formatButton = screen.getByRole('button', { name: /format json/i })
@@ -389,13 +317,7 @@ describe('JsonFormatter Component', () => {
   it('displays line and character count', async () => {
     const user = userEvent.setup()
 
-    render(
-      <JsonFormatter
-        input={sampleJson}
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input={sampleJson} onFormat={mockOnFormat} onError={mockOnError} />)
 
     // Format the JSON
     const formatButton = screen.getByRole('button', { name: /format json/i })
@@ -423,13 +345,7 @@ describe('JsonFormatter Component', () => {
   it('disables format button when formatting', async () => {
     const user = userEvent.setup()
 
-    render(
-      <JsonFormatter
-        input={sampleJson}
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input={sampleJson} onFormat={mockOnFormat} onError={mockOnError} />)
 
     const formatButton = screen.getByRole('button', { name: /format json/i })
     await user.click(formatButton)
@@ -441,13 +357,7 @@ describe('JsonFormatter Component', () => {
   it('is accessible with keyboard navigation', async () => {
     const user = userEvent.setup()
 
-    render(
-      <JsonFormatter
-        input={sampleJson}
-        onFormat={mockOnFormat}
-        onError={mockOnError}
-      />
-    )
+    render(<JsonFormatter input={sampleJson} onFormat={mockOnFormat} onError={mockOnError} />)
 
     // Tab through interactive elements
     await user.tab()

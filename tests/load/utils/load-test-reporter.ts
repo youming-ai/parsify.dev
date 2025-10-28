@@ -3,13 +3,9 @@
  * Generates comprehensive reports from load test results
  */
 
-import { writeFileSync, mkdirSync } from 'fs'
-import { join } from 'path'
-import {
-  LoadTestReport,
-  SystemResourceMetrics,
-} from '../config/load-test-config'
-import { ResourceBottleneck } from './resource-monitor'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import type { LoadTestReport, SystemResourceMetrics } from '../config/load-test-config'
 
 export class LoadTestReporter {
   private outputDirectory: string
@@ -47,10 +43,7 @@ export class LoadTestReporter {
   /**
    * Generate consolidated report from multiple test runs
    */
-  async generateConsolidatedReport(
-    reports: LoadTestReport[],
-    testName: string
-  ): Promise<void> {
+  async generateConsolidatedReport(reports: LoadTestReport[], testName: string): Promise<void> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
     const reportName = `consolidated-${testName}-${timestamp}`
 
@@ -78,20 +71,14 @@ export class LoadTestReporter {
     try {
       mkdirSync(this.outputDirectory, { recursive: true })
     } catch (error) {
-      console.error(
-        `Failed to create output directory: ${this.outputDirectory}`,
-        error
-      )
+      console.error(`Failed to create output directory: ${this.outputDirectory}`, error)
     }
   }
 
   /**
    * Save report as JSON
    */
-  private async saveJsonReport(
-    report: LoadTestReport,
-    reportName: string
-  ): Promise<void> {
+  private async saveJsonReport(report: LoadTestReport, reportName: string): Promise<void> {
     const filePath = join(this.outputDirectory, `${reportName}.json`)
     const jsonData = JSON.stringify(report, null, 2)
 
@@ -105,10 +92,7 @@ export class LoadTestReporter {
   /**
    * Save report as HTML
    */
-  private async saveHtmlReport(
-    report: LoadTestReport,
-    reportName: string
-  ): Promise<void> {
+  private async saveHtmlReport(report: LoadTestReport, reportName: string): Promise<void> {
     const filePath = join(this.outputDirectory, `${reportName}.html`)
     const htmlContent = this.generateHtmlReport(report)
 
@@ -122,10 +106,7 @@ export class LoadTestReporter {
   /**
    * Save report as CSV
    */
-  private async saveCsvReport(
-    report: LoadTestReport,
-    reportName: string
-  ): Promise<void> {
+  private async saveCsvReport(report: LoadTestReport, reportName: string): Promise<void> {
     const filePath = join(this.outputDirectory, `${reportName}.csv`)
     const csvContent = this.generateCsvReport(report)
 
@@ -139,10 +120,7 @@ export class LoadTestReporter {
   /**
    * Save summary report as Markdown
    */
-  private async saveSummaryReport(
-    report: LoadTestReport,
-    reportName: string
-  ): Promise<void> {
+  private async saveSummaryReport(report: LoadTestReport, reportName: string): Promise<void> {
     const filePath = join(this.outputDirectory, `${reportName}.md`)
     const markdownContent = this.generateMarkdownReport(report)
 
@@ -159,9 +137,7 @@ export class LoadTestReporter {
   private generateHtmlReport(report: LoadTestReport): string {
     const grade = this.calculatePerformanceGrade(report)
     const bottlenecksHtml = this.generateBottlenecksHtml(report.bottlenecks)
-    const recommendationsHtml = this.generateRecommendationsHtml(
-      report.recommendations
-    )
+    const recommendationsHtml = this.generateRecommendationsHtml(report.recommendations)
     const endpointsHtml = this.generateEndpointsHtml(report.endpoints)
     const behaviorHtml = this.generateBehaviorHtml(report.userBehavior)
     const resourcesHtml = this.generateResourcesHtml(report.resources)
@@ -425,9 +401,7 @@ export class LoadTestReporter {
   private generateMarkdownReport(report: LoadTestReport): string {
     const grade = this.calculatePerformanceGrade(report)
     const bottlenecksMd = this.generateBottlenecksMarkdown(report.bottlenecks)
-    const recommendationsMd = this.generateRecommendationsMarkdown(
-      report.recommendations
-    )
+    const recommendationsMd = this.generateRecommendationsMarkdown(report.recommendations)
 
     return `
 # Load Test Report: ${report.scenario}
@@ -757,9 +731,7 @@ ${recommendations.map(rec => `- ${rec}`).join('\n')}
   /**
    * Generate resources Markdown
    */
-  private generateResourcesMarkdown(
-    resources: SystemResourceMetrics[]
-  ): string {
+  private generateResourcesMarkdown(resources: SystemResourceMetrics[]): string {
     if (resources.length === 0) {
       return 'No resource monitoring data available for this test.\n'
     }
@@ -790,27 +762,14 @@ ${recommendations.map(rec => `- ${rec}`).join('\n')}
     const firstReport = reports[0]
 
     // Calculate aggregate metrics
-    const totalRequests = reports.reduce(
-      (sum, r) => sum + r.summary.totalRequests,
-      0
-    )
-    const totalSuccessful = reports.reduce(
-      (sum, r) => sum + r.summary.successfulRequests,
-      0
-    )
-    const totalFailed = reports.reduce(
-      (sum, r) => sum + r.summary.failedRequests,
-      0
-    )
+    const totalRequests = reports.reduce((sum, r) => sum + r.summary.totalRequests, 0)
+    const totalSuccessful = reports.reduce((sum, r) => sum + r.summary.successfulRequests, 0)
+    const totalFailed = reports.reduce((sum, r) => sum + r.summary.failedRequests, 0)
 
     const avgResponseTime =
-      reports.reduce((sum, r) => sum + r.summary.averageResponseTime, 0) /
-      reports.length
-    const avgP95 =
-      reports.reduce((sum, r) => sum + r.summary.p95ResponseTime, 0) /
-      reports.length
-    const avgThroughput =
-      reports.reduce((sum, r) => sum + r.summary.throughput, 0) / reports.length
+      reports.reduce((sum, r) => sum + r.summary.averageResponseTime, 0) / reports.length
+    const avgP95 = reports.reduce((sum, r) => sum + r.summary.p95ResponseTime, 0) / reports.length
+    const avgThroughput = reports.reduce((sum, r) => sum + r.summary.throughput, 0) / reports.length
 
     // Aggregate endpoints
     const aggregatedEndpoints: any = {}

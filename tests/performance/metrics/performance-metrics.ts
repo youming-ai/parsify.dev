@@ -65,8 +65,8 @@ export class PerformanceMetricsCollector {
   private static readonly THRESHOLDS: PerformanceThresholds = {
     excellent: { p95: 50, successRate: 0.99 },
     good: { p95: 100, successRate: 0.95 },
-    acceptable: { p95: 200, successRate: 0.90 },
-    poor: { p95: 500, successRate: 0.80 }
+    acceptable: { p95: 200, successRate: 0.9 },
+    poor: { p95: 500, successRate: 0.8 },
   }
 
   constructor(private testSuite: string) {
@@ -91,8 +91,8 @@ export class PerformanceMetricsCollector {
         totalThroughput: 0,
         performanceGrade: 'A',
         recommendations: [],
-        criticalIssues: []
-      }
+        criticalIssues: [],
+      },
     }
   }
 
@@ -118,8 +118,12 @@ export class PerformanceMetricsCollector {
       requestsPerSecond: result.requestsPerSecond,
       throughputBytesPerSecond: result.throughputBytesPerSecond,
       errors: result.errors || [],
-      performanceGrade: this.calculateGrade(result.p95, result.successfulRequests / result.totalRequests),
-      meetsRequirements: result.p95 < 200 && (result.successfulRequests / result.totalRequests) > 0.95
+      performanceGrade: this.calculateGrade(
+        result.p95,
+        result.successfulRequests / result.totalRequests
+      ),
+      meetsRequirements:
+        result.p95 < 200 && result.successfulRequests / result.totalRequests > 0.95,
     }
 
     this.collection.testResults.push(metrics)
@@ -298,9 +302,20 @@ Highest Throughput:
     }
 
     const headers = [
-      'Endpoint', 'Method', 'Total Requests', 'Successful', 'Failed',
-      'Avg Response Time', 'P50', 'P90', 'P95', 'P99',
-      'Requests/sec', 'Throughput (KB/s)', 'Grade', 'Meets Requirements'
+      'Endpoint',
+      'Method',
+      'Total Requests',
+      'Successful',
+      'Failed',
+      'Avg Response Time',
+      'P50',
+      'P90',
+      'P95',
+      'P99',
+      'Requests/sec',
+      'Throughput (KB/s)',
+      'Grade',
+      'Meets Requirements',
     ]
 
     const rows = this.collection.testResults.map(result => [
@@ -317,7 +332,7 @@ Highest Throughput:
       result.requestsPerSecond.toFixed(2),
       ((result.throughputBytesPerSecond || 0) / 1024).toFixed(2),
       result.performanceGrade,
-      result.meetsRequirements ? 'Yes' : 'No'
+      result.meetsRequirements ? 'Yes' : 'No',
     ])
 
     return [headers, ...rows].map(row => row.join(',')).join('\n')
@@ -332,9 +347,9 @@ Highest Throughput:
       platform: process.platform,
       arch: process.arch,
       totalMemory: 0, // Would need system-specific implementation
-      freeMemory: 0,  // Would need system-specific implementation
-      cpuCount: 1,    // Would need system-specific implementation
-      loadAverage: undefined // Would need system-specific implementation
+      freeMemory: 0, // Would need system-specific implementation
+      cpuCount: 1, // Would need system-specific implementation
+      loadAverage: undefined, // Would need system-specific implementation
     }
   }
 
@@ -348,7 +363,10 @@ Highest Throughput:
       return 'A'
     } else if (p95 <= thresholds.good.p95 && successRate >= thresholds.good.successRate) {
       return 'B'
-    } else if (p95 <= thresholds.acceptable.p95 && successRate >= thresholds.acceptable.successRate) {
+    } else if (
+      p95 <= thresholds.acceptable.p95 &&
+      successRate >= thresholds.acceptable.successRate
+    ) {
       return 'C'
     } else if (p95 <= thresholds.poor.p95 && successRate >= thresholds.poor.successRate) {
       return 'D'
@@ -407,44 +425,55 @@ Highest Throughput:
       totalThroughput,
       performanceGrade: overallGrade,
       recommendations,
-      criticalIssues
+      criticalIssues,
     }
   }
 
   /**
    * Generate insights and recommendations based on test results
    */
-  private generateInsights(results: TestResultMetrics[]): { recommendations: string[]; criticalIssues: string[] } {
+  private generateInsights(results: TestResultMetrics[]): {
+    recommendations: string[]
+    criticalIssues: string[]
+  } {
     const recommendations: string[] = []
     const criticalIssues: string[] = []
 
     const slowEndpoints = results.filter(r => r.p95 > 200)
-    const unreliableEndpoints = results.filter(r => (r.successfulRequests / r.totalRequests) < 0.95)
+    const unreliableEndpoints = results.filter(r => r.successfulRequests / r.totalRequests < 0.95)
     const failingEndpoints = results.filter(r => r.performanceGrade === 'F')
 
     // Critical issues
     if (failingEndpoints.length > 0) {
       criticalIssues.push(`${failingEndpoints.length} endpoints are failing performance tests`)
       failingEndpoints.forEach(endpoint => {
-        criticalIssues.push(`${endpoint.method} ${endpoint.endpoint}: P95=${endpoint.p95.toFixed(2)}ms, Success Rate=${((endpoint.successfulRequests / endpoint.totalRequests) * 100).toFixed(1)}%`)
+        criticalIssues.push(
+          `${endpoint.method} ${endpoint.endpoint}: P95=${endpoint.p95.toFixed(2)}ms, Success Rate=${((endpoint.successfulRequests / endpoint.totalRequests) * 100).toFixed(1)}%`
+        )
       })
     }
 
     if (unreliableEndpoints.length > 2) {
-      criticalIssues.push('Multiple endpoints have low success rates - investigate stability issues')
+      criticalIssues.push(
+        'Multiple endpoints have low success rates - investigate stability issues'
+      )
     }
 
     // Recommendations
     if (slowEndpoints.length > 0) {
       recommendations.push(`Optimize ${slowEndpoints.length} slow endpoints (P95 > 200ms)`)
       slowEndpoints.forEach(endpoint => {
-        recommendations.push(`Consider caching or optimization for ${endpoint.method} ${endpoint.endpoint}`)
+        recommendations.push(
+          `Consider caching or optimization for ${endpoint.method} ${endpoint.endpoint}`
+        )
       })
     }
 
     const avgP95 = results.reduce((sum, r) => sum + r.p95, 0) / results.length
     if (avgP95 > 150) {
-      recommendations.push('Overall response times could be improved - consider performance optimization')
+      recommendations.push(
+        'Overall response times could be improved - consider performance optimization'
+      )
     }
 
     const errorEndpoints = results.filter(r => r.errors.length > 0)
@@ -452,15 +481,19 @@ Highest Throughput:
       recommendations.push('Investigate and fix recurring errors in API endpoints')
     }
 
-    const lowThroughputEndpoints = results.filter(r =>
-      r.throughputBytesPerSecond && r.throughputBytesPerSecond < 1024 // Less than 1KB/s
+    const lowThroughputEndpoints = results.filter(
+      r => r.throughputBytesPerSecond && r.throughputBytesPerSecond < 1024 // Less than 1KB/s
     )
     if (lowThroughputEndpoints.length > 0) {
-      recommendations.push('Consider response compression or payload optimization for low-throughput endpoints')
+      recommendations.push(
+        'Consider response compression or payload optimization for low-throughput endpoints'
+      )
     }
 
     if (recommendations.length === 0 && criticalIssues.length === 0) {
-      recommendations.push('Performance is excellent! Consider setting up continuous monitoring to maintain standards.')
+      recommendations.push(
+        'Performance is excellent! Consider setting up continuous monitoring to maintain standards.'
+      )
     }
 
     return { recommendations, criticalIssues }

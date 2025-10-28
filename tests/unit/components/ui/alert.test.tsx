@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
 import { screen } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
+import { Alert, AlertDescription, AlertTitle } from '@/web/components/ui/alert'
 import { render } from '../test-utils'
-import { Alert, AlertTitle, AlertDescription } from '@/web/components/ui/alert'
 
 describe('Alert Components', () => {
   describe('Alert', () => {
@@ -90,12 +90,7 @@ describe('Alert Components', () => {
       render(<AlertTitle>Alert Title</AlertTitle>)
       const title = screen.getByText('Alert Title')
       expect(title).toBeInTheDocument()
-      expect(title).toHaveClass(
-        'mb-1',
-        'font-medium',
-        'leading-none',
-        'tracking-tight'
-      )
+      expect(title).toHaveClass('mb-1', 'font-medium', 'leading-none', 'tracking-tight')
     })
 
     it('applies custom className', () => {
@@ -127,11 +122,7 @@ describe('Alert Components', () => {
     })
 
     it('applies custom className', () => {
-      render(
-        <AlertDescription className="custom-desc">
-          Alert description
-        </AlertDescription>
-      )
+      render(<AlertDescription className="custom-desc">Alert description</AlertDescription>)
       const description = screen.getByText('Alert description')
       expect(description).toHaveClass('custom-desc')
     })
@@ -162,9 +153,7 @@ describe('Alert Components', () => {
       render(
         <Alert data-testid="complete-alert">
           <AlertTitle>Error Occurred</AlertTitle>
-          <AlertDescription>
-            Something went wrong while processing your request.
-          </AlertDescription>
+          <AlertDescription>Something went wrong while processing your request.</AlertDescription>
         </Alert>
       )
 
@@ -193,20 +182,12 @@ describe('Alert Components', () => {
 
       // The alert should position the icon absolutely
       expect(alert).toContainElement(icon)
-      expect(alert).toHaveClass(
-        '[&>svg]:absolute',
-        '[&>svg]:left-4',
-        '[&>svg]:top-4'
-      )
+      expect(alert).toHaveClass('[&>svg]:absolute', '[&>svg]:left-4', '[&>svg]:top-4')
     })
 
     it('maintains proper semantic structure', () => {
       render(
-        <Alert
-          role="alertdialog"
-          aria-labelledby="alert-title"
-          aria-describedby="alert-desc"
-        >
+        <Alert role="alertdialog" aria-labelledby="alert-title" aria-describedby="alert-desc">
           <AlertTitle id="alert-title">Confirmation Required</AlertTitle>
           <AlertDescription id="alert-desc">
             Are you sure you want to proceed with this action?
@@ -229,8 +210,7 @@ describe('Alert Components', () => {
         <Alert>
           <AlertTitle>Important Notice</AlertTitle>
           <AlertDescription>
-            This alert contains important information that requires your
-            attention.
+            This alert contains important information that requires your attention.
           </AlertDescription>
         </Alert>
       )

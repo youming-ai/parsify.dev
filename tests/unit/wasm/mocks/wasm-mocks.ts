@@ -59,59 +59,59 @@ export class MockJsonWasmModule implements MockWasmModule {
           parsingTime: 1.5,
           formattingTime: 2.3,
           totalTime: 3.8,
-          size: formatted.length
-        }
+          size: formatted.length,
+        },
       }
     } catch (error) {
       return {
         success: false,
         error: {
           code: 'PARSE_ERROR',
-          message: error instanceof Error ? error.message : 'Unknown error'
-        }
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
       }
     }
   }
 
-  private validateJson(input: string, options: any): any {
+  private validateJson(input: string, _options: any): any {
     try {
       const parsed = JSON.parse(input)
       return {
         success: true,
         data: {
           valid: true,
-          data: parsed
+          data: parsed,
         },
         metadata: {
           validationTime: 1.2,
-          size: input.length
-        }
+          size: input.length,
+        },
       }
     } catch (error) {
       return {
         success: false,
         data: {
           valid: false,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        }
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
       }
     }
   }
 
-  private parseJson(input: string, options: any): any {
+  private parseJson(input: string, _options: any): any {
     try {
       const parsed = JSON.parse(input)
       return {
         success: true,
-        data: parsed
+        data: parsed,
       }
     } catch (error) {
       return {
         success: false,
         error: {
           code: 'PARSE_ERROR',
-          message: error instanceof Error ? error.message : 'Unknown error'
-        }
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
       }
     }
   }
@@ -156,31 +156,33 @@ export class MockCodeFormatterWasmModule implements MockWasmModule {
         original: code,
         formatted: formattedCode,
         language,
-        changes: this.calculateChanges(code, formattedCode)
+        changes: this.calculateChanges(code, formattedCode),
       },
       metadata: {
         formattingTime: 5.2,
         linesProcessed: code.split('\n').length,
-        charactersProcessed: code.length
-      }
+        charactersProcessed: code.length,
+      },
     }
   }
 
-  private mockFormatCode(code: string, language: string, options: any): string {
+  private mockFormatCode(code: string, _language: string, options: any): string {
     // Very basic mock formatting - just ensure consistent indentation
     const lines = code.split('\n')
     const indent = options?.indentSize || 2
     const indentChar = options?.indentStyle === 'tab' ? '\t' : ' '.repeat(indent)
 
-    return lines.map(line => {
-      const trimmed = line.trim()
-      if (trimmed === '') return ''
+    return lines
+      .map(line => {
+        const trimmed = line.trim()
+        if (trimmed === '') return ''
 
-      // Simple heuristic for indentation level
-      const currentIndent = line.search(/\S/)
-      const level = Math.max(0, Math.floor(currentIndent / indent))
-      return indentChar.repeat(level) + trimmed
-    }).join('\n')
+        // Simple heuristic for indentation level
+        const currentIndent = line.search(/\S/)
+        const level = Math.max(0, Math.floor(currentIndent / indent))
+        return indentChar.repeat(level) + trimmed
+      })
+      .join('\n')
   }
 
   private calculateChanges(original: string, formatted: string): number {
@@ -234,16 +236,16 @@ export class MockCodeExecutorWasmModule implements MockWasmModule {
         metadata: {
           executionTime: result.executionTime,
           memoryUsed: 1024 * 1024, // 1MB mock usage
-          exitCode: result.exitCode
-        }
+          exitCode: result.exitCode,
+        },
       }
     } catch (error) {
       return {
         success: false,
         error: {
           code: 'EXECUTION_ERROR',
-          message: error instanceof Error ? error.message : 'Unknown error'
-        }
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
       }
     }
   }
@@ -252,7 +254,7 @@ export class MockCodeExecutorWasmModule implements MockWasmModule {
     code: string,
     language: string,
     stdin: string,
-    options: any
+    _options: any
   ): Promise<any> {
     const startTime = performance.now()
 
@@ -267,7 +269,7 @@ export class MockCodeExecutorWasmModule implements MockWasmModule {
     }
   }
 
-  private mockExecuteJavaScript(code: string, stdin: string, startTime: number): any {
+  private mockExecuteJavaScript(code: string, _stdin: string, startTime: number): any {
     // Only allow very simple, safe operations
     if (code.includes('require') || code.includes('import') || code.includes('eval')) {
       throw new Error('Unsafe operation detected')
@@ -276,7 +278,7 @@ export class MockCodeExecutorWasmModule implements MockWasmModule {
     try {
       // Simple console.log mock
       const mockConsole = {
-        log: (...args: any[]) => args.join(' ')
+        log: (...args: any[]) => args.join(' '),
       }
 
       // Very limited sandbox evaluation (only for simple expressions)
@@ -290,19 +292,19 @@ export class MockCodeExecutorWasmModule implements MockWasmModule {
         stdout: output || mockConsole.log('') || '',
         stderr: '',
         exitCode: 0,
-        executionTime: endTime - startTime
+        executionTime: endTime - startTime,
       }
     } catch (error) {
       return {
         stdout: '',
         stderr: error instanceof Error ? error.message : 'Unknown error',
         exitCode: 1,
-        executionTime: performance.now() - startTime
+        executionTime: performance.now() - startTime,
       }
     }
   }
 
-  private mockExecutePython(code: string, stdin: string, startTime: number): any {
+  private mockExecutePython(code: string, _stdin: string, startTime: number): any {
     // Mock Python execution - just check if it contains print statements
     const printMatch = code.match(/print\s*\(([^)]+)\)/)
     const output = printMatch ? printMatch[1].replace(/['"]/g, '') : ''
@@ -311,7 +313,7 @@ export class MockCodeExecutorWasmModule implements MockWasmModule {
       stdout: output,
       stderr: '',
       exitCode: 0,
-      executionTime: performance.now() - startTime
+      executionTime: performance.now() - startTime,
     }
   }
 
@@ -383,8 +385,8 @@ export const wasmTestHelpers = {
       metadata: {
         executionTime: 10,
         memoryUsage: 1024,
-        ...metadata
-      }
+        ...metadata,
+      },
     }
   },
 
@@ -398,18 +400,15 @@ export const wasmTestHelpers = {
         code,
         message,
         details,
-        recoverable: false
-      }
+        recoverable: false,
+      },
     }
   },
 
   /**
    * Wait for async operations with timeout
    */
-  async waitFor<T>(
-    promise: Promise<T>,
-    timeoutMs: number = 5000
-  ): Promise<T> {
+  async waitFor<T>(promise: Promise<T>, timeoutMs: number = 5000): Promise<T> {
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs)
     })
@@ -425,15 +424,15 @@ export const wasmTestHelpers = {
       simpleJson: '{"name":"test","value":42}',
       complexJson: JSON.stringify({
         users: [
-          { id: 1, name: "John", active: true },
-          { id: 2, name: "Jane", active: false }
+          { id: 1, name: 'John', active: true },
+          { id: 2, name: 'Jane', active: false },
         ],
-        meta: { total: 2, page: 1 }
+        meta: { total: 2, page: 1 },
       }),
       invalidJson: '{"name":"test",value:42}', // Missing quotes
       javascriptCode: 'function test() { return "hello"; }',
       pythonCode: 'print("hello world")',
-      invalidCode: 'invalid syntax here'
+      invalidCode: 'invalid syntax here',
     }
-  }
+  },
 }

@@ -1,4 +1,9 @@
-import { UploadedFile, FileUploadOptions, FileUploadProgress, FileUploadResponse } from './file-upload-types'
+import type {
+  FileUploadOptions,
+  FileUploadProgress,
+  FileUploadResponse,
+  UploadedFile,
+} from './file-upload-types'
 
 export interface FileUploadApiConfig {
   /** Base URL for upload endpoints */
@@ -52,7 +57,7 @@ export class FileUploadApiService {
     onProgress?: (progress: FileUploadProgress) => void
   ): Promise<UploadedFile> {
     const fileId = this.generateFileId(file)
-    const endpoint = options.endpoint || `${this.config.baseUrl}/upload`
+    const _endpoint = options.endpoint || `${this.config.baseUrl}/upload`
 
     // Create abort controller for this upload
     const controller = new AbortController()
@@ -79,7 +84,7 @@ export class FileUploadApiService {
 
       return uploadedFile
     } catch (error) {
-      const uploadedFile: UploadedFile = {
+      const _uploadedFile: UploadedFile = {
         id: fileId,
         name: file.name,
         size: file.size,
@@ -106,7 +111,7 @@ export class FileUploadApiService {
     onProgress?: (fileId: string, progress: FileUploadProgress) => void
   ): Promise<UploadedFile[]> {
     const uploadPromises = files.map(file =>
-      this.uploadFile(file, options, (progress) => {
+      this.uploadFile(file, options, progress => {
         const fileId = this.generateFileId(file)
         onProgress?.(fileId, progress)
       })
@@ -151,7 +156,7 @@ export class FileUploadApiService {
    * Cancel all ongoing uploads
    */
   cancelAllUploads(): void {
-    for (const [fileId, controller] of this.activeUploads) {
+    for (const [_fileId, controller] of this.activeUploads) {
       controller.abort()
     }
     this.activeUploads.clear()
@@ -179,7 +184,9 @@ export class FileUploadApiService {
         progress: 100,
       }
     } catch (error) {
-      throw new Error(`Failed to get file info: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to get file info: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -195,7 +202,9 @@ export class FileUploadApiService {
 
       return response.ok
     } catch (error) {
-      throw new Error(`Failed to delete file: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to delete file: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -238,7 +247,9 @@ export class FileUploadApiService {
 
       return await response.json()
     } catch (error) {
-      throw new Error(`Failed to generate signed URL: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to generate signed URL: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -285,7 +296,7 @@ export class FileUploadApiService {
     endpoint: string,
     headers: Record<string, string>,
     onProgress?: (progress: FileUploadProgress) => void,
-    controller?: AbortController
+    _controller?: AbortController
   ): Promise<FileUploadResponse> {
     const formData = new FormData()
     formData.append('file', file)
@@ -304,7 +315,7 @@ export class FileUploadApiService {
         const xhr = new XMLHttpRequest()
 
         return await new Promise((resolve, reject) => {
-          xhr.upload.addEventListener('progress', (event) => {
+          xhr.upload.addEventListener('progress', event => {
             if (event.lengthComputable && onProgress) {
               const progress: FileUploadProgress = {
                 loaded: event.loaded,
@@ -322,7 +333,7 @@ export class FileUploadApiService {
               try {
                 const response = JSON.parse(xhr.responseText)
                 resolve(response)
-              } catch (error) {
+              } catch (_error) {
                 reject(new Error('Invalid response from server'))
               }
             } else {
@@ -355,12 +366,19 @@ export class FileUploadApiService {
       } catch (error) {
         attempt++
 
-        if (attempt >= maxAttempts || !this.config.retryConfig.retryCondition(error instanceof Error ? error : new Error('Unknown error'))) {
+        if (
+          attempt >= maxAttempts ||
+          !this.config.retryConfig?.retryCondition?.(
+            error instanceof Error ? error : new Error('Unknown error')
+          )
+        ) {
           throw error
         }
 
         // Wait before retrying
-        await new Promise(resolve => setTimeout(resolve, this.config.retryConfig.retryDelay * attempt))
+        await new Promise(resolve =>
+          setTimeout(resolve, this.config.retryConfig.retryDelay * attempt)
+        )
       }
     }
 
@@ -456,12 +474,12 @@ export class FileUploadApiService {
     file: File,
     signedUrl: string,
     onProgress?: (progress: FileUploadProgress) => void,
-    controller?: AbortController
+    _controller?: AbortController
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
 
-      xhr.upload.addEventListener('progress', (event) => {
+      xhr.upload.addEventListener('progress', event => {
         if (event.lengthComputable && onProgress) {
           const progress: FileUploadProgress = {
             loaded: event.loaded,
@@ -501,12 +519,14 @@ export class FileUploadApiService {
     })
   }
 
-  private async addToQueue(uploadTask: () => Promise<void>): Promise<void> {
+  private async addToQueue(
+    uploadTask: () => Promise<FileUploadResponse>
+  ): Promise<FileUploadResponse> {
     return new Promise((resolve, reject) => {
       this.uploadQueue.push(async () => {
         try {
-          await uploadTask()
-          resolve()
+          const result = await uploadTask()
+          resolve(result)
         } catch (error) {
           reject(error)
         }
@@ -522,7 +542,10 @@ export class FileUploadApiService {
 
     this.isProcessingQueue = true
 
-    while (this.uploadQueue.length > 0 && this.activeUploads.size < this.config.maxConcurrentUploads) {
+    while (
+      this.uploadQueue.length > 0 &&
+      this.activeUploads.size < this.config.maxConcurrentUploads
+    ) {
       const task = this.uploadQueue.shift()
       if (task) {
         task().catch(console.error)
@@ -536,7 +559,7 @@ export class FileUploadApiService {
     return `${file.name}_${file.size}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
-  private calculateUploadSpeed(loaded: number, currentTime: number): number {
+  private calculateUploadSpeed(loaded: number, _currentTime: number): number {
     // This is a simplified calculation
     // In a real implementation, you'd want to track this over time
     return loaded / 1000 // bytes per second (simplified)

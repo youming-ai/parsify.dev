@@ -1,21 +1,17 @@
-import {
+import { handleWasmError } from '../core/wasm-error-handler'
+import type {
   IJsonWasmModule,
-  JsonFormatOptions,
-  JsonValidationResult,
-  JsonAnalysisResult,
-  JsonTargetFormat,
   JsonConversionOptions,
   JsonFilter,
-  JsonTransformation
+  JsonFormatOptions,
+  JsonTargetFormat,
+  JsonTransformation,
 } from '../interfaces/json-module.interface'
-import {
-  IWasmModule,
-  WasmModuleResult,
-  WasmModuleMetadata,
+import type {
   WasmModuleHealth,
-  WasmModuleError
+  WasmModuleMetadata,
+  WasmModuleResult,
 } from '../interfaces/wasm-module.interface'
-import { handleWasmError, createFallbackResult } from '../core/wasm-error-handler'
 
 /**
  * JSON processing WASM module implementation
@@ -98,19 +94,22 @@ export class JsonWasmModule implements IJsonWasmModule {
       this._initialized = true
       console.log('JSON WASM module initialized successfully')
     } catch (error) {
-      console.warn('Failed to initialize WASM module, falling back to native implementation:', error)
+      console.warn(
+        'Failed to initialize WASM module, falling back to native implementation:',
+        error
+      )
       this._initialized = true
     }
   }
 
-  private async initializeWasmModule(config?: any): Promise<void> {
+  private async initializeWasmModule(_config?: any): Promise<void> {
     // TODO: Initialize actual WASM module when available
     // For now, use native implementation as fallback
     this.wasmModule = {
       // Mock WASM module interface
       formatJson: this.formatJsonNative.bind(this),
       validateJson: this.validateJsonNative.bind(this),
-      analyzeJson: this.analyzeJsonNative.bind(this)
+      analyzeJson: this.analyzeJsonNative.bind(this),
     }
   }
 
@@ -136,13 +135,13 @@ export class JsonWasmModule implements IJsonWasmModule {
         'conversion',
         'transformation',
         'filtering',
-        'sorting'
+        'sorting',
       ],
       limitations: [
         'Maximum input size: 100MB',
         'Maximum depth: 1000 levels',
-        'Limited by available memory'
-      ]
+        'Limited by available memory',
+      ],
     }
   }
 
@@ -184,15 +183,15 @@ export class JsonWasmModule implements IJsonWasmModule {
           executionTime,
           memoryUsage: 0, // This would be measured from WASM
           outputSize: JSON.stringify(result).length,
-          processedItems: 1
-        }
+          processedItems: 1,
+        },
       }
     } catch (error) {
       const errorInfo = handleWasmError(error as Error, {
         moduleId: this.id,
         operation: 'execute',
         input,
-        configuration: options
+        configuration: options,
       })
 
       return {
@@ -202,8 +201,8 @@ export class JsonWasmModule implements IJsonWasmModule {
           message: errorInfo.error.message,
           details: errorInfo.error.details,
           recoverable: errorInfo.classification.recoverable,
-          suggestions: errorInfo.error.suggestions
-        }
+          suggestions: errorInfo.error.suggestions,
+        },
       }
     }
   }
@@ -215,7 +214,7 @@ export class JsonWasmModule implements IJsonWasmModule {
 
     try {
       // Dispose WASM module if loaded
-      if (this.wasmModule && this.wasmModule.dispose) {
+      if (this.wasmModule?.dispose) {
         this.wasmModule.dispose()
       }
 
@@ -240,10 +239,11 @@ export class JsonWasmModule implements IJsonWasmModule {
       uptime,
       details: {
         executionCount: this.executionCount,
-        averageExecutionTime: this.executionCount > 0 ? this.totalExecutionTime / this.executionCount : 0,
+        averageExecutionTime:
+          this.executionCount > 0 ? this.totalExecutionTime / this.executionCount : 0,
         lastUsedAt: this.lastUsedAt,
-        wasmLoaded: this.wasmModule !== null
-      }
+        wasmLoaded: this.wasmModule !== null,
+      },
     }
   }
 
@@ -253,10 +253,10 @@ export class JsonWasmModule implements IJsonWasmModule {
       throw new Error('Module is not initialized')
     }
 
-    const startTime = performance.now()
+    const _startTime = performance.now()
 
     try {
-      if (this.wasmModule && this.wasmModule.formatJson) {
+      if (this.wasmModule?.formatJson) {
         // Use WASM implementation if available
         return await this.wasmModule.formatJson(json, options)
       } else {
@@ -267,7 +267,7 @@ export class JsonWasmModule implements IJsonWasmModule {
       const errorInfo = handleWasmError(error as Error, {
         moduleId: this.id,
         operation: 'formatJson',
-        input: { json, options }
+        input: { json, options },
       })
 
       return {
@@ -277,13 +277,16 @@ export class JsonWasmModule implements IJsonWasmModule {
           message: errorInfo.error.message,
           details: errorInfo.error.details,
           recoverable: errorInfo.classification.recoverable,
-          suggestions: errorInfo.error.suggestions
-        }
+          suggestions: errorInfo.error.suggestions,
+        },
       }
     }
   }
 
-  private async formatJsonNative(json: string, options: JsonFormatOptions = {}): Promise<WasmModuleResult> {
+  private async formatJsonNative(
+    json: string,
+    options: JsonFormatOptions = {}
+  ): Promise<WasmModuleResult> {
     const startTime = performance.now()
 
     try {
@@ -297,15 +300,17 @@ export class JsonWasmModule implements IJsonWasmModule {
       try {
         parsed = JSON.parse(json)
       } catch (parseError) {
-        throw new Error(`Invalid JSON: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`)
+        throw new Error(
+          `Invalid JSON: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`
+        )
       }
 
       // Apply transformations
       const transformed = this.applyJsonTransformations(parsed, options)
 
       // Format JSON
-      const indent = options.compact ? 0 : (options.indent || 2)
-      const sortKeys = options.sortKeys || false
+      const indent = options.compact ? 0 : options.indent || 2
+      const _sortKeys = options.sortKeys || false
       const replacer = options.replacer
 
       let formatted = JSON.stringify(transformed, replacer, indent)
@@ -330,14 +335,14 @@ export class JsonWasmModule implements IJsonWasmModule {
           formattedSize: formatted.length,
           compressionRatio: json.length > 0 ? formatted.length / json.length : 1,
           valid: true,
-          errors: null
+          errors: null,
         },
         metadata: {
           executionTime,
           memoryUsage: 0,
           outputSize: formatted.length,
-          processedItems: 1
-        }
+          processedItems: 1,
+        },
       }
     } catch (error) {
       return {
@@ -346,8 +351,8 @@ export class JsonWasmModule implements IJsonWasmModule {
           code: 'FORMAT_ERROR',
           message: error instanceof Error ? error.message : 'Unknown error',
           recoverable: true,
-          suggestions: ['Check JSON syntax', 'Verify input format']
-        }
+          suggestions: ['Check JSON syntax', 'Verify input format'],
+        },
       }
     }
   }
@@ -358,7 +363,7 @@ export class JsonWasmModule implements IJsonWasmModule {
     }
 
     try {
-      if (this.wasmModule && this.wasmModule.validateJson) {
+      if (this.wasmModule?.validateJson) {
         return await this.wasmModule.validateJson(json, schema)
       } else {
         return await this.validateJsonNative(json, schema)
@@ -367,7 +372,7 @@ export class JsonWasmModule implements IJsonWasmModule {
       const errorInfo = handleWasmError(error as Error, {
         moduleId: this.id,
         operation: 'validateJson',
-        input: { json, schema }
+        input: { json, schema },
       })
 
       return {
@@ -377,8 +382,8 @@ export class JsonWasmModule implements IJsonWasmModule {
           message: errorInfo.error.message,
           details: errorInfo.error.details,
           recoverable: errorInfo.classification.recoverable,
-          suggestions: errorInfo.error.suggestions
-        }
+          suggestions: errorInfo.error.suggestions,
+        },
       }
     }
   }
@@ -409,8 +414,8 @@ export class JsonWasmModule implements IJsonWasmModule {
         data: {
           valid,
           errors: errors.length > 0 ? errors : null,
-          data: valid ? parsed : null
-        }
+          data: valid ? parsed : null,
+        },
       }
     } catch (error) {
       return {
@@ -419,8 +424,8 @@ export class JsonWasmModule implements IJsonWasmModule {
           code: 'VALIDATION_ERROR',
           message: error instanceof Error ? error.message : 'Unknown error',
           recoverable: true,
-          suggestions: ['Check JSON syntax', 'Verify schema format']
-        }
+          suggestions: ['Check JSON syntax', 'Verify schema format'],
+        },
       }
     }
   }
@@ -434,11 +439,15 @@ export class JsonWasmModule implements IJsonWasmModule {
       indent: 2,
       sortKeys: false,
       ...options,
-      compact: false
+      compact: false,
     })
   }
 
-  async convertJson(json: string, targetFormat: JsonTargetFormat, options: JsonConversionOptions = {}): Promise<WasmModuleResult> {
+  async convertJson(
+    json: string,
+    targetFormat: JsonTargetFormat,
+    options: JsonConversionOptions = {}
+  ): Promise<WasmModuleResult> {
     try {
       const parsed = JSON.parse(json)
 
@@ -466,8 +475,8 @@ export class JsonWasmModule implements IJsonWasmModule {
           converted,
           format: targetFormat,
           original: json,
-          options
-        }
+          options,
+        },
       }
     } catch (error) {
       return {
@@ -476,8 +485,8 @@ export class JsonWasmModule implements IJsonWasmModule {
           code: 'CONVERSION_ERROR',
           message: error instanceof Error ? error.message : 'Unknown error',
           recoverable: true,
-          suggestions: ['Check input format', 'Verify target format support']
-        }
+          suggestions: ['Check input format', 'Verify target format support'],
+        },
       }
     }
   }
@@ -492,8 +501,8 @@ export class JsonWasmModule implements IJsonWasmModule {
         data: {
           extracted,
           path,
-          found: extracted !== undefined
-        }
+          found: extracted !== undefined,
+        },
       }
     } catch (error) {
       return {
@@ -502,8 +511,8 @@ export class JsonWasmModule implements IJsonWasmModule {
           code: 'EXTRACTION_ERROR',
           message: error instanceof Error ? error.message : 'Unknown error',
           recoverable: true,
-          suggestions: ['Check JSONPath syntax', 'Verify path exists']
-        }
+          suggestions: ['Check JSONPath syntax', 'Verify path exists'],
+        },
       }
     }
   }
@@ -533,8 +542,8 @@ export class JsonWasmModule implements IJsonWasmModule {
         data: {
           merged,
           strategy,
-          objectCount: objects.length
-        }
+          objectCount: objects.length,
+        },
       }
     } catch (error) {
       return {
@@ -543,8 +552,8 @@ export class JsonWasmModule implements IJsonWasmModule {
           code: 'MERGE_ERROR',
           message: error instanceof Error ? error.message : 'Unknown error',
           recoverable: true,
-          suggestions: ['Check object types', 'Verify merge strategy']
-        }
+          suggestions: ['Check object types', 'Verify merge strategy'],
+        },
       }
     }
   }
@@ -561,8 +570,8 @@ export class JsonWasmModule implements IJsonWasmModule {
         data: {
           identical: differences.length === 0,
           differences,
-          options
-        }
+          options,
+        },
       }
     } catch (error) {
       return {
@@ -571,8 +580,8 @@ export class JsonWasmModule implements IJsonWasmModule {
           code: 'COMPARISON_ERROR',
           message: error instanceof Error ? error.message : 'Unknown error',
           recoverable: true,
-          suggestions: ['Check JSON syntax', 'Verify comparison options']
-        }
+          suggestions: ['Check JSON syntax', 'Verify comparison options'],
+        },
       }
     }
   }
@@ -587,8 +596,8 @@ export class JsonWasmModule implements IJsonWasmModule {
         data: {
           sorted,
           original: json,
-          options
-        }
+          options,
+        },
       }
     } catch (error) {
       return {
@@ -597,8 +606,8 @@ export class JsonWasmModule implements IJsonWasmModule {
           code: 'SORT_ERROR',
           message: error instanceof Error ? error.message : 'Unknown error',
           recoverable: true,
-          suggestions: ['Check JSON syntax', 'Verify sort options']
-        }
+          suggestions: ['Check JSON syntax', 'Verify sort options'],
+        },
       }
     }
   }
@@ -614,8 +623,8 @@ export class JsonWasmModule implements IJsonWasmModule {
           filtered,
           originalCount: this.countItems(parsed),
           filteredCount: this.countItems(filtered),
-          filter
-        }
+          filter,
+        },
       }
     } catch (error) {
       return {
@@ -624,8 +633,8 @@ export class JsonWasmModule implements IJsonWasmModule {
           code: 'FILTER_ERROR',
           message: error instanceof Error ? error.message : 'Unknown error',
           recoverable: true,
-          suggestions: ['Check filter criteria', 'Verify JSON structure']
-        }
+          suggestions: ['Check filter criteria', 'Verify JSON structure'],
+        },
       }
     }
   }
@@ -640,8 +649,8 @@ export class JsonWasmModule implements IJsonWasmModule {
         data: {
           transformed,
           original: json,
-          transformation
-        }
+          transformation,
+        },
       }
     } catch (error) {
       return {
@@ -650,14 +659,14 @@ export class JsonWasmModule implements IJsonWasmModule {
           code: 'TRANSFORMATION_ERROR',
           message: error instanceof Error ? error.message : 'Unknown error',
           recoverable: true,
-          suggestions: ['Check transformation rules', 'Verify JSON structure']
-        }
+          suggestions: ['Check transformation rules', 'Verify JSON structure'],
+        },
       }
     }
   }
 
   async analyzeJson(json: string): Promise<WasmModuleResult> {
-    if (this.wasmModule && this.wasmModule.analyzeJson) {
+    if (this.wasmModule?.analyzeJson) {
       return await this.wasmModule.analyzeJson(json)
     } else {
       return await this.analyzeJsonNative(json)
@@ -684,9 +693,9 @@ export class JsonWasmModule implements IJsonWasmModule {
           metrics: {
             parseTime: 0, // This would be measured
             analysisTime: 0, // This would be measured
-            memoryUsage: 0 // This would be measured
-          }
-        }
+            memoryUsage: 0, // This would be measured
+          },
+        },
       }
     } catch (error) {
       return {
@@ -695,8 +704,8 @@ export class JsonWasmModule implements IJsonWasmModule {
           code: 'ANALYSIS_ERROR',
           message: error instanceof Error ? error.message : 'Unknown error',
           recoverable: true,
-          suggestions: ['Check JSON syntax', 'Verify input format']
-        }
+          suggestions: ['Check JSON syntax', 'Verify input format'],
+        },
       }
     }
   }
@@ -725,13 +734,13 @@ export class JsonWasmModule implements IJsonWasmModule {
         'conversion',
         'transformation',
         'filtering',
-        'sorting'
+        'sorting',
       ],
       limitations: [
         'Maximum input size: 100MB',
         'Maximum depth: 1000 levels',
-        'Limited by available memory'
-      ]
+        'Limited by available memory',
+      ],
     }
   }
 
@@ -780,7 +789,7 @@ export class JsonWasmModule implements IJsonWasmModule {
 
   private truncateLongStrings(data: any, maxLength: number): any {
     if (typeof data === 'string' && data.length > maxLength) {
-      return data.substring(0, maxLength) + '... [truncated]'
+      return `${data.substring(0, maxLength)}... [truncated]`
     }
 
     if (Array.isArray(data)) {
@@ -824,7 +833,7 @@ export class JsonWasmModule implements IJsonWasmModule {
 
     return {
       valid: errors.length === 0,
-      errors: errors.length > 0 ? errors : undefined
+      errors: errors.length > 0 ? errors : undefined,
     }
   }
 
@@ -867,22 +876,20 @@ export class JsonWasmModule implements IJsonWasmModule {
     const headers = Object.keys(data[0])
     const delimiter = options.delimiter || ','
 
-    let csv = headers.join(delimiter) + '\n'
+    let csv = `${headers.join(delimiter)}\n`
 
     for (const row of data) {
       const values = headers.map(header => {
         const value = row[header]
-        return typeof value === 'string' && value.includes(delimiter)
-          ? `"${value}"`
-          : value
+        return typeof value === 'string' && value.includes(delimiter) ? `"${value}"` : value
       })
-      csv += values.join(delimiter) + '\n'
+      csv += `${values.join(delimiter)}\n`
     }
 
     return csv
   }
 
-  private convertToProperties(data: any, options: JsonConversionOptions): string {
+  private convertToProperties(data: any, _options: JsonConversionOptions): string {
     // Simplified Java Properties conversion
     let properties = ''
 
@@ -944,7 +951,7 @@ export class JsonWasmModule implements IJsonWasmModule {
     return result
   }
 
-  private compareObjects(obj1: any, obj2: any, options: any): any[] {
+  private compareObjects(obj1: any, obj2: any, _options: any): any[] {
     // Simplified comparison implementation
     const differences: any[] = []
 
@@ -954,7 +961,7 @@ export class JsonWasmModule implements IJsonWasmModule {
           path,
           type: 'type_mismatch',
           value1: a,
-          value2: b
+          value2: b,
         })
         return
       }
@@ -969,7 +976,7 @@ export class JsonWasmModule implements IJsonWasmModule {
           path,
           type: 'value_mismatch',
           value1: a,
-          value2: b
+          value2: b,
         })
       }
     }
@@ -1018,7 +1025,7 @@ export class JsonWasmModule implements IJsonWasmModule {
         const result: any = {}
         for (const [key, value] of Object.entries(data)) {
           const include = !filter.includeKeys || filter.includeKeys.includes(key)
-          const exclude = filter.excludeKeys && filter.excludeKeys.includes(key)
+          const exclude = filter.excludeKeys?.includes(key)
 
           if (include && !exclude) {
             result[key] = this.applyFilter(value, filter)
@@ -1086,10 +1093,10 @@ export class JsonWasmModule implements IJsonWasmModule {
         strings: 0,
         numbers: 0,
         booleans: 0,
-        nulls: 0
+        nulls: 0,
       },
       uniqueKeys: new Set<string>(),
-      largestStructure: { type: 'object' as const, path: '', size: 0 }
+      largestStructure: { type: 'object' as const, path: '', size: 0 },
     }
 
     if (data === null) {
@@ -1156,7 +1163,7 @@ export class JsonWasmModule implements IJsonWasmModule {
 
     return {
       ...stats,
-      uniqueKeys: Array.from(stats.uniqueKeys)
+      uniqueKeys: Array.from(stats.uniqueKeys),
     }
   }
 

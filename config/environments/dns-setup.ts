@@ -103,10 +103,7 @@ export function getDNSRecords(environment: 'development' | 'staging' | 'producti
   const sharedConfig = (dnsConfig as DNSConfiguration).shared
 
   // Combine environment-specific records with shared records
-  const allRecords = [
-    ...zoneConfig.records,
-    ...sharedConfig.dnsRecords
-  ]
+  const allRecords = [...zoneConfig.records, ...sharedConfig.dnsRecords]
 
   // Add MX records for email
   if (sharedConfig.email?.mxRecords) {
@@ -116,7 +113,7 @@ export function getDNSRecords(environment: 'development' | 'staging' | 'producti
         name: zoneConfig.domain,
         content: mx.exchange,
         ttl: mx.ttl,
-        priority: mx.preference
+        priority: mx.preference,
       })
     })
   }
@@ -127,7 +124,7 @@ export function getDNSRecords(environment: 'development' | 'staging' | 'producti
       type: 'TXT',
       name: `${sharedConfig.email.dkim.selector}._domainkey`,
       content: `v=DKIM1; k=rsa; p=${sharedConfig.email.dkim.value}`,
-      ttl: 3600
+      ttl: 3600,
     })
   }
 
@@ -150,7 +147,9 @@ export function getCloudflareConfig(environment: 'development' | 'staging' | 'pr
 /**
  * Generate DNS records for Cloudflare API
  */
-export function generateCloudflareDNSRecords(environment: 'development' | 'staging' | 'production'): any[] {
+export function generateCloudflareDNSRecords(
+  environment: 'development' | 'staging' | 'production'
+): any[] {
   const records = getDNSRecords(environment)
 
   return records.map(record => {
@@ -158,7 +157,7 @@ export function generateCloudflareDNSRecords(environment: 'development' | 'stagi
       type: record.type,
       name: record.name,
       content: record.content,
-      ttl: record.ttl
+      ttl: record.ttl,
     }
 
     // Add Cloudflare-specific properties
@@ -201,7 +200,10 @@ export function generateCloudflareDNSRecords(environment: 'development' | 'stagi
 /**
  * Validate DNS configuration
  */
-export function validateDNSConfig(environment: 'development' | 'staging' | 'production'): { valid: boolean; errors: string[] } {
+export function validateDNSConfig(environment: 'development' | 'staging' | 'production'): {
+  valid: boolean
+  errors: string[]
+} {
   const errors: string[] = []
   const zoneConfig = getDNSConfig(environment)
 
@@ -212,7 +214,7 @@ export function validateDNSConfig(environment: 'development' | 'staging' | 'prod
     }
 
     // Validate required records
-    const requiredRecords = ['A', 'CNAME']
+    const _requiredRecords = ['A', 'CNAME']
     const hasARecord = zoneConfig.records.some(r => r.type === 'A' && r.name === '@')
     const hasCnameRecord = zoneConfig.records.some(r => r.type === 'CNAME')
 
@@ -267,14 +269,13 @@ export function validateDNSConfig(environment: 'development' | 'staging' | 'prod
         }
       }
     })
-
   } catch (error) {
     errors.push(`Configuration validation error: ${error}`)
   }
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   }
 }
 
@@ -346,7 +347,7 @@ export function generateDNSChanges(
   return {
     additions,
     removals,
-    modifications
+    modifications,
   }
 }
 
@@ -357,22 +358,28 @@ export function exportDNSConfig(environment: 'development' | 'staging' | 'produc
   const config = getDNSConfig(environment)
   const records = getDNSRecords(environment)
 
-  return JSON.stringify({
-    zone: config,
-    records: records
-  }, null, 2)
+  return JSON.stringify(
+    {
+      zone: config,
+      records: records,
+    },
+    null,
+    2
+  )
 }
 
 /**
  * Get domain health check endpoints
  */
-export function getHealthCheckEndpoints(environment: 'development' | 'staging' | 'production'): string[] {
+export function getHealthCheckEndpoints(
+  environment: 'development' | 'staging' | 'production'
+): string[] {
   const zoneConfig = getDNSConfig(environment)
 
   return [
     `https://${zoneConfig.domain}/health`,
     `https://${zoneConfig.subdomains.api}/health`,
-    `https://${zoneConfig.subdomains.app}/health`
+    `https://${zoneConfig.subdomains.app}/health`,
   ].filter(url => url && !url.includes('localhost'))
 }
 
@@ -385,5 +392,5 @@ export default {
   validateDNSConfig,
   generateDNSChanges,
   exportDNSConfig,
-  getHealthCheckEndpoints
+  getHealthCheckEndpoints,
 }

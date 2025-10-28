@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { RateLimitService } from '@/api/src/services/rate_limit_service'
 import {
-  createTestDatabase,
-  createMockUser,
-  createMockQuotaCounter,
-  createMockAuditLog,
-  setupTestEnvironment,
   cleanupTestEnvironment,
+  createMockAuditLog,
+  createMockQuotaCounter,
+  createMockUser,
+  createTestDatabase,
   type MockD1Database,
+  setupTestEnvironment,
 } from '../models/database.mock'
 
 // Mock the database client module
@@ -199,7 +199,7 @@ describe('RateLimitService', () => {
       })
       QuotaCounter.fromRow.mockReturnValue(mockQuotaCounter)
 
-      mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+      mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
         return await fetchFn()
       })
 
@@ -214,7 +214,7 @@ describe('RateLimitService', () => {
       // Mock user lookup for tier-based limits
       const mockUser = createMockUser({
         id: options.identifier,
-        subscription_tier: 'free'
+        subscription_tier: 'free',
       })
       const { User } = require('@/api/src/models/user')
       User.fromRow.mockReturnValue(mockUser)
@@ -248,7 +248,7 @@ describe('RateLimitService', () => {
       })
       QuotaCounter.fromRow.mockReturnValue(mockQuotaCounter)
 
-      mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+      mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
         return await fetchFn()
       })
 
@@ -261,7 +261,7 @@ describe('RateLimitService', () => {
 
       const mockUser = createMockUser({
         id: options.identifier,
-        subscription_tier: 'free'
+        subscription_tier: 'free',
       })
       const { User } = require('@/api/src/models/user')
       User.fromRow.mockReturnValue(mockUser)
@@ -330,7 +330,7 @@ describe('RateLimitService', () => {
 
       const mockUser = createMockUser({
         id: options.identifier,
-        subscription_tier: 'free'
+        subscription_tier: 'free',
       })
       const { User } = require('@/api/src/models/user')
       User.fromRow.mockReturnValue(mockUser)
@@ -363,7 +363,7 @@ describe('RateLimitService', () => {
       })
       QuotaCounter.fromRow.mockReturnValue(mockQuotaCounter)
 
-      mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+      mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
         return await fetchFn()
       })
 
@@ -376,7 +376,7 @@ describe('RateLimitService', () => {
 
       const mockUser = createMockUser({
         id: options.identifier,
-        subscription_tier: 'free'
+        subscription_tier: 'free',
       })
       const { User } = require('@/api/src/models/user')
       User.fromRow.mockReturnValue(mockUser)
@@ -409,7 +409,7 @@ describe('RateLimitService', () => {
       })
       QuotaCounter.fromRow.mockReturnValue(mockQuotaCounter)
 
-      mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+      mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
         return await fetchFn()
       })
 
@@ -440,7 +440,7 @@ describe('RateLimitService', () => {
         period_end: Math.floor(Date.now() / 1000) + 3600,
       })
 
-      mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+      mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
         return await fetchFn()
       })
 
@@ -481,7 +481,7 @@ describe('RateLimitService', () => {
       })
       QuotaCounter.fromRow.mockReturnValue(mockQuotaCounter)
 
-      mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+      mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
         return await fetchFn()
       })
 
@@ -494,7 +494,7 @@ describe('RateLimitService', () => {
 
       const mockUser = createMockUser({
         id: options.identifier,
-        subscription_tier: 'free'
+        subscription_tier: 'free',
       })
       const { User } = require('@/api/src/models/user')
       User.fromRow.mockReturnValue(mockUser)
@@ -526,7 +526,7 @@ describe('RateLimitService', () => {
       })
       QuotaCounter.fromRow.mockReturnValue(mockQuotaCounter)
 
-      mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+      mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
         return await fetchFn()
       })
 
@@ -539,7 +539,7 @@ describe('RateLimitService', () => {
 
       const mockUser = createMockUser({
         id: options.identifier,
-        subscription_tier: 'free'
+        subscription_tier: 'free',
       })
       const { User } = require('@/api/src/models/user')
       User.fromRow.mockReturnValue(mockUser)
@@ -612,8 +612,7 @@ describe('RateLimitService', () => {
       mockDb.prepare = vi.fn().mockReturnValue(mockStmt)
 
       // Should not throw error
-      await expect(rateLimitService.resetQuota(identifier, quotaType))
-        .resolves.toBeUndefined()
+      await expect(rateLimitService.resetQuota(identifier, quotaType)).resolves.toBeUndefined()
     })
   })
 
@@ -670,7 +669,7 @@ describe('RateLimitService', () => {
 
       const mockUser = createMockUser({
         id: identifier,
-        subscription_tier: 'free'
+        subscription_tier: 'free',
       })
       const { User } = require('@/api/src/models/user')
       User.fromRow.mockReturnValue(mockUser)
@@ -1065,7 +1064,9 @@ describe('RateLimitService', () => {
       })
 
       it('should identify IPv6 addresses', () => {
-        expect((rateLimitService as any).isIpAddress('2001:0db8:85a3:0000:0000:8a2e:0370:7334')).toBe(true)
+        expect(
+          (rateLimitService as any).isIpAddress('2001:0db8:85a3:0000:0000:8a2e:0370:7334')
+        ).toBe(true)
         expect((rateLimitService as any).isIpAddress('::1')).toBe(true)
       })
 
@@ -1091,7 +1092,7 @@ describe('RateLimitService', () => {
         period_end: Math.floor(Date.now() / 1000) + 3600,
       })
 
-      mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+      mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
         return await fetchFn()
       })
 
@@ -1151,7 +1152,7 @@ describe('RateLimitService', () => {
       })
       QuotaCounter.fromRow.mockReturnValue(mockQuotaCounter1)
 
-      mockCacheService.getOrSet.mockImplementation(async (key, fetchFn, options) => {
+      mockCacheService.getOrSet.mockImplementation(async (_key, fetchFn, _options) => {
         return await fetchFn()
       })
 
@@ -1164,7 +1165,7 @@ describe('RateLimitService', () => {
 
       const mockUser = createMockUser({
         id: userId,
-        subscription_tier: 'pro' // Higher tier
+        subscription_tier: 'pro', // Higher tier
       })
       const { User } = require('@/api/src/models/user')
       User.fromRow.mockReturnValue(mockUser)
@@ -1210,7 +1211,11 @@ describe('RateLimitService', () => {
       expect(mockResetCounter.reset).toHaveBeenCalled()
 
       // 5. Check after reset
-      const result3 = await rateLimitService.checkRateLimit({ identifier: userId, quotaType, amount: 1 })
+      const result3 = await rateLimitService.checkRateLimit({
+        identifier: userId,
+        quotaType,
+        amount: 1,
+      })
       expect(result3.allowed).toBe(true)
     })
   })

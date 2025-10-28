@@ -1,21 +1,14 @@
 'use client'
 
-import { useState } from 'react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { ArrowLeft, Lock, Mail, User } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useState } from 'react'
+import { useAuth } from '@/components/auth/auth-context'
+import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Alert } from '@/components/ui/alert'
-import { useAuth } from '@/components/auth/auth-context'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
-import { ArrowLeft, Mail, Lock, User } from 'lucide-react'
 
 // OAuth Provider Icons
 const GoogleIcon = ({ className }: { className?: string }) => (
@@ -89,8 +82,8 @@ function SignupContent() {
       setError(null)
       await login(provider)
       router.push(redirectTo)
-    } catch (error) {
-      setError('Failed to create account with ' + provider)
+    } catch (_error) {
+      setError(`Failed to create account with ${provider}`)
     } finally {
       setIsLoading(false)
     }
@@ -131,7 +124,7 @@ function SignupContent() {
       // After successful signup, log the user in
       await login('email', { email, password })
       router.push(redirectTo)
-    } catch (error) {
+    } catch (_error) {
       setError('Failed to create account. Please try again.')
     } finally {
       setIsLoading(false)
@@ -139,29 +132,21 @@ function SignupContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => router.push('/auth/login')}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+          <Button variant="ghost" onClick={() => router.push('/auth/login')} className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Sign In
           </Button>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Parsify.dev</h1>
-          <p className="text-lg text-gray-600 mb-2">Create your account</p>
-          <p className="text-sm text-gray-500">
-            Join thousands of developers using our tools
-          </p>
+          <h1 className="mb-2 font-bold text-4xl text-gray-900">Parsify.dev</h1>
+          <p className="mb-2 text-gray-600 text-lg">Create your account</p>
+          <p className="text-gray-500 text-sm">Join thousands of developers using our tools</p>
         </div>
 
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">
-              Sign up
-            </CardTitle>
+            <CardTitle className="text-center font-bold text-2xl">Sign up</CardTitle>
             <CardDescription className="text-center">
               Choose your preferred sign-up method
             </CardDescription>
@@ -177,9 +162,7 @@ function SignupContent() {
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-gray-500">
-                    Continue with
-                  </span>
+                  <span className="bg-white px-2 text-gray-500">Continue with</span>
                 </div>
               </div>
 
@@ -189,9 +172,7 @@ function SignupContent() {
                     key={provider.id}
                     variant="outline"
                     className={`justify-start gap-3 ${provider.color}`}
-                    onClick={() =>
-                      handleOAuthSignup(provider.id as 'google' | 'github')
-                    }
+                    onClick={() => handleOAuthSignup(provider.id as 'google' | 'github')}
                     disabled={isLoading}
                   >
                     <provider.icon className="h-4 w-4" />
@@ -207,28 +188,16 @@ function SignupContent() {
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-gray-500">
-                  Or continue with email
-                </span>
+                <span className="bg-white px-2 text-gray-500">Or continue with email</span>
               </div>
             </div>
 
-            {!showEmailForm ? (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setShowEmailForm(true)}
-                disabled={isLoading}
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                Continue with Email
-              </Button>
-            ) : (
+            {showEmailForm ? (
               <form onSubmit={handleEmailSignup} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <User className="absolute top-3 left-3 h-4 w-4 text-gray-400" />
                     <Input
                       id="name"
                       type="text"
@@ -245,7 +214,7 @@ function SignupContent() {
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Mail className="absolute top-3 left-3 h-4 w-4 text-gray-400" />
                     <Input
                       id="email"
                       type="email"
@@ -262,7 +231,7 @@ function SignupContent() {
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Lock className="absolute top-3 left-3 h-4 w-4 text-gray-400" />
                     <Input
                       id="password"
                       type="password"
@@ -275,15 +244,13 @@ function SignupContent() {
                       className="pl-10"
                     />
                   </div>
-                  <p className="text-xs text-gray-500">
-                    Must be at least 8 characters long
-                  </p>
+                  <p className="text-gray-500 text-xs">Must be at least 8 characters long</p>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">Confirm Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Lock className="absolute top-3 left-3 h-4 w-4 text-gray-400" />
                     <Input
                       id="confirmPassword"
                       type="password"
@@ -312,22 +279,26 @@ function SignupContent() {
                   </Button>
                 </div>
               </form>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowEmailForm(true)}
+                disabled={isLoading}
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                Continue with Email
+              </Button>
             )}
 
             {/* Terms */}
-            <div className="text-center text-xs text-gray-600">
+            <div className="text-center text-gray-600 text-xs">
               By creating an account, you agree to our{' '}
-              <a
-                href="/terms"
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
+              <a href="/terms" className="font-medium text-blue-600 hover:text-blue-500">
                 Terms of Service
               </a>{' '}
               and{' '}
-              <a
-                href="/privacy"
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
+              <a href="/privacy" className="font-medium text-blue-600 hover:text-blue-500">
                 Privacy Policy
               </a>
             </div>
@@ -335,7 +306,7 @@ function SignupContent() {
         </Card>
 
         {/* Sign In Link */}
-        <div className="text-center text-sm text-gray-600">
+        <div className="text-center text-gray-600 text-sm">
           Already have an account?{' '}
           <button
             className="font-medium text-blue-600 hover:text-blue-500"
@@ -353,8 +324,8 @@ export default function SignupPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-blue-600 border-b-2"></div>
         </div>
       }
     >

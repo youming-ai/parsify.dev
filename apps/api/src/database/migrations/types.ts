@@ -170,11 +170,7 @@ export interface MigrationLogger {
   info(message: string, ...args: any[]): void
   warn(message: string, ...args: any[]): void
   error(message: string, ...args: any[]): void
-  log(
-    level: 'debug' | 'info' | 'warn' | 'error',
-    message: string,
-    ...args: any[]
-  ): void
+  log(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: any[]): void
 }
 
 export interface MigrationStorage {
@@ -182,11 +178,7 @@ export interface MigrationStorage {
   getAppliedMigrations(): Promise<MigrationRecord[]>
   recordMigration(migration: Migration, executionTime: number): Promise<void>
   recordRollback(migration: Migration, executionTime: number): Promise<void>
-  updateMigrationStatus(
-    id: string,
-    status: MigrationStatus,
-    error?: string
-  ): Promise<void>
+  updateMigrationStatus(id: string, status: MigrationStatus, error?: string): Promise<void>
   cleanup(): Promise<void>
 }
 

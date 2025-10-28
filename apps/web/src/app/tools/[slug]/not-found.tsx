@@ -1,22 +1,18 @@
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import {
   AlertCircle,
   ArrowLeft,
-  Search,
-  FileText,
   FileJson,
-  Terminal,
-  Shield,
+  FileText,
+  Hash,
+  Search,
   Settings,
+  Shield,
+  Terminal,
+  Zap,
 } from 'lucide-react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { getPopularTools, getToolsByCategory } from '@/data/tools-data'
 
 export default function ToolNotFound() {
@@ -34,7 +30,7 @@ export default function ToolNotFound() {
   return (
     <div className="container mx-auto py-6">
       {/* Breadcrumb Navigation */}
-      <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+      <nav className="mb-6 flex items-center space-x-2 text-gray-600 text-sm">
         <Link href="/" className="hover:text-gray-900">
           Home
         </Link>
@@ -43,24 +39,22 @@ export default function ToolNotFound() {
           Tools
         </Link>
         <span>/</span>
-        <span className="text-gray-900 font-medium">Not Found</span>
+        <span className="font-medium text-gray-900">Not Found</span>
       </nav>
 
       {/* 404 Content */}
-      <div className="text-center py-16">
-        <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-6" />
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Tool Not Found
-        </h1>
-        <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-8">
-          The tool you're looking for doesn't exist or has been moved. Browse
-          our available tools below or search for what you need.
+      <div className="py-16 text-center">
+        <AlertCircle className="mx-auto mb-6 h-16 w-16 text-gray-400" />
+        <h1 className="mb-4 font-bold text-3xl text-gray-900">Tool Not Found</h1>
+        <p className="mx-auto mb-8 max-w-2xl text-gray-600 text-lg">
+          The tool you're looking for doesn't exist or has been moved. Browse our available tools
+          below or search for what you need.
         </p>
 
-        <div className="flex gap-4 justify-center mb-12">
+        <div className="mb-12 flex justify-center gap-4">
           <Link href="/tools">
             <Button>
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Tools
             </Button>
           </Link>
@@ -72,20 +66,18 @@ export default function ToolNotFound() {
 
       {/* Popular Tools Section */}
       <div className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Popular Tools</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <h2 className="mb-6 font-bold text-2xl">Popular Tools</h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {popularTools.map(tool => {
             const Icon = getToolIcon(tool.icon)
             return (
-              <Card key={tool.id} className="hover:shadow-md transition-shadow">
+              <Card key={tool.id} className="transition-shadow hover:shadow-md">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
-                    <Icon className="w-5 h-5 text-blue-600" />
+                    <Icon className="h-5 w-5 text-blue-600" />
                     <CardTitle className="text-lg">{tool.name}</CardTitle>
                   </div>
-                  <CardDescription className="text-sm">
-                    {tool.description}
-                  </CardDescription>
+                  <CardDescription className="text-sm">{tool.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <Link href={tool.href}>
@@ -102,20 +94,17 @@ export default function ToolNotFound() {
 
       {/* Categories Section */}
       <div className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Browse by Category</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <h2 className="mb-6 font-bold text-2xl">Browse by Category</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {categories.map(category => {
             const toolsInCategory = getToolsByCategory(category)
             const Icon = getCategoryIcon(category)
             return (
-              <Card
-                key={category}
-                className="hover:shadow-md transition-shadow cursor-pointer"
-              >
+              <Card key={category} className="cursor-pointer transition-shadow hover:shadow-md">
                 <Link href={`/tools?category=${encodeURIComponent(category)}`}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-2">
-                      <Icon className="w-5 h-5 text-blue-600" />
+                      <Icon className="h-5 w-5 text-blue-600" />
                       <CardTitle className="text-lg">{category}</CardTitle>
                     </div>
                     <CardDescription className="text-sm">
@@ -131,21 +120,20 @@ export default function ToolNotFound() {
 
       {/* Search Section */}
       <div className="text-center">
-        <Card className="max-w-2xl mx-auto">
+        <Card className="mx-auto max-w-2xl">
           <CardHeader>
             <CardTitle className="flex items-center justify-center gap-2">
-              <Search className="w-5 h-5" />
+              <Search className="h-5 w-5" />
               Can't find what you're looking for?
             </CardTitle>
             <CardDescription>
-              Try searching for a specific tool or browse our complete
-              collection
+              Try searching for a specific tool or browse our complete collection
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/tools">
               <Button className="w-full">
-                <Search className="w-4 h-4 mr-2" />
+                <Search className="mr-2 h-4 w-4" />
                 Browse All Tools
               </Button>
             </Link>

@@ -1,26 +1,15 @@
-import { User, UserSchema } from '../models/user'
+import { createDatabaseClient, type DatabaseClient, IsolationLevel } from '../database'
+import { AUDIT_LOG_QUERIES, AuditLog } from '../models/audit_log'
 import {
-  AuthIdentity,
-  AuthIdentitySchema,
-  GoogleProviderData,
-  GitHubProviderData,
-  OAuth2ProviderData,
   AUTH_IDENTITY_QUERIES,
+  AuthIdentity,
+  type GitHubProviderData,
+  type GoogleProviderData,
+  type OAuth2ProviderData,
 } from '../models/auth_identity'
-import { AuditLog, AUDIT_LOG_QUERIES } from '../models/audit_log'
-import {
-  QuotaCounter,
-  QuotaLimit,
-  QUOTA_COUNTER_QUERIES,
-} from '../models/quota_counter'
-import {
-  DatabaseClient,
-  createDatabaseClient,
-  TransactionHelper,
-  IsolationLevel,
-} from '../database'
-import { CloudflareService } from './cloudflare/cloudflare-service'
-import { KVCacheService } from './cloudflare/kv-cache'
+import { User } from '../models/user'
+import type { CloudflareService } from './cloudflare/cloudflare-service'
+import type { KVCacheService } from './cloudflare/kv-cache'
 
 export interface AuthServiceOptions {
   db: D1Database
@@ -126,9 +115,7 @@ export class AuthService {
       }
 
       // Get user profile from Google
-      const userProfile = await this.getGoogleUserProfile(
-        tokenData.access_token
-      )
+      const userProfile = await this.getGoogleUserProfile(tokenData.access_token)
       if (!userProfile.email) {
         return { success: false, error: 'Failed to obtain user profile' }
       }
@@ -182,17 +169,13 @@ export class AuthService {
       }
 
       // Get user profile from GitHub
-      const userProfile = await this.getGitHubUserProfile(
-        tokenData.access_token
-      )
+      const userProfile = await this.getGitHubUserProfile(tokenData.access_token)
       if (!userProfile.id) {
         return { success: false, error: 'Failed to obtain user profile' }
       }
 
       // Get user email (may require additional API call)
-      const userEmail =
-        userProfile.email ||
-        (await this.getGitHubUserEmail(tokenData.access_token))
+      const userEmail = userProfile.email || (await this.getGitHubUserEmail(tokenData.access_token))
 
       // Find or create user
       const result = await this.findOrCreateUserFromOAuth(
@@ -244,10 +227,7 @@ export class AuthService {
       }
 
       // Get user info from OAuth2 provider
-      const userInfo = await this.getOAuth2UserInfo(
-        provider,
-        tokenData.access_token
-      )
+      const userInfo = await this.getOAuth2UserInfo(provider, tokenData.access_token)
       if (!userInfo.sub) {
         return { success: false, error: 'Failed to obtain user info' }
       }
@@ -269,12 +249,7 @@ export class AuthService {
 
       // Create auth identity if it doesn't exist
       if (result.user && !result.isNewUser) {
-        await this.createOrUpdateAuthIdentity(
-          result.user.id,
-          'oauth2',
-          userInfo.sub,
-          userInfo
-        )
+        await this.createOrUpdateAuthIdentity(result.user.id, 'oauth2', userInfo.sub, userInfo)
       }
 
       return result
@@ -285,11 +260,7 @@ export class AuthService {
   }
 
   // Session management
-  async createSession(
-    userId?: string,
-    ipAddress: string,
-    userAgent: string
-  ): Promise<string> {
+  async createSession(userId?: string, ipAddress: string, userAgent: string): Promise<string> {
     const sessionId = crypto.randomUUID()
     const now = Math.floor(Date.now() / 1000)
 
@@ -370,10 +341,7 @@ export class AuthService {
     }
   }
 
-  async updateSession(
-    sessionId: string,
-    updates: Partial<SessionData>
-  ): Promise<boolean> {
+  async updateSession(sessionId: string, updates: Partial<SessionData>): Promise<boolean> {
     try {
       const session = await this.getSession(sessionId)
       if (!session) {
@@ -389,13 +357,9 @@ export class AuthService {
         })
       } else {
         // Fallback to direct KV storage
-        await this.kv.put(
-          `session:${sessionId}`,
-          JSON.stringify(updatedSession),
-          {
-            expirationTtl: this.sessionTimeoutMinutes * 60,
-          }
-        )
+        await this.kv.put(`session:${sessionId}`, JSON.stringify(updatedSession), {
+          expirationTtl: this.sessionTimeoutMinutes * 60,
+        })
       }
 
       return true
@@ -441,10 +405,7 @@ export class AuthService {
     return `${encodedHeader}.${encodedPayload}.${signature}`
   }
 
-  async verifyToken(
-    token: string,
-    ipAddress: string
-  ): Promise<TokenPayload | null> {
+  async verifyToken(token: string, ipAddress: string): Promise<TokenPayload | null> {
     try {
       const [header, payload, signature] = token.split('.')
       if (!header || !payload || !signature) {
@@ -495,11 +456,11 @@ export class AuthService {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        client_id: this.providers.google!.clientId,
-        client_secret: this.providers.google!.clientSecret,
+        client_id: this.providers.google?.clientId,
+        client_secret: this.providers.google?.clientSecret,
         code,
         grant_type: 'authorization_code',
-        redirect_uri: this.providers.google!.redirectUri,
+        redirect_uri: this.providers.google?.redirectUri,
       }),
     })
 
@@ -510,17 +471,12 @@ export class AuthService {
     return response.json()
   }
 
-  private async getGoogleUserProfile(
-    accessToken: string
-  ): Promise<GoogleProviderData> {
-    const response = await fetch(
-      'https://www.googleapis.com/oauth2/v2/userinfo',
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    )
+  private async getGoogleUserProfile(accessToken: string): Promise<GoogleProviderData> {
+    const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
 
     if (!response.ok) {
       throw new Error('Failed to get Google user profile')
@@ -530,22 +486,19 @@ export class AuthService {
   }
 
   private async exchangeGitHubCode(code: string): Promise<any> {
-    const response = await fetch(
-      'https://github.com/login/oauth/access_token',
-      {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          client_id: this.providers.github!.clientId,
-          client_secret: this.providers.github!.clientSecret,
-          code,
-          redirect_uri: this.providers.github!.redirectUri,
-        }),
-      }
-    )
+    const response = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        client_id: this.providers.github?.clientId,
+        client_secret: this.providers.github?.clientSecret,
+        code,
+        redirect_uri: this.providers.github?.redirectUri,
+      }),
+    })
 
     if (!response.ok) {
       throw new Error('Failed to exchange GitHub code')
@@ -554,9 +507,7 @@ export class AuthService {
     return response.json()
   }
 
-  private async getGitHubUserProfile(
-    accessToken: string
-  ): Promise<GitHubProviderData> {
+  private async getGitHubUserProfile(accessToken: string): Promise<GitHubProviderData> {
     const response = await fetch('https://api.github.com/user', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -571,9 +522,7 @@ export class AuthService {
     return response.json()
   }
 
-  private async getGitHubUserEmail(
-    accessToken: string
-  ): Promise<string | null> {
+  private async getGitHubUserEmail(accessToken: string): Promise<string | null> {
     const response = await fetch('https://api.github.com/user/emails', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -586,16 +535,11 @@ export class AuthService {
     }
 
     const emails = await response.json()
-    const primaryEmail = emails.find(
-      (email: any) => email.primary && email.verified
-    )
+    const primaryEmail = emails.find((email: any) => email.primary && email.verified)
     return primaryEmail?.email || null
   }
 
-  private async exchangeOAuth2Code(
-    provider: string,
-    code: string
-  ): Promise<any> {
+  private async exchangeOAuth2Code(provider: string, code: string): Promise<any> {
     // Generic OAuth2 implementation - customize based on provider
     const config = this.providers.oauth2!
 
@@ -652,19 +596,12 @@ export class AuthService {
   ): Promise<AuthResult> {
     try {
       // Check if auth identity already exists
-      const existingAuthIdentity = await this.getAuthIdentity(
-        provider,
-        providerUid
-      )
+      const existingAuthIdentity = await this.getAuthIdentity(provider, providerUid)
       if (existingAuthIdentity) {
         const user = await this.getUserById(existingAuthIdentity.user_id)
         if (user) {
           // Create session for existing user
-          const sessionId = await this.createSession(
-            user.id,
-            ipAddress,
-            userAgent
-          )
+          const sessionId = await this.createSession(user.id, ipAddress, userAgent)
           return { success: true, user, sessionId, isNewUser: false }
         }
       }
@@ -724,9 +661,7 @@ export class AuthService {
                 auditLog.action,
                 auditLog.resource_type,
                 auditLog.resource_id,
-                auditLog.new_values
-                  ? JSON.stringify(auditLog.new_values)
-                  : null,
+                auditLog.new_values ? JSON.stringify(auditLog.new_values) : null,
                 auditLog.ip_address,
                 auditLog.user_agent,
                 auditLog.success,
@@ -770,9 +705,7 @@ export class AuthService {
             authIdentity.user_id,
             authIdentity.provider,
             authIdentity.provider_uid,
-            authIdentity.provider_data
-              ? JSON.stringify(authIdentity.provider_data)
-              : null,
+            authIdentity.provider_data ? JSON.stringify(authIdentity.provider_data) : null,
             authIdentity.created_at,
           ])
 
@@ -824,68 +757,13 @@ export class AuthService {
     }
   }
 
-  // Database helper methods
-  private async createUser(
-    userData: any,
-    ipAddress?: string,
-    userAgent?: string
-  ): Promise<User> {
-    const user = User.create(userData)
-
-    await this.client.execute(USER_QUERIES.INSERT, [
-      user.id,
-      user.email,
-      user.name,
-      user.avatar_url,
-      user.subscription_tier,
-      user.preferences ? JSON.stringify(user.preferences) : null,
-      user.created_at,
-      user.updated_at,
-      user.last_login_at,
-    ])
-
-    // Cache the new user
-    if (this.cacheService && this.enableAdvancedCaching) {
-      await this.cacheService.set(`user:${user.id}`, user, {
-        namespace: 'cache',
-        ttl: 3600, // 1 hour
-        tags: ['user', `user_tier:${user.subscription_tier}`],
-        dependencies: [`email:${user.email}`],
-      })
-
-      await this.cacheService.set(`user_by_email:${user.email}`, user, {
-        namespace: 'cache',
-        ttl: 3600,
-        tags: ['user', 'email_lookup'],
-        dependencies: [`user:${user.id}`],
-      })
-    }
-
-    // Log audit event
-    if (this.auditEnabled) {
-      await this.logAudit({
-        action: 'register',
-        resource_type: 'user',
-        resource_id: user.id,
-        new_values: { email: user.email, name: user.name },
-        ipAddress,
-        userAgent,
-      })
-    }
-
-    return user
-  }
-
   private async getUserById(userId: string): Promise<User | null> {
     // Try cache first
     if (this.cacheService && this.enableAdvancedCaching) {
       return this.cacheService.getOrSet(
         `user:${userId}`,
         async () => {
-          const result = await this.client.queryFirst(
-            USER_QUERIES.SELECT_BY_ID,
-            [userId]
-          )
+          const result = await this.client.queryFirst(USER_QUERIES.SELECT_BY_ID, [userId])
           return result ? User.fromRow(result) : null
         },
         {
@@ -898,9 +776,7 @@ export class AuthService {
     }
 
     // Fallback to database
-    const result = await this.client.queryFirst(USER_QUERIES.SELECT_BY_ID, [
-      userId,
-    ])
+    const result = await this.client.queryFirst(USER_QUERIES.SELECT_BY_ID, [userId])
     return result ? User.fromRow(result) : null
   }
 
@@ -910,10 +786,7 @@ export class AuthService {
       return this.cacheService.getOrSet(
         `user_by_email:${email}`,
         async () => {
-          const result = await this.client.queryFirst(
-            USER_QUERIES.SELECT_BY_EMAIL,
-            [email]
-          )
+          const result = await this.client.queryFirst(USER_QUERIES.SELECT_BY_EMAIL, [email])
           return result ? User.fromRow(result) : null
         },
         {
@@ -926,9 +799,7 @@ export class AuthService {
     }
 
     // Fallback to database
-    const result = await this.client.queryFirst(USER_QUERIES.SELECT_BY_EMAIL, [
-      email,
-    ])
+    const result = await this.client.queryFirst(USER_QUERIES.SELECT_BY_EMAIL, [email])
     return result ? User.fromRow(result) : null
   }
 
@@ -936,9 +807,7 @@ export class AuthService {
     provider: string,
     providerUid: string
   ): Promise<AuthIdentity | null> {
-    const stmt = this.db.prepare(
-      AUTH_IDENTITY_QUERIES.SELECT_BY_PROVIDER_AND_UID
-    )
+    const stmt = this.db.prepare(AUTH_IDENTITY_QUERIES.SELECT_BY_PROVIDER_AND_UID)
     const result = await stmt.bind(provider, providerUid).first()
     return result ? AuthIdentity.fromRow(result) : null
   }
@@ -961,9 +830,7 @@ export class AuthService {
       authIdentity.user_id,
       authIdentity.provider,
       authIdentity.provider_uid,
-      authIdentity.provider_data
-        ? JSON.stringify(authIdentity.provider_data)
-        : null,
+      authIdentity.provider_data ? JSON.stringify(authIdentity.provider_data) : null,
       authIdentity.created_at,
     ])
 
@@ -988,55 +855,7 @@ export class AuthService {
       return existing
     } else {
       // Create new identity
-      return this.createAuthIdentity(
-        userId,
-        provider,
-        providerUid,
-        providerData
-      )
-    }
-  }
-
-  private async logAudit(options: {
-    action: string
-    resource_type: string
-    resource_id: string
-    old_values?: Record<string, any>
-    new_values?: Record<string, any>
-    ipAddress?: string
-    userAgent?: string
-  }): Promise<void> {
-    if (!this.auditEnabled) return
-
-    try {
-      const auditLog = AuditLog.create({
-        user_id: options.resource_id,
-        action: options.action as any,
-        resource_type: options.resource_type as any,
-        resource_id: options.resource_id,
-        old_values: options.old_values || null,
-        new_values: options.new_values || null,
-        ip_address: options.ipAddress || null,
-        user_agent: options.userAgent || null,
-        success: true,
-      })
-
-      await this.client.execute(AUDIT_LOG_QUERIES.INSERT, [
-        auditLog.id,
-        auditLog.user_id,
-        auditLog.action,
-        auditLog.resource_type,
-        auditLog.resource_id,
-        auditLog.old_values ? JSON.stringify(auditLog.old_values) : null,
-        auditLog.new_values ? JSON.stringify(auditLog.new_values) : null,
-        auditLog.ip_address,
-        auditLog.user_agent,
-        auditLog.success,
-        auditLog.error_message,
-        auditLog.created_at,
-      ])
-    } catch (error) {
-      console.error('Failed to log audit event:', error)
+      return this.createAuthIdentity(userId, provider, providerUid, providerData)
     }
   }
 
@@ -1047,13 +866,9 @@ export class AuthService {
     const messageData = encoder.encode(data)
 
     return crypto.subtle
-      .importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, [
-        'sign',
-      ])
+      .importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
       .then(key => crypto.subtle.sign('HMAC', key, messageData))
-      .then(signature =>
-        btoa(String.fromCharCode(...new Uint8Array(signature)))
-      )
+      .then(signature => btoa(String.fromCharCode(...new Uint8Array(signature))))
       .then(encoded => encoded) as any
   }
 
@@ -1079,7 +894,7 @@ export class AuthService {
       } else {
         // Fallback to direct KV
         const count = await this.kv.get(key)
-        const currentCount = parseInt(count || '0')
+        const currentCount = parseInt(count || '0', 10)
 
         if (currentCount >= 10) {
           return false

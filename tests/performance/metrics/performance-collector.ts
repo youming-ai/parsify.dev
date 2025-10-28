@@ -57,10 +57,10 @@ export class InMemoryMetricsCollector implements PerformanceMetricsCollector {
     const enrichedResults = {
       ...results,
       timestamp,
-      testName
+      testName,
     }
 
-    this.metrics.get(testName)!.push(enrichedResults)
+    this.metrics.get(testName)?.push(enrichedResults)
 
     // Check for performance alerts
     this.checkAlerts(testName, enrichedResults)
@@ -84,7 +84,7 @@ export class InMemoryMetricsCollector implements PerformanceMetricsCollector {
         threshold: 500,
         actualValue: results.p95,
         testName,
-        timestamp
+        timestamp,
       })
     }
 
@@ -98,7 +98,7 @@ export class InMemoryMetricsCollector implements PerformanceMetricsCollector {
         threshold: 0.95,
         actualValue: successRate,
         testName,
-        timestamp
+        timestamp,
       })
     }
 
@@ -111,7 +111,7 @@ export class InMemoryMetricsCollector implements PerformanceMetricsCollector {
         threshold: 10,
         actualValue: results.requestsPerSecond,
         testName,
-        timestamp
+        timestamp,
       })
     }
 
@@ -142,14 +142,18 @@ Generated: ${new Date().toISOString()}
     if (recentAlerts.length > 0) {
       report += `
 ## Recent Alerts
-${recentAlerts.map(alert => `
+${recentAlerts
+  .map(
+    alert => `
 - **${alert.level.toUpperCase()}**: ${alert.message}
   - Test: ${alert.testName}
   - Metric: ${alert.metric}
   - Threshold: ${alert.threshold}
   - Actual: ${alert.actualValue}
   - Time: ${alert.timestamp.toISOString()}
-`).join('')}
+`
+  )
+  .join('')}
 `
     }
 
@@ -161,8 +165,11 @@ ${recentAlerts.map(alert => `
       report += `
 ## ${testName}
 - Latest P95: ${latestResult.p95?.toFixed(2) || 'N/A'}ms
-- Latest Success Rate: ${latestResult.successfulRequests && latestResult.totalRequests ?
-    ((latestResult.successfulRequests / latestResult.totalRequests) * 100).toFixed(1) + '%' : 'N/A'}
+- Latest Success Rate: ${
+        latestResult.successfulRequests && latestResult.totalRequests
+          ? `${((latestResult.successfulRequests / latestResult.totalRequests) * 100).toFixed(1)}%`
+          : 'N/A'
+      }
 - Latest Throughput: ${latestResult.requestsPerSecond?.toFixed(2) || 'N/A'} req/s
 - Test Runs: ${testResults.length}
 `
@@ -188,18 +195,21 @@ ${recentAlerts.map(alert => `
     const data = {
       timestamp: new Date().toISOString(),
       summary: Object.fromEntries(this.metrics.entries()),
-      alerts: this.alerts
+      alerts: this.alerts,
     }
     return JSON.stringify(data, null, 2)
   }
 
   private exportCSV(): string {
-    let csv = 'Test Name,Timestamp,P95 Response Time,Success Rate,Throughput,Total Requests,Successful Requests\n'
+    let csv =
+      'Test Name,Timestamp,P95 Response Time,Success Rate,Throughput,Total Requests,Successful Requests\n'
 
     for (const [testName, testResults] of this.metrics.entries()) {
       for (const result of testResults) {
-        const successRate = result.successfulRequests && result.totalRequests ?
-          ((result.successfulRequests / result.totalRequests) * 100).toFixed(2) : 'N/A'
+        const successRate =
+          result.successfulRequests && result.totalRequests
+            ? ((result.successfulRequests / result.totalRequests) * 100).toFixed(2)
+            : 'N/A'
 
         csv += `"${testName}","${result.timestamp}",${result.p95 || 'N/A'},${successRate},${result.requestsPerSecond || 'N/A'},${result.totalRequests || 'N/A'},${result.successfulRequests || 'N/A'}\n`
       }
@@ -242,20 +252,34 @@ ${recentAlerts.map(alert => `
         </div>
         <div class="metric">
             <h3>Total Requests</h3>
-            <p>${Object.values(summary).reduce((sum: number, results: any) =>
-              sum + results.reduce((s: number, r: any) => s + (r.totalRequests || 0), 0), 0).toLocaleString()}</p>
+            <p>${Object.values(summary)
+              .reduce(
+                (sum: number, results: any) =>
+                  sum + results.reduce((s: number, r: any) => s + (r.totalRequests || 0), 0),
+                0
+              )
+              .toLocaleString()}</p>
         </div>
     </div>
 
-    ${this.alerts.length > 0 ? `
+    ${
+      this.alerts.length > 0
+        ? `
     <h2>Recent Alerts</h2>
-    ${this.alerts.slice(-10).map(alert => `
+    ${this.alerts
+      .slice(-10)
+      .map(
+        alert => `
         <div class="alert ${alert.level}">
             <strong>${alert.level.toUpperCase()}</strong>: ${alert.message}
             <br><small>Test: ${alert.testName} | ${alert.timestamp.toISOString()}</small>
         </div>
-    `).join('')}
-    ` : ''}
+    `
+      )
+      .join('')}
+    `
+        : ''
+    }
 
     <h2>Test Results</h2>
     <table>
@@ -266,12 +290,15 @@ ${recentAlerts.map(alert => `
             <th>Throughput (req/s)</th>
             <th>Runs</th>
         </tr>
-        ${Object.entries(summary).map(([testName, results]: [string, any]) => {
-          const latest = results[results.length - 1]
-          const successRate = latest.successfulRequests && latest.totalRequests ?
-            ((latest.successfulRequests / latest.totalRequests) * 100).toFixed(1) + '%' : 'N/A'
+        ${Object.entries(summary)
+          .map(([testName, results]: [string, any]) => {
+            const latest = results[results.length - 1]
+            const successRate =
+              latest.successfulRequests && latest.totalRequests
+                ? `${((latest.successfulRequests / latest.totalRequests) * 100).toFixed(1)}%`
+                : 'N/A'
 
-          return `
+            return `
             <tr>
                 <td>${testName}</td>
                 <td>${latest.p95?.toFixed(2) || 'N/A'}</td>
@@ -280,7 +307,8 @@ ${recentAlerts.map(alert => `
                 <td>${results.length}</td>
             </tr>
           `
-        }).join('')}
+          })
+          .join('')}
     </table>
 </body>
 </html>
@@ -289,31 +317,33 @@ ${recentAlerts.map(alert => `
 
   async getTrends(testName: string, timeRange: TimeRange): Promise<TrendData[]> {
     const results = this.metrics.get(testName) || []
-    const filteredResults = results.filter(r =>
-      r.timestamp >= timeRange.start && r.timestamp <= timeRange.end
+    const filteredResults = results.filter(
+      r => r.timestamp >= timeRange.start && r.timestamp <= timeRange.end
     )
 
-    return filteredResults.map(result => [
+    return filteredResults.flatMap(result => [
       {
         timestamp: result.timestamp,
         metric: 'p95_response_time',
         value: result.p95 || 0,
-        testName
+        testName,
       },
       {
         timestamp: result.timestamp,
         metric: 'success_rate',
-        value: result.successfulRequests && result.totalRequests ?
-          (result.successfulRequests / result.totalRequests) * 100 : 0,
-        testName
+        value:
+          result.successfulRequests && result.totalRequests
+            ? (result.successfulRequests / result.totalRequests) * 100
+            : 0,
+        testName,
       },
       {
         timestamp: result.timestamp,
         metric: 'throughput',
         value: result.requestsPerSecond || 0,
-        testName
-      }
-    ]).flat()
+        testName,
+      },
+    ])
   }
 
   async getSummary(): Promise<PerformanceSummary> {
@@ -328,7 +358,7 @@ ${recentAlerts.map(alert => `
         slowestEndpoint: 'N/A',
         fastestEndpoint: 'N/A',
         testRunDuration: 0,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       }
     }
 
@@ -337,8 +367,8 @@ ${recentAlerts.map(alert => `
     const averageSuccessRate = successfulRequests / totalRequests
 
     const p95Values = allResults.filter(r => r.p95).map(r => r.p95)
-    const averageP95ResponseTime = p95Values.length > 0 ?
-      p95Values.reduce((sum, p95) => sum + p95, 0) / p95Values.length : 0
+    const averageP95ResponseTime =
+      p95Values.length > 0 ? p95Values.reduce((sum, p95) => sum + p95, 0) / p95Values.length : 0
 
     // Find endpoints
     const endpointPerformance = new Map<string, { avgP95: number; count: number }>()
@@ -355,15 +385,16 @@ ${recentAlerts.map(alert => `
       }
     })
 
-    const sortedEndpoints = Array.from(endpointPerformance.entries())
-      .sort(([, a], [, b]) => a.avgP95 - b.avgP95)
+    const sortedEndpoints = Array.from(endpointPerformance.entries()).sort(
+      ([, a], [, b]) => a.avgP95 - b.avgP95
+    )
 
     const fastestEndpoint = sortedEndpoints[0]?.[0] || 'N/A'
     const slowestEndpoint = sortedEndpoints[sortedEndpoints.length - 1]?.[0] || 'N/A'
 
     const timestamps = allResults.map(r => new Date(r.timestamp).getTime())
-    const testRunDuration = timestamps.length > 0 ?
-      Math.max(...timestamps) - Math.min(...timestamps) : 0
+    const testRunDuration =
+      timestamps.length > 0 ? Math.max(...timestamps) - Math.min(...timestamps) : 0
 
     return {
       totalTests: this.metrics.size,
@@ -373,7 +404,7 @@ ${recentAlerts.map(alert => `
       slowestEndpoint,
       fastestEndpoint,
       testRunDuration,
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     }
   }
 
@@ -429,11 +460,11 @@ export class PerformanceMonitor {
     this.collector.collect(testName, results)
 
     // Check if we need to trigger any alerts
-    const alerts = this.collector instanceof InMemoryMetricsCollector ?
-      this.collector.getAlerts() : []
+    const alerts =
+      this.collector instanceof InMemoryMetricsCollector ? this.collector.getAlerts() : []
 
-    const recentAlerts = alerts.filter(alert =>
-      Date.now() - alert.timestamp.getTime() < 60000 // Last minute
+    const recentAlerts = alerts.filter(
+      alert => Date.now() - alert.timestamp.getTime() < 60000 // Last minute
     )
 
     if (recentAlerts.length > 0) {
@@ -498,14 +529,14 @@ export class PerformanceAnalyzer {
       const trend = changePercent > 5 ? 'improving' : changePercent < -5 ? 'degrading' : 'stable'
 
       // Simple confidence calculation based on consistency
-      const variance = this.calculateVariance(values)
-      const confidence = Math.max(0, 1 - (variance / (firstAvg * firstAvg)))
+      const variance = PerformanceAnalyzer.calculateVariance(values)
+      const confidence = Math.max(0, 1 - variance / (firstAvg * firstAvg))
 
       analysis.push({
         metric,
         trend,
         changePercent,
-        confidence
+        confidence,
       })
     }
 
@@ -514,7 +545,7 @@ export class PerformanceAnalyzer {
 
   private static calculateVariance(values: number[]): number {
     const mean = values.reduce((sum, v) => sum + v, 0) / values.length
-    const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length
+    const variance = values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length
     return variance
   }
 
@@ -535,16 +566,16 @@ export class PerformanceAnalyzer {
       if (!grouped.has(key)) {
         grouped.set(key, [])
       }
-      grouped.get(key)!.push(result)
+      grouped.get(key)?.push(result)
     })
 
-    for (const [key, keyResults] of grouped.entries()) {
+    for (const [_key, keyResults] of grouped.entries()) {
       if (keyResults.length < 3) continue // Need at least 3 data points
 
       const p95Values = keyResults.map(r => r.p95).filter(v => v != null)
       const mean = p95Values.reduce((sum, v) => sum + v, 0) / p95Values.length
       const stdDev = Math.sqrt(
-        p95Values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / p95Values.length
+        p95Values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / p95Values.length
       )
 
       // Look for values that deviate significantly from the mean
@@ -561,7 +592,7 @@ export class PerformanceAnalyzer {
             metric: 'p95_response_time',
             value: result.p95,
             expectedValue: mean,
-            deviationPercent
+            deviationPercent,
           })
         }
       })
@@ -570,7 +601,10 @@ export class PerformanceAnalyzer {
     return anomalies
   }
 
-  static comparePerformance(baseline: any[], current: any[]): {
+  static comparePerformance(
+    baseline: any[],
+    current: any[]
+  ): {
     metric: string
     baselineValue: number
     currentValue: number
@@ -580,8 +614,8 @@ export class PerformanceAnalyzer {
     const comparison = []
 
     // Calculate baseline averages
-    const baselineAvg = this.calculateAverages(baseline)
-    const currentAvg = this.calculateAverages(current)
+    const baselineAvg = PerformanceAnalyzer.calculateAverages(baseline)
+    const currentAvg = PerformanceAnalyzer.calculateAverages(current)
 
     const allMetrics = new Set([...Object.keys(baselineAvg), ...Object.keys(currentAvg)])
 
@@ -603,7 +637,7 @@ export class PerformanceAnalyzer {
         baselineValue,
         currentValue,
         changePercent,
-        improvement
+        improvement,
       })
     }
 

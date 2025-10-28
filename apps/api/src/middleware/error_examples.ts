@@ -5,15 +5,15 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import {
-  errorMiddleware,
-  handleAsyncError,
-  createValidationError,
+  ApiError,
   createAuthenticationError,
   createDatabaseError,
   createRateLimitError,
   createTimeoutError,
-  ApiError,
-  ValidationError
+  createValidationError,
+  errorMiddleware,
+  handleAsyncError,
+  ValidationError,
 } from './error'
 
 // Example 1: Basic setup with error middleware
@@ -23,14 +23,14 @@ const app = new Hono()
 app.use('*', errorMiddleware())
 
 // Example 2: Route with manual error handling
-app.post('/users', async (c) => {
+app.post('/users', async c => {
   const body = await c.req.json()
 
   // Manual validation error
   if (!body.email || !body.email.includes('@')) {
     throw createValidationError('Invalid email format', 'email', {
       provided: body.email,
-      expected: 'valid email address'
+      expected: 'valid email address',
     })
   }
 
@@ -44,47 +44,44 @@ app.post('/users', async (c) => {
   try {
     const user = await createUser(body)
     return c.json({ user }, 201)
-  } catch (error) {
+  } catch (_error) {
     throw createDatabaseError('Failed to create user', {
       operation: 'create_user',
-      email: body.email
+      email: body.email,
     })
   }
 })
 
 // Example 3: Using handleAsyncError for automatic error handling
-app.get('/posts/:id', handleAsyncError(async (c) => {
-  const id = c.req.param('id')
+app.get(
+  '/posts/:id',
+  handleAsyncError(async c => {
+    const id = c.req.param('id')
 
-  // This will automatically handle any errors thrown
-  const post = await getPostById(id)
-  if (!post) {
-    throw new ValidationError('Post not found', 'id', { provided: id })
-  }
+    // This will automatically handle any errors thrown
+    const post = await getPostById(id)
+    if (!post) {
+      throw new ValidationError('Post not found', 'id', { provided: id })
+    }
 
-  return c.json({ post })
-}))
+    return c.json({ post })
+  })
+)
 
 // Example 4: Zod validation integration
 const createUserSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email format'),
-  age: z.number().min(18, 'Must be at least 18 years old')
+  age: z.number().min(18, 'Must be at least 18 years old'),
 })
 
-app.post('/users/validated', async (c) => {
-  try {
-    const body = await c.req.json()
-    const validatedData = createUserSchema.parse(body)
+app.post('/users/validated', async c => {
+  const body = await c.req.json()
+  const validatedData = createUserSchema.parse(body)
 
-    // Process validated data
-    const user = await createUser(validatedData)
-    return c.json({ user }, 201)
-
-  } catch (error) {
-    // ZodError will be automatically handled by the middleware
-    throw error
-  }
+  // Process validated data
+  const user = await createUser(validatedData)
+  return c.json({ user }, 201)
 })
 
 // Example 5: Custom error classes
@@ -98,17 +95,13 @@ class InsufficientQuotaError extends ApiError {
       'medium',
       { current, limit },
       true,
-      [
-        'Wait for quota to reset',
-        'Upgrade your plan',
-        'Reduce API usage'
-      ]
+      ['Wait for quota to reset', 'Upgrade your plan', 'Reduce API usage']
     )
     this.name = 'InsufficientQuotaError'
   }
 }
 
-app.post('/process-data', async (c) => {
+app.post('/process-data', async c => {
   const user = getCurrentUser(c)
 
   if (user.apiUsage >= user.apiLimit) {
@@ -155,7 +148,7 @@ class UserService {
     const existingUser = await this.findByEmail(userData.email)
     if (existingUser) {
       throw new ValidationError('User already exists', 'email', {
-        email: userData.email
+        email: userData.email,
       })
     }
 
@@ -163,10 +156,10 @@ class UserService {
     try {
       const user = await this.save(userData)
       return user
-    } catch (dbError) {
+    } catch (_dbError) {
       throw createDatabaseError('Failed to save user', {
         operation: 'create_user',
-        userData: userData.email
+        userData: userData.email,
       })
     }
   }
@@ -194,11 +187,10 @@ class PaymentService {
       return result
     } catch (error) {
       if (error.name === 'TimeoutError') {
-        throw createTimeoutError(
-          'Payment gateway timeout',
-          30000,
-          { gateway: 'stripe', amount: paymentData.amount }
-        )
+        throw createTimeoutError('Payment gateway timeout', 30000, {
+          gateway: 'stripe',
+          amount: paymentData.amount,
+        })
       }
 
       if (error.name === 'NetworkError') {
@@ -231,14 +223,14 @@ app.use('/api/premium/*', async (c, next) => {
   const key = `premium:${user.id}`
   const count = await redis.get(key)
 
-  if (count && parseInt(count) > 1000) {
+  if (count && parseInt(count, 10) > 1000) {
     throw createRateLimitError(
       'Premium rate limit exceeded',
       3600, // 1 hour
       {
         limit: 1000,
         current: count,
-        userId: user.id
+        userId: user.id,
       }
     )
   }
@@ -259,14 +251,14 @@ app.onError((err, c) => {
     userId: c.get('userId'),
     endpoint: c.req.path,
     method: c.req.method,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   }
 
   // Send to monitoring service (non-blocking)
   fetch('https://monitoring.example.com/errors', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(errorData)
+    body: JSON.stringify(errorData),
   }).catch(() => {
     // Ignore monitoring failures
   })
@@ -276,47 +268,52 @@ app.onError((err, c) => {
 })
 
 // Example 11: Error recovery strategies
-app.get('/data-with-fallback', handleAsyncError(async (c) => {
-  try {
-    // Try primary data source
-    const data = await getFromPrimarySource()
-    return c.json({ source: 'primary', data })
-  } catch (primaryError) {
-    console.warn('Primary source failed, trying fallback:', primaryError)
-
+app.get(
+  '/data-with-fallback',
+  handleAsyncError(async c => {
     try {
-      // Try fallback source
-      const data = await getFromFallbackSource()
-      return c.json({
-        source: 'fallback',
-        data,
-        warning: 'Using fallback data source'
-      })
-    } catch (fallbackError) {
-      // Both sources failed
-      throw new ApiError(
-        'All data sources unavailable',
-        'DATA_SOURCES_FAILED',
-        503,
-        'external_service',
-        'high',
-        {
-          primaryError: primaryError.message,
-          fallbackError: fallbackError.message
-        },
-        false,
-        ['Try again later', 'Contact support']
-      )
+      // Try primary data source
+      const data = await getFromPrimarySource()
+      return c.json({ source: 'primary', data })
+    } catch (primaryError) {
+      console.warn('Primary source failed, trying fallback:', primaryError)
+
+      try {
+        // Try fallback source
+        const data = await getFromFallbackSource()
+        return c.json({
+          source: 'fallback',
+          data,
+          warning: 'Using fallback data source',
+        })
+      } catch (fallbackError) {
+        // Both sources failed
+        throw new ApiError(
+          'All data sources unavailable',
+          'DATA_SOURCES_FAILED',
+          503,
+          'external_service',
+          'high',
+          {
+            primaryError: primaryError.message,
+            fallbackError: fallbackError.message,
+          },
+          false,
+          ['Try again later', 'Contact support']
+        )
+      }
     }
-  }
-}))
+  })
+)
 
 // Example 12: Error handling middleware with custom options
-const customErrorMiddleware = (options: {
-  logLevel?: 'debug' | 'info' | 'warn' | 'error'
-  includeStackTrace?: boolean
-  customLogger?: (error: Error, context: any) => void
-} = {}) => {
+const _customErrorMiddleware = (
+  _options: {
+    logLevel?: 'debug' | 'info' | 'warn' | 'error'
+    includeStackTrace?: boolean
+    customLogger?: (error: Error, context: any) => void
+  } = {}
+) => {
   return errorMiddleware()
 }
 
@@ -326,7 +323,7 @@ async function createUser(userData: any): Promise<any> {
   return { id: '1', ...userData }
 }
 
-async function getPostById(id: string): Promise<any> {
+async function getPostById(_id: string): Promise<any> {
   // Implementation
   return null
 }
@@ -335,16 +332,16 @@ function getCurrentUser(c: any): any {
   return c.get('user')
 }
 
-async function processData(data: any): Promise<any> {
+async function processData(_data: any): Promise<any> {
   // Implementation
   return { processed: true }
 }
 
-async function updateUserUsage(userId: string, usage: number): Promise<void> {
+async function updateUserUsage(_userId: string, _usage: number): Promise<void> {
   // Implementation
 }
 
-async function authenticateUser(authHeader: string): Promise<any> {
+async function authenticateUser(_authHeader: string): Promise<any> {
   // Implementation
   return { id: '1', email: 'user@example.com' }
 }

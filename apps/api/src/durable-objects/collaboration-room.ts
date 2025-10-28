@@ -5,8 +5,7 @@
  * and code editing with conflict resolution and version control.
  */
 
-import { DurableObjectState, DurableObjectStorage } from '@cloudflare/workers-types'
-import { User } from '../models/user'
+import type { DurableObjectState, DurableObjectStorage } from '@cloudflare/workers-types'
 
 // Room types and configurations
 export type RoomType = 'document' | 'chat' | 'whiteboard' | 'code' | 'presentation'
@@ -92,9 +91,16 @@ export interface RoomConfig {
 
 // Real-time events
 export interface RoomEvent {
-  type: 'user_joined' | 'user_left' | 'operation_applied' |
-        'cursor_moved' | 'selection_changed' | 'room_locked' |
-        'room_unlocked' | 'document_saved' | 'conflict_resolved'
+  type:
+    | 'user_joined'
+    | 'user_left'
+    | 'operation_applied'
+    | 'cursor_moved'
+    | 'selection_changed'
+    | 'room_locked'
+    | 'room_unlocked'
+    | 'document_saved'
+    | 'conflict_resolved'
   roomId: string
   userId?: string
   connectionId: string
@@ -158,7 +164,7 @@ export class CollaborationRoomDurableObject {
       totalMessages: 0,
       conflictsResolved: 0,
       autoSaves: 0,
-      peakParticipants: 0
+      peakParticipants: 0,
     }
 
     // Load room data from storage
@@ -209,11 +215,11 @@ export class CollaborationRoomDurableObject {
       return new Response(
         JSON.stringify({
           error: error instanceof Error ? error.message : 'Unknown error',
-          timestamp: Date.now()
+          timestamp: Date.now(),
         }),
         {
           status: 500,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       )
     }
@@ -260,11 +266,14 @@ export class CollaborationRoomDurableObject {
           sessionTimeoutMinutes: 30,
         })
 
-        const payload = await authService.verifyToken(token, request.headers.get('CF-Connecting-IP') || 'unknown')
+        const payload = await authService.verifyToken(
+          token,
+          request.headers.get('CF-Connecting-IP') || 'unknown'
+        )
         if (!payload) {
           return new Response('Invalid token', { status: 401 })
         }
-      } catch (error) {
+      } catch (_error) {
         return new Response('Token validation failed', { status: 401 })
       }
     }
@@ -288,7 +297,7 @@ export class CollaborationRoomDurableObject {
       joinedAt: Date.now(),
       lastActivity: Date.now(),
       status: 'active',
-      color: this.generateUserColor()
+      color: this.generateUserColor(),
     }
 
     // Add participant and connection
@@ -309,25 +318,27 @@ export class CollaborationRoomDurableObject {
     this.setupWebSocketHandlers(server, connectionId, userId)
 
     // Send welcome message with current room state
-    server.send(JSON.stringify({
-      type: 'room_joined',
-      connectionId,
-      room: {
-        id: this.roomId,
-        name: this.room?.name,
-        type: this.room?.type,
-        document: this.room?.document,
-        participants: Array.from(this.participants.values()),
-        settings: this.room?.settings
-      },
-      timestamp: Date.now()
-    }))
+    server.send(
+      JSON.stringify({
+        type: 'room_joined',
+        connectionId,
+        room: {
+          id: this.roomId,
+          name: this.room?.name,
+          type: this.room?.type,
+          document: this.room?.document,
+          participants: Array.from(this.participants.values()),
+          settings: this.room?.settings,
+        },
+        timestamp: Date.now(),
+      })
+    )
 
     // Notify other participants
     this.broadcastToOthers(connectionId, {
       type: 'user_joined',
       participant: this.sanitizeParticipant(participant),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     // Start auto-save if enabled
@@ -344,24 +355,26 @@ export class CollaborationRoomDurableObject {
     connectionId: string,
     userId?: string
   ): void {
-    websocket.addEventListener('message', async (event) => {
+    websocket.addEventListener('message', async event => {
       try {
         await this.handleWebSocketMessage(connectionId, event.data, userId)
       } catch (error) {
         console.error('WebSocket message error:', error)
-        websocket.send(JSON.stringify({
-          type: 'error',
-          error: error instanceof Error ? error.message : 'Unknown error',
-          timestamp: Date.now()
-        }))
+        websocket.send(
+          JSON.stringify({
+            type: 'error',
+            error: error instanceof Error ? error.message : 'Unknown error',
+            timestamp: Date.now(),
+          })
+        )
       }
     })
 
-    websocket.addEventListener('close', async (event) => {
+    websocket.addEventListener('close', async event => {
       await this.handleWebSocketClose(connectionId, userId, event)
     })
 
-    websocket.addEventListener('error', (error) => {
+    websocket.addEventListener('error', error => {
       console.error('WebSocket error:', error)
     })
   }
@@ -435,7 +448,7 @@ export class CollaborationRoomDurableObject {
       id: crypto.randomUUID(),
       authorId: userId,
       timestamp: Date.now(),
-      revision: this.currentRevision + 1
+      revision: this.currentRevision + 1,
     }
 
     // Add to operation queue
@@ -450,7 +463,7 @@ export class CollaborationRoomDurableObject {
     this.broadcastToOthers(connectionId, {
       type: 'operation_applied',
       operation,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     this.metrics.totalOperations++
@@ -459,10 +472,7 @@ export class CollaborationRoomDurableObject {
   /**
    * Handle cursor position updates
    */
-  private async handleCursorMessage(
-    connectionId: string,
-    message: RoomMessage
-  ): Promise<void> {
+  private async handleCursorMessage(connectionId: string, message: RoomMessage): Promise<void> {
     const participant = this.participants.get(connectionId)
     if (!participant) return
 
@@ -475,17 +485,14 @@ export class CollaborationRoomDurableObject {
       username: participant.username,
       color: participant.color,
       cursor: message.data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
   /**
    * Handle selection changes
    */
-  private async handleSelectionMessage(
-    connectionId: string,
-    message: RoomMessage
-  ): Promise<void> {
+  private async handleSelectionMessage(connectionId: string, message: RoomMessage): Promise<void> {
     const participant = this.participants.get(connectionId)
     if (!participant) return
 
@@ -496,17 +503,14 @@ export class CollaborationRoomDurableObject {
       username: participant.username,
       color: participant.color,
       selection: message.data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
   /**
    * Handle chat messages
    */
-  private async handleChatMessage(
-    connectionId: string,
-    message: RoomMessage
-  ): Promise<void> {
+  private async handleChatMessage(connectionId: string, message: RoomMessage): Promise<void> {
     const participant = this.participants.get(connectionId)
     if (!participant || !this.hasPermission(participant, 'chat')) {
       return
@@ -518,24 +522,21 @@ export class CollaborationRoomDurableObject {
       username: participant.username,
       color: participant.color,
       message: message.data.message,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
 
     // Broadcast chat message to all participants
     this.broadcastToAll({
       type: 'chat_message',
       chatMessage,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
   /**
    * Handle presence updates
    */
-  private async handlePresenceMessage(
-    connectionId: string,
-    message: RoomMessage
-  ): Promise<void> {
+  private async handlePresenceMessage(connectionId: string, message: RoomMessage): Promise<void> {
     const participant = this.participants.get(connectionId)
     if (!participant) return
 
@@ -547,7 +548,7 @@ export class CollaborationRoomDurableObject {
       connectionId,
       username: participant.username,
       status: participant.status,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
@@ -556,8 +557,8 @@ export class CollaborationRoomDurableObject {
    */
   private async handleWebSocketClose(
     connectionId: string,
-    userId?: string,
-    event?: CloseEvent
+    _userId?: string,
+    _event?: CloseEvent
   ): Promise<void> {
     const participant = this.participants.get(connectionId)
     if (!participant) return
@@ -578,7 +579,7 @@ export class CollaborationRoomDurableObject {
       type: 'user_left',
       connectionId,
       username: participant.username,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     // Stop auto-save if no participants left
@@ -664,9 +665,12 @@ export class CollaborationRoomDurableObject {
     const op1End = op1.position + (op1.length || 0)
     const op2End = op2.position + (op2.length || 0)
 
-    return (op1.position <= op2End && op2.position <= op1End) &&
-           (op1.type === 'insert' || op1.type === 'delete') &&
-           (op2.type === 'insert' || op2.type === 'delete')
+    return (
+      op1.position <= op2End &&
+      op2.position <= op1End &&
+      (op1.type === 'insert' || op1.type === 'delete') &&
+      (op2.type === 'insert' || op2.type === 'delete')
+    )
   }
 
   /**
@@ -676,7 +680,7 @@ export class CollaborationRoomDurableObject {
     this.metrics.conflictsResolved++
 
     // Simple conflict resolution - adjust position
-    let adjustedOp = { ...operation }
+    const adjustedOp = { ...operation }
 
     for (const conflict of conflicts) {
       if (conflict.type === 'insert' && conflict.position <= adjustedOp.position) {
@@ -770,7 +774,7 @@ export class CollaborationRoomDurableObject {
       version: this.currentRevision,
       content: this.room.document.content,
       timestamp: Date.now(),
-      authorId: this.room.document.lastModifiedBy
+      authorId: this.room.document.lastModifiedBy,
     }
 
     this.room.document.checkpoints.push(checkpoint)
@@ -787,7 +791,7 @@ export class CollaborationRoomDurableObject {
   private broadcastToAll(message: any): void {
     const messageStr = JSON.stringify(message)
 
-    for (const [connectionId, websocket] of this.connections) {
+    for (const [_connectionId, websocket] of this.connections) {
       if (websocket.readyState === WebSocket.OPEN) {
         try {
           websocket.send(messageStr)
@@ -827,7 +831,7 @@ export class CollaborationRoomDurableObject {
       // Notify participants of save
       this.broadcastToAll({
         type: 'document_saved',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     }, this.room.settings.autoSaveInterval * 1000)
   }
@@ -872,7 +876,7 @@ export class CollaborationRoomDurableObject {
   /**
    * Permission and access control methods
    */
-  private canUserJoin(userId?: string, username?: string): boolean {
+  private canUserJoin(userId?: string, _username?: string): boolean {
     if (!this.room) return false
 
     // Check if room is public or user is owner
@@ -908,7 +912,7 @@ export class CollaborationRoomDurableObject {
       owner: ['read', 'write', 'delete', 'admin', 'share', 'chat'],
       editor: ['read', 'write', 'chat'],
       commenter: ['read', 'comment', 'chat'],
-      viewer: ['read']
+      viewer: ['read'],
     }
 
     return permissions[role] || ['read']
@@ -920,8 +924,16 @@ export class CollaborationRoomDurableObject {
 
   private generateUserColor(): string {
     const colors = [
-      '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
-      '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'
+      '#FF6B6B',
+      '#4ECDC4',
+      '#45B7D1',
+      '#96CEB4',
+      '#FFEAA7',
+      '#DDA0DD',
+      '#98D8C8',
+      '#F7DC6F',
+      '#BB8FCE',
+      '#85C1E9',
     ]
 
     return colors[Math.floor(Math.random() * colors.length)]
@@ -932,36 +944,39 @@ export class CollaborationRoomDurableObject {
     return {
       ...participant,
       connectionId: participant.connectionId, // Keep connectionId for WebSocket messages
-      userId: participant.userId ? participant.userId.substring(0, 8) + '...' : undefined
+      userId: participant.userId ? `${participant.userId.substring(0, 8)}...` : undefined,
     }
   }
 
   /**
    * Handle API requests
    */
-  private async handleJoinRequest(request: Request): Promise<Response> {
+  private async handleJoinRequest(_request: Request): Promise<Response> {
     // Implementation for HTTP-based joining (alternative to WebSocket)
     return new Response('Use WebSocket connection', { status: 400 })
   }
 
-  private async handleLeaveRequest(request: Request): Promise<Response> {
+  private async handleLeaveRequest(_request: Request): Promise<Response> {
     // Implementation for HTTP-based leaving
     return new Response('Use WebSocket connection', { status: 400 })
   }
 
-  private async handleDocumentRequest(request: Request, action?: string): Promise<Response> {
+  private async handleDocumentRequest(request: Request, _action?: string): Promise<Response> {
     if (!this.room) {
       return new Response('Room not found', { status: 404 })
     }
 
     switch (request.method) {
       case 'GET':
-        return new Response(JSON.stringify({
-          room: this.room,
-          metrics: this.metrics
-        }), {
-          headers: { 'Content-Type': 'application/json' }
-        })
+        return new Response(
+          JSON.stringify({
+            room: this.room,
+            metrics: this.metrics,
+          }),
+          {
+            headers: { 'Content-Type': 'application/json' },
+          }
+        )
 
       default:
         return new Response('Method Not Allowed', { status: 405 })
@@ -975,21 +990,19 @@ export class CollaborationRoomDurableObject {
 
     if (request.method === 'GET') {
       const url = new URL(request.url)
-      const fromRevision = parseInt(url.searchParams.get('from') || '0')
+      const fromRevision = parseInt(url.searchParams.get('from') || '0', 10)
 
-      const operations = this.room.document.operations.filter(
-        op => op.revision > fromRevision
-      )
+      const operations = this.room.document.operations.filter(op => op.revision > fromRevision)
 
       return new Response(JSON.stringify({ operations }), {
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
     return new Response('Method Not Allowed', { status: 405 })
   }
 
-  private async handleHistoryRequest(request: Request): Promise<Response> {
+  private async handleHistoryRequest(_request: Request): Promise<Response> {
     if (!this.room) {
       return new Response('Room not found', { status: 404 })
     }
@@ -997,11 +1010,11 @@ export class CollaborationRoomDurableObject {
     const history = {
       operations: this.room.document.operations,
       checkpoints: this.room.document.checkpoints,
-      currentVersion: this.room.document.version
+      currentVersion: this.room.document.version,
     }
 
     return new Response(JSON.stringify(history), {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     })
   }
 
@@ -1024,17 +1037,18 @@ export class CollaborationRoomDurableObject {
             name: this.room.name,
             type: this.room.type,
             content: this.room.document.content,
-            metadata: this.room.metadata
-          }
+            metadata: this.room.metadata,
+          },
         }
         contentType = 'application/json'
         filename = `${this.room.name}.json`
         break
 
       case 'txt':
-        exportData = typeof this.room.document.content === 'string'
-          ? this.room.document.content
-          : JSON.stringify(this.room.document.content, null, 2)
+        exportData =
+          typeof this.room.document.content === 'string'
+            ? this.room.document.content
+            : JSON.stringify(this.room.document.content, null, 2)
         contentType = 'text/plain'
         filename = `${this.room.name}.txt`
         break
@@ -1046,8 +1060,8 @@ export class CollaborationRoomDurableObject {
     return new Response(JSON.stringify(exportData), {
       headers: {
         'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${filename}"`
-      }
+        'Content-Disposition': `attachment; filename="${filename}"`,
+      },
     })
   }
 
@@ -1065,7 +1079,7 @@ export class CollaborationRoomDurableObject {
 
           this.broadcastToAll({
             type: 'room_locked',
-            timestamp: Date.now()
+            timestamp: Date.now(),
           })
         }
         return new Response(JSON.stringify({ success: true }))
@@ -1077,12 +1091,12 @@ export class CollaborationRoomDurableObject {
 
           this.broadcastToAll({
             type: 'room_unlocked',
-            timestamp: Date.now()
+            timestamp: Date.now(),
           })
         }
         return new Response(JSON.stringify({ success: true }))
 
-      case 'kick':
+      case 'kick': {
         const url = new URL(request.url)
         const connectionId = url.searchParams.get('connectionId')
 
@@ -1095,6 +1109,7 @@ export class CollaborationRoomDurableObject {
           }
         }
         return new Response(JSON.stringify({ success: true }))
+      }
 
       default:
         return new Response('Invalid action', { status: 400 })

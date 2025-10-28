@@ -1,5 +1,5 @@
-import type { FileParseRequest, FileParseResponse, JsonDocument, ValidationError } from '../types'
 import { JsonExtractor } from '../jsonExtractor'
+import type { FileParseRequest, FileParseResponse, JsonDocument, ValidationError } from '../types'
 
 export class JsonParsingService {
   private jsonExtractor: JsonExtractor
@@ -22,7 +22,7 @@ export class JsonParsingService {
         return {
           success: false,
           documents: [],
-          errors: contentValidation.errors
+          errors: contentValidation.errors,
         }
       }
 
@@ -44,39 +44,45 @@ export class JsonParsingService {
       return {
         success,
         documents: validatedDocuments,
-        errors: allErrors
+        errors: allErrors,
       }
     } catch (error) {
       return {
         success: false,
         documents: [],
-        errors: [{
-          code: 'PARSING_ERROR',
-          message: `Failed to parse file: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          severity: 'error'
-        }]
+        errors: [
+          {
+            code: 'PARSING_ERROR',
+            message: `Failed to parse file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            severity: 'error',
+          },
+        ],
       }
     }
   }
 
-  private validateContent(content: string): { isValid: boolean; errors: ValidationError[] } {
+  private validateContent(content: string): {
+    isValid: boolean
+    errors: ValidationError[]
+  } {
     const errors: ValidationError[] = []
 
     if (!content || content.trim().length === 0) {
       errors.push({
         code: 'EMPTY_CONTENT',
         message: 'File content is empty.',
-        severity: 'error'
+        severity: 'error',
       })
       return { isValid: false, errors }
     }
 
     // Check for basic file size (in characters, not bytes)
-    if (content.length > 10000000) { // 10 million characters
+    if (content.length > 10000000) {
+      // 10 million characters
       errors.push({
         code: 'CONTENT_TOO_LARGE',
         message: 'File content is too large for processing.',
-        severity: 'error'
+        severity: 'error',
       })
     }
 
@@ -92,7 +98,7 @@ export class JsonParsingService {
         code: 'INVALID_JSON_SYNTAX',
         message: document.errorMessage || 'Invalid JSON syntax',
         line: document.lineNumber,
-        severity: 'error'
+        severity: 'error',
       })
       return errors
     }
@@ -112,14 +118,19 @@ export class JsonParsingService {
     return errors
   }
 
-  private validateStructure(data: any, maxDepth: number, path: string, currentDepth: number = 0): ValidationError[] {
+  private validateStructure(
+    data: any,
+    maxDepth: number,
+    path: string,
+    currentDepth: number = 0
+  ): ValidationError[] {
     const errors: ValidationError[] = []
 
     if (currentDepth > maxDepth) {
       errors.push({
         code: 'MAX_DEPTH_EXCEEDED',
         message: `Maximum nesting depth (${maxDepth}) exceeded at path: ${path || 'root'}`,
-        severity: 'warning'
+        severity: 'warning',
       })
       return errors
     }
@@ -133,7 +144,7 @@ export class JsonParsingService {
         errors.push({
           code: 'ARRAY_TOO_LARGE',
           message: `Array at ${path || 'root'} is too large (${data.length} items). Maximum allowed: ${this.MAX_ARRAY_LENGTH}`,
-          severity: 'warning'
+          severity: 'warning',
         })
       }
 
@@ -158,7 +169,7 @@ export class JsonParsingService {
       errors.push({
         code: 'STRING_TOO_LARGE',
         message: `String at ${path || 'root'} is too large (${data.length} characters). Maximum allowed: ${this.MAX_STRING_LENGTH}`,
-        severity: 'warning'
+        severity: 'warning',
       })
     }
 
@@ -192,8 +203,8 @@ export class JsonParsingService {
           error: {
             code: 'EMPTY_JSON',
             message: 'JSON string is empty.',
-            severity: 'error'
-          }
+            severity: 'error',
+          },
         }
       }
 
@@ -210,7 +221,7 @@ export class JsonParsingService {
         // Try to extract line and column from error message
         const positionMatch = error.message.match(/position (\d+)/)
         if (positionMatch) {
-          const position = parseInt(positionMatch[1])
+          const position = parseInt(positionMatch[1], 10)
           const lines = jsonString.substring(0, position).split('\n')
           line = lines.length
           column = lines[lines.length - 1].length + 1
@@ -224,33 +235,39 @@ export class JsonParsingService {
           message,
           line,
           column,
-          severity: 'error'
-        }
+          severity: 'error',
+        },
       }
     }
   }
 
-  extractJsonFromMarkdown(content: string, extractMode: 'codeblock' | 'inline' | 'mixed' = 'mixed'): JsonDocument[] {
+  extractJsonFromMarkdown(
+    content: string,
+    extractMode: 'codeblock' | 'inline' | 'mixed' = 'mixed'
+  ): JsonDocument[] {
     return this.jsonExtractor.extractJsonFromMarkdown(content, extractMode)
   }
 
-  validateJsonStructure(data: any, options: {
-    maxDepth?: number
-    maxArrayLength?: number
-    maxStringLength?: number
-  } = {}): ValidationError[] {
+  validateJsonStructure(
+    data: any,
+    options: {
+      maxDepth?: number
+      maxArrayLength?: number
+      maxStringLength?: number
+    } = {}
+  ): ValidationError[] {
     const {
       maxDepth = this.MAX_DEPTH,
       maxArrayLength = this.MAX_ARRAY_LENGTH,
-      maxStringLength = this.MAX_STRING_LENGTH
+      maxStringLength = this.MAX_STRING_LENGTH,
     } = options
 
     const errors: ValidationError[] = []
 
     // Temporarily override limits for this validation
-    const originalMaxDepth = this.MAX_DEPTH
-    const originalMaxArrayLength = this.MAX_ARRAY_LENGTH
-    const originalMaxStringLength = this.MAX_STRING_LENGTH
+    const _originalMaxDepth = this.MAX_DEPTH
+    const _originalMaxArrayLength = this.MAX_ARRAY_LENGTH
+    const _originalMaxStringLength = this.MAX_STRING_LENGTH
 
     // Note: In a real implementation, we would need to make these configurable
     // For now, we'll use the existing validation methods
@@ -272,9 +289,8 @@ export class JsonParsingService {
     const total = documents.length
     const valid = documents.filter(doc => doc.isValid).length
     const invalid = total - valid
-    const averageSize = total > 0
-      ? documents.reduce((sum, doc) => sum + doc.rawJson.length, 0) / total
-      : 0
+    const averageSize =
+      total > 0 ? documents.reduce((sum, doc) => sum + doc.rawJson.length, 0) / total : 0
 
     const extractionMethods: Record<string, number> = {}
     const errorTypes: Record<string, number> = {}
@@ -286,11 +302,11 @@ export class JsonParsingService {
       // Count error types
       if (!doc.isValid && doc.errorMessage) {
         if (doc.errorMessage.includes('Unexpected token')) {
-          errorTypes['SYNTAX_ERROR'] = (errorTypes['SYNTAX_ERROR'] || 0) + 1
+          errorTypes.SYNTAX_ERROR = (errorTypes.SYNTAX_ERROR || 0) + 1
         } else if (doc.errorMessage.includes('Unexpected end')) {
-          errorTypes['INCOMPLETE_JSON'] = (errorTypes['INCOMPLETE_JSON'] || 0) + 1
+          errorTypes.INCOMPLETE_JSON = (errorTypes.INCOMPLETE_JSON || 0) + 1
         } else {
-          errorTypes['OTHER_ERROR'] = (errorTypes['OTHER_ERROR'] || 0) + 1
+          errorTypes.OTHER_ERROR = (errorTypes.OTHER_ERROR || 0) + 1
         }
       }
     })
@@ -301,7 +317,7 @@ export class JsonParsingService {
       invalid,
       averageSize,
       extractionMethods,
-      errorTypes
+      errorTypes,
     }
   }
 
@@ -316,15 +332,15 @@ export class JsonParsingService {
         if (arrayMatch) {
           const [, key, index] = arrayMatch
           if (current && typeof current === 'object' && !Array.isArray(current)) {
-            current = current[key][parseInt(index)]
+            current = current[key][parseInt(index, 10)]
           } else {
             return null
           }
         } else {
           if (current && typeof current === 'object') {
             if (Array.isArray(current)) {
-              const index = parseInt(part)
-              if (!isNaN(index) && index >= 0 && index < current.length) {
+              const index = parseInt(part, 10)
+              if (!Number.isNaN(index) && index >= 0 && index < current.length) {
                 current = current[index]
               } else {
                 return null

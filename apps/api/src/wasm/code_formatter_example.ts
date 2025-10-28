@@ -5,7 +5,12 @@
  * including language detection, formatting, and diff generation.
  */
 
-import { CodeFormatter, formatCode, detectLanguage, SupportedLanguage } from './wasm/code_formatter'
+import {
+  CodeFormatter,
+  detectLanguage,
+  formatCode,
+  type SupportedLanguage,
+} from './wasm/code_formatter'
 
 async function demonstrateCodeFormatter() {
   console.log('🚀 Initializing CodeFormatter...')
@@ -22,7 +27,9 @@ async function demonstrateCodeFormatter() {
 
   const jsResult = await formatter.format(jsCode, 'javascript')
   console.log('Formatted:', jsResult.formatted)
-  console.log(`Size change: ${jsResult.sizeDifference > 0 ? '+' : ''}${jsResult.sizeDifference} bytes`)
+  console.log(
+    `Size change: ${jsResult.sizeDifference > 0 ? '+' : ''}${jsResult.sizeDifference} bytes`
+  )
 
   // Example 2: Python formatting
   console.log('\n🐍 Example 2: Python Formatting')
@@ -146,7 +153,7 @@ export async function performanceTest() {
 
   console.log(`Performance test completed in ${duration.toFixed(2)}ms`)
   console.log(`Processed ${result.originalSize} bytes in ${duration.toFixed(2)}ms`)
-  console.log(`Throughput: ${(result.originalSize / duration * 1000).toFixed(0)} bytes/second`)
+  console.log(`Throughput: ${((result.originalSize / duration) * 1000).toFixed(0)} bytes/second`)
 
   formatter.dispose()
 }
@@ -187,7 +194,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.log('\n🎉 All examples completed successfully!')
       process.exit(0)
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('\n❌ Error running examples:', error)
       process.exit(1)
     })

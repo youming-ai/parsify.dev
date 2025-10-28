@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { JobService } from '@/api/src/services/job_service'
 import {
-  createTestDatabase,
+  cleanupTestEnvironment,
+  createMockAuditLog,
   createMockJob,
   createMockTool,
-  createMockUser,
   createMockToolUsage,
-  createMockAuditLog,
-  setupTestEnvironment,
-  cleanupTestEnvironment,
+  createMockUser,
+  createTestDatabase,
   type MockD1Database,
+  setupTestEnvironment,
 } from '../models/database.mock'
 
 // Mock the database client module
@@ -203,26 +203,23 @@ describe('JobService', () => {
         options.inputData,
         undefined
       )
-      expect(mockDbClient.execute).toHaveBeenCalledWith(
-        'INSERT INTO jobs...',
-        [
-          mockJob.id,
-          mockJob.user_id,
-          mockJob.tool_id,
-          mockJob.status,
-          JSON.stringify(mockJob.input_data),
-          JSON.stringify(mockJob.output_data),
-          mockJob.input_ref,
-          mockJob.output_ref,
-          mockJob.progress,
-          mockJob.error_message,
-          mockJob.retry_count,
-          mockJob.started_at,
-          mockJob.completed_at,
-          mockJob.created_at,
-          mockJob.updated_at,
-        ]
-      )
+      expect(mockDbClient.execute).toHaveBeenCalledWith('INSERT INTO jobs...', [
+        mockJob.id,
+        mockJob.user_id,
+        mockJob.tool_id,
+        mockJob.status,
+        JSON.stringify(mockJob.input_data),
+        JSON.stringify(mockJob.output_data),
+        mockJob.input_ref,
+        mockJob.output_ref,
+        mockJob.progress,
+        mockJob.error_message,
+        mockJob.retry_count,
+        mockJob.started_at,
+        mockJob.completed_at,
+        mockJob.created_at,
+        mockJob.updated_at,
+      ])
       expect(mockKv.put).toHaveBeenCalled()
     })
 
@@ -235,8 +232,9 @@ describe('JobService', () => {
 
       mockDbClient.queryFirst.mockResolvedValue(null)
 
-      await expect(jobService.createJob(options))
-        .rejects.toThrow(`Tool with ID ${options.toolId} not found`)
+      await expect(jobService.createJob(options)).rejects.toThrow(
+        `Tool with ID ${options.toolId} not found`
+      )
     })
 
     it('should apply priority settings', async () => {
@@ -321,8 +319,9 @@ describe('JobService', () => {
 
       mockDbClient.execute.mockRejectedValue(new Error('Database error'))
 
-      await expect(jobService.createJob(options))
-        .rejects.toThrow('Failed to create job: Error: Database error')
+      await expect(jobService.createJob(options)).rejects.toThrow(
+        'Failed to create job: Error: Database error'
+      )
     })
   })
 
@@ -338,10 +337,9 @@ describe('JobService', () => {
       const result = await jobService.getJobById(jobId)
 
       expect(result).toEqual(mockJob)
-      expect(mockDbClient.queryFirst).toHaveBeenCalledWith(
-        'SELECT * FROM jobs WHERE id = ?',
-        [jobId]
-      )
+      expect(mockDbClient.queryFirst).toHaveBeenCalledWith('SELECT * FROM jobs WHERE id = ?', [
+        jobId,
+      ])
     })
 
     it('should return null when job not found', async () => {
@@ -357,8 +355,9 @@ describe('JobService', () => {
       const jobId = 'job-123'
       mockDbClient.queryFirst.mockRejectedValue(new Error('Database error'))
 
-      await expect(jobService.getJobById(jobId))
-        .rejects.toThrow('Failed to get job: Error: Database error')
+      await expect(jobService.getJobById(jobId)).rejects.toThrow(
+        'Failed to get job: Error: Database error'
+      )
     })
   })
 
@@ -368,7 +367,7 @@ describe('JobService', () => {
       const existingJob = createMockJob({
         id: jobId,
         status: 'pending',
-        progress: 0
+        progress: 0,
       })
       const updates = {
         status: 'running' as const,
@@ -377,7 +376,7 @@ describe('JobService', () => {
       const updatedJob = createMockJob({
         id: jobId,
         status: 'running',
-        progress: 50
+        progress: 50,
       })
 
       mockDbClient.queryFirst.mockResolvedValue(existingJob)
@@ -397,23 +396,20 @@ describe('JobService', () => {
 
       expect(result).toEqual(updatedJob)
       expect(UpdateJobSchema.parse).toHaveBeenCalledWith(updates)
-      expect(mockDbClient.execute).toHaveBeenCalledWith(
-        'UPDATE jobs SET...',
-        [
-          updatedJob.status,
-          JSON.stringify(updatedJob.input_data),
-          JSON.stringify(updatedJob.output_data),
-          updatedJob.input_ref,
-          updatedJob.output_ref,
-          updatedJob.progress,
-          updatedJob.error_message,
-          updatedJob.retry_count,
-          updatedJob.started_at,
-          updatedJob.completed_at,
-          updatedJob.updated_at,
-          updatedJob.id,
-        ]
-      )
+      expect(mockDbClient.execute).toHaveBeenCalledWith('UPDATE jobs SET...', [
+        updatedJob.status,
+        JSON.stringify(updatedJob.input_data),
+        JSON.stringify(updatedJob.output_data),
+        updatedJob.input_ref,
+        updatedJob.output_ref,
+        updatedJob.progress,
+        updatedJob.error_message,
+        updatedJob.retry_count,
+        updatedJob.started_at,
+        updatedJob.completed_at,
+        updatedJob.updated_at,
+        updatedJob.id,
+      ])
     })
 
     it('should throw error when job not found', async () => {
@@ -422,8 +418,9 @@ describe('JobService', () => {
 
       mockDbClient.queryFirst.mockResolvedValue(null)
 
-      await expect(jobService.updateJob(jobId, updates))
-        .rejects.toThrow(`Job with ID ${jobId} not found`)
+      await expect(jobService.updateJob(jobId, updates)).rejects.toThrow(
+        `Job with ID ${jobId} not found`
+      )
     })
   })
 
@@ -442,7 +439,7 @@ describe('JobService', () => {
 
       mockDbClient.query.mockResolvedValue(mockJobs)
       const { Job } = require('@/api/src/models/job')
-      Job.fromRow.mockImplementation((row) => row)
+      Job.fromRow.mockImplementation(row => row)
 
       const result = await jobService.listJobs(filter)
 
@@ -458,7 +455,7 @@ describe('JobService', () => {
 
       mockDbClient.query.mockResolvedValue(mockJobs)
       const { Job } = require('@/api/src/models/job')
-      Job.fromRow.mockImplementation((row) => row)
+      Job.fromRow.mockImplementation(row => row)
 
       const result = await jobService.listJobs()
 
@@ -474,7 +471,7 @@ describe('JobService', () => {
       const mockJobs = [createMockJob()]
       mockDbClient.query.mockResolvedValue(mockJobs)
       const { Job } = require('@/api/src/models/job')
-      Job.fromRow.mockImplementation((row) => row)
+      Job.fromRow.mockImplementation(row => row)
 
       await jobService.listJobs(filter)
 
@@ -568,12 +565,12 @@ describe('JobService', () => {
         Tool.fromRow.mockReturnValue(mockTool)
 
         // Mock job update
-        const runningJob = createMockJob({
+        const _runningJob = createMockJob({
           ...mockJob,
           status: 'running',
           started_at: Math.floor(Date.now() / 1000),
         })
-        const completedJob = createMockJob({
+        const _completedJob = createMockJob({
           ...mockJob,
           status: 'completed',
           output_data: mockOutput,
@@ -626,7 +623,7 @@ describe('JobService', () => {
         Tool.fromRow.mockReturnValue(mockTool)
 
         // Mock job update to running
-        const runningJob = createMockJob({
+        const _runningJob = createMockJob({
           ...mockJob,
           status: 'running',
         })
@@ -679,10 +676,10 @@ describe('JobService', () => {
 
         mockDbClient.queryFirst
           .mockResolvedValueOnce({ count: 100 }) // Total jobs
-          .mockResolvedValueOnce({ count: 10 })  // Pending jobs
-          .mockResolvedValueOnce({ count: 5 })   // Running jobs
-          .mockResolvedValueOnce({ count: 80 })  // Completed jobs
-          .mockResolvedValueOnce({ count: 5 })   // Failed jobs
+          .mockResolvedValueOnce({ count: 10 }) // Pending jobs
+          .mockResolvedValueOnce({ count: 5 }) // Running jobs
+          .mockResolvedValueOnce({ count: 80 }) // Completed jobs
+          .mockResolvedValueOnce({ count: 5 }) // Failed jobs
           .mockResolvedValueOnce({ avg_time: 2500 }) // Average execution time
 
         const result = await jobService.getJobStats(filter)
@@ -700,11 +697,11 @@ describe('JobService', () => {
 
       it('should handle zero division', async () => {
         mockDbClient.queryFirst
-          .mockResolvedValueOnce({ count: 0 })  // Total jobs
-          .mockResolvedValueOnce({ count: 0 })  // Pending jobs
-          .mockResolvedValueOnce({ count: 0 })  // Running jobs
-          .mockResolvedValueOnce({ count: 0 })  // Completed jobs
-          .mockResolvedValueOnce({ count: 0 })  // Failed jobs
+          .mockResolvedValueOnce({ count: 0 }) // Total jobs
+          .mockResolvedValueOnce({ count: 0 }) // Pending jobs
+          .mockResolvedValueOnce({ count: 0 }) // Running jobs
+          .mockResolvedValueOnce({ count: 0 }) // Completed jobs
+          .mockResolvedValueOnce({ count: 0 }) // Failed jobs
           .mockResolvedValueOnce({ avg_time: 0 }) // Average execution time
 
         const result = await jobService.getJobStats()
@@ -792,7 +789,7 @@ describe('JobService', () => {
   describe('Job Cleanup', () => {
     describe('cleanupExpiredJobs', () => {
       it('should cleanup expired jobs', async () => {
-        const expiredTime = Math.floor(Date.now() / 1000) - (24 * 60 * 60) // 24 hours ago
+        const expiredTime = Math.floor(Date.now() / 1000) - 24 * 60 * 60 // 24 hours ago
         const mockJobs = [
           createMockJob({
             id: 'job-1',
@@ -808,9 +805,12 @@ describe('JobService', () => {
 
         mockDbClient.query.mockResolvedValue(mockJobs)
         const { Job } = require('@/api/src/models/job')
-        Job.fromRow.mockImplementation((row) => row)
+        Job.fromRow.mockImplementation(row => row)
 
-        mockDbClient.execute.mockResolvedValue({ success: true, meta: { changes: 1 } })
+        mockDbClient.execute.mockResolvedValue({
+          success: true,
+          meta: { changes: 1 },
+        })
 
         const result = await jobService.cleanupExpiredJobs()
 
@@ -819,7 +819,7 @@ describe('JobService', () => {
       })
 
       it('should not cleanup recent jobs', async () => {
-        const recentTime = Math.floor(Date.now() / 1000) - (60 * 60) // 1 hour ago
+        const recentTime = Math.floor(Date.now() / 1000) - 60 * 60 // 1 hour ago
         const mockJobs = [
           createMockJob({
             id: 'job-1',
@@ -830,7 +830,7 @@ describe('JobService', () => {
 
         mockDbClient.query.mockResolvedValue(mockJobs)
         const { Job } = require('@/api/src/models/job')
-        Job.fromRow.mockImplementation((row) => row)
+        Job.fromRow.mockImplementation(row => row)
 
         const result = await jobService.cleanupExpiredJobs()
 
@@ -845,8 +845,9 @@ describe('JobService', () => {
       const jobId = 'job-123'
       mockDbClient.queryFirst.mockRejectedValue(new Error('Connection failed'))
 
-      await expect(jobService.getJobById(jobId))
-        .rejects.toThrow('Failed to get job: Error: Connection failed')
+      await expect(jobService.getJobById(jobId)).rejects.toThrow(
+        'Failed to get job: Error: Connection failed'
+      )
     })
 
     it('should handle malformed job data', async () => {
@@ -857,16 +858,18 @@ describe('JobService', () => {
         throw new Error('Invalid job data')
       })
 
-      await expect(jobService.getJobById(jobId))
-        .rejects.toThrow('Failed to get job: Error: Invalid job data')
+      await expect(jobService.getJobById(jobId)).rejects.toThrow(
+        'Failed to get job: Error: Invalid job data'
+      )
     })
 
     it('should handle queue operation failures', async () => {
       const mockJob = createMockJob()
       mockKv.put.mockRejectedValue(new Error('KV error'))
 
-      await expect((jobService as any).addToQueue(mockJob))
-        .rejects.toThrow('Failed to add job to queue: Error: KV error')
+      await expect((jobService as any).addToQueue(mockJob)).rejects.toThrow(
+        'Failed to add job to queue: Error: KV error'
+      )
     })
   })
 
@@ -885,7 +888,7 @@ describe('JobService', () => {
         input_data: options.inputData,
         status: 'pending',
       })
-      const runningJob = createMockJob({
+      const _runningJob = createMockJob({
         ...mockJob,
         status: 'running',
         started_at: Math.floor(Date.now() / 1000),
@@ -916,11 +919,13 @@ describe('JobService', () => {
       mockKv.list.mockResolvedValue({
         keys: [{ name: `job_queue:pending:${mockJob.id}` }],
       })
-      mockKv.get.mockResolvedValue(JSON.stringify({
-        jobId: mockJob.id,
-        priority: 'normal',
-        createdAt: mockJob.created_at,
-      }))
+      mockKv.get.mockResolvedValue(
+        JSON.stringify({
+          jobId: mockJob.id,
+          priority: 'normal',
+          createdAt: mockJob.created_at,
+        })
+      )
       mockKv.delete.mockResolvedValue(undefined)
 
       const nextJob = await jobService.getNextJob()

@@ -9,9 +9,6 @@
     "dev": "tsc --watch",
     "type-check": "tsc --noEmit"
   },
-  "dependencies": {
-    "zod": "^3.22.0"
-  },
   "devDependencies": {
     "typescript": "^5.0.0"
   }

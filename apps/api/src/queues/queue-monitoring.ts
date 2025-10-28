@@ -1,6 +1,5 @@
 import { z } from 'zod'
-import { JobStatus, JobPriority } from '../models/job'
-import { QueueMetrics } from './job-queue'
+import type { QueueMetrics } from './job-queue'
 
 // Monitoring metrics schema
 export const QueueMonitoringMetricsSchema = z.object({
@@ -22,9 +21,7 @@ export const QueueMonitoringMetricsSchema = z.object({
   avgWaitTimeMs: z.number().default(0),
 })
 
-export type QueueMonitoringMetrics = z.infer<
-  typeof QueueMonitoringMetricsSchema
->
+export type QueueMonitoringMetrics = z.infer<typeof QueueMonitoringMetricsSchema>
 
 // Alert configuration schema
 export const QueueAlertConfigSchema = z.object({
@@ -43,13 +40,7 @@ export type QueueAlertConfig = z.infer<typeof QueueAlertConfigSchema>
 // Queue alert schema
 export const QueueAlertSchema = z.object({
   id: z.string().uuid(),
-  type: z.enum([
-    'queue_depth',
-    'error_rate',
-    'processing_time',
-    'dead_letter',
-    'no_processing',
-  ]),
+  type: z.enum(['queue_depth', 'error_rate', 'processing_time', 'dead_letter', 'no_processing']),
   queueName: z.string(),
   severity: z.enum(['info', 'warning', 'critical']),
   message: z.string(),
@@ -94,29 +85,23 @@ export class QueueMonitoringSystem {
     queueName: string,
     queueMetrics: QueueMetrics,
     queueSize: number,
-    deadLetterSize: number,
+    _deadLetterSize: number,
     waitTimes: number[] = []
   ): Promise<void> {
     const timestamp = Date.now()
 
     // Calculate additional metrics
     const totalJobs = queueMetrics.completedJobs + queueMetrics.failedJobs
-    const successRate =
-      totalJobs > 0 ? (queueMetrics.completedJobs / totalJobs) * 100 : 0
-    const errorRate =
-      totalJobs > 0 ? (queueMetrics.failedJobs / totalJobs) * 100 : 0
+    const successRate = totalJobs > 0 ? (queueMetrics.completedJobs / totalJobs) * 100 : 0
+    const errorRate = totalJobs > 0 ? (queueMetrics.failedJobs / totalJobs) * 100 : 0
     const retryRate =
       totalJobs > 0
-        ? ((queueMetrics.failedJobs * queueMetrics.avgProcessingTimeMs) /
-            totalJobs) *
-          100
+        ? ((queueMetrics.failedJobs * queueMetrics.avgProcessingTimeMs) / totalJobs) * 100
         : 0
 
     const maxWaitTime = waitTimes.length > 0 ? Math.max(...waitTimes) : 0
     const avgWaitTime =
-      waitTimes.length > 0
-        ? waitTimes.reduce((a, b) => a + b, 0) / waitTimes.length
-        : 0
+      waitTimes.length > 0 ? waitTimes.reduce((a, b) => a + b, 0) / waitTimes.length : 0
 
     const metrics: QueueMonitoringMetrics = {
       timestamp,
@@ -237,21 +222,15 @@ export class QueueMonitoringSystem {
 
     // Calculate summary
     const totalJobs = metrics.reduce((sum, m) => sum + m.totalJobs, 0)
-    const avgSuccessRate =
-      metrics.reduce((sum, m) => sum + m.successRate, 0) / metrics.length
-    const avgErrorRate =
-      metrics.reduce((sum, m) => sum + m.errorRate, 0) / metrics.length
+    const avgSuccessRate = metrics.reduce((sum, m) => sum + m.successRate, 0) / metrics.length
+    const avgErrorRate = metrics.reduce((sum, m) => sum + m.errorRate, 0) / metrics.length
     const avgProcessingTime =
-      metrics.reduce((sum, m) => sum + m.avgProcessingTimeMs, 0) /
-      metrics.length
-    const avgWaitTime =
-      metrics.reduce((sum, m) => sum + m.avgWaitTimeMs, 0) / metrics.length
+      metrics.reduce((sum, m) => sum + m.avgProcessingTimeMs, 0) / metrics.length
+    const avgWaitTime = metrics.reduce((sum, m) => sum + m.avgWaitTimeMs, 0) / metrics.length
     const avgThroughput =
-      metrics.reduce((sum, m) => sum + m.throughputPerMinute, 0) /
-      metrics.length
+      metrics.reduce((sum, m) => sum + m.throughputPerMinute, 0) / metrics.length
     const peakQueueDepth = Math.max(...metrics.map(m => m.queueDepth))
-    const avgQueueDepth =
-      metrics.reduce((sum, m) => sum + m.queueDepth, 0) / metrics.length
+    const avgQueueDepth = metrics.reduce((sum, m) => sum + m.queueDepth, 0) / metrics.length
 
     // Calculate trends (compare first half with second half)
     const midPoint = Math.floor(metrics.length / 2)
@@ -345,9 +324,7 @@ export class QueueMonitoringSystem {
 
     for (const queueName of this.metrics.keys()) {
       const latestMetrics = this.getMetrics(queueName, 1)[0] || null
-      const queueAlerts = this.getQueueAlerts(queueName).filter(
-        a => !a.resolved
-      )
+      const queueAlerts = this.getQueueAlerts(queueName).filter(a => !a.resolved)
       const issues: string[] = []
 
       let status: 'healthy' | 'warning' | 'critical' = 'healthy'
@@ -363,14 +340,9 @@ export class QueueMonitoringSystem {
           issues.push(`High error rate: ${latestMetrics.errorRate}%`)
         }
 
-        if (
-          latestMetrics.avgProcessingTimeMs >
-          this.config.processingTimeThreshold
-        ) {
+        if (latestMetrics.avgProcessingTimeMs > this.config.processingTimeThreshold) {
           status = status === 'critical' ? 'critical' : 'warning'
-          issues.push(
-            `High processing time: ${latestMetrics.avgProcessingTimeMs}ms`
-          )
+          issues.push(`High processing time: ${latestMetrics.avgProcessingTimeMs}ms`)
         }
 
         if (latestMetrics.deadLetterJobs > this.config.deadLetterThreshold) {
@@ -395,11 +367,7 @@ export class QueueMonitoringSystem {
       }
     }
 
-    const overall = hasCritical
-      ? 'critical'
-      : hasWarning
-        ? 'warning'
-        : 'healthy'
+    const overall = hasCritical ? 'critical' : hasWarning ? 'warning' : 'healthy'
     const activeAlerts = this.getActiveAlerts().length
 
     return {
@@ -419,10 +387,7 @@ export class QueueMonitoringSystem {
     this.metrics.set(queueName, filteredMetrics)
   }
 
-  private async persistMetrics(
-    queueName: string,
-    metrics: QueueMonitoringMetrics
-  ): Promise<void> {
+  private async persistMetrics(queueName: string, metrics: QueueMonitoringMetrics): Promise<void> {
     try {
       const key = `queue_metrics:${queueName}:${metrics.timestamp}`
       await this.env.MONITORING_KV.put(key, JSON.stringify(metrics), {
@@ -444,10 +409,7 @@ export class QueueMonitoringSystem {
     }
   }
 
-  private async checkAlerts(
-    queueName: string,
-    metrics: QueueMonitoringMetrics
-  ): Promise<void> {
+  private async checkAlerts(queueName: string, metrics: QueueMonitoringMetrics): Promise<void> {
     const alerts: QueueAlert[] = []
 
     // Queue depth alert
@@ -456,10 +418,7 @@ export class QueueMonitoringSystem {
         id: crypto.randomUUID(),
         type: 'queue_depth',
         queueName,
-        severity:
-          metrics.queueDepth > this.config.queueDepthThreshold * 2
-            ? 'critical'
-            : 'warning',
+        severity: metrics.queueDepth > this.config.queueDepthThreshold * 2 ? 'critical' : 'warning',
         message: `Queue depth exceeded threshold: ${metrics.queueDepth} > ${this.config.queueDepthThreshold}`,
         value: metrics.queueDepth,
         threshold: this.config.queueDepthThreshold,
@@ -473,10 +432,7 @@ export class QueueMonitoringSystem {
         id: crypto.randomUUID(),
         type: 'error_rate',
         queueName,
-        severity:
-          metrics.errorRate > this.config.errorRateThreshold * 2
-            ? 'critical'
-            : 'warning',
+        severity: metrics.errorRate > this.config.errorRateThreshold * 2 ? 'critical' : 'warning',
         message: `Error rate exceeded threshold: ${metrics.errorRate}% > ${this.config.errorRateThreshold}%`,
         value: metrics.errorRate,
         threshold: this.config.errorRateThreshold,
@@ -508,9 +464,7 @@ export class QueueMonitoringSystem {
         type: 'dead_letter',
         queueName,
         severity:
-          metrics.deadLetterJobs > this.config.deadLetterThreshold * 2
-            ? 'critical'
-            : 'warning',
+          metrics.deadLetterJobs > this.config.deadLetterThreshold * 2 ? 'critical' : 'warning',
         message: `Dead letter queue exceeded threshold: ${metrics.deadLetterJobs} > ${this.config.deadLetterThreshold}`,
         value: metrics.deadLetterJobs,
         threshold: this.config.deadLetterThreshold,
@@ -520,10 +474,7 @@ export class QueueMonitoringSystem {
 
     // No processing alert (check if last processed was too long ago)
     const lastProcessed = await this.getLastProcessedTime(queueName)
-    if (
-      lastProcessed &&
-      Date.now() - lastProcessed > this.config.noProcessingAlertThreshold
-    ) {
+    if (lastProcessed && Date.now() - lastProcessed > this.config.noProcessingAlertThreshold) {
       alerts.push({
         id: crypto.randomUUID(),
         type: 'no_processing',
@@ -550,9 +501,7 @@ export class QueueMonitoringSystem {
     }
   }
 
-  private async getLastProcessedTime(
-    queueName: string
-  ): Promise<number | null> {
+  private async getLastProcessedTime(queueName: string): Promise<number | null> {
     const metrics = this.getMetrics(queueName, 1)
     return metrics.length > 0 ? metrics[0].timestamp : null
   }
@@ -575,9 +524,7 @@ export class QueueMonitoringSystem {
       }
 
       // Log alert
-      console.log(
-        `Queue Alert [${alert.severity.toUpperCase()}]: ${alert.message}`
-      )
+      console.log(`Queue Alert [${alert.severity.toUpperCase()}]: ${alert.message}`)
     } catch (error) {
       console.error('Failed to send alert:', error)
     }

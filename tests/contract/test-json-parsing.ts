@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import type { FileParseRequest, FileParseResponse } from '../../contracts/file-processing.json'
 
 describe('JSON Parsing Contract', () => {
   describe('POST /api/file/parse', () => {
     it('should parse valid JSON from markdown code blocks', async () => {
-      const request: FileParseRequest = {
+      const _request: FileParseRequest = {
         content: `# Test File
 
 \`\`\`json
@@ -18,24 +18,26 @@ Some text here.
 `,
         options: {
           extractMode: 'codeblock',
-          maxDepth: 10
-        }
+          maxDepth: 10,
+        },
       }
 
       const response: FileParseResponse = {
         success: true,
-        documents: [{
-          id: 'doc1',
-          rawJson: '{\n  "name": "test",\n  "value": 123\n}',
-          parsedData: {
-            name: "test",
-            value: 123
+        documents: [
+          {
+            id: 'doc1',
+            rawJson: '{\n  "name": "test",\n  "value": 123\n}',
+            parsedData: {
+              name: 'test',
+              value: 123,
+            },
+            isValid: true,
+            extractionMethod: 'codeblock',
+            lineNumber: 3,
           },
-          isValid: true,
-          extractionMethod: 'codeblock',
-          lineNumber: 3
-        }],
-        errors: []
+        ],
+        errors: [],
       }
 
       expect(response.success).toBe(true)
@@ -45,7 +47,7 @@ Some text here.
     })
 
     it('should handle invalid JSON gracefully', async () => {
-      const request: FileParseRequest = {
+      const _request: FileParseRequest = {
         content: `# Invalid JSON
 
 \`\`\`json
@@ -57,28 +59,32 @@ Some text here.
 `,
         options: {
           extractMode: 'codeblock',
-          maxDepth: 10
-        }
+          maxDepth: 10,
+        },
       }
 
       const response: FileParseResponse = {
         success: false,
-        documents: [{
-          id: 'doc1',
-          rawJson: '{\n  "name": "test",\n  "value": 123,\n}',
-          parsedData: null,
-          isValid: false,
-          extractionMethod: 'codeblock',
-          errorMessage: 'Invalid JSON syntax: Unexpected trailing comma',
-          lineNumber: 3
-        }],
-        errors: [{
-          code: 'INVALID_JSON_SYNTAX',
-          message: 'Invalid JSON syntax at line 4, column 1',
-          line: 4,
-          column: 1,
-          severity: 'error'
-        }]
+        documents: [
+          {
+            id: 'doc1',
+            rawJson: '{\n  "name": "test",\n  "value": 123,\n}',
+            parsedData: null,
+            isValid: false,
+            extractionMethod: 'codeblock',
+            errorMessage: 'Invalid JSON syntax: Unexpected trailing comma',
+            lineNumber: 3,
+          },
+        ],
+        errors: [
+          {
+            code: 'INVALID_JSON_SYNTAX',
+            message: 'Invalid JSON syntax at line 4, column 1',
+            line: 4,
+            column: 1,
+            severity: 'error',
+          },
+        ],
       }
 
       expect(response.success).toBe(false)
@@ -87,27 +93,29 @@ Some text here.
     })
 
     it('should extract inline JSON when specified', async () => {
-      const request: FileParseRequest = {
+      const _request: FileParseRequest = {
         content: 'Configuration: {"theme": "dark", "debug": true}',
         options: {
           extractMode: 'inline',
-          maxDepth: 10
-        }
+          maxDepth: 10,
+        },
       }
 
       const response: FileParseResponse = {
         success: true,
-        documents: [{
-          id: 'doc1',
-          rawJson: '{"theme": "dark", "debug": true}',
-          parsedData: {
-            theme: "dark",
-            debug: true
+        documents: [
+          {
+            id: 'doc1',
+            rawJson: '{"theme": "dark", "debug": true}',
+            parsedData: {
+              theme: 'dark',
+              debug: true,
+            },
+            isValid: true,
+            extractionMethod: 'inline',
           },
-          isValid: true,
-          extractionMethod: 'inline'
-        }],
-        errors: []
+        ],
+        errors: [],
       }
 
       expect(response.success).toBe(true)

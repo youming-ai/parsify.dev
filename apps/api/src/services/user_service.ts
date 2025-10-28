@@ -1,21 +1,8 @@
-import {
-  User,
-  UserSchema,
-  CreateUserSchema,
-  UpdateUserSchema,
-  USER_QUERIES,
-} from '../models/user'
-import { AuthIdentity, AUTH_IDENTITY_QUERIES } from '../models/auth_identity'
-import { ToolUsage, TOOL_USAGE_QUERIES } from '../models/tool_usage'
-import { FileUpload, FILE_UPLOAD_QUERIES } from '../models/file_upload'
-import { AuditLog, AUDIT_LOG_QUERIES } from '../models/audit_log'
-import {
-  DatabaseClient,
-  createDatabaseClient,
-  TransactionHelper,
-  TransactionTemplates,
-  IsolationLevel,
-} from '../database'
+import { createDatabaseClient, type DatabaseClient, IsolationLevel } from '../database'
+import { AUDIT_LOG_QUERIES, AuditLog } from '../models/audit_log'
+import { FILE_UPLOAD_QUERIES } from '../models/file_upload'
+import { TOOL_USAGE_QUERIES } from '../models/tool_usage'
+import { CreateUserSchema, UpdateUserSchema, USER_QUERIES, User } from '../models/user'
 
 export interface UserServiceOptions {
   db: D1Database
@@ -129,9 +116,7 @@ export class UserService {
 
   async getUserById(userId: string): Promise<User | null> {
     try {
-      const result = await this.client.queryFirst(USER_QUERIES.SELECT_BY_ID, [
-        userId,
-      ])
+      const result = await this.client.queryFirst(USER_QUERIES.SELECT_BY_ID, [userId])
 
       if (!result) {
         return null
@@ -145,10 +130,7 @@ export class UserService {
 
   async getUserByEmail(email: string): Promise<User | null> {
     try {
-      const result = await this.client.queryFirst(
-        USER_QUERIES.SELECT_BY_EMAIL,
-        [email]
-      )
+      const result = await this.client.queryFirst(USER_QUERIES.SELECT_BY_EMAIL, [email])
 
       if (!result) {
         return null
@@ -183,9 +165,7 @@ export class UserService {
             updatedUser.name,
             updatedUser.avatar_url,
             updatedUser.subscription_tier,
-            updatedUser.preferences
-              ? JSON.stringify(updatedUser.preferences)
-              : null,
+            updatedUser.preferences ? JSON.stringify(updatedUser.preferences) : null,
             updatedUser.updated_at,
             updatedUser.last_login_at,
             updatedUser.id,
@@ -224,11 +204,7 @@ export class UserService {
     }
   }
 
-  async updateLastLogin(
-    userId: string,
-    ipAddress?: string,
-    userAgent?: string
-  ): Promise<User> {
+  async updateLastLogin(userId: string, ipAddress?: string, userAgent?: string): Promise<User> {
     const existingUser = await this.getUserById(userId)
     if (!existingUser) {
       throw new Error(`User with ID ${userId} not found`)
@@ -261,11 +237,7 @@ export class UserService {
     }
   }
 
-  async deleteUser(
-    userId: string,
-    ipAddress?: string,
-    userAgent?: string
-  ): Promise<void> {
+  async deleteUser(userId: string, ipAddress?: string, userAgent?: string): Promise<void> {
     const existingUser = await this.getUserById(userId)
     if (!existingUser) {
       throw new Error(`User with ID ${userId} not found`)
@@ -333,24 +305,21 @@ export class UserService {
   async getUserStats(userId: string): Promise<UserStats> {
     try {
       // Get tool usage stats
-      const toolUsageResult = await this.client.queryFirst(
-        TOOL_USAGE_QUERIES.COUNT_BY_USER,
-        [userId]
-      )
+      const toolUsageResult = await this.client.queryFirst(TOOL_USAGE_QUERIES.COUNT_BY_USER, [
+        userId,
+      ])
       const totalApiRequests = (toolUsageResult?.count as number) || 0
 
       // Get file upload stats
-      const fileUploadResult = await this.client.queryFirst(
-        FILE_UPLOAD_QUERIES.COUNT_BY_USER,
-        [userId]
-      )
+      const fileUploadResult = await this.client.queryFirst(FILE_UPLOAD_QUERIES.COUNT_BY_USER, [
+        userId,
+      ])
       const totalFilesUploaded = (fileUploadResult?.count as number) || 0
 
       // Get storage usage
-      const storageResult = await this.client.queryFirst(
-        FILE_UPLOAD_QUERIES.SUM_SIZE_BY_USER,
-        [userId]
-      )
+      const storageResult = await this.client.queryFirst(FILE_UPLOAD_QUERIES.SUM_SIZE_BY_USER, [
+        userId,
+      ])
       const totalStorageUsed = (storageResult?.total_size_bytes as number) || 0
 
       // Get user details
@@ -407,10 +376,7 @@ export class UserService {
   }
 
   // User preferences management
-  async updatePreferences(
-    userId: string,
-    preferences: Record<string, any>
-  ): Promise<User> {
+  async updatePreferences(userId: string, preferences: Record<string, any>): Promise<User> {
     const user = await this.getUserById(userId)
     if (!user) {
       throw new Error(`User with ID ${userId} not found`)
@@ -426,10 +392,7 @@ export class UserService {
   }
 
   // Subscription management
-  async upgradeSubscription(
-    userId: string,
-    newTier: 'pro' | 'enterprise'
-  ): Promise<User> {
+  async upgradeSubscription(userId: string, newTier: 'pro' | 'enterprise'): Promise<User> {
     const user = await this.getUserById(userId)
     if (!user) {
       throw new Error(`User with ID ${userId} not found`)
@@ -442,10 +405,7 @@ export class UserService {
     return this.updateUser(userId, { subscription_tier: newTier })
   }
 
-  async downgradeSubscription(
-    userId: string,
-    newTier: 'free' | 'pro'
-  ): Promise<User> {
+  async downgradeSubscription(userId: string, newTier: 'free' | 'pro'): Promise<User> {
     const user = await this.getUserById(userId)
     if (!user) {
       throw new Error(`User with ID ${userId} not found`)
@@ -586,10 +546,7 @@ export class UserService {
     }
   }
 
-  async updateMultipleUsers(
-    userIds: string[],
-    updates: UpdateUserOptions
-  ): Promise<User[]> {
+  async updateMultipleUsers(userIds: string[], updates: UpdateUserOptions): Promise<User[]> {
     const updatedUsers: User[] = []
 
     for (const userId of userIds) {

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Job, JobPriority, JobStatus } from '../models/job'
+import { type Job, JobPriority, type JobStatus } from '../models/job'
 
 // Queue configuration types
 export const QueueConfigSchema = z.object({
@@ -13,7 +13,11 @@ export const QueueConfigSchema = z.object({
   enableDeadLetterQueue: z.boolean().default(true),
   enableMetrics: z.boolean().default(true),
   retentionHours: z.number().min(1).max(168).default(24),
-  maxMessageSize: z.number().min(1024).max(1024 * 1024).default(256 * 1024), // 256KB
+  maxMessageSize: z
+    .number()
+    .min(1024)
+    .max(1024 * 1024)
+    .default(256 * 1024), // 256KB
   priorities: z.array(z.string()).default(['low', 'normal', 'high', 'urgent']),
 })
 
@@ -93,12 +97,14 @@ export type QueueStats = z.infer<typeof QueueStatsSchema>
 export const QueueHealthCheckSchema = z.object({
   queueName: z.string(),
   status: z.enum(['healthy', 'warning', 'critical', 'unknown']),
-  checks: z.array(z.object({
-    name: z.string(),
-    status: z.enum(['pass', 'fail', 'warn']),
-    message: z.string(),
-    value: z.any().optional(),
-  })),
+  checks: z.array(
+    z.object({
+      name: z.string(),
+      status: z.enum(['pass', 'fail', 'warn']),
+      message: z.string(),
+      value: z.any().optional(),
+    })
+  ),
   timestamp: z.number(),
   uptime: z.number().default(0),
   version: z.string().optional(),
@@ -143,24 +149,28 @@ export interface QueueResponse<T = any> {
   metadata?: Record<string, any>
 }
 
-export interface EnqueueJobResponse extends QueueResponse<{
-  messageId: string
-  queueName: string
-  scheduledAt: number
-}> {}
+export interface EnqueueJobResponse
+  extends QueueResponse<{
+    messageId: string
+    queueName: string
+    scheduledAt: number
+  }> {}
 
-export interface DequeueJobResponse extends QueueResponse<{
-  message?: JobQueueMessage
-  queueSize: number
-}> {}
+export interface DequeueJobResponse
+  extends QueueResponse<{
+    message?: JobQueueMessage
+    queueSize: number
+  }> {}
 
-export interface GetQueueStatsResponse extends QueueResponse<{
-  stats: QueueStats[]
-}> {}
+export interface GetQueueStatsResponse
+  extends QueueResponse<{
+    stats: QueueStats[]
+  }> {}
 
-export interface GetQueueHealthResponse extends QueueResponse<{
-  healthChecks: QueueHealthCheck[]
-}> {}
+export interface GetQueueHealthResponse
+  extends QueueResponse<{
+    healthChecks: QueueHealthCheck[]
+  }> {}
 
 // Cloudflare Queue integration types
 export interface CloudflareQueueConfig {
@@ -225,17 +235,21 @@ export const QueueAnalyticsSchema = z.object({
     queueDepth: z.enum(['increasing', 'decreasing', 'stable']),
   }),
   breakdown: z.object({
-    byPriority: z.record(z.object({
-      jobs: z.number(),
-      avgProcessingTime: z.number(),
-      successRate: z.number(),
-    })),
-    byHour: z.array(z.object({
-      hour: z.number(),
-      jobs: z.number(),
-      avgProcessingTime: z.number(),
-      successRate: z.number(),
-    })),
+    byPriority: z.record(
+      z.object({
+        jobs: z.number(),
+        avgProcessingTime: z.number(),
+        successRate: z.number(),
+      })
+    ),
+    byHour: z.array(
+      z.object({
+        hour: z.number(),
+        jobs: z.number(),
+        avgProcessingTime: z.number(),
+        successRate: z.number(),
+      })
+    ),
   }),
 })
 
@@ -318,11 +332,7 @@ export interface BatchJobSummary {
 }
 
 // Export all types
-export type {
-  Job,
-  JobPriority,
-  JobStatus,
-}
+export type { Job, JobPriority, JobStatus }
 
 // Utility types
 export type QueueProcessorFactory = (config: any) => QueueProcessor
@@ -358,13 +368,7 @@ export class QueueFullError extends QueueError {
 
 export class JobTimeoutError extends QueueError {
   constructor(jobId: string, timeoutMs: number) {
-    super(
-      `Job ${jobId} timed out after ${timeoutMs}ms`,
-      'JOB_TIMEOUT',
-      undefined,
-      jobId,
-      true
-    )
+    super(`Job ${jobId} timed out after ${timeoutMs}ms`, 'JOB_TIMEOUT', undefined, jobId, true)
     this.name = 'JobTimeoutError'
   }
 }
@@ -384,13 +388,7 @@ export class MaxRetriesExceededError extends QueueError {
 
 export class QueueProcessingError extends QueueError {
   constructor(message: string, queueName?: string, jobId?: string) {
-    super(
-      message,
-      'QUEUE_PROCESSING_ERROR',
-      queueName,
-      jobId,
-      true
-    )
+    super(message, 'QUEUE_PROCESSING_ERROR', queueName, jobId, true)
     this.name = 'QueueProcessingError'
   }
 }

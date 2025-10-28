@@ -5,10 +5,10 @@
  * breadcrumb management, and monitoring specific to the Parsify application.
  */
 
-import { Context } from 'hono'
-import { SeverityLevel } from '@sentry/cloudflare'
+import type { SeverityLevel } from '@sentry/cloudflare'
+import type { Context } from 'hono'
+import type { User } from '../models/user'
 import { getSentryClient } from './sentry'
-import { User } from '../models/user'
 
 // Custom breadcrumb categories
 export enum BreadcrumbCategory {
@@ -110,9 +110,7 @@ export const addCustomBreadcrumb = (
 /**
  * Add database operation breadcrumb
  */
-export const addDatabaseBreadcrumb = (
-  operation: DatabaseOperation
-): void => {
+export const addDatabaseBreadcrumb = (operation: DatabaseOperation): void => {
   const level: SeverityLevel = operation.success ? 'info' : 'error'
 
   addCustomBreadcrumb(
@@ -133,9 +131,7 @@ export const addDatabaseBreadcrumb = (
 /**
  * Add file operation breadcrumb
  */
-export const addFileBreadcrumb = (
-  operation: FileOperation
-): void => {
+export const addFileBreadcrumb = (operation: FileOperation): void => {
   const level: SeverityLevel = operation.success ? 'info' : 'error'
 
   addCustomBreadcrumb(
@@ -156,9 +152,7 @@ export const addFileBreadcrumb = (
 /**
  * Add external service call breadcrumb
  */
-export const addExternalServiceBreadcrumb = (
-  call: ExternalServiceCall
-): void => {
+export const addExternalServiceBreadcrumb = (call: ExternalServiceCall): void => {
   const level: SeverityLevel = call.success ? 'info' : 'error'
 
   addCustomBreadcrumb(
@@ -188,17 +182,12 @@ export const addAuthBreadcrumb = (
 ): void => {
   const level: SeverityLevel = success ? 'info' : 'warning'
 
-  addCustomBreadcrumb(
-    BreadcrumbCategory.AUTH,
-    `Authentication: ${action}`,
-    level,
-    {
-      action,
-      success,
-      userId,
-      ...data,
-    }
-  )
+  addCustomBreadcrumb(BreadcrumbCategory.AUTH, `Authentication: ${action}`, level, {
+    action,
+    success,
+    userId,
+    ...data,
+  })
 }
 
 /**
@@ -210,18 +199,13 @@ export const addRateLimitBreadcrumb = (
   max: number,
   window: string
 ): void => {
-  addCustomBreadcrumb(
-    BreadcrumbCategory.RATE_LIMIT,
-    `Rate limit check: ${limitType}`,
-    'info',
-    {
-      limitType,
-      current,
-      max,
-      window,
-      percentageUsed: Math.round((current / max) * 100),
-    }
-  )
+  addCustomBreadcrumb(BreadcrumbCategory.RATE_LIMIT, `Rate limit check: ${limitType}`, 'info', {
+    limitType,
+    current,
+    max,
+    window,
+    percentageUsed: Math.round((current / max) * 100),
+  })
 }
 
 /**
@@ -233,17 +217,12 @@ export const addCollaborationBreadcrumb = (
   userId?: string,
   data?: Record<string, any>
 ): void => {
-  addCustomBreadcrumb(
-    BreadcrumbCategory.COLLABORATION,
-    `Collaboration: ${action}`,
-    'info',
-    {
-      action,
-      roomId,
-      userId,
-      ...data,
-    }
-  )
+  addCustomBreadcrumb(BreadcrumbCategory.COLLABORATION, `Collaboration: ${action}`, 'info', {
+    action,
+    roomId,
+    userId,
+    ...data,
+  })
 }
 
 /**
@@ -256,35 +235,23 @@ export const addSecurityBreadcrumb = (
 ): void => {
   const level: SeverityLevel = severity === 'critical' || severity === 'high' ? 'error' : 'warning'
 
-  addCustomBreadcrumb(
-    BreadcrumbCategory.SECURITY,
-    `Security: ${threat}`,
-    level,
-    {
-      threat,
-      severity,
-      ...data,
-    }
-  )
+  addCustomBreadcrumb(BreadcrumbCategory.SECURITY, `Security: ${threat}`, level, {
+    threat,
+    severity,
+    ...data,
+  })
 }
 
 /**
  * Add performance breadcrumb
  */
-export const addPerformanceBreadcrumb = (
-  metrics: PerformanceMetrics
-): void => {
-  addCustomBreadcrumb(
-    BreadcrumbCategory.PERFORMANCE,
-    `Performance: ${metrics.operation}`,
-    'info',
-    {
-      operation: metrics.operation,
-      duration: metrics.duration,
-      metadata: metrics.metadata,
-      tags: metrics.tags,
-    }
-  )
+export const addPerformanceBreadcrumb = (metrics: PerformanceMetrics): void => {
+  addCustomBreadcrumb(BreadcrumbCategory.PERFORMANCE, `Performance: ${metrics.operation}`, 'info', {
+    operation: metrics.operation,
+    duration: metrics.duration,
+    metadata: metrics.metadata,
+    tags: metrics.tags,
+  })
 }
 
 /**
@@ -312,12 +279,16 @@ export const reportCustomError = (
     error_type: errorType,
   })
 
-  client.captureException(error, {
-    additional_data: {
-      custom_error_type: errorType,
-      ...context,
+  client.captureException(
+    error,
+    {
+      additional_data: {
+        custom_error_type: errorType,
+        ...context,
+      },
     },
-  }, level)
+    level
+  )
 }
 
 /**
@@ -328,7 +299,12 @@ const getErrorCategory = (errorType: CustomErrorType): string => {
   if (errorType.includes('cache')) return 'cache'
   if (errorType.includes('file')) return 'file_upload'
   if (errorType.includes('collaboration')) return 'collaboration'
-  if (errorType.includes('rate_limit') || errorType.includes('quota') || errorType.includes('subscription')) return 'rate_limit'
+  if (
+    errorType.includes('rate_limit') ||
+    errorType.includes('quota') ||
+    errorType.includes('subscription')
+  )
+    return 'rate_limit'
   if (errorType.includes('external_api')) return 'external_service'
   if (errorType.includes('wasm')) return 'wasm'
   if (errorType.includes('security')) return 'security'
@@ -483,17 +459,12 @@ export const setSentryUserFromContext = (c: Context): void => {
     })
 
     // Add user context breadcrumb
-    addCustomBreadcrumb(
-      BreadcrumbCategory.AUTH,
-      'User context set from auth middleware',
-      'info',
-      {
-        user_id: user.id,
-        subscription_tier: user.subscription_tier,
-        endpoint: c.req.path,
-        method: c.req.method,
-      }
-    )
+    addCustomBreadcrumb(BreadcrumbCategory.AUTH, 'User context set from auth middleware', 'info', {
+      user_id: user.id,
+      subscription_tier: user.subscription_tier,
+      endpoint: c.req.path,
+      method: c.req.method,
+    })
   } else {
     // Clear user context for unauthenticated requests
     client.clearUserContext()
@@ -511,16 +482,11 @@ export const monitorBusinessEvent = (
   data?: Record<string, any>,
   level: SeverityLevel = 'info'
 ): void => {
-  addCustomBreadcrumb(
-    BreadcrumbCategory.BUSINESS_LOGIC,
-    `Business Event: ${event}`,
-    level,
-    {
-      event,
-      timestamp: new Date().toISOString(),
-      ...data,
-    }
-  )
+  addCustomBreadcrumb(BreadcrumbCategory.BUSINESS_LOGIC, `Business Event: ${event}`, level, {
+    event,
+    timestamp: new Date().toISOString(),
+    ...data,
+  })
 }
 
 /**
@@ -534,17 +500,12 @@ export const monitorWasmOperation = (
 ): void => {
   const level: SeverityLevel = success ? 'info' : 'error'
 
-  addCustomBreadcrumb(
-    BreadcrumbCategory.WASM,
-    `WASM: ${operation}`,
-    level,
-    {
-      operation,
-      success,
-      duration,
-      errorMessage,
-    }
-  )
+  addCustomBreadcrumb(BreadcrumbCategory.WASM, `WASM: ${operation}`, level, {
+    operation,
+    success,
+    duration,
+    errorMessage,
+  })
 
   if (!success) {
     reportCustomError(
@@ -585,16 +546,11 @@ export const setReleaseContext = (
     },
   })
 
-  addCustomBreadcrumb(
-    BreadcrumbCategory.API,
-    'Release context updated',
-    'info',
-    {
-      version,
-      commitSha,
-      buildTime,
-    }
-  )
+  addCustomBreadcrumb(BreadcrumbCategory.API, 'Release context updated', 'info', {
+    version,
+    commitSha,
+    buildTime,
+  })
 }
 
 /**

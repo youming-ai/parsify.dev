@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { measurePerformance } from '../../src/lib/performance'
-import { JsonExtractor } from '../../src/lib/jsonExtractor'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { FileParser } from '../../src/lib/fileParser'
+import { JsonExtractor } from '../../src/lib/jsonExtractor'
+import { measurePerformance } from '../../src/lib/performance'
 
 describe('File Performance Tests', () => {
   let jsonExtractor: JsonExtractor
@@ -17,7 +17,7 @@ describe('File Performance Tests', () => {
       const smallJson = {
         config: { theme: 'dark', debug: true },
         users: [{ id: 1, name: 'Alice' }],
-        settings: { autoSave: true }
+        settings: { autoSave: true },
       }
 
       const { duration } = await measurePerformance(async () => {
@@ -38,9 +38,9 @@ describe('File Performance Tests', () => {
           metadata: {
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
-            version: '1.0.0'
-          }
-        }))
+            version: '1.0.0',
+          },
+        })),
       }
 
       const { duration } = await measurePerformance(async () => {
@@ -63,15 +63,15 @@ describe('File Performance Tests', () => {
             settings: {
               theme: i % 2 === 0 ? 'dark' : 'light',
               notifications: i % 3 === 0,
-              language: ['en', 'es', 'fr'][i % 3]
-            }
+              language: ['en', 'es', 'fr'][i % 3],
+            },
           },
           activity: Array.from({ length: 10 }, (_, j) => ({
             type: ['login', 'view', 'edit'][j % 3],
             timestamp: new Date(Date.now() - j * 1000).toISOString(),
-            metadata: { source: 'web', version: '2.1.0' }
-          }))
-        }))
+            metadata: { source: 'web', version: '2.1.0' },
+          })),
+        })),
       }
 
       const { duration } = await measurePerformance(async () => {
@@ -157,9 +157,9 @@ More content.
           id: i,
           data: `x`.repeat(100), // 100 characters per node
           nested: {
-            level1: { level2: { level3: `data-${i}` } }
-          }
-        }))
+            level1: { level2: { level3: `data-${i}` } },
+          },
+        })),
       }
 
       const initialMemory = (performance as any).memory?.usedJSHeapSize || 0
@@ -185,9 +185,9 @@ More content.
           children: Array.from({ length: 5 }, (_, j) => ({
             id: `${i}-${j}`,
             value: `Child ${j}`,
-            leaf: true
-          }))
-        }))
+            leaf: true,
+          })),
+        })),
       }
 
       // Mock rendering performance measurement

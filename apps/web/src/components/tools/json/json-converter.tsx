@@ -1,22 +1,22 @@
+import { ArrowRight, Copy, Download, Play } from 'lucide-react'
 import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { JsonConverterProps, JsonConversionOptions } from './json-types'
-import { convertJson, copyToClipboard, downloadFile } from './json-utils'
 import { cn } from '@/lib/utils'
-import { ArrowRight, Copy, Download, Play, Settings2 } from 'lucide-react'
+import type { JsonConversionOptions, JsonConverterProps } from './json-types'
+import { convertJson, copyToClipboard, downloadFile } from './json-utils'
 
 export function JsonConverter({
   input,
   options,
   onConvert,
   onError,
-  className
+  className,
 }: JsonConverterProps) {
   const [conversionOptions, setConversionOptions] = React.useState<JsonConversionOptions>(options)
   const [isConverting, setIsConverting] = React.useState(false)
-  const [showSettings, setShowSettings] = React.useState(false)
+  const [_showSettings, _setShowSettings] = React.useState(false)
   const [convertedOutput, setConvertedOutput] = React.useState('')
   const [showCopyNotification, setShowCopyNotification] = React.useState(false)
 
@@ -33,7 +33,7 @@ export function JsonConverter({
         rootElement: conversionOptions.rootElement,
         arrayItemName: conversionOptions.arrayItemName,
         flatten: conversionOptions.flatten,
-        delimiter: conversionOptions.csvDelimiter
+        delimiter: conversionOptions.csvDelimiter,
       })
 
       setConvertedOutput(converted)
@@ -65,20 +65,23 @@ export function JsonConverter({
     const extensions = {
       xml: 'xml',
       yaml: 'yml',
-      csv: 'csv'
+      csv: 'csv',
     }
 
     const mimeTypes = {
       xml: 'application/xml',
       yaml: 'text/yaml',
-      csv: 'text/csv'
+      csv: 'text/csv',
     }
 
     const filename = `converted-json-${new Date().toISOString().slice(0, 10)}.${extensions[conversionOptions.targetFormat]}`
     downloadFile(convertedOutput, filename, mimeTypes[conversionOptions.targetFormat])
   }
 
-  const handleOptionChange = (key: keyof JsonConversionOptions, value: string | boolean | undefined) => {
+  const handleOptionChange = (
+    key: keyof JsonConversionOptions,
+    value: string | boolean | undefined
+  ) => {
     const newOptions = { ...conversionOptions, [key]: value }
     setConversionOptions(newOptions)
   }
@@ -88,7 +91,7 @@ export function JsonConverter({
     if (input.trim() && convertedOutput) {
       handleConvert()
     }
-  }, [input]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [input, convertedOutput, handleConvert]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const getTargetFormatInfo = () => {
     switch (conversionOptions.targetFormat) {
@@ -96,25 +99,25 @@ export function JsonConverter({
         return {
           name: 'XML',
           description: 'eXtensible Markup Language',
-          icon: '📄'
+          icon: '📄',
         }
       case 'yaml':
         return {
           name: 'YAML',
-          description: 'YAML Ain\'t Markup Language',
-          icon: '📝'
+          description: "YAML Ain't Markup Language",
+          icon: '📝',
         }
       case 'csv':
         return {
           name: 'CSV',
           description: 'Comma-Separated Values',
-          icon: '📊'
+          icon: '📊',
         }
       default:
         return {
           name: 'Unknown',
           description: 'Unknown format',
-          icon: '❓'
+          icon: '❓',
         }
     }
   }
@@ -126,18 +129,19 @@ export function JsonConverter({
       {/* Format Selection */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <ArrowRight className="w-5 h-5" />
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <ArrowRight className="h-5 w-5" />
             Convert to {formatInfo.name}
           </CardTitle>
-          <p className="text-sm text-gray-600">
-            {formatInfo.description}
-          </p>
+          <p className="text-gray-600 text-sm">{formatInfo.description}</p>
         </CardHeader>
 
         <CardContent className="space-y-4">
           {/* Format Selection Tabs */}
-          <Tabs value={conversionOptions.targetFormat} onValueChange={(value) => handleOptionChange('targetFormat', value)}>
+          <Tabs
+            value={conversionOptions.targetFormat}
+            onValueChange={value => handleOptionChange('targetFormat', value)}
+          >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="xml" className="flex items-center gap-2">
                 <span>📄</span>
@@ -154,28 +158,28 @@ export function JsonConverter({
             </TabsList>
 
             <TabsContent value="xml" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="mb-1 block font-medium text-gray-700 text-sm">
                     Root Element Name
                   </label>
                   <input
                     type="text"
                     value={conversionOptions.rootElement || 'root'}
-                    onChange={(e) => handleOptionChange('rootElement', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={e => handleOptionChange('rootElement', e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="root"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="mb-1 block font-medium text-gray-700 text-sm">
                     Array Item Name
                   </label>
                   <input
                     type="text"
                     value={conversionOptions.arrayItemName || 'item'}
-                    onChange={(e) => handleOptionChange('arrayItemName', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={e => handleOptionChange('arrayItemName', e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="item"
                   />
                 </div>
@@ -183,21 +187,21 @@ export function JsonConverter({
             </TabsContent>
 
             <TabsContent value="yaml" className="space-y-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-gray-600 text-sm">
                 YAML conversion uses standard YAML formatting with proper indentation.
               </p>
             </TabsContent>
 
             <TabsContent value="csv" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="mb-1 block font-medium text-gray-700 text-sm">
                     CSV Delimiter
                   </label>
                   <select
                     value={conversionOptions.csvDelimiter || ','}
-                    onChange={(e) => handleOptionChange('csvDelimiter', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={e => handleOptionChange('csvDelimiter', e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value=",">Comma (,)</option>
                     <option value=";">Semicolon (;)</option>
@@ -206,7 +210,7 @@ export function JsonConverter({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="mb-1 block font-medium text-gray-700 text-sm">
                     Flatten Objects
                   </label>
                   <div className="flex items-center">
@@ -214,18 +218,19 @@ export function JsonConverter({
                       type="checkbox"
                       id="flatten-objects"
                       checked={conversionOptions.flatten || false}
-                      onChange={(e) => handleOptionChange('flatten', e.target.checked)}
+                      onChange={e => handleOptionChange('flatten', e.target.checked)}
                       className="mr-2"
                     />
-                    <label htmlFor="flatten-objects" className="text-sm text-gray-600">
+                    <label htmlFor="flatten-objects" className="text-gray-600 text-sm">
                       Flatten nested objects
                     </label>
                   </div>
                 </div>
               </div>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+              <div className="rounded-md border border-yellow-200 bg-yellow-50 p-3">
                 <p className="text-sm text-yellow-800">
-                  <strong>Note:</strong> CSV conversion requires an array of objects. Each object's keys will become the CSV headers.
+                  <strong>Note:</strong> CSV conversion requires an array of objects. Each object's
+                  keys will become the CSV headers.
                 </p>
               </div>
             </TabsContent>
@@ -240,27 +245,19 @@ export function JsonConverter({
           disabled={isConverting || !input.trim()}
           className="flex items-center gap-2"
         >
-          <Play className="w-4 h-4" />
+          <Play className="h-4 w-4" />
           {isConverting ? 'Converting...' : `Convert to ${formatInfo.name}`}
         </Button>
 
         {convertedOutput && (
           <>
-            <Button
-              variant="outline"
-              onClick={handleCopy}
-              className="flex items-center gap-2"
-            >
-              <Copy className="w-4 h-4" />
+            <Button variant="outline" onClick={handleCopy} className="flex items-center gap-2">
+              <Copy className="h-4 w-4" />
               Copy
             </Button>
 
-            <Button
-              variant="outline"
-              onClick={handleDownload}
-              className="flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
+            <Button variant="outline" onClick={handleDownload} className="flex items-center gap-2">
+              <Download className="h-4 w-4" />
               Download
             </Button>
           </>
@@ -271,15 +268,15 @@ export function JsonConverter({
       {convertedOutput && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               {formatInfo.icon} Converted {formatInfo.name} Output
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="bg-gray-50 border rounded-lg p-4 overflow-auto max-h-96 font-mono text-sm text-gray-800 whitespace-pre-wrap">
+            <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-lg border bg-gray-50 p-4 font-mono text-gray-800 text-sm">
               {convertedOutput}
             </pre>
-            <div className="mt-2 text-sm text-gray-600">
+            <div className="mt-2 text-gray-600 text-sm">
               {convertedOutput.split('\n').length} lines, {convertedOutput.length} characters
             </div>
           </CardContent>
@@ -288,7 +285,7 @@ export function JsonConverter({
 
       {/* Copy Notification */}
       {showCopyNotification && (
-        <div className="fixed bottom-4 right-4 bg-green-600 text-white px-3 py-2 rounded-lg shadow-lg z-50 flex items-center gap-2">
+        <div className="fixed right-4 bottom-4 z-50 flex items-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-white shadow-lg">
           <span className="text-sm">Copied to clipboard!</span>
         </div>
       )}

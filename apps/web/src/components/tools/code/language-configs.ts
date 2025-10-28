@@ -1,4 +1,4 @@
-import { LanguageConfig, CodeTemplate } from './code-types'
+import type { CodeTemplate, LanguageConfig } from './code-types'
 
 export const LANGUAGE_CONFIGS: Record<string, LanguageConfig> = {
   javascript: {
@@ -17,7 +17,7 @@ console.log(message);`,
     memoryLimit: 128,
     supportsStdin: true,
     supportsCompilation: false,
-    monacoLanguage: 'javascript'
+    monacoLanguage: 'javascript',
   },
   typescript: {
     name: 'TypeScript',
@@ -37,7 +37,7 @@ console.log(message);`,
     memoryLimit: 256,
     supportsStdin: true,
     supportsCompilation: true,
-    monacoLanguage: 'typescript'
+    monacoLanguage: 'typescript',
   },
   python: {
     name: 'Python',
@@ -56,7 +56,7 @@ print(message)`,
     memoryLimit: 128,
     supportsStdin: true,
     supportsCompilation: false,
-    monacoLanguage: 'python'
+    monacoLanguage: 'python',
   },
   java: {
     name: 'Java',
@@ -79,7 +79,7 @@ public class Main {
     memoryLimit: 256,
     supportsStdin: true,
     supportsCompilation: true,
-    monacoLanguage: 'java'
+    monacoLanguage: 'java',
   },
   cpp: {
     name: 'C++',
@@ -105,7 +105,7 @@ int main() {
     memoryLimit: 256,
     supportsStdin: true,
     supportsCompilation: true,
-    monacoLanguage: 'cpp'
+    monacoLanguage: 'cpp',
   },
   c: {
     name: 'C',
@@ -130,7 +130,7 @@ int main() {
     memoryLimit: 256,
     supportsStdin: true,
     supportsCompilation: true,
-    monacoLanguage: 'c'
+    monacoLanguage: 'c',
   },
   csharp: {
     name: 'C#',
@@ -155,7 +155,7 @@ class Program {
     memoryLimit: 256,
     supportsStdin: true,
     supportsCompilation: true,
-    monacoLanguage: 'csharp'
+    monacoLanguage: 'csharp',
   },
   go: {
     name: 'Go',
@@ -180,7 +180,7 @@ func main() {
     memoryLimit: 128,
     supportsStdin: true,
     supportsCompilation: true,
-    monacoLanguage: 'go'
+    monacoLanguage: 'go',
   },
   rust: {
     name: 'Rust',
@@ -201,7 +201,7 @@ fn main() {
     memoryLimit: 256,
     supportsStdin: true,
     supportsCompilation: true,
-    monacoLanguage: 'rust'
+    monacoLanguage: 'rust',
   },
   php: {
     name: 'PHP',
@@ -221,7 +221,7 @@ echo "$message\\n";
     memoryLimit: 128,
     supportsStdin: true,
     supportsCompilation: false,
-    monacoLanguage: 'php'
+    monacoLanguage: 'php',
   },
   ruby: {
     name: 'Ruby',
@@ -239,7 +239,7 @@ puts message`,
     memoryLimit: 128,
     supportsStdin: true,
     supportsCompilation: false,
-    monacoLanguage: 'ruby'
+    monacoLanguage: 'ruby',
   },
   swift: {
     name: 'Swift',
@@ -258,7 +258,7 @@ print(message)`,
     memoryLimit: 256,
     supportsStdin: true,
     supportsCompilation: true,
-    monacoLanguage: 'swift'
+    monacoLanguage: 'swift',
   },
   kotlin: {
     name: 'Kotlin',
@@ -279,7 +279,7 @@ fun main() {
     memoryLimit: 256,
     supportsStdin: true,
     supportsCompilation: true,
-    monacoLanguage: 'kotlin'
+    monacoLanguage: 'kotlin',
   },
   bash: {
     name: 'Bash',
@@ -298,7 +298,7 @@ echo "$message"`,
     memoryLimit: 64,
     supportsStdin: true,
     supportsCompilation: false,
-    monacoLanguage: 'shell'
+    monacoLanguage: 'shell',
   },
   powershell: {
     name: 'PowerShell',
@@ -316,7 +316,7 @@ Write-Host $message`,
     memoryLimit: 128,
     supportsStdin: true,
     supportsCompilation: false,
-    monacoLanguage: 'powershell'
+    monacoLanguage: 'powershell',
   },
   sql: {
     name: 'SQL',
@@ -337,8 +337,8 @@ SELECT
     memoryLimit: 128,
     supportsStdin: false,
     supportsCompilation: false,
-    monacoLanguage: 'sql'
-  }
+    monacoLanguage: 'sql',
+  },
 }
 
 export const CODE_TEMPLATES: CodeTemplate[] = [
@@ -350,7 +350,7 @@ export const CODE_TEMPLATES: CodeTemplate[] = [
     description: 'Simple hello world program',
     code: `console.log("Hello, World!");`,
     category: 'Basics',
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   {
     id: 'js-array-methods',
@@ -375,7 +375,7 @@ console.log("Sum:", sum);
 const firstGreaterThan3 = numbers.find(n => n > 3);
 console.log("First > 3:", firstGreaterThan3);`,
     category: 'Arrays',
-    difficulty: 'intermediate'
+    difficulty: 'intermediate',
   },
   {
     id: 'js-async-await',
@@ -409,7 +409,7 @@ async function fetchUserData(userId) {
 // Usage
 fetchUserData(123);`,
     category: 'Async',
-    difficulty: 'intermediate'
+    difficulty: 'intermediate',
   },
 
   // Python Templates
@@ -420,7 +420,7 @@ fetchUserData(123);`,
     description: 'Simple hello world program',
     code: `print("Hello, World!")`,
     category: 'Basics',
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   {
     id: 'py-list-comprehension',
@@ -444,7 +444,7 @@ print("Matrix:", matrix)
 word_lengths = {word: len(word) for word in ["hello", "world", "python"]}
 print("Word lengths:", word_lengths)`,
     category: 'Data Structures',
-    difficulty: 'intermediate'
+    difficulty: 'intermediate',
   },
   {
     id: 'py-decorators',
@@ -488,7 +488,7 @@ def greet(name):
 
 greet("Python")`,
     category: 'Functions',
-    difficulty: 'advanced'
+    difficulty: 'advanced',
   },
 
   // Java Templates
@@ -503,7 +503,7 @@ greet("Python")`,
     }
 }`,
     category: 'Basics',
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   {
     id: 'java-oop',
@@ -552,7 +552,7 @@ public class Main {
     }
 }`,
     category: 'OOP',
-    difficulty: 'intermediate'
+    difficulty: 'intermediate',
   },
 
   // C++ Templates
@@ -568,7 +568,7 @@ int main() {
     return 0;
 }`,
     category: 'Basics',
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   {
     id: 'cpp-stl-containers',
@@ -627,8 +627,8 @@ int main() {
     return 0;
 }`,
     category: 'STL',
-    difficulty: 'intermediate'
-  }
+    difficulty: 'intermediate',
+  },
 ]
 
 export const getLanguageConfig = (language: string): LanguageConfig => {
@@ -645,8 +645,9 @@ export const getTemplatesByCategory = (category: string): CodeTemplate[] => {
 
 export const searchTemplates = (query: string, language?: string): CodeTemplate[] => {
   return CODE_TEMPLATES.filter(template => {
-    const matchesQuery = template.name.toLowerCase().includes(query.toLowerCase()) ||
-                         template.description.toLowerCase().includes(query.toLowerCase())
+    const matchesQuery =
+      template.name.toLowerCase().includes(query.toLowerCase()) ||
+      template.description.toLowerCase().includes(query.toLowerCase())
     const matchesLanguage = !language || template.language === language
     return matchesQuery && matchesLanguage
   })

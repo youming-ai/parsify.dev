@@ -8,35 +8,32 @@
  */
 
 import {
-  D1Config,
-  getD1Config,
-  D1HealthMonitor,
   createD1Pool,
-  D1ConnectionPool,
+  type D1Config,
+  type D1ConnectionPool,
+  D1HealthMonitor,
   executeQuery,
+  getD1Config,
 } from '../../config/cloudflare/d1-config'
-
 import {
-  KVConfig,
+  type DurableObjectConfig,
+  getDurableObjectConfig,
+} from '../../config/cloudflare/durable-objects-config'
+import {
+  type KVCacheService as BaseKVCacheService,
   getKVConfig,
-  KVHealthMonitor,
-  KVCacheService as BaseKVCacheService,
+  type KVConfig,
+  type KVHealthMonitor,
   KVSessionService,
 } from '../../config/cloudflare/kv-config'
 
-import { KVCacheService } from './kv-cache'
-
 import {
-  R2Config,
   getR2Config,
-  R2HealthMonitor,
+  type R2Config,
   R2FileService,
+  R2HealthMonitor,
 } from '../../config/cloudflare/r2-config'
-
-import {
-  DurableObjectConfig,
-  getDurableObjectConfig,
-} from '../../config/cloudflare/durable-objects-config'
+import { KVCacheService } from './kv-cache'
 
 export interface CloudflareServiceOptions {
   environment?: string
@@ -150,18 +147,9 @@ export class CloudflareService {
     }
     this.r2Config = getR2Config(this.options.environment)
     this.durableObjectConfigs = {
-      sessionManager: getDurableObjectConfig(
-        'sessionManager',
-        this.options.environment
-      ),
-      collaborationRoom: getDurableObjectConfig(
-        'collaborationRoom',
-        this.options.environment
-      ),
-      realtimeSync: getDurableObjectConfig(
-        'realtimeSync',
-        this.options.environment
-      ),
+      sessionManager: getDurableObjectConfig('sessionManager', this.options.environment),
+      collaborationRoom: getDurableObjectConfig('collaborationRoom', this.options.environment),
+      realtimeSync: getDurableObjectConfig('realtimeSync', this.options.environment),
     }
 
     // Initialize metrics
@@ -223,21 +211,14 @@ export class CloudflareService {
     try {
       // Initialize D1
       if (this.env[this.d1Config.binding]) {
-        this.d1Pool = createD1Pool(
-          this.d1Config,
-          this.env[this.d1Config.binding]
-        )
+        this.d1Pool = createD1Pool(this.d1Config, this.env[this.d1Config.binding])
         this.d1HealthMonitor = new D1HealthMonitor(this.d1Config)
       }
 
       // Initialize KV services
       Object.entries(this.kvConfigs).forEach(([name, config]) => {
         if (this.env[config.binding]) {
-          this.kvCacheServices[name] = new KVCacheService(
-            this.env[config.binding],
-            config,
-            name
-          )
+          this.kvCacheServices[name] = new KVCacheService(this.env[config.binding], config, name)
         }
       })
 
@@ -251,10 +232,7 @@ export class CloudflareService {
 
       // Initialize R2
       if (this.env[this.r2Config.binding]) {
-        this.r2FileService = new R2FileService(
-          this.env[this.r2Config.binding],
-          this.r2Config
-        )
+        this.r2FileService = new R2FileService(this.env[this.r2Config.binding], this.r2Config)
         this.r2HealthMonitor = new R2HealthMonitor(this.r2Config)
       }
 
@@ -338,9 +316,7 @@ export class CloudflareService {
     }
   }
 
-  async batchQuery(
-    queries: Array<{ sql: string; params?: any[] }>
-  ): Promise<D1Result[]> {
+  async batchQuery(queries: Array<{ sql: string; params?: any[] }>): Promise<D1Result[]> {
     const results: D1Result[] = []
 
     for (const query of queries) {
@@ -403,10 +379,7 @@ export class CloudflareService {
     }
   }
 
-  async cacheDelete(
-    namespace: 'cache' | 'uploads' | 'analytics',
-    key: string
-  ): Promise<boolean> {
+  async cacheDelete(namespace: 'cache' | 'uploads' | 'analytics', key: string): Promise<boolean> {
     const service = this.kvCacheServices[namespace]
     if (!service) {
       throw new Error(`KV cache service '${namespace}' not available`)
@@ -516,12 +489,7 @@ export class CloudflareService {
     const startTime = Date.now()
 
     try {
-      const result = await this.r2FileService.uploadFile(
-        userId,
-        file,
-        filename,
-        options
-      )
+      const result = await this.r2FileService.uploadFile(userId, file, filename, options)
       this.updateR2Metrics('upload', Date.now() - startTime, true, result.size)
       return result
     } catch (error) {
@@ -530,9 +498,7 @@ export class CloudflareService {
     }
   }
 
-  async getFile(
-    key: string
-  ): Promise<{ file: R2ObjectBody; metadata: any } | null> {
+  async getFile(key: string): Promise<{ file: R2ObjectBody; metadata: any } | null> {
     if (!this.r2FileService) {
       throw new Error('R2 file service not available')
     }
@@ -542,12 +508,7 @@ export class CloudflareService {
     try {
       const result = await this.r2FileService.getFile(key)
       if (result) {
-        this.updateR2Metrics(
-          'download',
-          Date.now() - startTime,
-          true,
-          result.metadata.size
-        )
+        this.updateR2Metrics('download', Date.now() - startTime, true, result.metadata.size)
       }
       return result
     } catch (error) {
@@ -573,26 +534,15 @@ export class CloudflareService {
     }
   }
 
-  async listUserFiles(
-    userId: string,
-    options?: { limit?: number; cursor?: string }
-  ): Promise<any> {
+  async listUserFiles(userId: string, options?: { limit?: number; cursor?: string }): Promise<any> {
     if (!this.r2FileService) {
       throw new Error('R2 file service not available')
     }
-
-    try {
-      return await this.r2FileService.getUserFiles(userId, options)
-    } catch (error) {
-      throw error
-    }
+    return await this.r2FileService.getUserFiles(userId, options)
   }
 
   // Durable Object Operations
-  async getDurableObject(
-    objectName: string,
-    id?: string
-  ): Promise<DurableObject> {
+  async getDurableObject(objectName: string, id?: string): Promise<DurableObject> {
     const config = this.durableObjectConfigs[objectName]
     if (!config) {
       throw new Error(`Durable Object '${objectName}' not configured`)
@@ -625,11 +575,7 @@ export class CloudflareService {
 
       return await response.json()
     } catch (error) {
-      this.log(
-        'error',
-        `Durable Object call failed: ${objectName}.${method}`,
-        error
-      )
+      this.log('error', `Durable Object call failed: ${objectName}.${method}`, error)
       throw error
     }
   }
@@ -656,16 +602,14 @@ export class CloudflareService {
             error: d1Health.error,
           }
         } else {
-          health.d1.status = this.d1HealthMonitor.isHealthy()
-            ? 'healthy'
-            : 'unhealthy'
+          health.d1.status = this.d1HealthMonitor.isHealthy() ? 'healthy' : 'unhealthy'
         }
       }
 
       // Check KV
       if (this.kvHealthMonitor) {
         Object.keys(this.kvConfigs).forEach(namespace => {
-          const kvHealth = this.kvHealthMonitor!.getLastHealthCheck(namespace)
+          const kvHealth = this.kvHealthMonitor?.getLastHealthCheck(namespace)
           if (kvHealth) {
             health.kv[namespace] = {
               status: kvHealth.status,
@@ -674,9 +618,7 @@ export class CloudflareService {
             }
           } else {
             health.kv[namespace] = {
-              status: this.kvHealthMonitor!.isHealthy(namespace)
-                ? 'healthy'
-                : 'unhealthy',
+              status: this.kvHealthMonitor?.isHealthy(namespace) ? 'healthy' : 'unhealthy',
               responseTime: 0,
             }
           }
@@ -693,9 +635,7 @@ export class CloudflareService {
             error: r2Health.error,
           }
         } else {
-          health.r2.status = this.r2HealthMonitor.isHealthy()
-            ? 'healthy'
-            : 'unhealthy'
+          health.r2.status = this.r2HealthMonitor.isHealthy() ? 'healthy' : 'unhealthy'
         }
       }
 
@@ -712,25 +652,17 @@ export class CloudflareService {
         health.d1.status === 'healthy',
         ...Object.values(health.kv).map(kv => kv.status === 'healthy'),
         health.r2.status === 'healthy',
-        ...Object.values(health.durableObjects).map(
-          dobj => dobj.status === 'healthy'
-        ),
+        ...Object.values(health.durableObjects).map(dobj => dobj.status === 'healthy'),
       ].every(Boolean)
 
       const hasUnhealthy = [
         health.d1.status === 'unhealthy',
         ...Object.values(health.kv).map(kv => kv.status === 'unhealthy'),
         health.r2.status === 'unhealthy',
-        ...Object.values(health.durableObjects).map(
-          dobj => dobj.status === 'unhealthy'
-        ),
+        ...Object.values(health.durableObjects).map(dobj => dobj.status === 'unhealthy'),
       ].some(Boolean)
 
-      health.overall = hasUnhealthy
-        ? 'unhealthy'
-        : allHealthy
-          ? 'healthy'
-          : 'degraded'
+      health.overall = hasUnhealthy ? 'unhealthy' : allHealthy ? 'healthy' : 'degraded'
     } catch (error) {
       health.overall = 'unhealthy'
       this.log('error', 'Health check failed:', error)
@@ -755,15 +687,10 @@ export class CloudflareService {
     this.metrics.d1.queryCount++
     this.metrics.d1.totalQueryTime += duration
     if (!success) this.metrics.d1.errorCount++
-    this.metrics.d1.avgQueryTime =
-      this.metrics.d1.totalQueryTime / this.metrics.d1.queryCount
+    this.metrics.d1.avgQueryTime = this.metrics.d1.totalQueryTime / this.metrics.d1.queryCount
   }
 
-  private updateKVMetrics(
-    namespace: string,
-    duration: number,
-    success: boolean
-  ): void {
+  private updateKVMetrics(namespace: string, duration: number, success: boolean): void {
     if (!this.options.enableMetrics) return
 
     const metrics = this.metrics.kv[namespace]
@@ -799,11 +726,7 @@ export class CloudflareService {
     if (!success) this.metrics.r2.errorCount++
   }
 
-  private log(
-    level: 'debug' | 'info' | 'warn' | 'error',
-    message: string,
-    ...args: any[]
-  ): void {
+  private log(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: any[]): void {
     if (this.options.logLevel && this.shouldLog(level)) {
       const timestamp = new Date().toISOString()
       const logMessage = `[${timestamp}] [CloudflareService] [${level.toUpperCase()}] ${message}`
@@ -977,8 +900,4 @@ export function createCloudflareService(
 }
 
 // Export types
-export type {
-  CloudflareServiceOptions,
-  CloudflareServiceHealth,
-  CloudflareServiceMetrics,
-}
+export type { CloudflareServiceOptions, CloudflareServiceHealth, CloudflareServiceMetrics }

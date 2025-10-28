@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../../apps/api/src/index'
 
 describe('POST /api/v1/jobs', () => {
@@ -16,17 +16,21 @@ describe('POST /api/v1/jobs', () => {
       input_data: {
         json: '{"name":"John","age":30}',
         indent: 2,
-        sort_keys: true
-      }
+        sort_keys: true,
+      },
     }
 
-    const res = await app.request('/api/v1/jobs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/jobs',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(jobData),
       },
-      body: JSON.stringify(jobData)
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(201)
 
@@ -45,17 +49,21 @@ describe('POST /api/v1/jobs', () => {
       input_data: {
         code: 'console.log("Hello, World!");',
         language: 'javascript',
-        timeout: 5000
-      }
+        timeout: 5000,
+      },
     }
 
-    const res = await app.request('/api/v1/jobs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/jobs',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(jobData),
       },
-      body: JSON.stringify(jobData)
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(201)
 
@@ -68,16 +76,20 @@ describe('POST /api/v1/jobs', () => {
   })
 
   it('should validate required parameters', async () => {
-    const res = await app.request('/api/v1/jobs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/jobs',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // Missing required 'tool_id' parameter
+          input_data: { test: true },
+        }),
       },
-      body: JSON.stringify({
-        // Missing required 'tool_id' parameter
-        input_data: { test: true }
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(400)
 
@@ -89,16 +101,20 @@ describe('POST /api/v1/jobs', () => {
   it('should validate tool_id exists', async () => {
     const jobData = {
       tool_id: 'invalid-tool',
-      input_data: { test: true }
+      input_data: { test: true },
     }
 
-    const res = await app.request('/api/v1/jobs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/jobs',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(jobData),
       },
-      body: JSON.stringify(jobData)
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(400)
 
@@ -112,17 +128,21 @@ describe('POST /api/v1/jobs', () => {
       tool_id: 'json-format',
       input_ref: 'uuid-string-for-uploaded-file',
       input_data: {
-        indent: 2
-      }
+        indent: 2,
+      },
     }
 
-    const res = await app.request('/api/v1/jobs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/jobs',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(jobData),
       },
-      body: JSON.stringify(jobData)
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(201)
 
@@ -137,18 +157,22 @@ describe('POST /api/v1/jobs', () => {
       tool_id: 'json-format',
       input_data: {
         json: '{"test": true}',
-        indent: 2
-      }
+        indent: 2,
+      },
     }
 
     const requests = Array.from({ length: 10 }, () =>
-      app.request('/api/v1/jobs', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      app.request(
+        '/api/v1/jobs',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(jobData),
         },
-        body: JSON.stringify(jobData)
-      }, testEnv)
+        testEnv
+      )
     )
 
     const responses = await Promise.allSettled(requests)
@@ -178,17 +202,21 @@ describe('POST /api/v1/jobs', () => {
       tool_id: 'json-format',
       input_data: {
         json: 'x'.repeat(10 * 1024 * 1024), // 10MB string
-        indent: 2
-      }
+        indent: 2,
+      },
     }
 
-    const res = await app.request('/api/v1/jobs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/jobs',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(largeInput),
       },
-      body: JSON.stringify(largeInput)
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(413)
 
@@ -205,19 +233,23 @@ describe('POST /api/v1/jobs', () => {
         schema: {
           type: 'object',
           properties: {
-            valid: { type: 'boolean' }
-          }
-        }
-      }
+            valid: { type: 'boolean' },
+          },
+        },
+      },
     }
 
-    const res = await app.request('/api/v1/jobs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/jobs',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(jobData),
       },
-      body: JSON.stringify(jobData)
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(201)
 

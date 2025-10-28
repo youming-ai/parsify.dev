@@ -17,11 +17,6 @@
     },
     "types": ["@cloudflare/workers-types"]
   },
-  "include": [
-    "**/*.ts",
-    "wrangler.toml"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["**/*.ts", "wrangler.toml"],
+  "exclude": ["node_modules"]
 }

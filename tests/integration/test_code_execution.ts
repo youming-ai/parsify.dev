@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../../apps/api/src/index'
 
 describe('Code Execution Integration', () => {
@@ -22,18 +22,22 @@ describe('Code Execution Integration', () => {
       result;
     `
 
-    const jsRes = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const jsRes = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: jsCode,
+          language: 'javascript',
+          input: '',
+          timeout: 5000,
+        }),
       },
-      body: JSON.stringify({
-        code: jsCode,
-        language: 'javascript',
-        input: '',
-        timeout: 5000
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(jsRes.status).toBe(200)
     const jsData = await jsRes.json()
@@ -56,18 +60,22 @@ print("Processed:", result)
 result
     `
 
-    const pythonRes = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const pythonRes = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: pythonCode,
+          language: 'python',
+          input: 'apple\\nbanana\\ncherry\\ndate',
+          timeout: 5000,
+        }),
       },
-      body: JSON.stringify({
-        code: pythonCode,
-        language: 'python',
-        input: 'apple\\nbanana\\ncherry\\ndate',
-        timeout: 5000
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(pythonRes.status).toBe(200)
     const pythonData = await pythonRes.json()
@@ -105,18 +113,22 @@ print("Features:", parsed["settings"]["features"])
 print("JSON valid:", json_str != "")
     `
 
-    const res = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: pythonCode,
+          language: 'python',
+          input: '',
+          timeout: 5000,
+        }),
       },
-      body: JSON.stringify({
-        code: pythonCode,
-        language: 'python',
-        input: '',
-        timeout: 5000
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -142,18 +154,22 @@ try {
 }
     `
 
-    const jsRes = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const jsRes = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: jsError,
+          language: 'javascript',
+          input: '',
+          timeout: 5000,
+        }),
       },
-      body: JSON.stringify({
-        code: jsError,
-        language: 'javascript',
-        input: '',
-        timeout: 5000
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(jsRes.status).toBe(200)
     const jsData = await jsRes.json()
@@ -172,18 +188,22 @@ except ZeroDivisionError as e:
     print(f"Error caught: {e}")
     `
 
-    const pyRes = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const pyRes = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: pyError,
+          language: 'python',
+          input: '',
+          timeout: 5000,
+        }),
       },
-      body: JSON.stringify({
-        code: pyError,
-        language: 'python',
-        input: '',
-        timeout: 5000
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(pyRes.status).toBe(200)
     const pyData = await pyRes.json()
@@ -202,18 +222,22 @@ except ZeroDivisionError as e:
       console.log("Completed long running task");
     `
 
-    const res = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: longRunningCode,
+          language: 'javascript',
+          input: '',
+          timeout: 1000, // 1 second timeout
+        }),
       },
-      body: JSON.stringify({
-        code: longRunningCode,
-        language: 'javascript',
-        input: '',
-        timeout: 1000 // 1 second timeout
-      })
-    }, testEnv)
+      testEnv
+    )
 
     // Should be terminated by timeout
     expect([200, 400, 500]).toContain(res.status)
@@ -238,18 +262,22 @@ except ZeroDivisionError as e:
         .catch(error => console.error('Network request failed:', error.message));
     `
 
-    const res = await app.request('/api/v1/tools/code/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await app.request(
+      '/api/v1/tools/code/execute',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: networkCode,
+          language: 'javascript',
+          input: '',
+          timeout: 5000,
+        }),
       },
-      body: JSON.stringify({
-        code: networkCode,
-        language: 'javascript',
-        input: '',
-        timeout: 5000
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -271,20 +299,26 @@ except ZeroDivisionError as e:
     `
 
     // Execute multiple instances concurrently
-    const promises = Array(3).fill(null).map(() =>
-      app.request('/api/v1/tools/code/execute', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          code,
-          language: 'javascript',
-          input: '',
-          timeout: 5000
-        })
-      }, testEnv)
-    )
+    const promises = Array(3)
+      .fill(null)
+      .map(() =>
+        app.request(
+          '/api/v1/tools/code/execute',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              code,
+              language: 'javascript',
+              input: '',
+              timeout: 5000,
+            }),
+          },
+          testEnv
+        )
+      )
 
     const results = await Promise.all(promises)
 
@@ -301,10 +335,12 @@ except ZeroDivisionError as e:
     })
 
     // Verify they're different executions (different random sums)
-    const sums = outputs.map(output => {
-      const match = output.match(/sum: ([\d.]+)/)
-      return match ? parseFloat(match[1]) : null
-    }).filter(Boolean)
+    const sums = outputs
+      .map(output => {
+        const match = output.match(/sum: ([\d.]+)/)
+        return match ? parseFloat(match[1]) : null
+      })
+      .filter(Boolean)
 
     // Should have different sums due to random number generation
     const uniqueSums = new Set(sums)

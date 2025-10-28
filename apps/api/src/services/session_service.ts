@@ -5,13 +5,13 @@
  * with Durable Objects for real-time features and stateful sessions.
  */
 
-import {
+import type {
+  CollaborationRoom,
   EnhancedSessionData,
   SessionEvent,
-  CollaborationRoom
 } from '../durable-objects/session-manager'
-import { User } from '../models/user'
-import { AuthService, TokenPayload } from './auth_service'
+import type { User } from '../models/user'
+import { AuthService, type TokenPayload } from './auth_service'
 import { RateLimitService } from './rate_limit_service'
 
 // Session configuration
@@ -74,26 +74,25 @@ export enum SessionError {
   COLLABORATION_DISABLED = 'COLLABORATION_DISABLED',
   ROOM_NOT_FOUND = 'ROOM_NOT_FOUND',
   INVALID_OPERATION = 'INVALID_OPERATION',
-  SERVICE_ERROR = 'SERVICE_ERROR'
+  SERVICE_ERROR = 'SERVICE_ERROR',
 }
 
 export class SessionService {
   private env: Env
   private config: SessionConfig
   private authService: AuthService
-  private rateLimitService: RateLimitService
 
   constructor(env: Env, config?: Partial<SessionConfig>) {
     this.env = env
     this.config = {
       defaultTTL: 86400000, // 24 hours
-      maxTTL: 604800000,   // 7 days
+      maxTTL: 604800000, // 7 days
       cleanupInterval: 300000, // 5 minutes
       maxConnectionsPerSession: 10,
       enableMetrics: true,
       enableAuditLog: true,
       collaborationEnabled: true,
-      ...config
+      ...config,
     }
 
     this.authService = new AuthService({
@@ -101,14 +100,14 @@ export class SessionService {
       kv: env.SESSIONS,
       jwtSecret: env.JWT_SECRET || 'default-secret',
       auditEnabled: this.config.enableAuditLog,
-      sessionTimeoutMinutes: Math.floor(this.config.defaultTTL / 60000)
+      sessionTimeoutMinutes: Math.floor(this.config.defaultTTL / 60000),
     })
 
     this.rateLimitService = new RateLimitService({
       db: env.DB,
       kv: env.CACHE,
       auditEnabled: this.config.enableAuditLog,
-      enableDistributedLimiting: true
+      enableDistributedLimiting: true,
     })
   }
 
@@ -124,7 +123,7 @@ export class SessionService {
       persistent = false,
       metadata,
       customLimits,
-      enableCollaboration = this.config.collaborationEnabled
+      enableCollaboration = this.config.collaborationEnabled,
     } = options
 
     // Validate TTL
@@ -140,11 +139,11 @@ export class SessionService {
     const sessionId = crypto.randomUUID()
 
     // Get user data if userId provided
-    let user: User | undefined
+    let _user: User | undefined
     if (userId) {
       try {
         const userService = new (await import('./user_service')).UserService(this.env.DB)
-        user = await userService.findById(userId)
+        _user = await userService.findById(userId)
       } catch (error) {
         console.error('Failed to fetch user data:', error)
       }
@@ -157,9 +156,9 @@ export class SessionService {
         ...metadata,
         persistent,
         enableCollaboration,
-        createdVia: 'session_service'
+        createdVia: 'session_service',
       },
-      customLimits
+      customLimits,
     }
 
     // Create session via Durable Object
@@ -170,9 +169,9 @@ export class SessionService {
         headers: {
           'Content-Type': 'application/json',
           'CF-Connecting-IP': ipAddress || 'unknown',
-          'User-Agent': userAgent || 'unknown'
+          'User-Agent': userAgent || 'unknown',
         },
-        body: JSON.stringify(sessionData)
+        body: JSON.stringify(sessionData),
       })
     )
 
@@ -190,7 +189,7 @@ export class SessionService {
         sessionId,
         userId,
         timestamp: Date.now(),
-        data: { ttl, persistent, enableCollaboration }
+        data: { ttl, persistent, enableCollaboration },
       })
     }
 
@@ -205,7 +204,7 @@ export class SessionService {
       const sessionManager = this.env.SESSION_MANAGER as DurableObject
       const response = await sessionManager.fetch(
         new Request(`https://dummy-url/session/${sessionId}`, {
-          method: 'GET'
+          method: 'GET',
         })
       )
 
@@ -250,7 +249,7 @@ export class SessionService {
         new Request(url.toString(), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updates)
+          body: JSON.stringify(updates),
         })
       )
 
@@ -270,7 +269,7 @@ export class SessionService {
           sessionId,
           userId,
           timestamp: Date.now(),
-          data: { updatedFields: Object.keys(updates) }
+          data: { updatedFields: Object.keys(updates) },
         })
       }
 
@@ -294,7 +293,7 @@ export class SessionService {
 
       const response = await sessionManager.fetch(
         new Request(url.toString(), {
-          method: 'DELETE'
+          method: 'DELETE',
         })
       )
 
@@ -311,7 +310,7 @@ export class SessionService {
           type: 'session_deleted',
           sessionId,
           userId,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
       }
 
@@ -326,8 +325,8 @@ export class SessionService {
    * Get user sessions
    */
   async getUserSessions(
-    userId: string,
-    options: SessionQueryOptions = {}
+    _userId: string,
+    _options: SessionQueryOptions = {}
   ): Promise<EnhancedSessionData[]> {
     // This would typically query a database index for user sessions
     // For now, we'll return an empty array as this would require
@@ -362,9 +361,9 @@ export class SessionService {
         new Request(url.toString(), {
           method: 'GET',
           headers: {
-            'Upgrade': 'websocket',
-            'Connection': 'Upgrade'
-          }
+            Upgrade: 'websocket',
+            Connection: 'Upgrade',
+          },
         })
       )
 
@@ -407,8 +406,8 @@ export class SessionService {
           body: JSON.stringify({
             ...roomData,
             ownerId: userId,
-            sessionId
-          })
+            sessionId,
+          }),
         })
       )
 
@@ -420,7 +419,7 @@ export class SessionService {
 
       // Update session with room ID
       const session = await this.getSession(sessionId)
-      if (session && session.collaborationData) {
+      if (session?.collaborationData) {
         session.collaborationData.roomIds.push(room.roomId)
         session.collaborationData.activeCollaborations++
         session.collaborationData.lastCollaboration = Date.now()
@@ -439,7 +438,7 @@ export class SessionService {
    */
   async joinCollaborationRoom(
     roomId: string,
-    sessionId: string,
+    _sessionId: string,
     userId?: string,
     token?: string
   ): Promise<string> {
@@ -452,13 +451,16 @@ export class SessionService {
 
       // Create WebSocket connection to room
       const response = await collaborationRoom.fetch(
-        new Request(`https://dummy-url/websocket?roomId=${roomId}&userId=${userId}&token=${token}`, {
-          method: 'GET',
-          headers: {
-            'Upgrade': 'websocket',
-            'Connection': 'Upgrade'
+        new Request(
+          `https://dummy-url/websocket?roomId=${roomId}&userId=${userId}&token=${token}`,
+          {
+            method: 'GET',
+            headers: {
+              Upgrade: 'websocket',
+              Connection: 'Upgrade',
+            },
           }
-        })
+        )
       )
 
       if (!response.ok) {
@@ -480,7 +482,7 @@ export class SessionService {
       const sessionManager = this.env.SESSION_MANAGER as DurableObject
       const response = await sessionManager.fetch(
         new Request('https://dummy-url/stats', {
-          method: 'GET'
+          method: 'GET',
         })
       )
 
@@ -500,8 +502,8 @@ export class SessionService {
         collaborationStats: {
           activeRooms: stats.activeRooms || 0,
           totalParticipants: stats.totalParticipants || 0,
-          activeOperations: stats.totalMessages || 0
-        }
+          activeOperations: stats.totalMessages || 0,
+        },
       }
     } catch (error) {
       console.error('Failed to get session stats:', error)
@@ -515,8 +517,8 @@ export class SessionService {
         collaborationStats: {
           activeRooms: 0,
           totalParticipants: 0,
-          activeOperations: 0
-        }
+          activeOperations: 0,
+        },
       }
     }
   }
@@ -529,7 +531,7 @@ export class SessionService {
       const sessionManager = this.env.SESSION_MANAGER as DurableObject
       const response = await sessionManager.fetch(
         new Request('https://dummy-url/admin/cleanup', {
-          method: 'POST'
+          method: 'POST',
         })
       )
 
@@ -571,14 +573,16 @@ export class SessionService {
       Date.now() + this.config.maxTTL
     )
 
-    return await this.updateSession(sessionId, { expiresAt: newExpiresAt }, userId) !== null
+    return (await this.updateSession(sessionId, { expiresAt: newExpiresAt }, userId)) !== null
   }
 
   /**
    * Check session limits for user
    */
   private async checkSessionLimits(userId: string): Promise<void> {
-    const userSessions = await this.getUserSessions(userId, { activeOnly: true })
+    const userSessions = await this.getUserSessions(userId, {
+      activeOnly: true,
+    })
 
     // Get user's session limit from their subscription tier
     const user = await this.authService.getUserById(userId)
@@ -596,7 +600,7 @@ export class SessionService {
     const limits: Record<string, number> = {
       free: 3,
       pro: 10,
-      enterprise: 50
+      enterprise: 50,
     }
     return limits[tier] || 3
   }
@@ -629,14 +633,14 @@ export class SessionService {
       const sessionManager = this.env.SESSION_MANAGER as DurableObject
       const response = await sessionManager.fetch(
         new Request('https://dummy-url/health', {
-          method: 'GET'
+          method: 'GET',
         })
       )
 
       if (!response.ok) {
         return {
           status: 'unhealthy',
-          details: { error: 'Session manager unhealthy' }
+          details: { error: 'Session manager unhealthy' },
         }
       }
 
@@ -648,14 +652,16 @@ export class SessionService {
           ...health.details,
           sessionService: {
             config: this.config,
-            collaborationEnabled: this.config.collaborationEnabled
-          }
-        }
+            collaborationEnabled: this.config.collaborationEnabled,
+          },
+        },
       }
     } catch (error) {
       return {
         status: 'unhealthy',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' }
+        details: {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
       }
     }
   }

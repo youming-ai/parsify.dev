@@ -1,19 +1,9 @@
-import { Context, Next } from 'hono'
+import type { Context, Next } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { ZodError } from 'zod'
-import {
-  createCloudflareService,
-  CloudflareService,
-} from '../services/cloudflare'
-import {
-  WasmError,
-  WasmErrorHandler,
-} from '../wasm/modules/core/wasm-error-handler'
-import {
-  getSentryClient,
-  SentryClient,
-  UserContext,
-} from '../monitoring/sentry'
+import { getSentryClient, type UserContext } from '../monitoring/sentry'
+import type { CloudflareService } from '../services/cloudflare'
+import { WasmError, WasmErrorHandler } from '../wasm/modules/core/wasm-error-handler'
 
 // Extended environment interface
 interface Env {
@@ -78,66 +68,33 @@ export class ValidationError extends ApiError {
     public readonly field?: string,
     context: Record<string, any> = {}
   ) {
-    super(
-      message,
-      'VALIDATION_ERROR',
-      400,
-      'validation',
-      'low',
-      context,
-      true,
-      [
-        'Check the request parameters',
-        'Verify the input data format',
-        'Review the API documentation',
-      ]
-    )
+    super(message, 'VALIDATION_ERROR', 400, 'validation', 'low', context, true, [
+      'Check the request parameters',
+      'Verify the input data format',
+      'Review the API documentation',
+    ])
     this.name = 'ValidationError'
   }
 }
 
 export class AuthenticationError extends ApiError {
-  constructor(
-    message: string = 'Authentication required',
-    context: Record<string, any> = {}
-  ) {
-    super(
-      message,
-      'AUTHENTICATION_ERROR',
-      401,
-      'authentication',
-      'medium',
-      context,
-      false,
-      [
-        'Check your authentication credentials',
-        'Verify the token is valid and not expired',
-        'Ensure you have the required permissions',
-      ]
-    )
+  constructor(message: string = 'Authentication required', context: Record<string, any> = {}) {
+    super(message, 'AUTHENTICATION_ERROR', 401, 'authentication', 'medium', context, false, [
+      'Check your authentication credentials',
+      'Verify the token is valid and not expired',
+      'Ensure you have the required permissions',
+    ])
     this.name = 'AuthenticationError'
   }
 }
 
 export class AuthorizationError extends ApiError {
-  constructor(
-    message: string = 'Insufficient permissions',
-    context: Record<string, any> = {}
-  ) {
-    super(
-      message,
-      'AUTHORIZATION_ERROR',
-      403,
-      'authorization',
-      'medium',
-      context,
-      false,
-      [
-        'Check your user permissions',
-        'Verify your subscription tier',
-        'Contact support for access',
-      ]
-    )
+  constructor(message: string = 'Insufficient permissions', context: Record<string, any> = {}) {
+    super(message, 'AUTHORIZATION_ERROR', 403, 'authorization', 'medium', context, false, [
+      'Check your user permissions',
+      'Verify your subscription tier',
+      'Contact support for access',
+    ])
     this.name = 'AuthorizationError'
   }
 }
@@ -170,20 +127,11 @@ export class RateLimitError extends ApiError {
     public readonly retryAfter?: number,
     context: Record<string, any> = {}
   ) {
-    super(
-      message,
-      'RATE_LIMIT_ERROR',
-      429,
-      'rate_limit',
-      'medium',
-      context,
-      true,
-      [
-        'Wait before making another request',
-        'Reduce request frequency',
-        'Consider upgrading your plan',
-      ]
-    )
+    super(message, 'RATE_LIMIT_ERROR', 429, 'rate_limit', 'medium', context, true, [
+      'Wait before making another request',
+      'Reduce request frequency',
+      'Consider upgrading your plan',
+    ])
     this.name = 'RateLimitError'
   }
 }
@@ -205,20 +153,11 @@ export class TimeoutError extends ApiError {
 
 export class ConfigurationError extends ApiError {
   constructor(message: string, context: Record<string, any> = {}) {
-    super(
-      message,
-      'CONFIGURATION_ERROR',
-      500,
-      'configuration',
-      'critical',
-      context,
-      false,
-      [
-        'Check the service configuration',
-        'Verify environment variables',
-        'Contact support',
-      ]
-    )
+    super(message, 'CONFIGURATION_ERROR', 500, 'configuration', 'critical', context, false, [
+      'Check the service configuration',
+      'Verify environment variables',
+      'Contact support',
+    ])
     this.name = 'ConfigurationError'
   }
 }
@@ -229,20 +168,11 @@ export class ExternalServiceError extends ApiError {
     public readonly service: string,
     context: Record<string, any> = {}
   ) {
-    super(
-      message,
-      'EXTERNAL_SERVICE_ERROR',
-      502,
-      'external_service',
-      'medium',
-      context,
-      true,
-      [
-        'Try again later',
-        'Check if the external service is available',
-        'Use fallback options if available',
-      ]
-    )
+    super(message, 'EXTERNAL_SERVICE_ERROR', 502, 'external_service', 'medium', context, true, [
+      'Try again later',
+      'Check if the external service is available',
+      'Use fallback options if available',
+    ])
     this.name = 'ExternalServiceError'
   }
 }
@@ -295,7 +225,6 @@ export interface ErrorMetrics {
 
 // Error handler class
 export class ErrorHandler {
-  private wasmErrorHandler: WasmErrorHandler
   private errorMetrics: ErrorMetrics = {
     totalErrors: 0,
     errorsByCategory: {} as Record<ErrorCategory, number>,
@@ -319,18 +248,14 @@ export class ErrorHandler {
     context?: Partial<ErrorContext>
   ): Promise<Response> {
     // Generate correlation ID if not provided
-    const requestId =
-      context?.requestId || c.get('requestId') || this.generateRequestId()
+    const requestId = context?.requestId || c.get('requestId') || this.generateRequestId()
 
     // Build error context
     const errorContext: ErrorContext = {
       requestId,
       userId: context?.userId,
       sessionId: context?.sessionId,
-      ipAddress:
-        c.req.header('CF-Connecting-IP') ||
-        c.req.header('X-Forwarded-For') ||
-        'unknown',
+      ipAddress: c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown',
       userAgent: c.req.header('User-Agent') || 'unknown',
       endpoint: c.req.path,
       method: c.req.method,
@@ -369,7 +294,7 @@ export class ErrorHandler {
   /**
    * Classify and wrap errors into appropriate ApiError instances
    */
-  private classifyError(error: Error, context: ErrorContext): ApiError {
+  private classifyError(error: Error, _context: ErrorContext): ApiError {
     // If it's already an ApiError, return it
     if (error instanceof ApiError) {
       return error
@@ -390,9 +315,7 @@ export class ErrorHandler {
 
     // Handle Zod validation errors
     if (error instanceof ZodError) {
-      const fieldErrors = error.errors.map(
-        err => `${err.path.join('.')}: ${err.message}`
-      )
+      const fieldErrors = error.errors.map(err => `${err.path.join('.')}: ${err.message}`)
       return new ValidationError(
         `Validation failed: ${fieldErrors.join(', ')}`,
         fieldErrors[0]?.split(':')[0],
@@ -425,19 +348,13 @@ export class ErrorHandler {
       return new TimeoutError(error.message, 30000, { originalError: error })
     }
 
-    if (
-      message.includes('rate limit') ||
-      message.includes('too many requests')
-    ) {
+    if (message.includes('rate limit') || message.includes('too many requests')) {
       return new RateLimitError(error.message, undefined, {
         originalError: error,
       })
     }
 
-    if (
-      message.includes('unauthorized') ||
-      message.includes('authentication')
-    ) {
+    if (message.includes('unauthorized') || message.includes('authentication')) {
       return new AuthenticationError(error.message, { originalError: error })
     }
 
@@ -445,11 +362,7 @@ export class ErrorHandler {
       return new AuthorizationError(error.message, { originalError: error })
     }
 
-    if (
-      message.includes('database') ||
-      message.includes('sql') ||
-      message.includes('query')
-    ) {
+    if (message.includes('database') || message.includes('sql') || message.includes('query')) {
       return new DatabaseError(error.message, { originalError: error })
     }
 
@@ -661,14 +574,9 @@ export class ErrorHandler {
     try {
       const cloudflare = c.get('cloudflare') as CloudflareService
       if (cloudflare) {
-        await cloudflare.cacheSet(
-          'analytics',
-          `error:${context.requestId}`,
-          logData,
-          {
-            ttl: 86400 * 7, // Keep for 7 days
-          }
-        )
+        await cloudflare.cacheSet('analytics', `error:${context.requestId}`, logData, {
+          ttl: 86400 * 7, // Keep for 7 days
+        })
       }
     } catch (logError) {
       console.error('Failed to log error to analytics:', logError)
@@ -703,9 +611,7 @@ export class ErrorHandler {
 
     // Limit recent errors
     if (this.errorMetrics.recentErrors.length > this.maxRecentErrors) {
-      this.errorMetrics.recentErrors = this.errorMetrics.recentErrors.slice(
-        -this.maxRecentErrors
-      )
+      this.errorMetrics.recentErrors = this.errorMetrics.recentErrors.slice(-this.maxRecentErrors)
     }
   }
 
@@ -756,19 +662,13 @@ export class ErrorHandler {
             ? 86400 * 7 // 7 days for high
             : 86400 * 3 // 3 days for medium/low
 
-      await cloudflare.cacheSet(
-        'analytics',
-        `error_detail:${context.requestId}`,
-        errorData,
-        {
-          ttl,
-        }
-      )
+      await cloudflare.cacheSet('analytics', `error_detail:${context.requestId}`, errorData, {
+        ttl,
+      })
 
       // Update error counts for monitoring
       const countKey = `error_count:${error.category}:${error.code}`
-      const currentCount =
-        (await cloudflare.cacheGet<number>('analytics', countKey)) || 0
+      const currentCount = (await cloudflare.cacheGet<number>('analytics', countKey)) || 0
       await cloudflare.cacheSet('analytics', countKey, currentCount + 1, {
         ttl: 86400, // Reset daily
       })
@@ -929,25 +829,17 @@ export const createValidationError = (
   context?: Record<string, any>
 ) => new ValidationError(message, field, context)
 
-export const createAuthenticationError = (
-  message?: string,
-  context?: Record<string, any>
-) => new AuthenticationError(message, context)
+export const createAuthenticationError = (message?: string, context?: Record<string, any>) =>
+  new AuthenticationError(message, context)
 
-export const createAuthorizationError = (
-  message?: string,
-  context?: Record<string, any>
-) => new AuthorizationError(message, context)
+export const createAuthorizationError = (message?: string, context?: Record<string, any>) =>
+  new AuthorizationError(message, context)
 
-export const createDatabaseError = (
-  message: string,
-  context?: Record<string, any>
-) => new DatabaseError(message, context)
+export const createDatabaseError = (message: string, context?: Record<string, any>) =>
+  new DatabaseError(message, context)
 
-export const createNetworkError = (
-  message: string,
-  context?: Record<string, any>
-) => new NetworkError(message, context)
+export const createNetworkError = (message: string, context?: Record<string, any>) =>
+  new NetworkError(message, context)
 
 export const createRateLimitError = (
   message?: string,
@@ -961,10 +853,8 @@ export const createTimeoutError = (
   context?: Record<string, any>
 ) => new TimeoutError(message, timeout, context)
 
-export const createConfigurationError = (
-  message: string,
-  context?: Record<string, any>
-) => new ConfigurationError(message, context)
+export const createConfigurationError = (message: string, context?: Record<string, any>) =>
+  new ConfigurationError(message, context)
 
 export const createExternalServiceError = (
   message: string,

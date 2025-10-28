@@ -1,6 +1,6 @@
-import { D1Database } from '@cloudflare/workers-types'
-import { DatabaseConnection, createDatabaseConnection } from './connection'
-import { EnhancedConnectionPool } from './pool'
+import type { D1Database } from '@cloudflare/workers-types'
+import { createDatabaseConnection } from './connection'
+import type { EnhancedConnectionPool } from './pool'
 
 export interface ConnectionLifecycleConfig {
   // Connection validation
@@ -38,9 +38,15 @@ export interface ConnectionLifecycleConfig {
 }
 
 export interface ConnectionLifecycleEvent {
-  type: 'connection_created' | 'connection_destroyed' | 'validation_failed' |
-        'connection_recovered' | 'cleanup_completed' | 'health_check_failed' |
-        'resource_threshold_exceeded' | 'shutdown_initiated'
+  type:
+    | 'connection_created'
+    | 'connection_destroyed'
+    | 'validation_failed'
+    | 'connection_recovered'
+    | 'cleanup_completed'
+    | 'health_check_failed'
+    | 'resource_threshold_exceeded'
+    | 'shutdown_initiated'
   connectionId?: string
   timestamp: number
   details: any
@@ -100,7 +106,6 @@ export interface LifecycleMetrics {
  * Connection lifecycle manager for connection pool
  */
 export class ConnectionLifecycleManager {
-  private pool: EnhancedConnectionPool
   private db: D1Database
   private config: Required<ConnectionLifecycleConfig>
   private connectionHealth: Map<string, ConnectionHealthStatus> = new Map()
@@ -133,33 +138,33 @@ export class ConnectionLifecycleManager {
         validationsPerformed: 0,
         validationFailures: 0,
         recoveriesAttempted: 0,
-        recoveriesSuccessful: 0
+        recoveriesSuccessful: 0,
       },
       cleanup: {
         idleConnectionsRemoved: 0,
         expiredConnectionsRemoved: 0,
         unhealthyConnectionsRemoved: 0,
         lastCleanupTime: 0,
-        totalCleanupTime: 0
+        totalCleanupTime: 0,
       },
       recovery: {
         activeRecoveries: 0,
         successfulRecoveries: 0,
         failedRecoveries: 0,
-        averageRecoveryTime: 0
+        averageRecoveryTime: 0,
       },
       health: {
         lastHealthCheck: 0,
         healthCheckDuration: 0,
         unhealthyConnections: 0,
-        healthyConnections: 0
+        healthyConnections: 0,
       },
       resources: {
         currentMemoryUsage: 0,
         peakMemoryUsage: 0,
         memoryThresholdExceeded: 0,
-        lastResourceCheck: 0
-      }
+        lastResourceCheck: 0,
+      },
     }
 
     this.startLifecycleManagement()
@@ -181,7 +186,7 @@ export class ConnectionLifecycleManager {
       isIdle: true,
       isActive: false,
       age: 0,
-      usageCount: 0
+      usageCount: 0,
     })
 
     this.metrics.lifecycle.connectionsCreated++
@@ -189,7 +194,7 @@ export class ConnectionLifecycleManager {
       type: 'connection_created',
       connectionId,
       timestamp: Date.now(),
-      details: { totalConnections: this.connectionHealth.size }
+      details: { totalConnections: this.connectionHealth.size },
     })
   }
 
@@ -209,8 +214,8 @@ export class ConnectionLifecycleManager {
         details: {
           age: health.age,
           usageCount: health.usageCount,
-          errorCount: health.errorCount
-        }
+          errorCount: health.errorCount,
+        },
       })
     }
   }
@@ -264,7 +269,7 @@ export class ConnectionLifecycleManager {
     const details: ConnectionHealthStatus[] = []
 
     const validationPromises = Array.from(this.connectionHealth.entries()).map(
-      async ([connectionId, health]) => {
+      async ([connectionId, _health]) => {
         try {
           const isValid = await this.validateConnection(connectionId)
           if (isValid) {
@@ -273,7 +278,7 @@ export class ConnectionLifecycleManager {
             unhealthy++
           }
           details.push(this.connectionHealth.get(connectionId)!)
-        } catch (error) {
+        } catch (_error) {
           unhealthy++
           details.push(this.connectionHealth.get(connectionId)!)
         }
@@ -313,14 +318,14 @@ export class ConnectionLifecycleManager {
       let reason = ''
 
       // Check for idle timeout
-      if (health.isIdle && (now - health.lastValidation) > this.config.idleConnectionTimeoutMs) {
+      if (health.isIdle && now - health.lastValidation > this.config.idleConnectionTimeoutMs) {
         shouldRemove = true
         reason = 'idle_timeout'
         idleRemoved++
       }
 
       // Check for expired connections
-      if ((now - (this.startTime + health.age)) > this.config.maxConnectionLifetimeMs) {
+      if (now - (this.startTime + health.age) > this.config.maxConnectionLifetimeMs) {
         shouldRemove = true
         reason = 'expired'
         expiredRemoved++
@@ -362,15 +367,15 @@ export class ConnectionLifecycleManager {
         expiredRemoved,
         unhealthyRemoved,
         totalRemoved: idleRemoved + expiredRemoved + unhealthyRemoved,
-        duration
-      }
+        duration,
+      },
     })
 
     return {
       idleRemoved,
       expiredRemoved,
       unhealthyRemoved,
-      totalRemoved: idleRemoved + expiredRemoved + unhealthyRemoved
+      totalRemoved: idleRemoved + expiredRemoved + unhealthyRemoved,
     }
   }
 
@@ -405,7 +410,7 @@ export class ConnectionLifecycleManager {
     this.emitEvent({
       type: 'shutdown_initiated',
       timestamp: Date.now(),
-      details: { connectionCount: this.connectionHealth.size }
+      details: { connectionCount: this.connectionHealth.size },
     })
 
     // Stop all timers
@@ -425,7 +430,7 @@ export class ConnectionLifecycleManager {
       const timeout = this.config.shutdownTimeoutMs
       const startTime = Date.now()
 
-      while (this.connectionHealth.size > 0 && (Date.now() - startTime) < timeout) {
+      while (this.connectionHealth.size > 0 && Date.now() - startTime < timeout) {
         await new Promise(resolve => setTimeout(resolve, 100))
       }
     }
@@ -446,7 +451,7 @@ export class ConnectionLifecycleManager {
     if (!this.eventListeners.has(eventType)) {
       this.eventListeners.set(eventType, [])
     }
-    this.eventListeners.get(eventType)!.push(listener)
+    this.eventListeners.get(eventType)?.push(listener)
   }
 
   /**
@@ -499,7 +504,7 @@ export class ConnectionLifecycleManager {
 
       // Graceful shutdown
       shutdownTimeoutMs: config.shutdownTimeoutMs ?? 30000,
-      gracefulShutdownEnabled: config.gracefulShutdownEnabled ?? true
+      gracefulShutdownEnabled: config.gracefulShutdownEnabled ?? true,
     }
   }
 
@@ -558,14 +563,14 @@ export class ConnectionLifecycleManager {
       const connection = createDatabaseConnection(this.db, {
         connectionTimeoutMs: this.config.validationTimeoutMs,
         retryAttempts: 1,
-        enableMetrics: false
+        enableMetrics: false,
       })
 
       const result = await Promise.race([
         connection.execute(this.config.validationQuery),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('Validation timeout')), this.config.validationTimeoutMs)
-        )
+        ),
       ])
 
       const isValid = result.success
@@ -588,19 +593,21 @@ export class ConnectionLifecycleManager {
             timestamp: Date.now(),
             details: {
               consecutiveFailures: health.consecutiveFailures,
-              lastError: result.error
-            }
+              lastError: result.error,
+            },
           })
 
           // Attempt recovery if enabled
-          if (this.config.enableAutoRecovery && health.consecutiveFailures >= this.config.maxValidationFailures) {
+          if (
+            this.config.enableAutoRecovery &&
+            health.consecutiveFailures >= this.config.maxValidationFailures
+          ) {
             await this.recoverConnection(connectionId)
           }
         }
       }
 
       return isValid
-
     } catch (error) {
       health.consecutiveFailures++
       health.errorCount++
@@ -609,7 +616,10 @@ export class ConnectionLifecycleManager {
 
       this.metrics.lifecycle.validationFailures++
 
-      if (this.config.enableAutoRecovery && health.consecutiveFailures >= this.config.maxValidationFailures) {
+      if (
+        this.config.enableAutoRecovery &&
+        health.consecutiveFailures >= this.config.maxValidationFailures
+      ) {
         await this.recoverConnection(connectionId)
       }
 
@@ -647,13 +657,12 @@ export class ConnectionLifecycleManager {
             timestamp: Date.now(),
             details: {
               attempt,
-              duration: Date.now() - startTime
-            }
+              duration: Date.now() - startTime,
+            },
           })
 
           return true
         }
-
       } catch (error) {
         health.lastError = (error as Error).message
       }
@@ -686,8 +695,8 @@ export class ConnectionLifecycleManager {
           timestamp: Date.now(),
           details: {
             consecutiveFailures: health.consecutiveFailures,
-            lastError: health.lastError
-          }
+            lastError: health.lastError,
+          },
         })
       }
     }
@@ -721,8 +730,8 @@ export class ConnectionLifecycleManager {
         details: {
           currentUsage: estimatedMemoryUsage,
           threshold: this.config.memoryThresholdMB,
-          connectionCount: this.connectionHealth.size
-        }
+          connectionCount: this.connectionHealth.size,
+        },
       })
 
       // Trigger cleanup to free resources

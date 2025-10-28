@@ -1,6 +1,11 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { runLoadTest, runConcurrencyTest, assertPerformanceRequirements, generatePerformanceReport } from '../utils/performance-utils'
-import { TOOL_ENDPOINTS, API_BASE_URL, TestDataGenerator, PERFORMANCE_TEST_SCENARIOS } from '../utils/endpoint-configs'
+import { beforeAll, describe, expect, it } from 'vitest'
+import { API_BASE_URL, TestDataGenerator, TOOL_ENDPOINTS } from '../utils/endpoint-configs'
+import {
+  assertPerformanceRequirements,
+  generatePerformanceReport,
+  runConcurrencyTest,
+  runLoadTest,
+} from '../utils/performance-utils'
 
 describe('Tools API Performance Tests', () => {
   beforeAll(async () => {
@@ -12,7 +17,9 @@ describe('Tools API Performance Tests', () => {
       }
       console.log('✅ API server is running and healthy')
     } catch (error) {
-      console.error('❌ API server is not available. Please start the server before running performance tests.')
+      console.error(
+        '❌ API server is not available. Please start the server before running performance tests.'
+      )
       throw error
     }
   })
@@ -27,18 +34,23 @@ describe('Tools API Performance Tests', () => {
         method: endpoint.method,
         concurrentRequests: 10,
         totalRequests: 50,
-        timeout: 5000
+        timeout: 5000,
       })
 
-      console.log(`Tools list performance: P95=${result.p95.toFixed(2)}ms, Success Rate=${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}%`)
+      console.log(
+        `Tools list performance: P95=${result.p95.toFixed(2)}ms, Success Rate=${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}%`
+      )
 
       // Assert performance requirements
       const performanceCheck = assertPerformanceRequirements(result, {
         maxP95ResponseTime: endpoint.maxP95ResponseTime,
-        minSuccessRate: endpoint.minSuccessRate
+        minSuccessRate: endpoint.minSuccessRate,
       })
 
-      expect(performanceCheck.passed, `Performance requirements not met: ${performanceCheck.failures.join(', ')}`).toBe(true)
+      expect(
+        performanceCheck.passed,
+        `Performance requirements not met: ${performanceCheck.failures.join(', ')}`
+      ).toBe(true)
       expect(result.successfulRequests).toBeGreaterThan(0)
     })
 
@@ -50,7 +62,7 @@ describe('Tools API Performance Tests', () => {
         `${API_BASE_URL}${endpoint.path}`,
         {
           method: endpoint.method,
-          totalRequests: 40
+          totalRequests: 40,
         },
         [1, 5, 10, 20]
       )
@@ -62,10 +74,13 @@ describe('Tools API Performance Tests', () => {
       Object.entries(concurrencyResults).forEach(([concurrency, result]) => {
         const performanceCheck = assertPerformanceRequirements(result, {
           maxP95ResponseTime: endpoint.maxP95ResponseTime! * 1.5, // Allow 50% slower under high concurrency
-          minSuccessRate: 0.95
+          minSuccessRate: 0.95,
         })
 
-        expect(performanceCheck.passed, `Concurrency ${concurrency} failed: ${performanceCheck.failures.join(', ')}`).toBe(true)
+        expect(
+          performanceCheck.passed,
+          `Concurrency ${concurrency} failed: ${performanceCheck.failures.join(', ')}`
+        ).toBe(true)
       })
     })
   })
@@ -77,9 +92,18 @@ describe('Tools API Performance Tests', () => {
 
       // Test with different JSON sizes
       const testCases = [
-        { name: 'small JSON', data: TestDataGenerator.generateJsonData('small') },
-        { name: 'medium JSON', data: TestDataGenerator.generateJsonData('medium') },
-        { name: 'large JSON', data: TestDataGenerator.generateJsonData('large') }
+        {
+          name: 'small JSON',
+          data: TestDataGenerator.generateJsonData('small'),
+        },
+        {
+          name: 'medium JSON',
+          data: TestDataGenerator.generateJsonData('medium'),
+        },
+        {
+          name: 'large JSON',
+          data: TestDataGenerator.generateJsonData('large'),
+        },
       ]
 
       for (const testCase of testCases) {
@@ -91,24 +115,29 @@ describe('Tools API Performance Tests', () => {
           headers: endpoint.headers,
           body: {
             ...endpoint.body,
-            json: testCase.data
+            json: testCase.data,
           },
           concurrentRequests: 5,
           totalRequests: 25,
-          timeout: 10000
+          timeout: 10000,
         })
 
-        console.log(`${testCase.name} formatting: P95=${result.p95.toFixed(2)}ms, Success Rate=${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}%`)
+        console.log(
+          `${testCase.name} formatting: P95=${result.p95.toFixed(2)}ms, Success Rate=${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}%`
+        )
 
         // Adjust expectations based on data size
         const maxResponseTime = testCase.name === 'large' ? 500 : endpoint.maxP95ResponseTime!
 
         const performanceCheck = assertPerformanceRequirements(result, {
           maxP95ResponseTime: maxResponseTime,
-          minSuccessRate: endpoint.minSuccessRate
+          minSuccessRate: endpoint.minSuccessRate,
         })
 
-        expect(performanceCheck.passed, `${testCase.name} formatting failed: ${performanceCheck.failures.join(', ')}`).toBe(true)
+        expect(
+          performanceCheck.passed,
+          `${testCase.name} formatting failed: ${performanceCheck.failures.join(', ')}`
+        ).toBe(true)
         expect(result.successfulRequests).toBeGreaterThan(0)
       }
     })
@@ -126,17 +155,22 @@ describe('Tools API Performance Tests', () => {
         body: endpoint.body,
         concurrentRequests: 10,
         totalRequests: 50,
-        timeout: 5000
+        timeout: 5000,
       })
 
-      console.log(`JSON validation performance: P95=${result.p95.toFixed(2)}ms, Success Rate=${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}%`)
+      console.log(
+        `JSON validation performance: P95=${result.p95.toFixed(2)}ms, Success Rate=${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}%`
+      )
 
       const performanceCheck = assertPerformanceRequirements(result, {
         maxP95ResponseTime: endpoint.maxP95ResponseTime,
-        minSuccessRate: endpoint.minSuccessRate
+        minSuccessRate: endpoint.minSuccessRate,
       })
 
-      expect(performanceCheck.passed, `JSON validation failed: ${performanceCheck.failures.join(', ')}`).toBe(true)
+      expect(
+        performanceCheck.passed,
+        `JSON validation failed: ${performanceCheck.failures.join(', ')}`
+      ).toBe(true)
       expect(result.successfulRequests).toBeGreaterThan(0)
     })
 
@@ -149,11 +183,11 @@ describe('Tools API Performance Tests', () => {
         method: endpoint.method,
         headers: endpoint.headers,
         body: {
-          json: '{"invalid": json}' // Invalid JSON
+          json: '{"invalid": json}', // Invalid JSON
         },
         concurrentRequests: 5,
         totalRequests: 25,
-        timeout: 5000
+        timeout: 5000,
       })
 
       // Should still be fast even for invalid JSON
@@ -161,8 +195,8 @@ describe('Tools API Performance Tests', () => {
       expect(result.successfulRequests).toBeGreaterThan(0)
 
       // Check that we're getting proper error responses
-      const successfulValidations = result.metrics.filter(m =>
-        m.statusCode >= 200 && m.statusCode < 400
+      const successfulValidations = result.metrics.filter(
+        m => m.statusCode >= 200 && m.statusCode < 400
       )
       expect(successfulValidations.length).toBeGreaterThan(0)
     })
@@ -184,21 +218,26 @@ describe('Tools API Performance Tests', () => {
           headers: endpoint.headers,
           body: {
             ...endpoint.body,
-            target_format: targetFormat
+            target_format: targetFormat,
           },
           concurrentRequests: 5,
           totalRequests: 25,
-          timeout: 8000
+          timeout: 8000,
         })
 
-        console.log(`JSON to ${targetFormat}: P95=${result.p95.toFixed(2)}ms, Success Rate=${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}%`)
+        console.log(
+          `JSON to ${targetFormat}: P95=${result.p95.toFixed(2)}ms, Success Rate=${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}%`
+        )
 
         const performanceCheck = assertPerformanceRequirements(result, {
           maxP95ResponseTime: endpoint.maxP95ResponseTime,
-          minSuccessRate: endpoint.minSuccessRate
+          minSuccessRate: endpoint.minSuccessRate,
         })
 
-        expect(performanceCheck.passed, `JSON to ${targetFormat} conversion failed: ${performanceCheck.failures.join(', ')}`).toBe(true)
+        expect(
+          performanceCheck.passed,
+          `JSON to ${targetFormat} conversion failed: ${performanceCheck.failures.join(', ')}`
+        ).toBe(true)
         expect(result.successfulRequests).toBeGreaterThan(0)
       }
     })
@@ -220,21 +259,26 @@ describe('Tools API Performance Tests', () => {
           headers: endpoint.headers,
           body: {
             code: TestDataGenerator.generateCodeSamples(language as 'javascript' | 'python'),
-            language
+            language,
           },
           concurrentRequests: 5,
           totalRequests: 25,
-          timeout: 8000
+          timeout: 8000,
         })
 
-        console.log(`${language} formatting: P95=${result.p95.toFixed(2)}ms, Success Rate=${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}%`)
+        console.log(
+          `${language} formatting: P95=${result.p95.toFixed(2)}ms, Success Rate=${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}%`
+        )
 
         const performanceCheck = assertPerformanceRequirements(result, {
           maxP95ResponseTime: endpoint.maxP95ResponseTime,
-          minSuccessRate: endpoint.minSuccessRate
+          minSuccessRate: endpoint.minSuccessRate,
         })
 
-        expect(performanceCheck.passed, `${language} formatting failed: ${performanceCheck.failures.join(', ')}`).toBe(true)
+        expect(
+          performanceCheck.passed,
+          `${language} formatting failed: ${performanceCheck.failures.join(', ')}`
+        ).toBe(true)
         expect(result.successfulRequests).toBeGreaterThan(0)
       }
     })
@@ -255,35 +299,45 @@ describe('Tools API Performance Tests', () => {
           body: endpoint.body,
           concurrentRequests: 3,
           totalRequests: 15,
-          timeout: 10000
+          timeout: 10000,
         })
 
         results.push({ endpoint: endpoint.description, result })
 
         const performanceCheck = assertPerformanceRequirements(result, {
           maxP95ResponseTime: endpoint.maxP95ResponseTime,
-          minSuccessRate: endpoint.minSuccessRate
+          minSuccessRate: endpoint.minSuccessRate,
         })
 
-        expect(performanceCheck.passed, `${endpoint.description} failed: ${performanceCheck.failures.join(', ')}`).toBe(true)
+        expect(
+          performanceCheck.passed,
+          `${endpoint.description} failed: ${performanceCheck.failures.join(', ')}`
+        ).toBe(true)
       }
 
       // Log comprehensive results
       console.log('\n=== Comprehensive Tools Performance Summary ===')
       results.forEach(({ endpoint, result }) => {
-        console.log(`${endpoint}: P95=${result.p95.toFixed(2)}ms, Success Rate=${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}%`)
+        console.log(
+          `${endpoint}: P95=${result.p95.toFixed(2)}ms, Success Rate=${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}%`
+        )
       })
 
       // Calculate overall statistics
       const totalRequests = results.reduce((sum, { result }) => sum + result.totalRequests, 0)
-      const totalSuccessful = results.reduce((sum, { result }) => sum + result.successfulRequests, 0)
+      const totalSuccessful = results.reduce(
+        (sum, { result }) => sum + result.successfulRequests,
+        0
+      )
       const avgP95 = results.reduce((sum, { result }) => sum + result.p95, 0) / results.length
 
-      console.log(`\nOverall: P95 avg=${avgP95.toFixed(2)}ms, Success Rate=${((totalSuccessful / totalRequests) * 100).toFixed(1)}%`)
+      console.log(
+        `\nOverall: P95 avg=${avgP95.toFixed(2)}ms, Success Rate=${((totalSuccessful / totalRequests) * 100).toFixed(1)}%`
+      )
 
       // Overall performance should meet basic requirements
       expect(avgP95).toBeLessThan(300)
-      expect(totalSuccessful / totalRequests).toBeGreaterThan(0.90)
+      expect(totalSuccessful / totalRequests).toBeGreaterThan(0.9)
     })
   })
 })

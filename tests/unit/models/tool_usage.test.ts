@@ -1,17 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
-  ToolUsage,
-  ToolUsageSchema,
   CreateToolUsageSchema,
-  ToolUsageStatusSchema,
+  TOOL_USAGE_QUERIES,
+  ToolUsage,
   ToolUsageAnalyticsSchema,
-  TOOL_USAGE_QUERIES
+  ToolUsageSchema,
 } from '../../../../apps/api/src/models/tool_usage'
 import {
-  createTestDatabase,
+  cleanupTestEnvironment,
   createMockToolUsage,
+  createTestDatabase,
   setupTestEnvironment,
-  cleanupTestEnvironment
 } from './database.mock'
 
 describe('ToolUsage Model', () => {
@@ -69,7 +68,7 @@ describe('ToolUsage Model', () => {
         execution_time_ms: 1500,
         status: 'success' as const,
         ip_address: '127.0.0.1',
-        user_agent: 'test-agent'
+        user_agent: 'test-agent',
       }
 
       const result = CreateToolUsageSchema.safeParse(createData)
@@ -87,7 +86,7 @@ describe('ToolUsage Model', () => {
         total_input_size_bytes: 102400,
         total_output_size_bytes: 204800,
         unique_users: 50,
-        anonymous_requests: 20
+        anonymous_requests: 20,
       }
 
       const result = ToolUsageAnalyticsSchema.safeParse(analyticsData)
@@ -105,7 +104,7 @@ describe('ToolUsage Model', () => {
         total_input_size_bytes: 102400,
         total_output_size_bytes: 204800,
         unique_users: 50,
-        anonymous_requests: 20
+        anonymous_requests: 20,
       }
 
       const result = ToolUsageAnalyticsSchema.safeParse(invalidAnalytics)
@@ -131,7 +130,7 @@ describe('ToolUsage Model', () => {
         user_id: 'user-456',
         tool_id: 'tool-456',
         status: 'error' as const,
-        error_message: 'Test error'
+        error_message: 'Test error',
       }
 
       const usage = ToolUsage.create(createData)
@@ -217,13 +216,7 @@ describe('ToolUsage Model', () => {
     })
 
     it('should create anonymous tool usage', () => {
-      const usage = ToolUsage.createSuccess(
-        'tool-123',
-        null,
-        1024,
-        2048,
-        1500
-      )
+      const usage = ToolUsage.createSuccess('tool-123', null, 1024, 2048, 1500)
 
       expect(usage.user_id).toBeNull()
       expect(usage.isAnonymous).toBe(true)
@@ -307,42 +300,50 @@ describe('ToolUsage Model', () => {
   describe('Analytics Methods', () => {
     it('should calculate analytics from usage data', () => {
       const usages = [
-        new ToolUsage(createMockToolUsage({
-          tool_id: 'tool-1',
-          created_at: Math.floor(new Date('2023-12-01T10:00:00Z').getTime() / 1000),
-          status: 'success',
-          input_size: 1000,
-          output_size: 2000,
-          execution_time_ms: 1000,
-          user_id: 'user-1'
-        })),
-        new ToolUsage(createMockToolUsage({
-          tool_id: 'tool-1',
-          created_at: Math.floor(new Date('2023-12-01T11:00:00Z').getTime() / 1000),
-          status: 'success',
-          input_size: 1500,
-          output_size: 2500,
-          execution_time_ms: 1500,
-          user_id: 'user-2'
-        })),
-        new ToolUsage(createMockToolUsage({
-          tool_id: 'tool-1',
-          created_at: Math.floor(new Date('2023-12-01T12:00:00Z').getTime() / 1000),
-          status: 'error',
-          input_size: 500,
-          output_size: 0,
-          execution_time_ms: 500,
-          user_id: null
-        })),
-        new ToolUsage(createMockToolUsage({
-          tool_id: 'tool-2',
-          created_at: Math.floor(new Date('2023-12-01T13:00:00Z').getTime() / 1000),
-          status: 'success',
-          input_size: 2000,
-          output_size: 3000,
-          execution_time_ms: 2000,
-          user_id: 'user-1'
-        }))
+        new ToolUsage(
+          createMockToolUsage({
+            tool_id: 'tool-1',
+            created_at: Math.floor(new Date('2023-12-01T10:00:00Z').getTime() / 1000),
+            status: 'success',
+            input_size: 1000,
+            output_size: 2000,
+            execution_time_ms: 1000,
+            user_id: 'user-1',
+          })
+        ),
+        new ToolUsage(
+          createMockToolUsage({
+            tool_id: 'tool-1',
+            created_at: Math.floor(new Date('2023-12-01T11:00:00Z').getTime() / 1000),
+            status: 'success',
+            input_size: 1500,
+            output_size: 2500,
+            execution_time_ms: 1500,
+            user_id: 'user-2',
+          })
+        ),
+        new ToolUsage(
+          createMockToolUsage({
+            tool_id: 'tool-1',
+            created_at: Math.floor(new Date('2023-12-01T12:00:00Z').getTime() / 1000),
+            status: 'error',
+            input_size: 500,
+            output_size: 0,
+            execution_time_ms: 500,
+            user_id: null,
+          })
+        ),
+        new ToolUsage(
+          createMockToolUsage({
+            tool_id: 'tool-2',
+            created_at: Math.floor(new Date('2023-12-01T13:00:00Z').getTime() / 1000),
+            status: 'success',
+            input_size: 2000,
+            output_size: 3000,
+            execution_time_ms: 2000,
+            user_id: 'user-1',
+          })
+        ),
       ]
 
       const analytics = ToolUsage.calculateAnalytics(usages)
@@ -351,51 +352,59 @@ describe('ToolUsage Model', () => {
 
       const tool1Analytics = analytics.find(a => a.tool_id === 'tool-1')
       expect(tool1Analytics).toBeDefined()
-      expect(tool1Analytics!.total_requests).toBe(3)
-      expect(tool1Analytics!.successful_requests).toBe(2)
-      expect(tool1Analytics!.failed_requests).toBe(1)
-      expect(tool1Analytics!.unique_users).toBe(2)
-      expect(tool1Analytics!.anonymous_requests).toBe(1)
+      expect(tool1Analytics?.total_requests).toBe(3)
+      expect(tool1Analytics?.successful_requests).toBe(2)
+      expect(tool1Analytics?.failed_requests).toBe(1)
+      expect(tool1Analytics?.unique_users).toBe(2)
+      expect(tool1Analytics?.anonymous_requests).toBe(1)
 
       const tool2Analytics = analytics.find(a => a.tool_id === 'tool-2')
       expect(tool2Analytics).toBeDefined()
-      expect(tool2Analytics!.total_requests).toBe(1)
-      expect(tool2Analytics!.successful_requests).toBe(1)
-      expect(tool2Analytics!.failed_requests).toBe(0)
-      expect(tool2Analytics!.unique_users).toBe(1)
-      expect(tool2Analytics!.anonymous_requests).toBe(0)
+      expect(tool2Analytics?.total_requests).toBe(1)
+      expect(tool2Analytics?.successful_requests).toBe(1)
+      expect(tool2Analytics?.failed_requests).toBe(0)
+      expect(tool2Analytics?.unique_users).toBe(1)
+      expect(tool2Analytics?.anonymous_requests).toBe(0)
     })
 
     it('should calculate performance metrics correctly', () => {
       const usages = [
-        new ToolUsage(createMockToolUsage({
-          tool_id: 'tool-1',
-          status: 'success',
-          execution_time_ms: 1000,
-          input_size: 1000,
-          output_size: 2000
-        })),
-        new ToolUsage(createMockToolUsage({
-          tool_id: 'tool-1',
-          status: 'success',
-          execution_time_ms: 2000,
-          input_size: 1500,
-          output_size: 2500
-        })),
-        new ToolUsage(createMockToolUsage({
-          tool_id: 'tool-1',
-          status: 'error',
-          execution_time_ms: 500,
-          input_size: 500,
-          output_size: 0
-        })),
-        new ToolUsage(createMockToolUsage({
-          tool_id: 'tool-2',
-          status: 'success',
-          execution_time_ms: 1500,
-          input_size: 2000,
-          output_size: 3000
-        }))
+        new ToolUsage(
+          createMockToolUsage({
+            tool_id: 'tool-1',
+            status: 'success',
+            execution_time_ms: 1000,
+            input_size: 1000,
+            output_size: 2000,
+          })
+        ),
+        new ToolUsage(
+          createMockToolUsage({
+            tool_id: 'tool-1',
+            status: 'success',
+            execution_time_ms: 2000,
+            input_size: 1500,
+            output_size: 2500,
+          })
+        ),
+        new ToolUsage(
+          createMockToolUsage({
+            tool_id: 'tool-1',
+            status: 'error',
+            execution_time_ms: 500,
+            input_size: 500,
+            output_size: 0,
+          })
+        ),
+        new ToolUsage(
+          createMockToolUsage({
+            tool_id: 'tool-2',
+            status: 'success',
+            execution_time_ms: 1500,
+            input_size: 2000,
+            output_size: 3000,
+          })
+        ),
       ]
 
       const metrics = ToolUsage.getPerformanceMetrics(usages)
@@ -420,14 +429,17 @@ describe('ToolUsage Model', () => {
 
     it('should calculate p95 execution time correctly', () => {
       const executionTimes = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
-      const usages = executionTimes.map(time =>
-        new ToolUsage(createMockToolUsage({
-          tool_id: 'tool-1',
-          status: 'success',
-          execution_time_ms: time,
-          input_size: 1000,
-          output_size: 2000
-        }))
+      const usages = executionTimes.map(
+        time =>
+          new ToolUsage(
+            createMockToolUsage({
+              tool_id: 'tool-1',
+              status: 'success',
+              execution_time_ms: time,
+              input_size: 1000,
+              output_size: 2000,
+            })
+          )
       )
 
       const metrics = ToolUsage.getPerformanceMetrics(usages)
@@ -450,7 +462,7 @@ describe('ToolUsage Model', () => {
         error_message: null,
         ip_address: null,
         user_agent: null,
-        created_at: 1234567890
+        created_at: 1234567890,
       }
 
       const usage = new ToolUsage(minimalUsageData)
@@ -468,7 +480,7 @@ describe('ToolUsage Model', () => {
         user_id: 'invalid-uuid',
         tool_id: 'invalid-uuid',
         status: 'invalid',
-        input_size: -1
+        input_size: -1,
       }
 
       expect(() => ToolUsage.fromRow(invalidRow)).toThrow()
@@ -505,8 +517,12 @@ describe('ToolUsage Model', () => {
     it('should have proper table creation query', () => {
       expect(TOOL_USAGE_QUERIES.CREATE_TABLE).toContain('CREATE TABLE IF NOT EXISTS tool_usage')
       expect(TOOL_USAGE_QUERIES.CREATE_TABLE).toContain('id TEXT PRIMARY KEY')
-      expect(TOOL_USAGE_QUERIES.CREATE_TABLE).toContain('FOREIGN KEY (user_id) REFERENCES users(id)')
-      expect(TOOL_USAGE_QUERIES.CREATE_TABLE).toContain('FOREIGN KEY (tool_id) REFERENCES tools(id)')
+      expect(TOOL_USAGE_QUERIES.CREATE_TABLE).toContain(
+        'FOREIGN KEY (user_id) REFERENCES users(id)'
+      )
+      expect(TOOL_USAGE_QUERIES.CREATE_TABLE).toContain(
+        'FOREIGN KEY (tool_id) REFERENCES tools(id)'
+      )
     })
 
     it('should have proper index creation queries', () => {
@@ -526,9 +542,13 @@ describe('ToolUsage Model', () => {
     })
 
     it('should have analytics query with proper grouping', () => {
-      expect(TOOL_USAGE_QUERIES.ANALYTICS_DAILY_BY_TOOL).toContain('GROUP BY tool_id, DATE(created_at, \'unixepoch\')')
+      expect(TOOL_USAGE_QUERIES.ANALYTICS_DAILY_BY_TOOL).toContain(
+        "GROUP BY tool_id, DATE(created_at, 'unixepoch')"
+      )
       expect(TOOL_USAGE_QUERIES.ANALYTICS_DAILY_BY_TOOL).toContain('COUNT(*) as total_requests')
-      expect(TOOL_USAGE_QUERIES.ANALYTICS_DAILY_BY_TOOL).toContain('COUNT(CASE WHEN status = \'success\' THEN 1 END)')
+      expect(TOOL_USAGE_QUERIES.ANALYTICS_DAILY_BY_TOOL).toContain(
+        "COUNT(CASE WHEN status = 'success' THEN 1 END)"
+      )
     })
   })
 
@@ -548,19 +568,21 @@ describe('ToolUsage Model', () => {
       const usageData = createMockToolUsage()
 
       // Test INSERT
-      const insertStmt = mockDb.prepare(TOOL_USAGE_QUERIES.INSERT).bind(
-        usageData.id,
-        usageData.user_id,
-        usageData.tool_id,
-        usageData.input_size,
-        usageData.output_size,
-        usageData.execution_time_ms,
-        usageData.status,
-        usageData.error_message,
-        usageData.ip_address,
-        usageData.user_agent,
-        usageData.created_at
-      )
+      const insertStmt = mockDb
+        .prepare(TOOL_USAGE_QUERIES.INSERT)
+        .bind(
+          usageData.id,
+          usageData.user_id,
+          usageData.tool_id,
+          usageData.input_size,
+          usageData.output_size,
+          usageData.execution_time_ms,
+          usageData.status,
+          usageData.error_message,
+          usageData.ip_address,
+          usageData.user_agent,
+          usageData.created_at
+        )
 
       const result = await insertStmt.run()
       expect(result.success).toBe(true)
@@ -577,9 +599,9 @@ describe('ToolUsage Model', () => {
       mockDb.setTableData('tool_usage', [usageData])
 
       // Test SELECT by user
-      const selectStmt = mockDb.prepare(TOOL_USAGE_QUERIES.SELECT_BY_USER).bind(
-        usageData.user_id, 10, 0
-      )
+      const selectStmt = mockDb
+        .prepare(TOOL_USAGE_QUERIES.SELECT_BY_USER)
+        .bind(usageData.user_id, 10, 0)
       const result = await selectStmt.all()
 
       expect(result.results).toHaveLength(1)
@@ -591,9 +613,9 @@ describe('ToolUsage Model', () => {
       mockDb.setTableData('tool_usage', [usageData])
 
       // Test SELECT by tool
-      const selectStmt = mockDb.prepare(TOOL_USAGE_QUERIES.SELECT_BY_TOOL).bind(
-        usageData.tool_id, 10, 0
-      )
+      const selectStmt = mockDb
+        .prepare(TOOL_USAGE_QUERIES.SELECT_BY_TOOL)
+        .bind(usageData.tool_id, 10, 0)
       const result = await selectStmt.all()
 
       expect(result.results).toHaveLength(1)
@@ -604,7 +626,7 @@ describe('ToolUsage Model', () => {
       const userId = 'user-123'
       const usages = [
         createMockToolUsage({ user_id: userId }),
-        createMockToolUsage({ user_id: userId })
+        createMockToolUsage({ user_id: userId }),
       ]
       mockDb.setTableData('tool_usage', usages)
 
@@ -620,7 +642,7 @@ describe('ToolUsage Model', () => {
       const usages = [
         createMockToolUsage({ status }),
         createMockToolUsage({ status }),
-        createMockToolUsage({ status: 'error' })
+        createMockToolUsage({ status: 'error' }),
       ]
       mockDb.setTableData('tool_usage', usages)
 

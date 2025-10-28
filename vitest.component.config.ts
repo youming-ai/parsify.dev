@@ -1,7 +1,7 @@
-import { defineConfig } from 'vitest/config'
+import { resolve } from 'node:path'
 import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
@@ -10,26 +10,12 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./tests/unit/components/test-setup.tsx'],
     include: ['tests/unit/components/**/*.{test,spec}.{js,ts,tsx}'],
-    exclude: [
-      'node_modules/',
-      'specs/**/*',
-      '**/*.d.ts',
-      '**/*.config.*',
-      'dist/',
-      'build/',
-    ],
+    exclude: ['node_modules/', 'specs/**/*', '**/*.d.ts', '**/*.config.*', 'dist/', 'build/'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       include: ['tests/unit/components/**/*'],
-      exclude: [
-        'node_modules/',
-        'specs/',
-        '**/*.d.ts',
-        '**/*.config.*',
-        'dist/',
-        'build/',
-      ],
+      exclude: ['node_modules/', 'specs/', '**/*.d.ts', '**/*.config.*', 'dist/', 'build/'],
     },
   },
   resolve: {

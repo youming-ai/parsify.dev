@@ -1,16 +1,14 @@
-import type { JsonDocument } from './types'
 import { JsonDocumentModel } from './models/JsonDocument'
+import type { JsonDocument } from './types'
 
 export class JsonExtractor {
   private readonly JSON_CODEBLOCK_REGEX = /```json\s*([\s\S]*?)\s*```/gi
-  private readonly INLINE_JSON_REGEX = /({[\s\S]*?})/g
-  private readonly JSON_STRING_REGEX = /"([^"\\]|\\.)*"/g
 
   extractJsonFromMarkdown(
     content: string,
     mode: 'codeblock' | 'inline' | 'mixed' = 'mixed'
   ): JsonDocument[] {
-    const documents: JsonDocument[] = []
+    const _documents: JsonDocument[] = []
 
     try {
       switch (mode) {
@@ -18,7 +16,6 @@ export class JsonExtractor {
           return this.extractFromCodeBlocks(content)
         case 'inline':
           return this.extractInline(content)
-        case 'mixed':
         default:
           return this.extractMixed(content)
       }
@@ -30,7 +27,7 @@ export class JsonExtractor {
 
   private extractFromCodeBlocks(content: string): JsonDocument[] {
     const documents: JsonDocument[] = []
-    const lines = content.split('\n')
+    const _lines = content.split('\n')
 
     let match: RegExpExecArray | null
     this.JSON_CODEBLOCK_REGEX.lastIndex = 0 // Reset regex
@@ -60,11 +57,7 @@ export class JsonExtractor {
       const inlineJsons = this.findInlineJson(line)
 
       for (const json of inlineJsons) {
-        const document = JsonDocumentModel.createFromExtraction(
-          json,
-          'inline',
-          i + 1
-        )
+        const document = JsonDocumentModel.createFromExtraction(json, 'inline', i + 1)
         documents.push(document)
       }
     }
@@ -104,11 +97,7 @@ export class JsonExtractor {
       if (!inCodeBlock) {
         const inlineJsons = this.findInlineJson(line)
         for (const json of inlineJsons) {
-          const document = JsonDocumentModel.createFromExtraction(
-            json,
-            'mixed',
-            i + 1
-          )
+          const document = JsonDocumentModel.createFromExtraction(json, 'mixed', i + 1)
           documents.push(document)
         }
       }
@@ -228,9 +217,8 @@ export class JsonExtractor {
     const total = documents.length
     const valid = documents.filter(doc => doc.isValid).length
     const invalid = total - valid
-    const averageSize = total > 0
-      ? documents.reduce((sum, doc) => sum + doc.rawJson.length, 0) / total
-      : 0
+    const averageSize =
+      total > 0 ? documents.reduce((sum, doc) => sum + doc.rawJson.length, 0) / total : 0
 
     const extractionMethods: Record<string, number> = {}
     documents.forEach(doc => {
@@ -242,7 +230,7 @@ export class JsonExtractor {
       valid,
       invalid,
       averageSize,
-      extractionMethods
+      extractionMethods,
     }
   }
 }

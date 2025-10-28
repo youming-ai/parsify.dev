@@ -1,9 +1,9 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react'
-import "./JsonViewer.css"
+import type React from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import './JsonViewer.css'
 import { JsonNodeModel } from '../../lib/models/JsonNode'
-import { SearchComponent } from '../Search/SearchComponent'
-import { LoadingSpinner } from '../Loading/LoadingSpinner'
 import type { JsonNode } from '../../lib/types'
+import { SearchComponent } from '../Search/SearchComponent'
 
 interface JsonViewerProps {
   data: JsonNode
@@ -42,7 +42,7 @@ const JsonNodeComponent: React.FC<JsonNodeComponentProps> = ({
   copyable = false,
   theme = 'auto',
   maxDepth = 20,
-  lineNumber = 0
+  lineNumber = 0,
 }) => {
   const [isHovered, setIsHovered] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
@@ -118,27 +118,15 @@ const JsonNodeComponent: React.FC<JsonNodeComponentProps> = ({
     }
 
     if (typeof data === 'string') {
-      return (
-        <span className="json-string">
-          "{data}"
-        </span>
-      )
+      return <span className="json-string">"{data}"</span>
     }
 
     if (typeof data === 'number') {
-      return (
-        <span className="json-number">
-          {data}
-        </span>
-      )
+      return <span className="json-number">{data}</span>
     }
 
     if (typeof data === 'boolean') {
-      return (
-        <span className={`json-boolean json-boolean--${data}`}>
-          {String(data)}
-        </span>
-      )
+      return <span className={`json-boolean json-boolean--${data}`}>{String(data)}</span>
     }
 
     return <span className="json-unknown">{String(data)}</span>
@@ -153,9 +141,7 @@ const JsonNodeComponent: React.FC<JsonNodeComponentProps> = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {showLineNumbers && (
-        <span className="line-number">{lineNumber}</span>
-      )}
+      {showLineNumbers && <span className="line-number">{lineNumber}</span>}
 
       {hasChildren && (
         <button
@@ -177,7 +163,7 @@ const JsonNodeComponent: React.FC<JsonNodeComponentProps> = ({
         role="button"
         tabIndex={0}
         aria-label={`JSON node at ${path}`}
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
             handleClick()
@@ -212,44 +198,41 @@ const JsonNodeComponent: React.FC<JsonNodeComponentProps> = ({
 
       {hasChildren && isExpanded && depth < maxDepth && (
         <div className="json-children">
-          {Array.isArray(data) ? (
-            data.map((item, index) => (
-              <JsonNodeComponent
-                key={`${path}[${index}]`}
-                data={item}
-                path={`${path}[${index}]`}
-                depth={depth + 1}
-                isExpanded={false}
-                onToggle={onToggle}
-                onPathSelect={onPathSelect}
-                showLineNumbers={showLineNumbers}
-                copyable={copyable}
-                theme={theme}
-                maxDepth={maxDepth}
-                lineNumber={lineNumber + index + 1}
-              />
-            ))
-          ) : (
-            Object.entries(data).map(([key, value], index) => (
-              <JsonNodeComponent
-                key={`${path}.${key}`}
-                data={value}
-                path={`${path}.${key}`}
-                depth={depth + 1}
-                isExpanded={false}
-                onToggle={onToggle}
-                onPathSelect={onPathSelect}
-                showLineNumbers={showLineNumbers}
-                copyable={copyable}
-                theme={theme}
-                maxDepth={maxDepth}
-                lineNumber={lineNumber + index + 1}
-              />
-            ))
-          )}
+          {Array.isArray(data)
+            ? data.map((item, index) => (
+                <JsonNodeComponent
+                  key={`${path}[${index}]`}
+                  data={item}
+                  path={`${path}[${index}]`}
+                  depth={depth + 1}
+                  isExpanded={false}
+                  onToggle={onToggle}
+                  onPathSelect={onPathSelect}
+                  showLineNumbers={showLineNumbers}
+                  copyable={copyable}
+                  theme={theme}
+                  maxDepth={maxDepth}
+                  lineNumber={lineNumber + index + 1}
+                />
+              ))
+            : Object.entries(data).map(([key, value], index) => (
+                <JsonNodeComponent
+                  key={`${path}.${key}`}
+                  data={value}
+                  path={`${path}.${key}`}
+                  depth={depth + 1}
+                  isExpanded={false}
+                  onToggle={onToggle}
+                  onPathSelect={onPathSelect}
+                  showLineNumbers={showLineNumbers}
+                  copyable={copyable}
+                  theme={theme}
+                  maxDepth={maxDepth}
+                  lineNumber={lineNumber + index + 1}
+                />
+              ))}
         </div>
       )}
-
     </div>
   )
 }
@@ -263,10 +246,10 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
   copyable = true,
   theme = 'auto',
   maxDepth = 20,
-  onPathSelect
+  onPathSelect,
 }) => {
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set())
-  const [searchTerm, setSearchTerm] = useState('')
+  const [_searchTerm, _setSearchTerm] = useState('')
   const [showRaw, setShowRaw] = useState(false)
   const viewerRef = useRef<HTMLDivElement>(null)
 
@@ -282,18 +265,21 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
     })
   }, [])
 
-  const handleSearchResultSelect = useCallback((path: string, node: JsonNode) => {
-    // Expand all parent paths to make the result visible
-    const parentPaths = path.split('.').slice(0, -1)
-    let currentPath = ''
+  const handleSearchResultSelect = useCallback(
+    (path: string, _node: JsonNode) => {
+      // Expand all parent paths to make the result visible
+      const parentPaths = path.split('.').slice(0, -1)
+      let currentPath = ''
 
-    parentPaths.forEach(part => {
-      currentPath = currentPath ? `${currentPath}.${part}` : part
-      setExpandedPaths(prev => new Set(prev).add(currentPath))
-    })
+      parentPaths.forEach(part => {
+        currentPath = currentPath ? `${currentPath}.${part}` : part
+        setExpandedPaths(prev => new Set(prev).add(currentPath))
+      })
 
-    onPathSelect?.(path)
-  }, [onPathSelect])
+      onPathSelect?.(path)
+    },
+    [onPathSelect]
+  )
 
   const expandAllNodes = useCallback(() => {
     const collectPaths = (node: JsonNode, currentPath: string): string[] => {
@@ -416,7 +402,6 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
           </div>
         )}
       </div>
-
     </div>
   )
 }

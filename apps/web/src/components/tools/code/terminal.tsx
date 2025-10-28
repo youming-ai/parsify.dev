@@ -1,20 +1,20 @@
-import * as React from 'react'
-import { TerminalProps, TerminalLine } from './code-types'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import {
-  Terminal,
-  Copy,
-  Download,
-  Trash2,
-  Send,
   ChevronDown,
   ChevronRight,
-  Clock
+  Clock,
+  Copy,
+  Download,
+  Send,
+  Terminal as TerminalIcon,
+  Trash2,
 } from 'lucide-react'
+import * as React from 'react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
+import type { TerminalLine, TerminalProps } from './code-types'
 
 interface TerminalComponentProps extends TerminalProps {
   maxLines?: number
@@ -47,7 +47,7 @@ export function Terminal({
   allowDownload = true,
   onCopy,
   onDownload,
-  className
+  className,
 }: TerminalComponentProps) {
   const [inputValue, setInputValue] = React.useState('')
   const [lineNumbers, setLineNumbers] = React.useState(true)
@@ -70,7 +70,7 @@ export function Terminal({
     if (autoScroll && linesEndRef.current) {
       linesEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
-  }, [lines, autoScroll])
+  }, [autoScroll])
 
   // Focus input when terminal is clicked
   const handleTerminalClick = () => {
@@ -101,12 +101,14 @@ export function Terminal({
   }
 
   const copyTerminalContent = () => {
-    const content = limitedLines.map(line => {
-      const timestamp = timestamps ? `[${new Date(line.timestamp).toLocaleTimeString()}] ` : ''
-      const lineNumber = lineNumbers ? `${limitedLines.indexOf(line) + 1}: ` : ''
-      const prefix = line.type === 'input' ? '> ' : line.type === 'error' ? '! ' : '  '
-      return `${timestamp}${lineNumber}${prefix}${line.content}`
-    }).join('\n')
+    const content = limitedLines
+      .map(line => {
+        const timestamp = timestamps ? `[${new Date(line.timestamp).toLocaleTimeString()}] ` : ''
+        const lineNumber = lineNumbers ? `${limitedLines.indexOf(line) + 1}: ` : ''
+        const prefix = line.type === 'input' ? '> ' : line.type === 'error' ? '! ' : '  '
+        return `${timestamp}${lineNumber}${prefix}${line.content}`
+      })
+      .join('\n')
 
     navigator.clipboard.writeText(content).then(() => {
       if (onCopy) {
@@ -116,12 +118,14 @@ export function Terminal({
   }
 
   const downloadTerminalContent = () => {
-    const content = limitedLines.map(line => {
-      const timestamp = timestamps ? `[${new Date(line.timestamp).toLocaleTimeString()}] ` : ''
-      const lineNumber = lineNumbers ? `${limitedLines.indexOf(line) + 1}: ` : ''
-      const prefix = line.type === 'input' ? '> ' : line.type === 'error' ? '! ' : '  '
-      return `${timestamp}${lineNumber}${prefix}${line.content}`
-    }).join('\n')
+    const content = limitedLines
+      .map(line => {
+        const timestamp = timestamps ? `[${new Date(line.timestamp).toLocaleTimeString()}] ` : ''
+        const lineNumber = lineNumbers ? `${limitedLines.indexOf(line) + 1}: ` : ''
+        const prefix = line.type === 'input' ? '> ' : line.type === 'error' ? '! ' : '  '
+        return `${timestamp}${lineNumber}${prefix}${line.content}`
+      })
+      .join('\n')
 
     const blob = new Blob([content], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
@@ -177,15 +181,11 @@ export function Terminal({
         <CardContent className="p-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Terminal className="h-4 w-4" />
+              <TerminalIcon className="h-4 w-4" />
               <span className="font-medium">Terminal</span>
               <Badge variant="secondary">{limitedLines.length} lines</Badge>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMinimized(false)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => setIsMinimized(false)}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -197,29 +197,23 @@ export function Terminal({
   return (
     <Card className={cn('border', className)}>
       {/* Terminal Header */}
-      <div className="border-b bg-gray-50 dark:bg-gray-800 px-4 py-2">
+      <div className="border-b bg-gray-50 px-4 py-2 dark:bg-gray-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Terminal className="h-4 w-4" />
+            <TerminalIcon className="h-4 w-4" />
             <span className="font-medium">Terminal</span>
             <Badge variant="secondary">{limitedLines.length} lines</Badge>
           </div>
 
           <div className="flex items-center gap-2">
             {/* View Options */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowControls(!showControls)}
-            >
-              <ChevronDown className={cn('h-4 w-4 transition-transform', showControls && 'rotate-180')} />
+            <Button variant="ghost" size="sm" onClick={() => setShowControls(!showControls)}>
+              <ChevronDown
+                className={cn('h-4 w-4 transition-transform', showControls && 'rotate-180')}
+              />
             </Button>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMinimized(true)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => setIsMinimized(true)}>
               <ChevronDown className="h-4 w-4 rotate-180" />
             </Button>
           </div>
@@ -233,7 +227,7 @@ export function Terminal({
                 <input
                   type="checkbox"
                   checked={lineNumbers}
-                  onChange={(e) => setLineNumbers(e.target.checked)}
+                  onChange={e => setLineNumbers(e.target.checked)}
                   className="rounded"
                 />
                 Line Numbers
@@ -243,7 +237,7 @@ export function Terminal({
                 <input
                   type="checkbox"
                   checked={timestamps}
-                  onChange={(e) => setTimestamps(e.target.checked)}
+                  onChange={e => setTimestamps(e.target.checked)}
                   className="rounded"
                 />
                 Timestamps
@@ -253,21 +247,21 @@ export function Terminal({
             <div className="flex items-center gap-2">
               {allowCopy && (
                 <Button variant="outline" size="sm" onClick={copyTerminalContent}>
-                  <Copy className="h-4 w-4 mr-2" />
+                  <Copy className="mr-2 h-4 w-4" />
                   Copy
                 </Button>
               )}
 
               {allowDownload && (
                 <Button variant="outline" size="sm" onClick={downloadTerminalContent}>
-                  <Download className="h-4 w-4 mr-2" />
+                  <Download className="mr-2 h-4 w-4" />
                   Download
                 </Button>
               )}
 
               {allowClear && (
                 <Button variant="outline" size="sm" onClick={clearTerminal}>
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <Trash2 className="mr-2 h-4 w-4" />
                   Clear
                 </Button>
               )}
@@ -279,10 +273,12 @@ export function Terminal({
       {/* Terminal Content */}
       <div
         className={cn(
-          'font-mono text-sm overflow-auto',
-          theme === 'dark' ? 'bg-gray-900 text-gray-100' :
-          theme === 'high-contrast' ? 'bg-black text-white' :
-          'bg-white text-gray-900'
+          'overflow-auto font-mono text-sm',
+          theme === 'dark'
+            ? 'bg-gray-900 text-gray-100'
+            : theme === 'high-contrast'
+              ? 'bg-black text-white'
+              : 'bg-white text-gray-900'
         )}
         style={{ height }}
         onClick={handleTerminalClick}
@@ -294,19 +290,19 @@ export function Terminal({
             {limitedLines.map((line, index) => (
               <div key={line.id} className="flex items-start gap-2">
                 {lineNumbers && (
-                  <span className="text-gray-500 dark:text-gray-400 text-xs w-8 text-right select-none">
+                  <span className="w-8 select-none text-right text-gray-500 text-xs dark:text-gray-400">
                     {index + 1}
                   </span>
                 )}
 
                 {timestamps && (
-                  <span className="text-gray-500 dark:text-gray-400 text-xs w-20 select-none flex items-center gap-1">
+                  <span className="flex w-20 select-none items-center gap-1 text-gray-500 text-xs dark:text-gray-400">
                     <Clock className="h-3 w-3" />
                     {formatTimestamp(line.timestamp)}
                   </span>
                 )}
 
-                <span className={cn('flex-shrink-0 w-4', getLineColor(line.type))}>
+                <span className={cn('w-4 flex-shrink-0', getLineColor(line.type))}>
                   {getLineIcon(line.type)}
                 </span>
 
@@ -327,12 +323,14 @@ export function Terminal({
               <Input
                 ref={inputRef}
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={e => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={inputPlaceholder}
                 className={cn(
-                  'flex-1 border-0 bg-transparent focus:ring-0 focus:outline-none',
-                  theme === 'dark' ? 'text-gray-100 placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'
+                  'flex-1 border-0 bg-transparent focus:outline-none focus:ring-0',
+                  theme === 'dark'
+                    ? 'text-gray-100 placeholder-gray-500'
+                    : 'text-gray-900 placeholder-gray-400'
                 )}
               />
               <Button type="submit" size="sm" variant="ghost">
@@ -354,19 +352,15 @@ export const createTerminalLine = (
   id: `${Date.now()}-${Math.random()}`,
   type,
   content,
-  timestamp: Date.now()
+  timestamp: Date.now(),
 })
 
 export const formatTerminalOutput = (output: string): TerminalLine[] => {
-  return output.split('\n').map(line =>
-    createTerminalLine(line, line.trim() ? 'output' : 'info')
-  )
+  return output.split('\n').map(line => createTerminalLine(line, line.trim() ? 'output' : 'info'))
 }
 
 export const formatTerminalError = (error: string): TerminalLine[] => {
-  return error.split('\n').map(line =>
-    createTerminalLine(line, 'error')
-  )
+  return error.split('\n').map(line => createTerminalLine(line, 'error'))
 }
 
 // Terminal presets
@@ -377,7 +371,7 @@ export const TERMINAL_PRESETS = {
     showControls: false,
     allowClear: false,
     allowCopy: true,
-    allowDownload: true
+    allowDownload: true,
   },
   detailed: {
     showLineNumbers: true,
@@ -385,7 +379,7 @@ export const TERMINAL_PRESETS = {
     showControls: true,
     allowClear: true,
     allowCopy: true,
-    allowDownload: true
+    allowDownload: true,
   },
   interactive: {
     showLineNumbers: false,
@@ -393,8 +387,8 @@ export const TERMINAL_PRESETS = {
     showControls: true,
     allowClear: true,
     allowCopy: true,
-    allowDownload: false
-  }
+    allowDownload: false,
+  },
 } as const
 
 export type TerminalPreset = keyof typeof TERMINAL_PRESETS

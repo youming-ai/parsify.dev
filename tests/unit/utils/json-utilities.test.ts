@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock the DOM APIs
 Object.defineProperty(global, 'navigator', {
@@ -75,9 +75,7 @@ function validateJson(content: string): JsonValidationResult {
   if (!content.trim()) {
     return {
       isValid: false,
-      errors: [
-        { line: 1, column: 1, message: 'Empty input', severity: 'error' },
-      ],
+      errors: [{ line: 1, column: 1, message: 'Empty input', severity: 'error' }],
     }
   }
 
@@ -139,9 +137,7 @@ function formatJson(content: string, options: JsonFormatOptions): string {
     }
 
     if (options.trailingComma && !options.compact) {
-      formatted = formatted
-        .replace(/([}\]])/g, '$1,')
-        .replace(/,(\s*[}\]])/g, '$1')
+      formatted = formatted.replace(/([}\]])/g, '$1,').replace(/,(\s*[}\]])/g, '$1')
     }
 
     return formatted
@@ -195,19 +191,17 @@ function parseJsonToTree(data: unknown, path = 'root', level = 0): TreeNode[] {
     }))
   }
 
-  return Object.entries(data as Record<string, unknown>).map(
-    ([key, value]) => ({
-      key: `${path}.${key}`,
-      value,
-      type: getValueType(value),
-      path: `${path}.${key}`,
-      children:
-        typeof value === 'object' && value !== null
-          ? parseJsonToTree(value, `${path}.${key}`, level + 1)
-          : undefined,
-      level,
-    })
-  )
+  return Object.entries(data as Record<string, unknown>).map(([key, value]) => ({
+    key: `${path}.${key}`,
+    value,
+    type: getValueType(value),
+    path: `${path}.${key}`,
+    children:
+      typeof value === 'object' && value !== null
+        ? parseJsonToTree(value, `${path}.${key}`, level + 1)
+        : undefined,
+    level,
+  }))
 }
 
 function getValueType(value: unknown): TreeNode['type'] {
@@ -245,11 +239,7 @@ async function copyToClipboard(text: string): Promise<void> {
   }
 }
 
-function downloadFile(
-  content: string,
-  filename: string,
-  contentType = 'text/plain'
-): void {
+function downloadFile(content: string, filename: string, contentType = 'text/plain'): void {
   const blob = new Blob([content], { type: contentType })
   const url = window.URL.createObjectURL(blob)
   const link = document.createElement('a')
@@ -410,9 +400,7 @@ describe('JSON Utils', () => {
     it('should throw error for invalid JSON', () => {
       const input = '{"name":"John",age:30}'
 
-      expect(() => formatJson(input, defaultOptions)).toThrow(
-        'Failed to format JSON'
-      )
+      expect(() => formatJson(input, defaultOptions)).toThrow('Failed to format JSON')
     })
 
     it('should handle empty object', () => {
@@ -504,7 +492,7 @@ describe('JSON Utils', () => {
       expect(result[0].children).toBeDefined()
       expect(result[0].children).toHaveLength(2)
 
-      const nameChild = result[0].children![0]
+      const nameChild = result[0].children?.[0]
       expect(nameChild.key).toBe('root.user.name')
       expect(nameChild.value).toBe('John')
       expect(nameChild.level).toBe(1)
@@ -544,9 +532,7 @@ describe('JSON Utils', () => {
       }
       const result = parseJsonToTree(data)
 
-      const nodeMap = new Map(
-        result.map(node => [node.key.split('.').pop(), node])
-      )
+      const nodeMap = new Map(result.map(node => [node.key.split('.').pop(), node]))
 
       expect(nodeMap.get('string')?.type).toBe('string')
       expect(nodeMap.get('number')?.type).toBe('number')
@@ -651,9 +637,7 @@ describe('JSON Utils', () => {
       mockCreateElement.mockReturnValue(mockLink as any)
 
       const originalBlob = global.Blob
-      global.Blob = vi
-        .fn()
-        .mockImplementation((content, options) => ({ content, options }) as any)
+      global.Blob = vi.fn().mockImplementation((content, options) => ({ content, options }) as any)
 
       downloadFile('json content', 'data.json', 'application/json')
 
@@ -706,16 +690,14 @@ describe('JSON Utils', () => {
 
   describe('Edge Cases and Error Handling', () => {
     it('should handle special Unicode characters', () => {
-      const unicodeJson =
-        '{"emoji": "🎉", "chinese": "中文", "arabic": "العربية"}'
+      const unicodeJson = '{"emoji": "🎉", "chinese": "中文", "arabic": "العربية"}'
       const result = validateJson(unicodeJson)
 
       expect(result.isValid).toBe(true)
     })
 
     it('should handle escape sequences', () => {
-      const escapeJson =
-        '{"newline": "\\n", "tab": "\\t", "quote": "\\"", "backslash": "\\\\"}'
+      const escapeJson = '{"newline": "\\n", "tab": "\\t", "quote": "\\"", "backslash": "\\\\"}'
       const result = validateJson(escapeJson)
 
       expect(result.isValid).toBe(true)

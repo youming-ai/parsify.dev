@@ -1,12 +1,12 @@
-import { D1Database } from '@cloudflare/workers-types'
+import type { D1Database } from '@cloudflare/workers-types'
 import { DatabaseClient } from '../client'
 import {
-  Migration,
-  MigrationRecord,
+  DEFAULT_DATABASE_CLIENT_CONFIG,
+  type Migration,
+  type MigrationLogger,
+  type MigrationRecord,
   MigrationStatus,
-  MigrationStorage,
-  MigrationLogger,
-  DEFAULT_DATABASE_CLIENT_CONFIG
+  type MigrationStorage,
 } from './types'
 
 /**
@@ -33,7 +33,9 @@ export class D1MigrationStorage implements MigrationStorage {
    * Initialize the migrations table
    */
   async initialize(): Promise<void> {
-    this.logger.info('Initializing migration storage table', { tableName: this.tableName })
+    this.logger.info('Initializing migration storage table', {
+      tableName: this.tableName,
+    })
 
     const createTableSQL = `
       CREATE TABLE IF NOT EXISTS ${this.tableName} (
@@ -53,7 +55,7 @@ export class D1MigrationStorage implements MigrationStorage {
     const createIndexesSQL = [
       `CREATE INDEX IF NOT EXISTS idx_${this.tableName}_version ON ${this.tableName}(version)`,
       `CREATE INDEX IF NOT EXISTS idx_${this.tableName}_applied_at ON ${this.tableName}(applied_at)`,
-      `CREATE INDEX IF NOT EXISTS idx_${this.tableName}_status ON ${this.tableName}(status)`
+      `CREATE INDEX IF NOT EXISTS idx_${this.tableName}_status ON ${this.tableName}(status)`,
     ]
 
     try {
@@ -112,29 +114,33 @@ export class D1MigrationStorage implements MigrationStorage {
         id: migration.id,
         version: migration.version,
         name: migration.name,
-        executionTime
+        executionTime,
       })
 
-      const dependenciesJSON = migration.dependencies ?
-        JSON.stringify(migration.dependencies) : null
+      const dependenciesJSON = migration.dependencies
+        ? JSON.stringify(migration.dependencies)
+        : null
 
-      await this.db.execute(`
+      await this.db.execute(
+        `
         INSERT OR REPLACE INTO ${this.tableName} (
           id, version, name, description, checksum, applied_at,
           execution_time, status, error_message, dependencies
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `, [
-        migration.id,
-        migration.version,
-        migration.name,
-        migration.description || null,
-        migration.checksum,
-        Date.now(),
-        executionTime,
-        MigrationStatus.COMPLETED,
-        null,
-        dependenciesJSON
-      ])
+      `,
+        [
+          migration.id,
+          migration.version,
+          migration.name,
+          migration.description || null,
+          migration.checksum,
+          Date.now(),
+          executionTime,
+          MigrationStatus.COMPLETED,
+          null,
+          dependenciesJSON,
+        ]
+      )
 
       this.logger.info('Migration recorded successfully')
     } catch (error) {
@@ -152,18 +158,21 @@ export class D1MigrationStorage implements MigrationStorage {
         id: migration.id,
         version: migration.version,
         name: migration.name,
-        executionTime
+        executionTime,
       })
 
-      await this.db.execute(`
+      await this.db.execute(
+        `
         UPDATE ${this.tableName}
         SET status = ?, error_message = ?
         WHERE id = ?
-      `, [
-        MigrationStatus.ROLLED_BACK,
-        `Rolled back successfully in ${executionTime}ms`,
-        migration.id
-      ])
+      `,
+        [
+          MigrationStatus.ROLLED_BACK,
+          `Rolled back successfully in ${executionTime}ms`,
+          migration.id,
+        ]
+      )
 
       this.logger.info('Migration rollback recorded successfully')
     } catch (error) {
@@ -175,32 +184,34 @@ export class D1MigrationStorage implements MigrationStorage {
   /**
    * Update migration status
    */
-  async updateMigrationStatus(
-    id: string,
-    status: MigrationStatus,
-    error?: string
-  ): Promise<void> {
+  async updateMigrationStatus(id: string, status: MigrationStatus, error?: string): Promise<void> {
     try {
       this.logger.debug('Updating migration status', {
         id,
         status,
-        hasError: !!error
+        hasError: !!error,
       })
 
       if (status === MigrationStatus.RUNNING) {
         // Insert as running first
-        await this.db.execute(`
+        await this.db.execute(
+          `
           INSERT OR IGNORE INTO ${this.tableName} (
             id, version, name, checksum, applied_at, execution_time, status
           ) VALUES (?, ?, ?, ?, ?, ?, ?)
-        `, [id, id, id, 'temp', Date.now(), 0, status])
+        `,
+          [id, id, id, 'temp', Date.now(), 0, status]
+        )
       } else {
         // Update existing record
-        await this.db.execute(`
+        await this.db.execute(
+          `
           UPDATE ${this.tableName}
           SET status = ?, error_message = ?
           WHERE id = ?
-        `, [status, error || null, id])
+        `,
+          [status, error || null, id]
+        )
       }
 
       this.logger.debug('Migration status updated successfully')
@@ -215,15 +226,21 @@ export class D1MigrationStorage implements MigrationStorage {
    */
   async migrationExists(version: string): Promise<boolean> {
     try {
-      const result = await this.db.queryFirst<{ count: number }>(`
+      const result = await this.db.queryFirst<{ count: number }>(
+        `
         SELECT COUNT(*) as count
         FROM ${this.tableName}
         WHERE version = ?
-      `, [version])
+      `,
+        [version]
+      )
 
       return result?.count > 0 || false
     } catch (error) {
-      this.logger.error('Failed to check if migration exists', { version, error })
+      this.logger.error('Failed to check if migration exists', {
+        version,
+        error,
+      })
       return false
     }
   }
@@ -233,18 +250,24 @@ export class D1MigrationStorage implements MigrationStorage {
    */
   async getMigrationByVersion(version: string): Promise<MigrationRecord | null> {
     try {
-      const migration = await this.db.queryFirst<MigrationRecord>(`
+      const migration = await this.db.queryFirst<MigrationRecord>(
+        `
         SELECT
           id, version, name, description, checksum, applied_at,
           execution_time, status, error_message, dependencies
         FROM ${this.tableName}
         WHERE version = ?
         LIMIT 1
-      `, [version])
+      `,
+        [version]
+      )
 
       return migration || null
     } catch (error) {
-      this.logger.error('Failed to get migration by version', { version, error })
+      this.logger.error('Failed to get migration by version', {
+        version,
+        error,
+      })
       return null
     }
   }
@@ -254,14 +277,17 @@ export class D1MigrationStorage implements MigrationStorage {
    */
   async getMigrationById(id: string): Promise<MigrationRecord | null> {
     try {
-      const migration = await this.db.queryFirst<MigrationRecord>(`
+      const migration = await this.db.queryFirst<MigrationRecord>(
+        `
         SELECT
           id, version, name, description, checksum, applied_at,
           execution_time, status, error_message, dependencies
         FROM ${this.tableName}
         WHERE id = ?
         LIMIT 1
-      `, [id])
+      `,
+        [id]
+      )
 
       return migration || null
     } catch (error) {
@@ -275,7 +301,8 @@ export class D1MigrationStorage implements MigrationStorage {
    */
   async getLatestMigration(): Promise<MigrationRecord | null> {
     try {
-      const migration = await this.db.queryFirst<MigrationRecord>(`
+      const migration = await this.db.queryFirst<MigrationRecord>(
+        `
         SELECT
           id, version, name, description, checksum, applied_at,
           execution_time, status, error_message, dependencies
@@ -283,7 +310,9 @@ export class D1MigrationStorage implements MigrationStorage {
         WHERE status = ?
         ORDER BY applied_at DESC
         LIMIT 1
-      `, [MigrationStatus.COMPLETED])
+      `,
+        [MigrationStatus.COMPLETED]
+      )
 
       return migration || null
     } catch (error) {
@@ -295,19 +324,17 @@ export class D1MigrationStorage implements MigrationStorage {
   /**
    * Clean up old migration records (optional maintenance)
    */
-  async cleanup(options: {
-    keepDays?: number
-    keepRecords?: number
-  } = {}): Promise<void> {
+  async cleanup(options: { keepDays?: number; keepRecords?: number } = {}): Promise<void> {
     const { keepDays = 90, keepRecords = 100 } = options
 
     try {
       this.logger.info('Starting migration cleanup', { keepDays, keepRecords })
 
       // Delete records older than keepDays, but keep at least keepRecords
-      const cutoffTime = Date.now() - (keepDays * 24 * 60 * 60 * 1000)
+      const cutoffTime = Date.now() - keepDays * 24 * 60 * 60 * 1000
 
-      await this.db.execute(`
+      await this.db.execute(
+        `
         DELETE FROM ${this.tableName}
         WHERE id NOT IN (
           SELECT id FROM ${this.tableName}
@@ -315,7 +342,9 @@ export class D1MigrationStorage implements MigrationStorage {
           LIMIT ?
         )
         AND applied_at < ?
-      `, [keepRecords, cutoffTime])
+      `,
+        [keepRecords, cutoffTime]
+      )
 
       this.logger.info('Migration cleanup completed')
     } catch (error) {
@@ -360,7 +389,7 @@ export class D1MigrationStorage implements MigrationStorage {
         failed: stats?.failed || 0,
         rolledBack: stats?.rolled_back || 0,
         averageExecutionTime: stats?.avg_execution_time || 0,
-        lastMigrationTime: stats?.last_migration
+        lastMigrationTime: stats?.last_migration,
       }
     } catch (error) {
       this.logger.error('Failed to get migration stats', error)
@@ -369,7 +398,7 @@ export class D1MigrationStorage implements MigrationStorage {
         completed: 0,
         failed: 0,
         rolledBack: 0,
-        averageExecutionTime: 0
+        averageExecutionTime: 0,
       }
     }
   }
@@ -395,7 +424,7 @@ export class D1MigrationStorage implements MigrationStorage {
       },
       log: (level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: any[]) => {
         console[level](`[MigrationStorage] ${message}`, ...args)
-      }
+      },
     }
   }
 }

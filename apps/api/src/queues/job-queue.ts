@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { Job, JobStatus, JobPriority } from '../models/job'
-import { JobService } from '../services/job_service'
-import { DatabaseClient, createDatabaseClient } from '../database'
+import { createDatabaseClient } from '../database'
+import { type Job, JobPriority } from '../models/job'
+import type { JobService } from '../services/job_service'
 
 // Queue configuration schema
 export const QueueConfigSchema = z.object({
@@ -77,7 +77,6 @@ export class JobQueueSystem {
   private queue: MessageBatch
   private env: Record<string, any>
   private config: QueueConfig
-  private client: DatabaseClient
   private metrics: QueueMetrics
   private processors: Map<string, QueueProcessor> = new Map()
 
@@ -125,11 +124,14 @@ export class JobQueueSystem {
   /**
    * Add a job to the queue
    */
-  async enqueueJob(job: Job, options: {
-    priority?: JobPriority
-    delay?: number
-    scheduledAt?: number
-  } = {}): Promise<void> {
+  async enqueueJob(
+    job: Job,
+    options: {
+      priority?: JobPriority
+      delay?: number
+      scheduledAt?: number
+    } = {}
+  ): Promise<void> {
     const message: JobQueueMessage = {
       jobId: job.id,
       userId: job.user_id,
@@ -158,13 +160,9 @@ export class JobQueueSystem {
       // In Cloudflare Queues, we would send the message
       // For now, we'll store in KV for queue emulation
       const queueKey = `${queueName}:${message.jobId}`
-      await this.env.QUEUE_KV.put(
-        queueKey,
-        JSON.stringify(message),
-        {
-          expirationTtl: 3600 // 1 hour TTL
-        }
-      )
+      await this.env.QUEUE_KV.put(queueKey, JSON.stringify(message), {
+        expirationTtl: 3600, // 1 hour TTL
+      })
 
       console.log(`Job ${message.jobId} enqueued to ${queueName}`)
     } catch (error) {
@@ -190,7 +188,6 @@ export class JobQueueSystem {
 
           // Acknowledge the message
           message.ack()
-
         } catch (error) {
           console.error('Failed to process queue message:', error)
 
@@ -202,7 +199,6 @@ export class JobQueueSystem {
       // Update metrics
       const processingTime = Date.now() - startTime
       this.updateMetrics(processedCount, processingTime)
-
     } catch (error) {
       console.error('Queue processing failed:', error)
       throw error
@@ -243,7 +239,7 @@ export class JobQueueSystem {
   async getDeadLetterQueueSize(): Promise<number> {
     try {
       const list = await this.env.QUEUE_KV.list({
-        prefix: `${this.config.deadLetterQueueName}:`
+        prefix: `${this.config.deadLetterQueueName}:`,
       })
       return list.keys.length
     } catch (error) {
@@ -265,7 +261,7 @@ export class JobQueueSystem {
     try {
       const list = await this.env.QUEUE_KV.list({
         prefix: `${this.config.deadLetterQueueName}:`,
-        limit
+        limit,
       })
 
       for (const key of list.keys) {
@@ -278,15 +274,13 @@ export class JobQueueSystem {
 
           // Reset attempt count and requeue
           dlqMessage.attemptNumber = 0
-          await this.enqueueJob(
-            await this.jobService.getJobById(dlqMessage.jobId) as Job,
-            { priority: dlqMessage.priority }
-          )
+          await this.enqueueJob((await this.jobService.getJobById(dlqMessage.jobId)) as Job, {
+            priority: dlqMessage.priority,
+          })
 
           // Remove from dead letter queue
           await this.env.QUEUE_KV.delete(key.name)
           requeuedCount++
-
         } catch (error) {
           console.error(`Failed to requeue job from DLQ ${key.name}:`, error)
         }
@@ -294,7 +288,6 @@ export class JobQueueSystem {
 
       this.metrics.deadLetterJobs -= requeuedCount
       return requeuedCount
-
     } catch (error) {
       console.error('Failed to requeue dead letter jobs:', error)
       return 0
@@ -305,7 +298,7 @@ export class JobQueueSystem {
    * Clean up old processed jobs from queues
    */
   async cleanup(olderThanHours = 24): Promise<number> {
-    const cutoffTime = Date.now() - (olderThanHours * 60 * 60 * 1000)
+    const cutoffTime = Date.now() - olderThanHours * 60 * 60 * 1000
     let cleanedCount = 0
 
     try {
@@ -333,7 +326,6 @@ export class JobQueueSystem {
       }
 
       return cleanedCount
-
     } catch (error) {
       console.error('Failed to cleanup queues:', error)
       return 0
@@ -396,7 +388,6 @@ export class JobQueueSystem {
       }
 
       console.log(`Job ${message.jobId} completed successfully`)
-
     } catch (error) {
       // Mark job as failed
       await this.jobService.failJob(message.jobId, (error as Error).message)
@@ -418,7 +409,7 @@ export class JobQueueSystem {
       if (queueMessage.attemptNumber <= this.config.maxRetries) {
         // Calculate retry delay with exponential backoff
         const delayMs = Math.min(
-          this.config.retryDelayBaseMs * Math.pow(2, queueMessage.attemptNumber - 1),
+          this.config.retryDelayBaseMs * 2 ** (queueMessage.attemptNumber - 1),
           this.config.maxRetryDelayMs
         )
 
@@ -429,16 +420,13 @@ export class JobQueueSystem {
         const queueName = this.getQueueNameByPriority(queueMessage.priority)
         const queueKey = `${queueName}:${queueMessage.jobId}`
 
-        await this.env.QUEUE_KV.put(
-          queueKey,
-          JSON.stringify(queueMessage),
-          {
-            expirationTtl: 3600
-          }
+        await this.env.QUEUE_KV.put(queueKey, JSON.stringify(queueMessage), {
+          expirationTtl: 3600,
+        })
+
+        console.log(
+          `Job ${queueMessage.jobId} scheduled for retry ${queueMessage.attemptNumber}/${this.config.maxRetries} in ${delayMs}ms`
         )
-
-        console.log(`Job ${queueMessage.jobId} scheduled for retry ${queueMessage.attemptNumber}/${this.config.maxRetries} in ${delayMs}ms`)
-
       } else {
         // Max retries exceeded, send to dead letter queue
         if (this.config.enableDeadLetterQueue) {
@@ -450,7 +438,6 @@ export class JobQueueSystem {
 
       // Acknowledge the message to prevent reprocessing
       message.ack()
-
     } catch (retryError) {
       console.error('Failed to handle message error:', retryError)
       // Still acknowledge to prevent infinite retry loops
@@ -467,16 +454,11 @@ export class JobQueueSystem {
       }
 
       const dlqKey = `${this.config.deadLetterQueueName}:${message.jobId}`
-      await this.env.QUEUE_KV.put(
-        dlqKey,
-        JSON.stringify(dlqMessage),
-        {
-          expirationTtl: 7 * 24 * 3600 // 7 days TTL
-        }
-      )
+      await this.env.QUEUE_KV.put(dlqKey, JSON.stringify(dlqMessage), {
+        expirationTtl: 7 * 24 * 3600, // 7 days TTL
+      })
 
       this.metrics.deadLetterJobs++
-
     } catch (dlqError) {
       console.error('Failed to send message to dead letter queue:', dlqError)
     }
@@ -487,9 +469,7 @@ export class JobQueueSystem {
 
     // Calculate throughput per minute
     if (processingTimeMs > 0) {
-      this.metrics.throughputPerMinute = Math.round(
-        (processedCount * 60000) / processingTimeMs
-      )
+      this.metrics.throughputPerMinute = Math.round((processedCount * 60000) / processingTimeMs)
     }
 
     // Sync metrics with database periodically
@@ -506,7 +486,8 @@ export class JobQueueSystem {
       this.metrics.avgProcessingTimeMs = processingTimeMs
     } else {
       this.metrics.avgProcessingTimeMs = Math.round(
-        (this.metrics.avgProcessingTimeMs * (totalProcessed - 1) + processingTimeMs) / totalProcessed
+        (this.metrics.avgProcessingTimeMs * (totalProcessed - 1) + processingTimeMs) /
+          totalProcessed
       )
     }
   }
@@ -521,7 +502,7 @@ export class JobQueueSystem {
           updatedAt: Date.now(),
         }),
         {
-          expirationTtl: 3600 // 1 hour TTL
+          expirationTtl: 3600, // 1 hour TTL
         }
       )
     } catch (error) {
@@ -567,7 +548,6 @@ export class WasmToolProcessor implements QueueProcessor {
       // Store output and complete job
       await this.jobService.completeJob(job.id, result)
       await this.jobService.updateJobProgress(job.id, 100, 'Job completed')
-
     } catch (error) {
       console.error(`WASM tool processing failed for job ${message.jobId}:`, error)
       throw error

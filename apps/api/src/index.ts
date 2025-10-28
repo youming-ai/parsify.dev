@@ -1,26 +1,11 @@
 import { Hono } from 'hono'
-import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
-import { routes } from './routes'
-import {
-  createCloudflareService,
-  CloudflareService,
-} from './services/cloudflare'
-import {
-  securityMiddleware,
-  createDevelopmentSecurity,
-  createProductionSecurity,
-  SecurityPresets,
-} from './middleware/security'
 import { errorMiddleware } from './middleware/error'
 import { rateLimitMiddleware } from './middleware/rate_limit'
-import {
-  initializeSentry,
-  sentryMiddleware,
-  sentryErrorHandler,
-  setSentryUserContext,
-  clearSentryUserContext,
-} from './monitoring/sentry'
+import { SecurityPresets, securityMiddleware } from './middleware/security'
+import { initializeSentry, sentryErrorHandler, sentryMiddleware } from './monitoring/sentry'
+import { routes } from './routes'
+import { type CloudflareService, createCloudflareService } from './services/cloudflare'
 
 // Type definitions for environment
 export interface Env {
@@ -103,7 +88,7 @@ app.use(
   sentryMiddleware({
     performanceOptions: {
       enableTracing: true,
-      enableProfiling: c.env.ENVIRONMENT === 'production',
+      enableProfiling: true,
       enableMetrics: true,
       ignoredPaths: ['/health', '/metrics', '/favicon.ico'],
       ignoredStatusCodes: [404, 401, 403],
@@ -237,16 +222,10 @@ app.get('/health', async c => {
       services: health,
       metrics: {
         uptime: process.uptime ? process.uptime() : 0,
-        memory:
-          typeof performance !== 'undefined'
-            ? performance.memory?.usedJSHeapSize
-            : undefined,
+        memory: typeof performance !== 'undefined' ? performance.memory?.usedJSHeapSize : undefined,
         requestCount:
           metrics.d1.queryCount +
-          Object.values(metrics.kv).reduce(
-            (sum, kv) => sum + kv.operationsCount,
-            0
-          ),
+          Object.values(metrics.kv).reduce((sum, kv) => sum + kv.operationsCount, 0),
       },
       requestId: c.get('requestId'),
     })
@@ -283,8 +262,7 @@ app.get('/metrics', async c => {
       health,
       system: {
         uptime: process.uptime ? process.uptime() : 0,
-        memory:
-          typeof performance !== 'undefined' ? performance.memory : undefined,
+        memory: typeof performance !== 'undefined' ? performance.memory : undefined,
         cpu: typeof performance !== 'undefined' ? performance.now() : undefined,
       },
     })
@@ -302,7 +280,7 @@ app.get('/metrics', async c => {
 
 // Cache management endpoints
 app.get('/admin/cache/stats', async c => {
-  const cloudflare = c.get('cloudflare') as CloudflareService
+  const _cloudflare = c.get('cloudflare') as CloudflareService
 
   // Basic admin authentication check (in production, implement proper auth)
   const authHeader = c.req.header('Authorization')
@@ -330,7 +308,7 @@ app.get('/admin/cache/stats', async c => {
 })
 
 app.delete('/admin/cache', async c => {
-  const cloudflare = c.get('cloudflare') as CloudflareService
+  const _cloudflare = c.get('cloudflare') as CloudflareService
 
   // Basic admin authentication check
   const authHeader = c.req.header('Authorization')

@@ -16,14 +16,7 @@
   "endpoints": {
     "file-operations": {
       "requests": 980,
-      "responseTimes": [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
+      "responseTimes": [0, 0, 0, 0, 0, 0],
       "successes": 0,
       "errors": [
         {

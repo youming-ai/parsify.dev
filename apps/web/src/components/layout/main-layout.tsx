@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
+import { Footer } from './footer'
 import { Header } from './header'
 import { Sidebar } from './sidebar'
-import { Footer } from './footer'
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -14,10 +14,7 @@ export function MainLayout({ children, showSidebar = false }: MainLayoutProps) {
       <Header />
       <div className="flex">
         {showSidebar && <Sidebar />}
-        <main className={cn(
-          "flex-1",
-          showSidebar ? "md:ml-64" : ""
-        )}>
+        <main className={cn('flex-1', showSidebar ? 'md:ml-64' : '')}>
           {children}
           <Footer />
         </main>

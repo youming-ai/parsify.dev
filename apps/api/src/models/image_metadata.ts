@@ -1,9 +1,7 @@
 import { z } from 'zod'
 
 // Image format types
-export const ImageFormatSchema = z.enum([
-  'JPEG', 'PNG', 'GIF', 'WEBP', 'AVIF', 'BMP', 'TIFF'
-])
+export const ImageFormatSchema = z.enum(['JPEG', 'PNG', 'GIF', 'WEBP', 'AVIF', 'BMP', 'TIFF'])
 export type ImageFormat = z.infer<typeof ImageFormatSchema>
 
 // Image transformation schema
@@ -23,32 +21,42 @@ export const ImageTransformationSchema = z.object({
   opacity: z.number().min(0).max(1).optional(),
   rotate: z.number().min(0).max(360).optional(),
   flip: z.enum(['horizontal', 'vertical']).optional(),
-  crop: z.object({
-    x: z.number(),
-    y: z.number(),
-    width: z.number().positive(),
-    height: z.number().positive(),
-  }).optional(),
-  pad: z.object({
-    top: z.number().default(0),
-    right: z.number().default(0),
-    bottom: z.number().default(0),
-    left: z.number().default(0),
-  }).optional(),
-  watermark: z.object({
-    url: z.string().optional(),
-    opacity: z.number().min(0).max(1).optional(),
-    position: z.enum(['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center']).optional(),
-    scale: z.number().positive().optional(),
-    x: z.number().optional(),
-    y: z.number().optional(),
-  }).optional(),
-  effects: z.object({
-    grayscale: z.boolean().optional(),
-    sepia: z.boolean().optional(),
-    vintage: z.boolean().optional(),
-    blackwhite: z.boolean().optional(),
-  }).optional(),
+  crop: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+      width: z.number().positive(),
+      height: z.number().positive(),
+    })
+    .optional(),
+  pad: z
+    .object({
+      top: z.number().default(0),
+      right: z.number().default(0),
+      bottom: z.number().default(0),
+      left: z.number().default(0),
+    })
+    .optional(),
+  watermark: z
+    .object({
+      url: z.string().optional(),
+      opacity: z.number().min(0).max(1).optional(),
+      position: z
+        .enum(['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center'])
+        .optional(),
+      scale: z.number().positive().optional(),
+      x: z.number().optional(),
+      y: z.number().optional(),
+    })
+    .optional(),
+  effects: z
+    .object({
+      grayscale: z.boolean().optional(),
+      sepia: z.boolean().optional(),
+      vintage: z.boolean().optional(),
+      blackwhite: z.boolean().optional(),
+    })
+    .optional(),
 })
 
 export type ImageTransformation = z.infer<typeof ImageTransformationSchema>
@@ -122,7 +130,9 @@ export type ImageProcessingOptions = z.infer<typeof ImageProcessingOptionsSchema
 export const ImageQueryOptionsSchema = z.object({
   limit: z.number().min(1).max(100).default(50),
   offset: z.number().min(0).default(0),
-  sort_by: z.enum(['uploaded_at', 'updated_at', 'size', 'filename', 'format']).default('uploaded_at'),
+  sort_by: z
+    .enum(['uploaded_at', 'updated_at', 'size', 'filename', 'format'])
+    .default('uploaded_at'),
   sort_order: z.enum(['asc', 'desc']).default('desc'),
   format: ImageFormatSchema.optional(),
   tags: z.array(z.string()).optional(),
@@ -447,13 +457,19 @@ export class ImageMetadataModel {
   }
 
   // Validation methods
-  static validateFilename(filename: string): { valid: boolean; error?: string } {
+  static validateFilename(filename: string): {
+    valid: boolean
+    error?: string
+  } {
     if (!filename || filename.trim().length === 0) {
       return { valid: false, error: 'Filename is required' }
     }
 
     if (filename.length > 255) {
-      return { valid: false, error: 'Filename is too long (max 255 characters)' }
+      return {
+        valid: false,
+        error: 'Filename is too long (max 255 characters)',
+      }
     }
 
     // Check for invalid characters
@@ -479,19 +495,28 @@ export class ImageMetadataModel {
     }
 
     if (width > 50000 || height > 50000) {
-      return { valid: false, error: 'Image dimensions are too large (max 50000px)' }
+      return {
+        valid: false,
+        error: 'Image dimensions are too large (max 50000px)',
+      }
     }
 
     return { valid: true }
   }
 
-  static validateSize(size: number, maxSize = 100 * 1024 * 1024): { valid: boolean; error?: string } {
+  static validateSize(
+    size: number,
+    maxSize = 100 * 1024 * 1024
+  ): { valid: boolean; error?: string } {
     if (size <= 0) {
       return { valid: false, error: 'Image size must be positive' }
     }
 
     if (size > maxSize) {
-      return { valid: false, error: `Image size exceeds maximum allowed size (${maxSize} bytes)` }
+      return {
+        valid: false,
+        error: `Image size exceeds maximum allowed size (${maxSize} bytes)`,
+      }
     }
 
     return { valid: true }
@@ -515,11 +540,11 @@ export class ImageMetadataModel {
   }
 
   get megapixels(): number {
-    return Math.round((this.width * this.height) / 1_000_000 * 100) / 100
+    return Math.round(((this.width * this.height) / 1_000_000) * 100) / 100
   }
 
   get sizeInMB(): number {
-    return Math.round(this.size / (1024 * 1024) * 100) / 100
+    return Math.round((this.size / (1024 * 1024)) * 100) / 100
   }
 
   // Utility methods
@@ -623,7 +648,7 @@ export class ImageVariantModel {
   }
 
   get sizeInKB(): number {
-    return Math.round(this.size / 1024 * 100) / 100
+    return Math.round((this.size / 1024) * 100) / 100
   }
 
   get compressionRatio(): number {

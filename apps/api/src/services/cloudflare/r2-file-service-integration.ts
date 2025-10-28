@@ -6,11 +6,16 @@
  * maintaining backward compatibility and adding new capabilities.
  */
 
-import { FileService, FileServiceOptions, UploadOptions, FileUploadResult } from '../file_service'
-import { R2StorageService, R2StorageOptions, UploadStreamOptions, DownloadStreamOptions, CdnUrlOptions } from './r2-storage'
-import { R2Config, getR2Config } from '../../config/cloudflare/r2-config'
-import { DatabaseClient, createDatabaseClient } from '../../database'
-import { FileUpload } from '../../models/file_upload'
+import { getR2Config, type R2Config } from '../../config/cloudflare/r2-config'
+import { createDatabaseClient } from '../../database'
+import { FileService, type FileServiceOptions, type UploadOptions } from '../file_service'
+import {
+  type CdnUrlOptions,
+  type DownloadStreamOptions,
+  type R2StorageOptions,
+  R2StorageService,
+  type UploadStreamOptions,
+} from './r2-storage'
 
 export interface EnhancedFileServiceOptions extends FileServiceOptions {
   enableR2Storage?: boolean
@@ -112,13 +117,15 @@ export class EnhancedFileService extends FileService {
         },
         cacheControl: this.generateCacheControl(filename),
         contentDisposition: this.generateContentDisposition(filename),
-        onProgress: options.onProgress ? (progress) => {
-          options.onProgress?.({
-            loaded: progress.loaded,
-            total: progress.total,
-            percentage: progress.percentage,
-          })
-        } : undefined,
+        onProgress: options.onProgress
+          ? progress => {
+              options.onProgress?.({
+                loaded: progress.loaded,
+                total: progress.total,
+                percentage: progress.percentage,
+              })
+            }
+          : undefined,
         chunkSize: options.chunkSize || 1024 * 1024, // 1MB
         enableResumable: options.enableResumable ?? true,
       }
@@ -127,7 +134,9 @@ export class EnhancedFileService extends FileService {
 
       let cdnUrl: string | undefined
       if (options.generateCdnUrl && this.enableCdnIntegration) {
-        cdnUrl = this.r2StorageService.generateCdnUrl(result.fileUpload.id, options.cdnOptions) || undefined
+        cdnUrl =
+          this.r2StorageService.generateCdnUrl(result.fileUpload.id, options.cdnOptions) ||
+          undefined
       }
 
       return {
@@ -170,13 +179,15 @@ export class EnhancedFileService extends FileService {
     try {
       const downloadOptions: DownloadStreamOptions = {
         range: options.range,
-        onProgress: options.onProgress ? (progress) => {
-          options.onProgress?.({
-            loaded: progress.loaded,
-            total: progress.total,
-            percentage: progress.percentage,
-          })
-        } : undefined,
+        onProgress: options.onProgress
+          ? progress => {
+              options.onProgress?.({
+                loaded: progress.loaded,
+                total: progress.total,
+                percentage: progress.percentage,
+              })
+            }
+          : undefined,
       }
 
       const result = await this.r2StorageService.downloadFile(fileId, downloadOptions)
@@ -230,7 +241,9 @@ export class EnhancedFileService extends FileService {
 
       let cdnUrl: string | undefined
       if (options.generateCdnUrl && this.enableCdnIntegration) {
-        cdnUrl = this.r2StorageService.generateCdnUrl(result.fileUpload.id, options.cdnOptions) || undefined
+        cdnUrl =
+          this.r2StorageService.generateCdnUrl(result.fileUpload.id, options.cdnOptions) ||
+          undefined
       }
 
       return {
@@ -259,7 +272,10 @@ export class EnhancedFileService extends FileService {
     }>,
     options: {
       maxConcurrent?: number
-      onProgress?: (fileId: string, progress: { loaded: number; total: number; percentage: number }) => void
+      onProgress?: (
+        fileId: string,
+        progress: { loaded: number; total: number; percentage: number }
+      ) => void
       onFileComplete?: (result: FileOperationResult) => void
     } = {}
   ): Promise<FileOperationResult[]> {
@@ -282,7 +298,7 @@ export class EnhancedFileService extends FileService {
       try {
         const result = await this.uploadFileEnhanced(item.file, item.filename, {
           ...item.options,
-          onProgress: (progress) => {
+          onProgress: progress => {
             options.onProgress?.(fileId, progress)
             item.options?.onProgress?.(progress)
           },
@@ -458,7 +474,12 @@ export class EnhancedFileService extends FileService {
       }
 
       // Complete the upload
-      const completed = await this.completeUpload(uploadResult.fileId, undefined, options.ipAddress, options.userAgent)
+      const completed = await this.completeUpload(
+        uploadResult.fileId,
+        undefined,
+        options.ipAddress,
+        options.userAgent
+      )
 
       if (!completed) {
         throw new Error('Failed to complete upload')
@@ -479,7 +500,7 @@ export class EnhancedFileService extends FileService {
 
   private async downloadFileLegacy(
     fileId: string,
-    options: EnhancedDownloadOptions
+    _options: EnhancedDownloadOptions
   ): Promise<{
     success: boolean
     data?: ArrayBuffer
@@ -545,7 +566,9 @@ export class EnhancedFileService extends FileService {
 }
 
 // Factory function
-export function createEnhancedFileService(options: EnhancedFileServiceOptions): EnhancedFileService {
+export function createEnhancedFileService(
+  options: EnhancedFileServiceOptions
+): EnhancedFileService {
   return new EnhancedFileService(options)
 }
 

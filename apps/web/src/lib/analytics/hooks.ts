@@ -3,10 +3,9 @@
  * Provides easy integration with React components
  */
 
-import { useEffect, useRef, useCallback, useState } from 'react'
-import type { AnalyticsSession, AnalyticsConsent } from './types'
-import { CloudflareAnalyticsClient, createAnalyticsClient, getAnalyticsClient } from './client'
-import { ANALYTICS_EVENTS } from './config'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { type CloudflareAnalyticsClient, createAnalyticsClient, getAnalyticsClient } from './client'
+import type { AnalyticsConsent, AnalyticsSession } from './types'
 
 /**
  * Hook for accessing the analytics client
@@ -40,76 +39,97 @@ export function useAnalytics() {
     }
   }, [])
 
-  const trackPageView = useCallback((path?: string, title?: string) => {
-    if (client) {
-      client.trackPageView(path, title)
-    }
-  }, [client])
+  const trackPageView = useCallback(
+    (path?: string, title?: string) => {
+      if (client) {
+        client.trackPageView(path, title)
+      }
+    },
+    [client]
+  )
 
-  const trackToolUsage = useCallback((params: {
-    toolId: string
-    toolName: string
-    action: 'execute' | 'validate' | 'format' | 'convert' | 'error'
-    processingTime?: number
-    inputSize?: number
-    outputSize?: number
-    error?: string
-    metrics?: Record<string, number>
-  }) => {
-    if (client) {
-      client.trackToolUsage(params)
-    }
-  }, [client])
+  const trackToolUsage = useCallback(
+    (params: {
+      toolId: string
+      toolName: string
+      action: 'execute' | 'validate' | 'format' | 'convert' | 'error'
+      processingTime?: number
+      inputSize?: number
+      outputSize?: number
+      error?: string
+      metrics?: Record<string, number>
+    }) => {
+      if (client) {
+        client.trackToolUsage(params)
+      }
+    },
+    [client]
+  )
 
-  const trackPerformance = useCallback((metrics: Record<string, number>) => {
-    if (client) {
-      client.trackPerformance(metrics)
-    }
-  }, [client])
+  const trackPerformance = useCallback(
+    (metrics: Record<string, number>) => {
+      if (client) {
+        client.trackPerformance(metrics)
+      }
+    },
+    [client]
+  )
 
-  const trackInteraction = useCallback((params: {
-    interactionType: 'click' | 'scroll' | 'focus' | 'blur' | 'submit' | 'navigation'
-    elementId?: string
-    elementTag?: string
-    elementText?: string
-    targetUrl?: string
-    scrollDepth?: number
-  }) => {
-    if (client) {
-      client.trackInteraction(params)
-    }
-  }, [client])
+  const trackInteraction = useCallback(
+    (params: {
+      interactionType: 'click' | 'scroll' | 'focus' | 'blur' | 'submit' | 'navigation'
+      elementId?: string
+      elementTag?: string
+      elementText?: string
+      targetUrl?: string
+      scrollDepth?: number
+    }) => {
+      if (client) {
+        client.trackInteraction(params)
+      }
+    },
+    [client]
+  )
 
-  const trackAPIUsage = useCallback((params: {
-    endpoint: string
-    method: string
-    statusCode: number
-    responseTime: number
-    requestSize?: number
-    responseSize?: number
-    error?: string
-  }) => {
-    if (client) {
-      client.trackAPIUsage(params)
-    }
-  }, [client])
+  const trackAPIUsage = useCallback(
+    (params: {
+      endpoint: string
+      method: string
+      statusCode: number
+      responseTime: number
+      requestSize?: number
+      responseSize?: number
+      error?: string
+    }) => {
+      if (client) {
+        client.trackAPIUsage(params)
+      }
+    },
+    [client]
+  )
 
-  const trackCustomEvent = useCallback((
-    eventName: string,
-    data: Record<string, any>,
-    properties?: Record<string, string | number | boolean>
-  ) => {
-    if (client) {
-      client.trackCustomEvent(eventName, data, properties)
-    }
-  }, [client])
+  const trackCustomEvent = useCallback(
+    (
+      eventName: string,
+      data: Record<string, any>,
+      properties?: Record<string, string | number | boolean>
+    ) => {
+      if (client) {
+        client.trackCustomEvent(eventName, data, properties)
+      }
+    },
+    [client]
+  )
 
-  const updateConsent = useCallback((consent: Partial<AnalyticsConsent>) => {
-    if (client) {
-      client.updateConsent(consent)
-      setConsent(client.getConsent())
-    }
-  }, [client])
+  const updateConsent = useCallback(
+    (consent: Partial<AnalyticsConsent>) => {
+      if (client) {
+        client.updateConsent(consent)
+        setConsent(client.getConsent())
+      }
+    },
+    [client]
+  )
 
   const flush = useCallback(() => {
     if (client) {
@@ -162,24 +182,27 @@ export function useToolUsageTracking(toolId: string, toolName: string) {
     startTime.current = Date.now()
   }, [])
 
-  const endTracking = useCallback((
-    action: 'execute' | 'validate' | 'format' | 'convert' | 'error',
-    params?: {
-      inputSize?: number
-      outputSize?: number
-      error?: string
-      metrics?: Record<string, number>
-    }
-  ) => {
-    const processingTime = startTime.current ? Date.now() - startTime.current : undefined
-    trackToolUsage({
-      toolId,
-      toolName,
-      action,
-      processingTime,
-      ...params,
-    })
-  }, [toolId, toolName, trackToolUsage])
+  const endTracking = useCallback(
+    (
+      action: 'execute' | 'validate' | 'format' | 'convert' | 'error',
+      params?: {
+        inputSize?: number
+        outputSize?: number
+        error?: string
+        metrics?: Record<string, number>
+      }
+    ) => {
+      const processingTime = startTime.current ? Date.now() - startTime.current : undefined
+      trackToolUsage({
+        toolId,
+        toolName,
+        action,
+        processingTime,
+        ...params,
+      })
+    },
+    [toolId, toolName, trackToolUsage]
+  )
 
   return { startTracking, endTracking }
 }
@@ -190,14 +213,17 @@ export function useToolUsageTracking(toolId: string, toolName: string) {
 export function useInteractionTracking(elementId?: string, elementTag?: string) {
   const { trackInteraction } = useAnalytics()
 
-  const trackClick = useCallback((elementText?: string) => {
-    trackInteraction({
-      interactionType: 'click',
-      elementId,
-      elementTag,
-      elementText,
-    })
-  }, [elementId, elementTag, trackInteraction])
+  const trackClick = useCallback(
+    (elementText?: string) => {
+      trackInteraction({
+        interactionType: 'click',
+        elementId,
+        elementTag,
+        elementText,
+      })
+    },
+    [elementId, elementTag, trackInteraction]
+  )
 
   const trackFocus = useCallback(() => {
     trackInteraction({
@@ -215,14 +241,17 @@ export function useInteractionTracking(elementId?: string, elementTag?: string) 
     })
   }, [elementId, elementTag, trackInteraction])
 
-  const trackSubmit = useCallback((elementText?: string) => {
-    trackInteraction({
-      interactionType: 'submit',
-      elementId,
-      elementTag,
-      elementText,
-    })
-  }, [elementId, elementTag, trackInteraction])
+  const trackSubmit = useCallback(
+    (elementText?: string) => {
+      trackInteraction({
+        interactionType: 'submit',
+        elementId,
+        elementTag,
+        elementText,
+      })
+    },
+    [elementId, elementTag, trackInteraction]
+  )
 
   return { trackClick, trackFocus, trackBlur, trackSubmit }
 }
@@ -234,10 +263,13 @@ export function usePerformanceTracking() {
   const { trackPerformance } = useAnalytics()
   const performanceMetrics = useRef<Record<string, number>>({})
 
-  const recordMetric = useCallback((name: string, value: number) => {
-    performanceMetrics.current[name] = value
-    trackPerformance({ [name]: value })
-  }, [trackPerformance])
+  const recordMetric = useCallback(
+    (name: string, value: number) => {
+      performanceMetrics.current[name] = value
+      trackPerformance({ [name]: value })
+    },
+    [trackPerformance]
+  )
 
   const getMetrics = useCallback(() => {
     return { ...performanceMetrics.current }
@@ -259,37 +291,36 @@ export function useFormTracking(formId: string) {
     })
   }, [formId, trackCustomEvent])
 
-  const trackFormSubmit = useCallback((
-    success: boolean,
-    error?: string,
-    formData?: Record<string, any>
-  ) => {
-    trackCustomEvent('form_submit', {
-      formId,
-      success,
-      error,
-      fieldCount: formData ? Object.keys(formData).length : 0,
-      timestamp: Date.now(),
-    })
+  const trackFormSubmit = useCallback(
+    (success: boolean, error?: string, formData?: Record<string, any>) => {
+      trackCustomEvent('form_submit', {
+        formId,
+        success,
+        error,
+        fieldCount: formData ? Object.keys(formData).length : 0,
+        timestamp: Date.now(),
+      })
 
-    trackInteraction({
-      interactionType: 'submit',
-      elementId: formId,
-      elementTag: 'form',
-    })
-  }, [formId, trackCustomEvent, trackInteraction])
+      trackInteraction({
+        interactionType: 'submit',
+        elementId: formId,
+        elementTag: 'form',
+      })
+    },
+    [formId, trackCustomEvent, trackInteraction]
+  )
 
-  const trackFormFieldError = useCallback((
-    fieldName: string,
-    error: string
-  ) => {
-    trackCustomEvent('form_field_error', {
-      formId,
-      fieldName,
-      error,
-      timestamp: Date.now(),
-    })
-  }, [formId, trackCustomEvent])
+  const trackFormFieldError = useCallback(
+    (fieldName: string, error: string) => {
+      trackCustomEvent('form_field_error', {
+        formId,
+        fieldName,
+        error,
+        timestamp: Date.now(),
+      })
+    },
+    [formId, trackCustomEvent]
+  )
 
   return { trackFormStart, trackFormSubmit, trackFormFieldError }
 }
@@ -300,44 +331,43 @@ export function useFormTracking(formId: string) {
 export function useSearchTracking(searchType: string) {
   const { trackCustomEvent } = useAnalytics()
 
-  const trackSearch = useCallback((
-    query: string,
-    resultsCount?: number,
-    searchTime?: number
-  ) => {
-    trackCustomEvent('search', {
-      searchType,
-      query: query.trim(),
-      queryLength: query.trim().length,
-      resultsCount,
-      searchTime,
-      timestamp: Date.now(),
-    })
-  }, [searchType, trackCustomEvent])
+  const trackSearch = useCallback(
+    (query: string, resultsCount?: number, searchTime?: number) => {
+      trackCustomEvent('search', {
+        searchType,
+        query: query.trim(),
+        queryLength: query.trim().length,
+        resultsCount,
+        searchTime,
+        timestamp: Date.now(),
+      })
+    },
+    [searchType, trackCustomEvent]
+  )
 
-  const trackSearchFilter = useCallback((
-    filterName: string,
-    filterValue: string
-  ) => {
-    trackCustomEvent('search_filter', {
-      searchType,
-      filterName,
-      filterValue,
-      timestamp: Date.now(),
-    })
-  }, [searchType, trackCustomEvent])
+  const trackSearchFilter = useCallback(
+    (filterName: string, filterValue: string) => {
+      trackCustomEvent('search_filter', {
+        searchType,
+        filterName,
+        filterValue,
+        timestamp: Date.now(),
+      })
+    },
+    [searchType, trackCustomEvent]
+  )
 
-  const trackSearchResultClick = useCallback((
-    resultPosition: number,
-    resultId?: string
-  ) => {
-    trackCustomEvent('search_result_click', {
-      searchType,
-      resultPosition,
-      resultId,
-      timestamp: Date.now(),
-    })
-  }, [searchType, trackCustomEvent])
+  const trackSearchResultClick = useCallback(
+    (resultPosition: number, resultId?: string) => {
+      trackCustomEvent('search_result_click', {
+        searchType,
+        resultPosition,
+        resultId,
+        timestamp: Date.now(),
+      })
+    },
+    [searchType, trackCustomEvent]
+  )
 
   return { trackSearch, trackSearchFilter, trackSearchResultClick }
 }
@@ -350,27 +380,33 @@ export function useEngagementTracking() {
   const engagementStartTime = useRef(Date.now())
   const lastActivityTime = useRef(Date.now())
 
-  const trackEngagement = useCallback((action: string, data?: Record<string, any>) => {
-    const totalEngagementTime = Date.now() - engagementStartTime.current
-    const timeSinceLastActivity = Date.now() - lastActivityTime.current
+  const trackEngagement = useCallback(
+    (action: string, data?: Record<string, any>) => {
+      const totalEngagementTime = Date.now() - engagementStartTime.current
+      const timeSinceLastActivity = Date.now() - lastActivityTime.current
 
-    trackCustomEvent('engagement', {
-      action,
-      totalEngagementTime,
-      timeSinceLastActivity,
-      ...data,
-    })
+      trackCustomEvent('engagement', {
+        action,
+        totalEngagementTime,
+        timeSinceLastActivity,
+        ...data,
+      })
 
-    lastActivityTime.current = Date.now()
-  }, [trackCustomEvent])
+      lastActivityTime.current = Date.now()
+    },
+    [trackCustomEvent]
+  )
 
-  const trackScrollDepth = useCallback((depth: number) => {
-    trackInteraction({
-      interactionType: 'scroll',
-      scrollDepth: depth,
-    })
-    trackEngagement('scroll', { depth })
-  }, [trackInteraction, trackEngagement])
+  const trackScrollDepth = useCallback(
+    (depth: number) => {
+      trackInteraction({
+        interactionType: 'scroll',
+        scrollDepth: depth,
+      })
+      trackEngagement('scroll', { depth })
+    },
+    [trackInteraction, trackEngagement]
+  )
 
   const trackDwellTime = useCallback(() => {
     const dwellTime = Date.now() - engagementStartTime.current
@@ -389,38 +425,36 @@ export function useEngagementTracking() {
 export function useErrorTracking() {
   const { trackCustomEvent } = useAnalytics()
 
-  const trackError = useCallback((
-    error: Error | string,
-    context?: Record<string, any>
-  ) => {
-    const errorMessage = error instanceof Error ? error.message : error
-    const errorStack = error instanceof Error ? error.stack : undefined
+  const trackError = useCallback(
+    (error: Error | string, context?: Record<string, any>) => {
+      const errorMessage = error instanceof Error ? error.message : error
+      const errorStack = error instanceof Error ? error.stack : undefined
 
-    trackCustomEvent('error', {
-      message: errorMessage,
-      stack: errorStack,
-      url: window.location.href,
-      userAgent: navigator.userAgent,
-      timestamp: Date.now(),
-      ...context,
-    })
-  }, [trackCustomEvent])
+      trackCustomEvent('error', {
+        message: errorMessage,
+        stack: errorStack,
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+        timestamp: Date.now(),
+        ...context,
+      })
+    },
+    [trackCustomEvent]
+  )
 
-  const trackAPIError = useCallback((
-    endpoint: string,
-    statusCode: number,
-    error: string,
-    context?: Record<string, any>
-  ) => {
-    trackCustomEvent('api_error', {
-      endpoint,
-      statusCode,
-      error,
-      url: window.location.href,
-      timestamp: Date.now(),
-      ...context,
-    })
-  }, [trackCustomEvent])
+  const trackAPIError = useCallback(
+    (endpoint: string, statusCode: number, error: string, context?: Record<string, any>) => {
+      trackCustomEvent('api_error', {
+        endpoint,
+        statusCode,
+        error,
+        url: window.location.href,
+        timestamp: Date.now(),
+        ...context,
+      })
+    },
+    [trackCustomEvent]
+  )
 
   return { trackError, trackAPIError }
 }
@@ -447,17 +481,26 @@ export function useAnalyticsConsent() {
     })
   }, [updateConsent])
 
-  const updateAnalyticsConsent = useCallback((granted: boolean) => {
-    updateConsent({ analytics: granted })
-  }, [updateConsent])
+  const updateAnalyticsConsent = useCallback(
+    (granted: boolean) => {
+      updateConsent({ analytics: granted })
+    },
+    [updateConsent]
+  )
 
-  const updatePerformanceConsent = useCallback((granted: boolean) => {
-    updateConsent({ performance: granted })
-  }, [updateConsent])
+  const updatePerformanceConsent = useCallback(
+    (granted: boolean) => {
+      updateConsent({ performance: granted })
+    },
+    [updateConsent]
+  )
 
-  const updateInteractionConsent = useCallback((granted: boolean) => {
-    updateConsent({ interactions: granted })
-  }, [updateConsent])
+  const updateInteractionConsent = useCallback(
+    (granted: boolean) => {
+      updateConsent({ interactions: granted })
+    },
+    [updateConsent]
+  )
 
   return {
     consent,

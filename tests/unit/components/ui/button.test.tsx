@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
-import { screen, fireEvent } from '@testing-library/react'
-import { render } from '../test-utils'
+import { fireEvent, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
 import { Button } from '@/web/components/ui/button'
+import { render } from '../test-utils'
 
 describe('Button Component', () => {
   it('renders button with text', () => {
@@ -69,7 +69,11 @@ describe('Button Component', () => {
 
   it('can be disabled', () => {
     const handleClick = vi.fn()
-    render(<Button disabled onClick={handleClick}>Disabled</Button>)
+    render(
+      <Button disabled onClick={handleClick}>
+        Disabled
+      </Button>
+    )
 
     const button = screen.getByRole('button')
     expect(button).toBeDisabled()

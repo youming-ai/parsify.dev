@@ -170,12 +170,12 @@
           "parsedData": {
             "description": "Parsed JSON data",
             "oneOf": [
-              {"type": "object"},
-              {"type": "array"},
-              {"type": "string"},
-              {"type": "number"},
-              {"type": "boolean"},
-              {"type": "null"}
+              { "type": "object" },
+              { "type": "array" },
+              { "type": "string" },
+              { "type": "number" },
+              { "type": "boolean" },
+              { "type": "null" }
             ]
           },
           "isValid": {
@@ -203,7 +203,12 @@
         "properties": {
           "code": {
             "type": "string",
-            "enum": ["INVALID_JSON_SYNTAX", "FILE_TOO_LARGE", "UNSUPPORTED_FORMAT", "EXTRACTION_FAILED"],
+            "enum": [
+              "INVALID_JSON_SYNTAX",
+              "FILE_TOO_LARGE",
+              "UNSUPPORTED_FORMAT",
+              "EXTRACTION_FAILED"
+            ],
             "description": "Error code identifier"
           },
           "message": {

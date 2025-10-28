@@ -1,5 +1,5 @@
-import React from 'react'
-import "./LoadingSpinner.css"
+import type React from 'react'
+import './LoadingSpinner.css'
 
 interface LoadingSpinnerProps {
   size?: 'small' | 'medium' | 'large'
@@ -16,7 +16,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   message,
   showMessage = true,
   className = '',
-  inline = false
+  inline = false,
 }) => {
   const getSizeClasses = () => {
     switch (size) {
@@ -60,18 +60,9 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
         <div className="spinner-circle"></div>
       </div>
 
-      {showMessage && message && (
-        <div className="loading-message">
-          {message}
-        </div>
-      )}
+      {showMessage && message && <div className="loading-message">{message}</div>}
 
-      {showMessage && !message && (
-        <div className="loading-message">
-          Loading...
-        </div>
-      )}
-
+      {showMessage && !message && <div className="loading-message">Loading...</div>}
     </div>
   )
 }
@@ -81,58 +72,46 @@ export const LoadingStates = {
   FILE_UPLOAD: {
     message: 'Uploading file...',
     size: 'medium' as const,
-    color: 'primary' as const
+    color: 'primary' as const,
   },
   PARSING_JSON: {
     message: 'Parsing JSON content...',
     size: 'medium' as const,
-    color: 'primary' as const
+    color: 'primary' as const,
   },
   VALIDATING: {
     message: 'Validating file...',
     size: 'small' as const,
-    color: 'secondary' as const
+    color: 'secondary' as const,
   },
   PROCESSING: {
     message: 'Processing...',
     size: 'large' as const,
-    color: 'primary' as const
+    color: 'primary' as const,
   },
   SEARCHING: {
     message: 'Searching...',
     size: 'small' as const,
     color: 'secondary' as const,
-    inline: true
-  }
+    inline: true,
+  },
 } as const
 
 // Convenience components for common loading states
 export const FileUploadSpinner: React.FC<{ className?: string }> = ({ className }) => (
-  <LoadingSpinner
-    {...LoadingStates.FILE_UPLOAD}
-    className={className}
-  />
+  <LoadingSpinner {...LoadingStates.FILE_UPLOAD} className={className} />
 )
 
 export const JsonParsingSpinner: React.FC<{ className?: string }> = ({ className }) => (
-  <LoadingSpinner
-    {...LoadingStates.PARSING_JSON}
-    className={className}
-  />
+  <LoadingSpinner {...LoadingStates.PARSING_JSON} className={className} />
 )
 
 export const ValidatingSpinner: React.FC<{ className?: string }> = ({ className }) => (
-  <LoadingSpinner
-    {...LoadingStates.VALIDATING}
-    className={className}
-  />
+  <LoadingSpinner {...LoadingStates.VALIDATING} className={className} />
 )
 
 export const SearchingSpinner: React.FC<{ className?: string }> = ({ className }) => (
-  <LoadingSpinner
-    {...LoadingStates.SEARCHING}
-    className={className}
-  />
+  <LoadingSpinner {...LoadingStates.SEARCHING} className={className} />
 )
 
 export default LoadingSpinner

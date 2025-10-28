@@ -1,41 +1,28 @@
+import { Copy, Download, Play, RotateCcw, Settings, Upload } from 'lucide-react'
 import * as React from 'react'
-import { ToolWrapper } from '../tool-wrapper'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
+import { ToolWrapper } from '../tool-wrapper'
 import { CodeEditor } from './code-editor'
-import { LanguageSelector, QuickLanguageSelector } from './language-selector'
-import { CodeExecution } from './code-execution'
-import { CodeFormatter, FormatPresetSelector, FORMAT_PRESETS } from './code-formatter'
-import { Terminal, createTerminalLine, formatTerminalOutput, formatTerminalError } from './terminal'
-import { ExecutionStatus } from './execution-status'
-import {
-  CodeLanguage,
+import { CodeFormatter, type FORMAT_PRESETS, FormatPresetSelector } from './code-formatter'
+import type {
   CodeExecutionRequest,
   CodeExecutionResult,
   CodeFormatOptions,
+  CodeLanguage,
   CodeTemplate,
+  ExecutionStatus as ExecutionStatusEnum,
   TerminalLine,
-  ExecutionStatus as ExecutionStatusEnum
 } from './code-types'
-import { getLanguageConfig, getTemplatesByLanguage, CODE_TEMPLATES } from './language-configs'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Play,
-  Copy,
-  Download,
-  Upload,
-  FileText,
-  Code,
-  Settings,
-  Save,
-  RotateCcw,
-  Lightbulb
-} from 'lucide-react'
+import { ExecutionStatus } from './execution-status'
+import { getLanguageConfig, getTemplatesByLanguage } from './language-configs'
+import { LanguageSelector, QuickLanguageSelector } from './language-selector'
+import { createTerminalLine, formatTerminalError, formatTerminalOutput, Terminal } from './terminal'
 
 interface CodeToolCompleteProps {
   className?: string
@@ -63,15 +50,16 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
     maxLineLength: 80,
     semicolons: true,
     quotes: 'double',
-    trailingComma: false
+    trailingComma: false,
   })
-  const [formattedCode, setFormattedCode] = React.useState('')
-  const [selectedFormatPreset, setSelectedFormatPreset] = React.useState<keyof typeof FORMAT_PRESETS>('prettier')
+  const [_formattedCode, setFormattedCode] = React.useState('')
+  const [selectedFormatPreset, setSelectedFormatPreset] =
+    React.useState<keyof typeof FORMAT_PRESETS>('prettier')
 
   // UI State
   const [activeTab, setActiveTab] = React.useState('editor')
-  const [showSettings, setShowSettings] = React.useState(false)
-  const [selectedTemplate, setSelectedTemplate] = React.useState<CodeTemplate | null>(null)
+  const [_showSettings, _setShowSettings] = React.useState(false)
+  const [_selectedTemplate, setSelectedTemplate] = React.useState<CodeTemplate | null>(null)
 
   const languageConfig = getLanguageConfig(language)
 
@@ -80,7 +68,7 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
     if (!code.trim()) {
       setCode(languageConfig.defaultCode)
     }
-  }, [language, languageConfig.defaultCode, code])
+  }, [languageConfig.defaultCode, code])
 
   // Initialize terminal with welcome message
   React.useEffect(() => {
@@ -112,7 +100,7 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
       createTerminalLine('Execution completed successfully!', 'info'),
       createTerminalLine(`Exit code: ${result.exitCode}`, 'info'),
       createTerminalLine(`Execution time: ${result.executionTime}ms`, 'info'),
-      createTerminalLine(`Memory usage: ${result.memoryUsage}KB`, 'info')
+      createTerminalLine(`Memory usage: ${result.memoryUsage}KB`, 'info'),
     ]
 
     if (result.output) {
@@ -126,14 +114,14 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
     setTerminalLines(prev => [...prev, ...lines])
   }
 
-  const handleExecutionError = (error: string) => {
+  const _handleExecutionError = (error: string) => {
     setExecutionStatus('error')
     setExecutionError(error)
 
     // Add to terminal
     const errorLines = [
       createTerminalLine('Execution failed!', 'error'),
-      createTerminalLine(`Error: ${error}`, 'error')
+      createTerminalLine(`Error: ${error}`, 'error'),
     ]
     setTerminalLines(prev => [...prev, ...errorLines])
   }
@@ -202,14 +190,14 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
     const file = event.target.files?.[0]
     if (file) {
       const reader = new FileReader()
-      reader.onload = (e) => {
+      reader.onload = e => {
         const content = e.target?.result as string
         setCode(content)
 
         // Try to detect language from file extension
-        const extension = '.' + file.name.split('.').pop()?.toLowerCase()
-        const detectedLanguage = Object.entries(languageConfig.extensions).find(
-          ([_, exts]) => exts.includes(extension)
+        const extension = `.${file.name.split('.').pop()?.toLowerCase()}`
+        const detectedLanguage = Object.entries(languageConfig.extensions).find(([_, exts]) =>
+          exts.includes(extension)
         )?.[0] as CodeLanguage
 
         if (detectedLanguage) {
@@ -223,7 +211,10 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
     }
   }
 
-  const handleFormatPresetChange = (preset: keyof typeof FORMAT_PRESETS, options: CodeFormatOptions) => {
+  const handleFormatPresetChange = (
+    preset: keyof typeof FORMAT_PRESETS,
+    options: CodeFormatOptions
+  ) => {
     setSelectedFormatPreset(preset)
     setFormatOptions(options)
   }
@@ -242,10 +233,10 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
   }
 
   const runCode = () => {
-    const request: CodeExecutionRequest = {
+    const _request: CodeExecutionRequest = {
       language,
       code,
-      input: stdin
+      input: stdin,
     }
 
     // This would normally call the actual execution component
@@ -263,7 +254,7 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
           output: 'Hello, World!\nCode executed successfully.',
           exitCode: 0,
           executionTime: 150,
-          memoryUsage: 1024
+          memoryUsage: 1024,
         }
         handleExecutionComplete(mockResult)
       }, 2000)
@@ -288,7 +279,9 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
       title="Code Runner & IDE"
       description="Comprehensive code execution environment with multi-language support, formatting, and terminal interface"
       category="Development Tools"
-      status={executionStatus === 'completed' ? 'success' : executionStatus === 'error' ? 'error' : 'idle'}
+      status={
+        executionStatus === 'completed' ? 'success' : executionStatus === 'error' ? 'error' : 'idle'
+      }
       error={executionError}
       features={[
         'Multi-language Code Editor',
@@ -298,7 +291,7 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
         'Template Library',
         'File Import/Export',
         'Syntax Highlighting',
-        'Stdin Support'
+        'Stdin Support',
       ]}
       className={className}
     >
@@ -317,39 +310,36 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
               </div>
 
               <div className="flex items-center gap-2">
-                <QuickLanguageSelector
-                  selectedLanguage={language}
-                  onLanguageChange={setLanguage}
-                />
+                <QuickLanguageSelector selectedLanguage={language} onLanguageChange={setLanguage} />
               </div>
 
-              <div className="flex items-center gap-2 ml-auto">
+              <div className="ml-auto flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={handleCopyCode}>
-                  <Copy className="h-4 w-4 mr-2" />
+                  <Copy className="mr-2 h-4 w-4" />
                   Copy
                 </Button>
 
                 <Button variant="outline" size="sm" onClick={handleDownloadCode}>
-                  <Download className="h-4 w-4 mr-2" />
+                  <Download className="mr-2 h-4 w-4" />
                   Download
                 </Button>
 
-                <Button variant="outline" size="sm" asChild>
-                  <label htmlFor="file-upload" className="cursor-pointer">
-                    <Upload className="h-4 w-4 mr-2" />
+                <label htmlFor="file-upload" className="cursor-pointer">
+                  <Button variant="outline" size="sm" type="button">
+                    <Upload className="mr-2 h-4 w-4" />
                     Upload
-                    <input
-                      id="file-upload"
-                      type="file"
-                      accept=".txt,.js,.ts,.py,.java,.cpp,.c,.cs,.go,.rs,.php,.rb,.swift,.kt,.sh,.ps1,.sql"
-                      onChange={handleUploadCode}
-                      className="hidden"
-                    />
-                  </label>
-                </Button>
+                  </Button>
+                  <input
+                    id="file-upload"
+                    type="file"
+                    accept=".txt,.js,.ts,.py,.java,.cpp,.c,.cs,.go,.rs,.php,.rb,.swift,.kt,.sh,.ps1,.sql"
+                    onChange={handleUploadCode}
+                    className="hidden"
+                  />
+                </label>
 
                 <Button variant="outline" size="sm" onClick={resetAll}>
-                  <RotateCcw className="h-4 w-4 mr-2" />
+                  <RotateCcw className="mr-2 h-4 w-4" />
                   Reset
                 </Button>
               </div>
@@ -369,7 +359,7 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
 
           {/* Editor Tab */}
           <TabsContent value="editor" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
               {/* Code Editor */}
               <div className="lg:col-span-2">
                 <CodeEditor
@@ -393,7 +383,7 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
                     <CardContent>
                       <Textarea
                         value={stdin}
-                        onChange={(e) => setStdin(e.target.value)}
+                        onChange={e => setStdin(e.target.value)}
                         placeholder="Enter input for the program..."
                         className="min-h-[100px] font-mono text-sm"
                       />
@@ -408,7 +398,7 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
                   className="w-full"
                   size="lg"
                 >
-                  <Play className="h-5 w-5 mr-2" />
+                  <Play className="mr-2 h-5 w-5" />
                   {executionStatus === 'running' ? 'Running...' : 'Run Code'}
                 </Button>
 
@@ -430,15 +420,25 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
                   </CardHeader>
                   <CardContent className="space-y-2">
                     <Button variant="outline" size="sm" className="w-full" onClick={handleCopyCode}>
-                      <Copy className="h-4 w-4 mr-2" />
+                      <Copy className="mr-2 h-4 w-4" />
                       Copy Code
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full" onClick={handleDownloadCode}>
-                      <Download className="h-4 w-4 mr-2" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={handleDownloadCode}
+                    >
+                      <Download className="mr-2 h-4 w-4" />
                       Download Code
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full" onClick={() => setActiveTab('formatter')}>
-                      <Settings className="h-4 w-4 mr-2" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => setActiveTab('formatter')}
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
                       Format Code
                     </Button>
                   </CardContent>
@@ -497,9 +497,12 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
                   <CardTitle>Code Templates</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {templates.map((template) => (
-                      <Card key={template.id} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {templates.map(template => (
+                      <Card
+                        key={template.id}
+                        className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
                         <CardHeader className="pb-2">
                           <div className="flex items-center justify-between">
                             <CardTitle className="text-sm">{template.name}</CardTitle>
@@ -509,17 +512,14 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                          <p className="mb-2 text-gray-600 text-xs dark:text-gray-400">
                             {template.description}
                           </p>
                           <div className="flex items-center justify-between">
                             <Badge variant="secondary" className="text-xs">
                               {template.category}
                             </Badge>
-                            <Button
-                              size="sm"
-                              onClick={() => handleTemplateSelect(template)}
-                            >
+                            <Button size="sm" onClick={() => handleTemplateSelect(template)}>
                               Use
                             </Button>
                           </div>
@@ -540,7 +540,7 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
                   <CardTitle>Editor Settings</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                       <Label htmlFor="font-size">Font Size</Label>
                       <Input id="font-size" type="number" defaultValue={14} min={10} max={24} />
@@ -558,14 +558,26 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
                   <CardTitle>Execution Settings</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                       <Label htmlFor="timeout">Timeout (ms)</Label>
-                      <Input id="timeout" type="number" defaultValue={5000} min={1000} max={30000} />
+                      <Input
+                        id="timeout"
+                        type="number"
+                        defaultValue={5000}
+                        min={1000}
+                        max={30000}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="memory-limit">Memory Limit (KB)</Label>
-                      <Input id="memory-limit" type="number" defaultValue={128000} min={1024} max={1024000} />
+                      <Input
+                        id="memory-limit"
+                        type="number"
+                        defaultValue={128000}
+                        min={1024}
+                        max={1024000}
+                      />
                     </div>
                   </div>
                 </CardContent>

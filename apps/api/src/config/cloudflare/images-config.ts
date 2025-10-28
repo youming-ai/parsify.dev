@@ -150,21 +150,16 @@ export const IMAGES_ENVIRONMENT_CONFIG: ImagesEnvironmentConfig = {
 export function getImagesConfig(environment?: string): CloudflareImagesConfig {
   const env = environment || process.env.ENVIRONMENT || 'development'
 
-  const config = (
+  const config =
     IMAGES_ENVIRONMENT_CONFIG[env as keyof ImagesEnvironmentConfig] ||
     IMAGES_ENVIRONMENT_CONFIG.development
-  )
 
   if (env === 'production' && !config.accountId) {
-    throw new Error(
-      'Cloudflare Account ID is required for production environment'
-    )
+    throw new Error('Cloudflare Account ID is required for production environment')
   }
 
   if (env === 'production' && !config.apiToken) {
-    throw new Error(
-      'Cloudflare API Token is required for production environment'
-    )
+    throw new Error('Cloudflare API Token is required for production environment')
   }
 
   return config
@@ -229,7 +224,7 @@ export interface ImageMetadata {
   userId?: string
   variants: ImageVariant[]
   tags: string[]
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   url: string
   cdnUrl: string
   requiresSignedUrls?: boolean
@@ -253,7 +248,7 @@ export interface ImageUploadOptions {
   filename: string
   format?: string
   quality?: number
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   tags?: string[]
   requireSignedUrls?: boolean
   webhookUrl?: string
@@ -285,7 +280,7 @@ export interface ImagesHealthCheck {
 }
 
 // API response types
-export interface CloudflareImagesApiResponse<T = any> {
+export interface CloudflareImagesApiResponse<T = unknown> {
   success: boolean
   errors?: Array<{
     code: number
@@ -304,14 +299,14 @@ export interface CloudflareImage {
   uploaded: string
   requireSignedURLs: boolean
   variants: string[]
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
 }
 
 export interface DirectUploadInfo {
   id: string
   uploadURL: string
   maxSizeBytes: number
-  customMetadata?: Record<string, any>
+  customMetadata?: Record<string, unknown>
   requireSignedURLs: boolean
   expiration?: string
 }
@@ -322,7 +317,7 @@ export class CloudflareImagesError extends Error {
     message: string,
     public code?: string,
     public statusCode?: number,
-    public details?: any
+    public details?: unknown
   ) {
     super(message)
     this.name = 'CloudflareImagesError'
@@ -335,9 +330,10 @@ export function validateImageFormat(format: string): boolean {
   return validFormats.includes(format.toUpperCase())
 }
 
-export function validateTransformationOptions(
-  options: ImageTransformationOptions
-): { valid: boolean; errors: string[] } {
+export function validateTransformationOptions(options: ImageTransformationOptions): {
+  valid: boolean
+  errors: string[]
+} {
   const errors: string[] = []
 
   if (options.width && (options.width < 1 || options.width > 10000)) {
@@ -411,7 +407,10 @@ export function generateTransformationUrl(
 
   // Crop parameters
   if (options.crop) {
-    params.set('crop', `${options.crop.x},${options.crop.y},${options.crop.width},${options.crop.height}`)
+    params.set(
+      'crop',
+      `${options.crop.x},${options.crop.y},${options.crop.width},${options.crop.height}`
+    )
   }
 
   // Pad parameters
@@ -428,7 +427,8 @@ export function generateTransformationUrl(
   // Watermark parameters
   if (options.watermark) {
     if (options.watermark.url) params.set('watermark', options.watermark.url)
-    if (options.watermark.opacity) params.set('watermark-opacity', options.watermark.opacity.toString())
+    if (options.watermark.opacity)
+      params.set('watermark-opacity', options.watermark.opacity.toString())
     if (options.watermark.position) params.set('watermark-position', options.watermark.position)
     if (options.watermark.scale) params.set('watermark-scale', options.watermark.scale.toString())
     if (options.watermark.x !== undefined) params.set('watermark-x', options.watermark.x.toString())
@@ -450,7 +450,7 @@ export function generateTransformationUrl(
 export function parseImageIdFromUrl(url: string): string | null {
   // Extract image ID from Cloudflare Images URL
   // URL format: https://imagedelivery.net/accountHash/imageId
-  const match = url.match(/imagedelivery\.net\/[^\/]+\/([^\/\?]+)/)
+  const match = url.match(/imagedelivery\.net\/[^/]+\/([^/?]+)/)
   return match ? match[1] : null
 }
 
@@ -458,38 +458,59 @@ export function detectImageFormat(buffer: ArrayBuffer): string | null {
   const view = new Uint8Array(buffer)
 
   // JPEG signature: FF D8 FF
-  if (view[0] === 0xFF && view[1] === 0xD8 && view[2] === 0xFF) {
+  if (view[0] === 0xff && view[1] === 0xd8 && view[2] === 0xff) {
     return 'JPEG'
   }
 
   // PNG signature: 89 50 4E 47 0D 0A 1A 0A
   if (
-    view[0] === 0x89 && view[1] === 0x50 && view[2] === 0x4E && view[3] === 0x47 &&
-    view[4] === 0x0D && view[5] === 0x0A && view[6] === 0x1A && view[7] === 0x0A
+    view[0] === 0x89 &&
+    view[1] === 0x50 &&
+    view[2] === 0x4e &&
+    view[3] === 0x47 &&
+    view[4] === 0x0d &&
+    view[5] === 0x0a &&
+    view[6] === 0x1a &&
+    view[7] === 0x0a
   ) {
     return 'PNG'
   }
 
   // GIF signature: GIF87a or GIF89a
   if (
-    view[0] === 0x47 && view[1] === 0x49 && view[2] === 0x46 &&
-    view[3] === 0x38 && (view[4] === 0x37 || view[4] === 0x38) && view[5] === 0x61
+    view[0] === 0x47 &&
+    view[1] === 0x49 &&
+    view[2] === 0x46 &&
+    view[3] === 0x38 &&
+    (view[4] === 0x37 || view[4] === 0x38) &&
+    view[5] === 0x61
   ) {
     return 'GIF'
   }
 
   // WebP signature: RIFF...WEBP
   if (
-    view[0] === 0x52 && view[1] === 0x49 && view[2] === 0x46 && view[3] === 0x46 &&
-    view[8] === 0x57 && view[9] === 0x45 && view[10] === 0x42 && view[11] === 0x50
+    view[0] === 0x52 &&
+    view[1] === 0x49 &&
+    view[2] === 0x46 &&
+    view[3] === 0x46 &&
+    view[8] === 0x57 &&
+    view[9] === 0x45 &&
+    view[10] === 0x42 &&
+    view[11] === 0x50
   ) {
     return 'WEBP'
   }
 
   // AVIF signature: ftypavif or ftypavis
   if (
-    view[4] === 0x66 && view[5] === 0x74 && view[6] === 0x79 && view[7] === 0x70 &&
-    view[8] === 0x61 && view[9] === 0x76 && view[10] === 0x69 &&
+    view[4] === 0x66 &&
+    view[5] === 0x74 &&
+    view[6] === 0x79 &&
+    view[7] === 0x70 &&
+    view[8] === 0x61 &&
+    view[9] === 0x76 &&
+    view[10] === 0x69 &&
     (view[11] === 0x66 || view[11] === 0x73)
   ) {
     return 'AVIF'
@@ -565,8 +586,6 @@ export function calculateImageDimensions(
       if (!width) width = originalWidth
       if (!height) height = originalHeight
       break
-
-    case 'crop':
     default:
       // Use provided dimensions for crop or no fit
       if (!width) width = originalWidth

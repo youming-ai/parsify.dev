@@ -5,9 +5,9 @@
  * in the session management and collaboration system.
  */
 
-import { EnhancedConnection, EnhancedSessionData } from './session-manager'
-import { CollaborationRoom, Participant, Operation } from './collaboration-room'
-import { RateLimitService } from '../services/rate_limit_service'
+import type { RateLimitService } from '../services/rate_limit_service'
+import type { CollaborationRoom, Operation, Participant } from './collaboration-room'
+import type { EnhancedConnection, EnhancedSessionData } from './session-manager'
 
 // Base message interface
 export interface BaseMessage {
@@ -124,7 +124,7 @@ export class SessionMessageHandler implements MessageHandler {
     return true
   }
 
-  getRateLimitKey(message: WebSocketMessage, context: HandlerContext): string {
+  getRateLimitKey(message: WebSocketMessage, _context: HandlerContext): string {
     const sessionMsg = message as SessionMessage
     return `session:${sessionMsg.data.userId || 'anonymous'}:${message.type}`
   }
@@ -158,7 +158,7 @@ export class SessionMessageHandler implements MessageHandler {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-        statusCode: 500
+        statusCode: 500,
       }
     }
   }
@@ -177,28 +177,30 @@ export class SessionMessageHandler implements MessageHandler {
       sessionId,
       userId: data.userId,
       data: data.sessionData || {},
-      connections: [{
-        connectionId: message.connectionId,
-        connectedAt: now,
-        lastActivity: now
-      }],
+      connections: [
+        {
+          connectionId: message.connectionId,
+          connectedAt: now,
+          lastActivity: now,
+        },
+      ],
       createdAt: now,
       lastAccessed: now,
       expiresAt: now + (data.ttl || 86400000), // 24 hours default
       rateLimitData: {
         apiRequests: 0,
         lastReset: now,
-        tier: 'free'
+        tier: 'free',
       },
       collaborationData: {
         roomIds: [],
         activeCollaborations: 0,
-        lastCollaboration: now
+        lastCollaboration: now,
       },
       securityData: {
         riskScore: 0,
-        suspiciousActivity: []
-      }
+        suspiciousActivity: [],
+      },
     }
 
     await storage.put(`session:${sessionId}`, newSession)
@@ -208,8 +210,8 @@ export class SessionMessageHandler implements MessageHandler {
       responseMessage: {
         type: 'session_created',
         sessionId,
-        timestamp: now
-      }
+        timestamp: now,
+      },
     }
   }
 
@@ -227,7 +229,7 @@ export class SessionMessageHandler implements MessageHandler {
     const updatedSession = {
       ...session,
       data: { ...session.data, ...data.sessionData },
-      lastAccessed: Date.now()
+      lastAccessed: Date.now(),
     }
 
     await storage.put(`session:${session.sessionId}`, updatedSession)
@@ -237,8 +239,8 @@ export class SessionMessageHandler implements MessageHandler {
       responseMessage: {
         type: 'session_updated',
         sessionId: session.sessionId,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     }
   }
 
@@ -260,8 +262,8 @@ export class SessionMessageHandler implements MessageHandler {
       responseMessage: {
         type: 'session_deleted',
         sessionId: session.sessionId,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     }
   }
 
@@ -280,7 +282,7 @@ export class SessionMessageHandler implements MessageHandler {
     const connectionData = {
       connectionId: connection.connectionId,
       connectedAt: Date.now(),
-      lastActivity: Date.now()
+      lastActivity: Date.now(),
     }
 
     session.connections.push(connectionData)
@@ -295,8 +297,8 @@ export class SessionMessageHandler implements MessageHandler {
         type: 'user_joined_session',
         sessionId: session.sessionId,
         connectionId: connection.connectionId,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     }
   }
 
@@ -326,8 +328,8 @@ export class SessionMessageHandler implements MessageHandler {
         type: 'user_left_session',
         sessionId: session.sessionId,
         connectionId: connection.connectionId,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     }
   }
 }
@@ -337,7 +339,14 @@ export class SessionMessageHandler implements MessageHandler {
  */
 export class CollaborationMessageHandler implements MessageHandler {
   canHandle(message: WebSocketMessage): boolean {
-    const collaborationTypes = ['operation', 'cursor', 'selection', 'presence', 'chat', 'file_share']
+    const collaborationTypes = [
+      'operation',
+      'cursor',
+      'selection',
+      'presence',
+      'chat',
+      'file_share',
+    ]
     return collaborationTypes.includes(message.type)
   }
 
@@ -345,7 +354,10 @@ export class CollaborationMessageHandler implements MessageHandler {
     const collabMsg = message as CollaborationMessage
 
     // Validate room membership
-    if (!context.room || !context.room.participants.some(p => p.connectionId === message.connectionId)) {
+    if (
+      !context.room ||
+      !context.room.participants.some(p => p.connectionId === message.connectionId)
+    ) {
       return false
     }
 
@@ -367,7 +379,9 @@ export class CollaborationMessageHandler implements MessageHandler {
 
   getRateLimitKey(message: WebSocketMessage, context: HandlerContext): string {
     const collabMsg = message as CollaborationMessage
-    const participant = context.room?.participants.find(p => p.connectionId === message.connectionId)
+    const participant = context.room?.participants.find(
+      p => p.connectionId === message.connectionId
+    )
     const tier = participant?.role || 'viewer'
     return `collab:${collabMsg.roomId}:${tier}:${message.type}`
   }
@@ -404,7 +418,7 @@ export class CollaborationMessageHandler implements MessageHandler {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-        statusCode: 500
+        statusCode: 500,
       }
     }
   }
@@ -433,8 +447,8 @@ export class CollaborationMessageHandler implements MessageHandler {
         operation: data.operation,
         authorId: message.userId,
         connectionId: message.connectionId,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     }
   }
 
@@ -464,14 +478,14 @@ export class CollaborationMessageHandler implements MessageHandler {
         roomId: message.roomId,
         connectionId: message.connectionId,
         cursor: data.cursor,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     }
   }
 
   private async handleSelection(
     message: CollaborationMessage,
-    context: HandlerContext
+    _context: HandlerContext
   ): Promise<HandlerResult> {
     const { data } = message
 
@@ -487,8 +501,8 @@ export class CollaborationMessageHandler implements MessageHandler {
         roomId: message.roomId,
         connectionId: message.connectionId,
         selection: data.selection,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     }
   }
 
@@ -518,8 +532,8 @@ export class CollaborationMessageHandler implements MessageHandler {
         roomId: message.roomId,
         connectionId: message.connectionId,
         presence: data.presence,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     }
   }
 
@@ -541,7 +555,7 @@ export class CollaborationMessageHandler implements MessageHandler {
       username: participant?.username || 'Anonymous',
       message: data.chat.message,
       type: data.chat.type || 'text',
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
 
     return {
@@ -551,14 +565,14 @@ export class CollaborationMessageHandler implements MessageHandler {
         type: 'chat_message',
         roomId: message.roomId,
         chatMessage,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     }
   }
 
   private async handleFileShare(
     message: CollaborationMessage,
-    context: HandlerContext
+    _context: HandlerContext
   ): Promise<HandlerResult> {
     const { data } = message
 
@@ -577,8 +591,8 @@ export class CollaborationMessageHandler implements MessageHandler {
         roomId: message.roomId,
         connectionId: message.connectionId,
         file: data.file,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     }
   }
 }
@@ -605,8 +619,8 @@ export class SystemMessageHandler implements MessageHandler {
               type: 'pong',
               id: crypto.randomUUID(),
               timestamp: Date.now(),
-              connectionId: connection.connectionId
-            }
+              connectionId: connection.connectionId,
+            },
           }
 
         case 'pong':
@@ -622,8 +636,8 @@ export class SystemMessageHandler implements MessageHandler {
               type: 'heartbeat_ack',
               id: crypto.randomUUID(),
               timestamp: Date.now(),
-              connectionId: connection.connectionId
-            }
+              connectionId: connection.connectionId,
+            },
           }
 
         case 'disconnect':
@@ -634,8 +648,8 @@ export class SystemMessageHandler implements MessageHandler {
               id: crypto.randomUUID(),
               timestamp: Date.now(),
               connectionId: connection.connectionId,
-              reason: systemMsg.data.reason || 'User requested disconnect'
-            }
+              reason: systemMsg.data.reason || 'User requested disconnect',
+            },
           }
 
         default:
@@ -645,7 +659,7 @@ export class SystemMessageHandler implements MessageHandler {
       console.error('System message handler error:', error)
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   }
@@ -668,7 +682,10 @@ export class RoomMessageHandler implements MessageHandler {
     }
 
     // Validate room membership for other operations
-    if (context.room && !context.room.participants.some(p => p.connectionId === message.connectionId)) {
+    if (
+      context.room &&
+      !context.room.participants.some(p => p.connectionId === message.connectionId)
+    ) {
       return false
     }
 
@@ -699,7 +716,7 @@ export class RoomMessageHandler implements MessageHandler {
       console.error('Room message handler error:', error)
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   }
@@ -723,24 +740,26 @@ export class RoomMessageHandler implements MessageHandler {
       name: data.roomName,
       type: data.roomType as any,
       ownerId: message.userId!,
-      participants: [{
-        userId: message.userId,
-        connectionId: message.connectionId,
-        username: data.roomName, // Temporary, would get from user service
-        role: 'owner',
-        permissions: ['read', 'write', 'delete', 'admin', 'share'],
-        joinedAt: now,
-        lastActivity: now,
-        status: 'active',
-        color: this.generateUserColor()
-      }],
+      participants: [
+        {
+          userId: message.userId,
+          connectionId: message.connectionId,
+          username: data.roomName, // Temporary, would get from user service
+          role: 'owner',
+          permissions: ['read', 'write', 'delete', 'admin', 'share'],
+          joinedAt: now,
+          lastActivity: now,
+          status: 'active',
+          color: this.generateUserColor(),
+        },
+      ],
       document: {
         content: '',
         version: 0,
         lastModified: now,
         lastModifiedBy: message.userId,
         operations: [],
-        checkpoints: []
+        checkpoints: [],
       },
       settings: {
         isPublic: data.settings?.isPublic || false,
@@ -752,15 +771,15 @@ export class RoomMessageHandler implements MessageHandler {
         autoSaveInterval: data.settings?.autoSaveInterval || 30,
         lockAfterInactivity: data.settings?.lockAfterInactivity || false,
         inactivityTimeout: data.settings?.inactivityTimeout || 1800,
-        allowAnonymous: data.settings?.allowAnonymous || false
+        allowAnonymous: data.settings?.allowAnonymous || false,
       },
       metadata: {
         description: data.settings?.description,
         tags: data.settings?.tags || [],
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
       },
-      status: 'active'
+      status: 'active',
     }
 
     await storage.put(`room:${roomId}`, newRoom)
@@ -771,8 +790,8 @@ export class RoomMessageHandler implements MessageHandler {
         type: 'room_created',
         roomId,
         room: newRoom,
-        timestamp: now
-      }
+        timestamp: now,
+      },
     }
   }
 
@@ -807,7 +826,7 @@ export class RoomMessageHandler implements MessageHandler {
       joinedAt: Date.now(),
       lastActivity: Date.now(),
       status: 'active',
-      color: this.generateUserColor()
+      color: this.generateUserColor(),
     }
 
     room.participants.push(participant)
@@ -822,8 +841,8 @@ export class RoomMessageHandler implements MessageHandler {
         type: 'user_joined_room',
         roomId: room.roomId,
         participant: this.sanitizeParticipant(participant),
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     }
   }
 
@@ -851,8 +870,8 @@ export class RoomMessageHandler implements MessageHandler {
         type: 'user_left_room',
         roomId: room.roomId,
         connectionId: message.connectionId,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     }
   }
 
@@ -870,7 +889,11 @@ export class RoomMessageHandler implements MessageHandler {
     // Check if user has permission to update room
     const participant = room.participants.find(p => p.connectionId === message.connectionId)
     if (!participant || !participant.permissions.includes('admin')) {
-      return { success: false, error: 'Insufficient permissions', statusCode: 403 }
+      return {
+        success: false,
+        error: 'Insufficient permissions',
+        statusCode: 403,
+      }
     }
 
     // Update room settings
@@ -893,15 +916,23 @@ export class RoomMessageHandler implements MessageHandler {
         roomId: room.roomId,
         settings: room.settings,
         name: room.name,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     }
   }
 
   private generateUserColor(): string {
     const colors = [
-      '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
-      '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'
+      '#FF6B6B',
+      '#4ECDC4',
+      '#45B7D1',
+      '#96CEB4',
+      '#FFEAA7',
+      '#DDA0DD',
+      '#98D8C8',
+      '#F7DC6F',
+      '#BB8FCE',
+      '#85C1E9',
     ]
     return colors[Math.floor(Math.random() * colors.length)]
   }
@@ -909,7 +940,7 @@ export class RoomMessageHandler implements MessageHandler {
   private sanitizeParticipant(participant: Participant): Participant {
     return {
       ...participant,
-      userId: participant.userId ? participant.userId.substring(0, 8) + '...' : undefined
+      userId: participant.userId ? `${participant.userId.substring(0, 8)}...` : undefined,
     }
   }
 }
@@ -925,21 +956,18 @@ export class MessageHandlerManager {
       new SessionMessageHandler(),
       new CollaborationMessageHandler(),
       new SystemMessageHandler(),
-      new RoomMessageHandler()
+      new RoomMessageHandler(),
     ]
   }
 
-  async handleMessage(
-    message: WebSocketMessage,
-    context: HandlerContext
-  ): Promise<HandlerResult> {
+  async handleMessage(message: WebSocketMessage, context: HandlerContext): Promise<HandlerResult> {
     // Find appropriate handler
     const handler = this.handlers.find(h => h.canHandle(message))
     if (!handler) {
       return {
         success: false,
         error: `No handler found for message type: ${message.type}`,
-        statusCode: 400
+        statusCode: 400,
       }
     }
 
@@ -952,7 +980,7 @@ export class MessageHandlerManager {
         return {
           success: false,
           error: 'Rate limit exceeded',
-          statusCode: 429
+          statusCode: 429,
         }
       }
     }
@@ -964,7 +992,7 @@ export class MessageHandlerManager {
         return {
           success: false,
           error: 'Message validation failed',
-          statusCode: 400
+          statusCode: 400,
         }
       }
     }
@@ -973,15 +1001,12 @@ export class MessageHandlerManager {
     return await handler.handle(message, context)
   }
 
-  private async checkRateLimit(
-    key: string,
-    context: HandlerContext
-  ): Promise<boolean> {
+  private async checkRateLimit(key: string, context: HandlerContext): Promise<boolean> {
     try {
       const check = await context.rateLimitService.checkRateLimit({
         identifier: key,
         quotaType: 'websocket_messages',
-        amount: 1
+        amount: 1,
       })
       return check.allowed
     } catch (error) {

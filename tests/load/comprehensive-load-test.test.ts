@@ -3,14 +3,11 @@
  * Integrates all load testing components and provides CLI interface
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { UserSimulator, BehaviorAnalyzer } from '../utils/user-simulator'
-import {
-  CONCURRENT_USER_SCENARIOS,
-  LoadTestReport,
-} from '../config/load-test-config'
-import { SystemResourceMonitor } from '../utils/resource-monitor'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { CONCURRENT_USER_SCENARIOS, type LoadTestReport } from '../config/load-test-config'
 import { LoadTestReporter } from '../utils/load-test-reporter'
+import { SystemResourceMonitor } from '../utils/resource-monitor'
+import { UserSimulator } from '../utils/user-simulator'
 
 describe('Comprehensive Load Test Suite', () => {
   const userSimulator = new UserSimulator()
@@ -21,9 +18,7 @@ describe('Comprehensive Load Test Suite', () => {
   beforeAll(async () => {
     // Ensure API server is running
     try {
-      const response = await fetch(
-        `${process.env.API_BASE_URL || 'http://localhost:8787'}/health`
-      )
+      const response = await fetch(`${process.env.API_BASE_URL || 'http://localhost:8787'}/health`)
       if (!response.ok) {
         throw new Error('API server is not responding correctly')
       }
@@ -44,10 +39,7 @@ describe('Comprehensive Load Test Suite', () => {
     await resourceMonitor.stop()
 
     // Generate consolidated report
-    await reporter.generateConsolidatedReport(
-      testReports,
-      'comprehensive-load-tests'
-    )
+    await reporter.generateConsolidatedReport(testReports, 'comprehensive-load-tests')
 
     console.log(`\n=== Comprehensive Load Test Summary ===`)
     console.log(`Total scenarios executed: ${testReports.length}`)
@@ -59,9 +51,7 @@ describe('Comprehensive Load Test Suite', () => {
 
   describe('Core Load Testing Scenarios', () => {
     it('should execute small team scenario (10 users)', async () => {
-      const scenario = CONCURRENT_USER_SCENARIOS.find(
-        s => s.name === 'small-team'
-      )!
+      const scenario = CONCURRENT_USER_SCENARIOS.find(s => s.name === 'small-team')!
       console.log(`\n🚀 Executing: ${scenario.description}`)
 
       const report = await executeLoadTestScenario(scenario)
@@ -72,9 +62,7 @@ describe('Comprehensive Load Test Suite', () => {
     }, 120000) // 2 minute timeout
 
     it('should execute medium team scenario (50 users)', async () => {
-      const scenario = CONCURRENT_USER_SCENARIOS.find(
-        s => s.name === 'medium-team'
-      )!
+      const scenario = CONCURRENT_USER_SCENARIOS.find(s => s.name === 'medium-team')!
       console.log(`\n🚀 Executing: ${scenario.description}`)
 
       const report = await executeLoadTestScenario(scenario)
@@ -85,9 +73,7 @@ describe('Comprehensive Load Test Suite', () => {
     }, 300000) // 5 minute timeout
 
     it('should execute large team scenario (100 users)', async () => {
-      const scenario = CONCURRENT_USER_SCENARIOS.find(
-        s => s.name === 'large-team'
-      )!
+      const scenario = CONCURRENT_USER_SCENARIOS.find(s => s.name === 'large-team')!
       console.log(`\n🚀 Executing: ${scenario.description}`)
 
       const report = await executeLoadTestScenario(scenario)
@@ -98,9 +84,7 @@ describe('Comprehensive Load Test Suite', () => {
     }, 600000) // 10 minute timeout
 
     it('should execute developer workflow scenario', async () => {
-      const scenario = CONCURRENT_USER_SCENARIOS.find(
-        s => s.name === 'developer-workflow'
-      )!
+      const scenario = CONCURRENT_USER_SCENARIOS.find(s => s.name === 'developer-workflow')!
       console.log(`\n🚀 Executing: ${scenario.description}`)
 
       const report = await executeLoadTestScenario(scenario)
@@ -111,9 +95,7 @@ describe('Comprehensive Load Test Suite', () => {
     }, 300000) // 5 minute timeout
 
     it('should execute analyst workflow scenario', async () => {
-      const scenario = CONCURRENT_USER_SCENARIOS.find(
-        s => s.name === 'analyst-workflow'
-      )!
+      const scenario = CONCURRENT_USER_SCENARIOS.find(s => s.name === 'analyst-workflow')!
       console.log(`\n🚀 Executing: ${scenario.description}`)
 
       const report = await executeLoadTestScenario(scenario)
@@ -126,21 +108,15 @@ describe('Comprehensive Load Test Suite', () => {
 
   describe('Stress and Endurance Testing', () => {
     it('should execute stress test scenario (1000 users)', async () => {
-      const scenario = CONCURRENT_USER_SCENARIOS.find(
-        s => s.name === 'stress-test'
-      )!
+      const scenario = CONCURRENT_USER_SCENARIOS.find(s => s.name === 'stress-test')!
       console.log(`\n💪 Executing: ${scenario.description}`)
 
       const report = await executeLoadTestScenario(scenario)
       testReports.push(report)
 
       // Stress tests have more lenient requirements
-      expect(report.summary.successRate).toBeGreaterThan(
-        scenario.requirements.minSuccessRate
-      )
-      expect(report.summary.p95ResponseTime).toBeLessThan(
-        scenario.requirements.maxP95ResponseTime
-      )
+      expect(report.summary.successRate).toBeGreaterThan(scenario.requirements.minSuccessRate)
+      expect(report.summary.p95ResponseTime).toBeLessThan(scenario.requirements.maxP95ResponseTime)
 
       console.log('✅ Stress test scenario completed successfully')
     }, 900000) // 15 minute timeout
@@ -152,9 +128,7 @@ describe('Comprehensive Load Test Suite', () => {
         return
       }
 
-      const scenario = CONCURRENT_USER_SCENARIOS.find(
-        s => s.name === 'endurance-test'
-      )!
+      const scenario = CONCURRENT_USER_SCENARIOS.find(s => s.name === 'endurance-test')!
       console.log(`\n⏱️ Executing: ${scenario.description}`)
 
       const report = await executeLoadTestScenario(scenario)
@@ -211,8 +185,7 @@ describe('Comprehensive Load Test Suite', () => {
       testReports.push(comparisonReport)
 
       // Performance should not deviate significantly from baseline
-      const performanceDeviation =
-        calculatePerformanceDeviation(comparisonReport)
+      const performanceDeviation = calculatePerformanceDeviation(comparisonReport)
       expect(performanceDeviation).toBeLessThan(
         0.2,
         'Performance deviation from baseline should be less than 20%'
@@ -225,9 +198,7 @@ describe('Comprehensive Load Test Suite', () => {
   /**
    * Execute a complete load test scenario
    */
-  async function executeLoadTestScenario(
-    scenario: any
-  ): Promise<LoadTestReport> {
+  async function executeLoadTestScenario(scenario: any): Promise<LoadTestReport> {
     const baseUrl = process.env.API_BASE_URL || 'http://localhost:8787'
     const startTime = Date.now()
 
@@ -237,10 +208,7 @@ describe('Comprehensive Load Test Suite', () => {
 
     // Generate users for the scenario
     const behaviorPattern = getBehaviorPatternForScenario(scenario.name)
-    const users = userSimulator.generateUsers(
-      scenario.userCount,
-      behaviorPattern
-    )
+    const users = userSimulator.generateUsers(scenario.userCount, behaviorPattern)
 
     // Gradually ramp up users
     const rampUpInterval = scenario.rampUpTime / users.length
@@ -271,28 +239,16 @@ describe('Comprehensive Load Test Suite', () => {
       endpoints: calculateEndpointMetrics(sessionMetrics),
       userBehavior: calculateBehaviorMetrics(sessionMetrics),
       resources: resourceMetrics,
-      bottlenecks: identifyBottlenecks(
-        sessionMetrics,
-        resourceMetrics,
-        scenario.requirements
-      ),
-      recommendations: generateRecommendations(
-        sessionMetrics,
-        resourceMetrics,
-        scenario
-      ),
+      bottlenecks: identifyBottlenecks(sessionMetrics, resourceMetrics, scenario.requirements),
+      recommendations: generateRecommendations(sessionMetrics, resourceMetrics, scenario),
     })
 
     // Print scenario summary
     console.log(`\n📊 ${scenario.name} Results:`)
     console.log(`  Users: ${report.users}`)
     console.log(`  Requests: ${report.summary.totalRequests.toLocaleString()}`)
-    console.log(
-      `  Success Rate: ${(report.summary.successRate * 100).toFixed(1)}%`
-    )
-    console.log(
-      `  P95 Response Time: ${report.summary.p95ResponseTime.toFixed(0)}ms`
-    )
+    console.log(`  Success Rate: ${(report.summary.successRate * 100).toFixed(1)}%`)
+    console.log(`  P95 Response Time: ${report.summary.p95ResponseTime.toFixed(0)}ms`)
     console.log(`  Throughput: ${report.summary.throughput.toFixed(0)} req/s`)
     console.log(`  Bottlenecks: ${report.bottlenecks.length}`)
 
@@ -319,61 +275,39 @@ describe('Comprehensive Load Test Suite', () => {
   /**
    * Assert scenario requirements
    */
-  function assertScenarioRequirements(
-    report: LoadTestReport,
-    scenario: any
-  ): void {
-    expect(report.summary.successRate).toBeGreaterThan(
-      scenario.requirements.minSuccessRate
-    )
-    expect(report.summary.p95ResponseTime).toBeLessThan(
-      scenario.requirements.maxP95ResponseTime
-    )
-    expect(report.summary.throughput).toBeGreaterThan(
-      scenario.requirements.minThroughput
-    )
-    expect(report.summary.errorRate).toBeLessThan(
-      scenario.requirements.maxErrorRate
-    )
+  function assertScenarioRequirements(report: LoadTestReport, scenario: any): void {
+    expect(report.summary.successRate).toBeGreaterThan(scenario.requirements.minSuccessRate)
+    expect(report.summary.p95ResponseTime).toBeLessThan(scenario.requirements.maxP95ResponseTime)
+    expect(report.summary.throughput).toBeGreaterThan(scenario.requirements.minThroughput)
+    expect(report.summary.errorRate).toBeLessThan(scenario.requirements.maxErrorRate)
   }
 
   /**
    * Calculate summary metrics from session metrics
    */
   function calculateSummaryMetrics(sessionMetrics: any[]) {
-    const totalRequests = sessionMetrics.reduce(
-      (sum, metrics) => sum + metrics.totalRequests,
-      0
-    )
+    const totalRequests = sessionMetrics.reduce((sum, metrics) => sum + metrics.totalRequests, 0)
     const successfulRequests = sessionMetrics.reduce(
       (sum, metrics) => sum + metrics.successfulRequests,
       0
     )
-    const failedRequests = sessionMetrics.reduce(
-      (sum, metrics) => sum + metrics.failedRequests,
-      0
-    )
+    const failedRequests = sessionMetrics.reduce((sum, metrics) => sum + metrics.failedRequests, 0)
 
     const allResponseTimes = sessionMetrics.flatMap(metrics =>
       metrics.actions.map((action: any) => action.responseTime)
     )
     allResponseTimes.sort((a, b) => a - b)
 
-    const totalDuration = Math.max(
-      ...sessionMetrics.map(metrics => metrics.sessionDuration)
-    )
+    const totalDuration = Math.max(...sessionMetrics.map(metrics => metrics.sessionDuration))
 
     return {
       totalRequests,
       successfulRequests,
       failedRequests,
       averageResponseTime:
-        allResponseTimes.reduce((sum, time) => sum + time, 0) /
-        allResponseTimes.length,
-      p95ResponseTime:
-        allResponseTimes[Math.floor(allResponseTimes.length * 0.95)] || 0,
-      p99ResponseTime:
-        allResponseTimes[Math.floor(allResponseTimes.length * 0.99)] || 0,
+        allResponseTimes.reduce((sum, time) => sum + time, 0) / allResponseTimes.length,
+      p95ResponseTime: allResponseTimes[Math.floor(allResponseTimes.length * 0.95)] || 0,
+      p99ResponseTime: allResponseTimes[Math.floor(allResponseTimes.length * 0.99)] || 0,
       throughput: totalRequests / (totalDuration / 1000),
       errorRate: failedRequests / totalRequests,
     }
@@ -417,10 +351,8 @@ describe('Comprehensive Load Test Suite', () => {
       result[endpoint] = {
         requests: stats.requests,
         averageResponseTime:
-          responseTimes.reduce((sum, time) => sum + time, 0) /
-          responseTimes.length,
-        p95ResponseTime:
-          responseTimes[Math.floor(responseTimes.length * 0.95)] || 0,
+          responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length,
+        p95ResponseTime: responseTimes[Math.floor(responseTimes.length * 0.95)] || 0,
         successRate: stats.successes / stats.requests,
         errors: Array.from(stats.errors.entries()).map(([type, count]) => ({
           type,
@@ -469,8 +401,7 @@ describe('Comprehensive Load Test Suite', () => {
       result[actionType] = {
         frequency: stats.count / totalActions,
         averageResponseTime:
-          responseTimes.reduce((sum, time) => sum + time, 0) /
-          responseTimes.length,
+          responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length,
         successRate: stats.successes / stats.count,
       }
     }
@@ -481,11 +412,7 @@ describe('Comprehensive Load Test Suite', () => {
   /**
    * Identify performance bottlenecks
    */
-  function identifyBottlenecks(
-    sessionMetrics: any[],
-    resourceMetrics: any[],
-    requirements: any
-  ) {
+  function identifyBottlenecks(sessionMetrics: any[], resourceMetrics: any[], requirements: any) {
     const bottlenecks = []
 
     // Response time bottlenecks
@@ -503,10 +430,7 @@ describe('Comprehensive Load Test Suite', () => {
         metric: 'p95_response_time',
         value: p95ResponseTime,
         threshold: requirements.maxP95ResponseTime,
-        severity:
-          p95ResponseTime > requirements.maxP95ResponseTime * 2
-            ? 'critical'
-            : 'high',
+        severity: p95ResponseTime > requirements.maxP95ResponseTime * 2 ? 'critical' : 'high',
       })
     }
 
@@ -524,9 +448,7 @@ describe('Comprehensive Load Test Suite', () => {
         })
       }
 
-      const maxMemoryUsage = Math.max(
-        ...resourceMetrics.map(m => m.memory.percentage)
-      )
+      const maxMemoryUsage = Math.max(...resourceMetrics.map(m => m.memory.percentage))
       if (maxMemoryUsage > 85) {
         bottlenecks.push({
           type: 'resource',
@@ -545,19 +467,14 @@ describe('Comprehensive Load Test Suite', () => {
   /**
    * Generate performance recommendations
    */
-  function generateRecommendations(
-    sessionMetrics: any[],
-    resourceMetrics: any[],
-    scenario: any
-  ) {
+  function generateRecommendations(sessionMetrics: any[], _resourceMetrics: any[], scenario: any) {
     const recommendations = []
 
     const allResponseTimes = sessionMetrics.flatMap(metrics =>
       metrics.actions.map((action: any) => action.responseTime)
     )
     const avgResponseTime =
-      allResponseTimes.reduce((sum, time) => sum + time, 0) /
-      allResponseTimes.length
+      allResponseTimes.reduce((sum, time) => sum + time, 0) / allResponseTimes.length
 
     if (avgResponseTime > 500) {
       recommendations.push(
@@ -565,21 +482,14 @@ describe('Comprehensive Load Test Suite', () => {
       )
     }
 
-    const errorCount = sessionMetrics.reduce(
-      (sum, metrics) => sum + metrics.errors.length,
-      0
-    )
+    const errorCount = sessionMetrics.reduce((sum, metrics) => sum + metrics.errors.length, 0)
     if (errorCount > sessionMetrics.length * 0.1) {
-      recommendations.push(
-        'Review and improve error handling and retry mechanisms'
-      )
+      recommendations.push('Review and improve error handling and retry mechanisms')
     }
 
     // Scenario-specific recommendations
     if (scenario.userCount > 100) {
-      recommendations.push(
-        'Consider implementing horizontal scaling for high user loads'
-      )
+      recommendations.push('Consider implementing horizontal scaling for high user loads')
     }
 
     if (scenario.duration > 600000) {
@@ -643,7 +553,7 @@ describe('Comprehensive Load Test Suite', () => {
           success: response.ok,
           responseTime: Math.random() * 100 + 50, // Simulated response time
         })
-      } catch (error) {
+      } catch (_error) {
         results.push({ success: false, responseTime: 1000 })
       }
     }
@@ -664,12 +574,9 @@ describe('Comprehensive Load Test Suite', () => {
         successfulRequests,
         failedRequests: results.length - successfulRequests,
         averageResponseTime:
-          responseTimes.reduce((sum, time) => sum + time, 0) /
-          responseTimes.length,
-        p95ResponseTime:
-          responseTimes[Math.floor(responseTimes.length * 0.95)] || 0,
-        p99ResponseTime:
-          responseTimes[Math.floor(responseTimes.length * 0.99)] || 0,
+          responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length,
+        p95ResponseTime: responseTimes[Math.floor(responseTimes.length * 0.95)] || 0,
+        p99ResponseTime: responseTimes[Math.floor(responseTimes.length * 0.99)] || 0,
         throughput: results.length / ((Date.now() - startTime) / 1000),
         errorRate: (results.length - successfulRequests) / results.length,
       },
@@ -677,9 +584,7 @@ describe('Comprehensive Load Test Suite', () => {
       userBehavior: {},
       resources: resourceMonitor.getMetrics(),
       bottlenecks: [],
-      recommendations: [
-        'Compatibility test passed - T082 integration verified',
-      ],
+      recommendations: ['Compatibility test passed - T082 integration verified'],
     }
   }
 
@@ -688,7 +593,7 @@ describe('Comprehensive Load Test Suite', () => {
    */
   async function runBaselineComparison(): Promise<LoadTestReport> {
     // Simulate baseline comparison
-    const baselineMetrics = {
+    const _baselineMetrics = {
       averageResponseTime: 150,
       p95ResponseTime: 300,
       successRate: 0.98,
@@ -735,8 +640,7 @@ describe('Comprehensive Load Test Suite', () => {
     // Simplified stability analysis - in a real implementation,
     // this would analyze performance trends over the test duration
     const baseStability = report.summary.successRate * 0.6
-    const responseTimeStability =
-      report.summary.p95ResponseTime < 1000 ? 0.3 : 0.1
+    const responseTimeStability = report.summary.p95ResponseTime < 1000 ? 0.3 : 0.1
     const errorRateStability = (1 - report.summary.errorRate) * 0.1
 
     return baseStability + responseTimeStability + errorRateStability
@@ -749,9 +653,7 @@ describe('Comprehensive Load Test Suite', () => {
     const baseUrl = process.env.API_BASE_URL || 'http://localhost:8787'
     const startTime = Date.now()
 
-    console.log(
-      'Starting file operations test with mixed upload/download scenarios'
-    )
+    console.log('Starting file operations test with mixed upload/download scenarios')
 
     // Simulate mixed file operations
     const concurrentUsers = 15
@@ -759,9 +661,9 @@ describe('Comprehensive Load Test Suite', () => {
     const totalRequests = concurrentUsers * operationsPerUser
 
     const requests = []
-    const TestDataGenerator = await import(
-      '../../performance/utils/endpoint-configs'
-    ).then(m => m.TestDataGenerator)
+    const TestDataGenerator = await import('../../performance/utils/endpoint-configs').then(
+      m => m.TestDataGenerator
+    )
 
     for (let i = 0; i < totalRequests; i++) {
       const operationType = Math.random()
@@ -837,12 +739,8 @@ describe('Comprehensive Load Test Suite', () => {
 
     console.log(`File operations test completed:`)
     console.log(`  Requests: ${report.summary.totalRequests}`)
-    console.log(
-      `  Success Rate: ${(report.summary.successRate * 100).toFixed(1)}%`
-    )
-    console.log(
-      `  P95 Response Time: ${report.summary.p95ResponseTime.toFixed(0)}ms`
-    )
+    console.log(`  Success Rate: ${(report.summary.successRate * 100).toFixed(1)}%`)
+    console.log(`  P95 Response Time: ${report.summary.p95ResponseTime.toFixed(0)}ms`)
     console.log(`  Throughput: ${report.summary.throughput.toFixed(0)} req/s`)
 
     return report
@@ -851,10 +749,7 @@ describe('Comprehensive Load Test Suite', () => {
   /**
    * Run concurrent file requests
    */
-  async function runConcurrentFileRequests(
-    requests: any[],
-    concurrency: number
-  ) {
+  async function runConcurrentFileRequests(requests: any[], concurrency: number) {
     const startTime = Date.now()
     const results = []
 
@@ -916,8 +811,7 @@ describe('Comprehensive Load Test Suite', () => {
       failedRequests: results.length - successfulRequests,
       averageResponseTime:
         responseTimes.length > 0
-          ? responseTimes.reduce((sum, time) => sum + time, 0) /
-            responseTimes.length
+          ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
           : 0,
       p50: responseTimes[Math.floor(responseTimes.length * 0.5)] || 0,
       p90: responseTimes[Math.floor(responseTimes.length * 0.9)] || 0,
@@ -952,12 +846,8 @@ describe('Comprehensive Load Test Suite', () => {
    */
   function printTestSummary(reports: LoadTestReport[]): void {
     console.log('\n📈 Load Test Summary Table:')
-    console.log(
-      '| Scenario | Users | Requests | Success Rate | P95 (ms) | Throughput | Grade |'
-    )
-    console.log(
-      '|----------|-------|----------|--------------|----------|------------|-------|'
-    )
+    console.log('| Scenario | Users | Requests | Success Rate | P95 (ms) | Throughput | Grade |')
+    console.log('|----------|-------|----------|--------------|----------|------------|-------|')
 
     reports.forEach(report => {
       const grade = calculateGrade(report)

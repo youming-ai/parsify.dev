@@ -99,10 +99,7 @@ export const KV_NAMESPACES: KVNamespaceConfig = {
   },
 }
 
-export function getKVConfig(
-  namespace: keyof KVNamespaceConfig,
-  environment?: string
-): KVConfig {
+export function getKVConfig(namespace: keyof KVNamespaceConfig, environment?: string): KVConfig {
   const env = environment || process.env.ENVIRONMENT || 'development'
   const baseConfig = KV_NAMESPACES[namespace]
 
@@ -151,9 +148,7 @@ export class KVHealthMonitor {
     })
   }
 
-  async startMonitoring(
-    kvNamespaces: Record<string, KVNamespace>
-  ): Promise<void> {
+  async startMonitoring(kvNamespaces: Record<string, KVNamespace>): Promise<void> {
     if (this.isMonitoring) return
 
     this.isMonitoring = true
@@ -165,9 +160,7 @@ export class KVHealthMonitor {
 
     // Set up periodic health checks
     const minInterval = Math.min(
-      ...Object.values(this.configs).map(
-        config => config.healthCheckInterval || 300000
-      )
+      ...Object.values(this.configs).map(config => config.healthCheckInterval || 300000)
     )
 
     this.healthCheckTimer = setInterval(
@@ -184,10 +177,7 @@ export class KVHealthMonitor {
     this.isMonitoring = false
   }
 
-  async performHealthCheck(
-    namespace: string,
-    kv: KVNamespace
-  ): Promise<KVHealthCheck> {
+  async performHealthCheck(namespace: string, kv: KVNamespace): Promise<KVHealthCheck> {
     const startTime = Date.now()
     const testKey = `health-check-${Date.now()}`
     const testValue = 'ok'
@@ -229,19 +219,13 @@ export class KVHealthMonitor {
     }
   }
 
-  private async performAllHealthChecks(
-    kvNamespaces: Record<string, KVNamespace>
-  ): Promise<void> {
+  private async performAllHealthChecks(kvNamespaces: Record<string, KVNamespace>): Promise<void> {
     for (const [namespace, kv] of Object.entries(kvNamespaces)) {
       await this.performHealthCheck(namespace, kv)
     }
   }
 
-  private recordOperation(
-    namespace: string,
-    responseTime: number,
-    success: boolean
-  ): void {
+  private recordOperation(namespace: string, responseTime: number, success: boolean): void {
     const ops = this.operations[namespace]
     if (ops) {
       ops.total++
@@ -285,8 +269,7 @@ export class KVHealthMonitor {
       const lastCheck = this.getLastHealthCheck(namespace)
       if (!lastCheck) return false
 
-      const maxAge =
-        (this.configs[namespace]?.healthCheckInterval || 300000) * 2
+      const maxAge = (this.configs[namespace]?.healthCheckInterval || 300000) * 2
       const isRecent = Date.now() - lastCheck.timestamp < maxAge
 
       return isRecent && lastCheck.status !== 'unhealthy'
@@ -301,15 +284,15 @@ export class KVHealthMonitor {
 export interface KVOptions {
   ttl?: number
   expiration?: number
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   cacheTtl?: number
 }
 
-export interface KVCacheEntry<T = any> {
+export interface KVCacheEntry<T = unknown> {
   data: T
   timestamp: number
   ttl?: number
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   version: string
 }
 
@@ -357,7 +340,7 @@ export class KVCacheService {
     }
   }
 
-  async get<T = any>(key: string): Promise<T | null> {
+  async get<T = unknown>(key: string): Promise<T | null> {
     try {
       const value = await this.kv.get(this.getKey(key))
       const entry = this.parseCacheEntry<T>(value)
@@ -369,11 +352,7 @@ export class KVCacheService {
     }
   }
 
-  async set<T = any>(
-    key: string,
-    data: T,
-    options: KVOptions = {}
-  ): Promise<void> {
+  async set<T = unknown>(key: string, data: T, options: KVOptions = {}): Promise<void> {
     try {
       const value = this.createCacheEntry(data, options)
       const kvOptions: KVNamespacePutOptions = {}
@@ -434,9 +413,7 @@ export class KVCacheService {
     }
   }
 
-  async getMultiple<T = any>(
-    keys: string[]
-  ): Promise<Record<string, T | null>> {
+  async getMultiple<T = unknown>(keys: string[]): Promise<Record<string, T | null>> {
     const results: Record<string, T | null> = {}
 
     const promises = keys.map(async key => {
@@ -448,18 +425,16 @@ export class KVCacheService {
     return results
   }
 
-  async setMultiple<T = any>(
+  async setMultiple<T = unknown>(
     entries: Array<{ key: string; data: T; options?: KVOptions }>
   ): Promise<void> {
-    const promises = entries.map(({ key, data, options }) =>
-      this.set(key, data, options)
-    )
+    const promises = entries.map(({ key, data, options }) => this.set(key, data, options))
 
     await Promise.allSettled(promises)
   }
 
   // Cache with automatic refresh
-  async getWithRefresh<T = any>(
+  async getWithRefresh<T = unknown>(
     key: string,
     refreshFn: () => Promise<T>,
     options: KVOptions = {}
@@ -472,7 +447,7 @@ export class KVCacheService {
       const entry = await this.kv.get(this.getKey(key), 'text')
       const parsed = this.parseCacheEntry<T>(entry)
 
-      if (parsed && parsed.ttl) {
+      if (parsed?.ttl) {
         const age = Date.now() - parsed.timestamp
         const refreshThreshold = parsed.ttl * 1000 * 0.8 // Refresh at 80% of TTL
 
@@ -501,7 +476,7 @@ export interface SessionData {
   userId?: string
   ipAddress?: string
   userAgent?: string
-  data: Record<string, any>
+  data: Record<string, unknown>
   createdAt: number
   lastAccessed: number
   expiresAt: number
@@ -526,7 +501,7 @@ export class KVSessionService {
 
   async createSession(
     sessionId: string,
-    data: Record<string, any>,
+    data: Record<string, unknown>,
     options: {
       ttl?: number
       userId?: string
@@ -547,11 +522,9 @@ export class KVSessionService {
       expiresAt: now + ttl * 1000,
     }
 
-    await this.kv.put(
-      this.getSessionKey(sessionId),
-      JSON.stringify(sessionData),
-      { expirationTtl: ttl }
-    )
+    await this.kv.put(this.getSessionKey(sessionId), JSON.stringify(sessionData), {
+      expirationTtl: ttl,
+    })
 
     // Track user sessions if userId provided
     if (options.userId) {
@@ -583,10 +556,7 @@ export class KVSessionService {
     }
   }
 
-  async updateSession(
-    sessionId: string,
-    data: Partial<SessionData>
-  ): Promise<void> {
+  async updateSession(sessionId: string, data: Partial<SessionData>): Promise<void> {
     const current = await this.getSession(sessionId)
     if (!current) throw new Error('Session not found')
 
@@ -596,10 +566,7 @@ export class KVSessionService {
       lastAccessed: Date.now(),
     }
 
-    const remainingTtl = Math.max(
-      0,
-      Math.floor((updated.expiresAt - Date.now()) / 1000)
-    )
+    const remainingTtl = Math.max(0, Math.floor((updated.expiresAt - Date.now()) / 1000))
 
     await this.kv.put(this.getSessionKey(sessionId), JSON.stringify(updated), {
       expirationTtl: remainingTtl || 1,
@@ -625,28 +592,19 @@ export class KVSessionService {
     }
   }
 
-  private async addUserSession(
-    userId: string,
-    sessionId: string,
-    ttl: number
-  ): Promise<void> {
+  private async addUserSession(userId: string, sessionId: string, ttl: number): Promise<void> {
     const sessions = await this.getUserSessions(userId)
 
     if (!sessions.includes(sessionId)) {
       sessions.push(sessionId)
 
-      await this.kv.put(
-        this.getUserSessionKey(userId),
-        JSON.stringify(sessions),
-        { expirationTtl: ttl }
-      )
+      await this.kv.put(this.getUserSessionKey(userId), JSON.stringify(sessions), {
+        expirationTtl: ttl,
+      })
     }
   }
 
-  private async removeUserSession(
-    userId: string,
-    sessionId: string
-  ): Promise<void> {
+  private async removeUserSession(userId: string, sessionId: string): Promise<void> {
     const sessions = await this.getUserSessions(userId)
     const index = sessions.indexOf(sessionId)
 
@@ -654,10 +612,7 @@ export class KVSessionService {
       sessions.splice(index, 1)
 
       if (sessions.length > 0) {
-        await this.kv.put(
-          this.getUserSessionKey(userId),
-          JSON.stringify(sessions)
-        )
+        await this.kv.put(this.getUserSessionKey(userId), JSON.stringify(sessions))
       } else {
         await this.kv.delete(this.getUserSessionKey(userId))
       }
@@ -667,9 +622,7 @@ export class KVSessionService {
   async clearUserSessions(userId: string): Promise<void> {
     const sessions = await this.getUserSessions(userId)
 
-    const deletePromises = sessions.map(sessionId =>
-      this.deleteSession(sessionId)
-    )
+    const deletePromises = sessions.map(sessionId => this.deleteSession(sessionId))
 
     await Promise.allSettled(deletePromises)
   }

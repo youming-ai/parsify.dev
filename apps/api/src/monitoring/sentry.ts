@@ -5,7 +5,7 @@
  * In production, this would be replaced with full Sentry integration.
  */
 
-import { Context, Next } from 'hono'
+import type { Context, Next } from 'hono'
 
 // Simplified environment interface
 export interface SentryEnv {
@@ -44,10 +44,7 @@ let sentryClient: MockSentryClient | null = null
 /**
  * Initialize Sentry error tracking
  */
-export function initializeSentry(
-  env: SentryEnv,
-  request?: Request
-): MockSentryClient {
+export function initializeSentry(env: SentryEnv, _request?: Request): MockSentryClient {
   if (env.ENVIRONMENT === 'development') {
     console.log('🔧 Running in development mode - using mock Sentry client')
     sentryClient = new MockSentryClient()
@@ -100,7 +97,7 @@ interface SentryMiddlewareOptions {
 /**
  * Sentry middleware for Hono
  */
-export function sentryMiddleware(options: SentryMiddlewareOptions = {}) {
+export function sentryMiddleware(_options: SentryMiddlewareOptions = {}) {
   return async (c: Context, next: Next) => {
     const client = initializeSentry(c.env as SentryEnv, c.req.raw)
 
@@ -152,10 +149,7 @@ export function sentryErrorHandler() {
 /**
  * Helper function to capture manual exceptions
  */
-export function captureException(
-  error: Error,
-  context?: Record<string, any>
-): void {
+export function captureException(error: Error, context?: Record<string, any>): void {
   if (sentryClient) {
     if (context) {
       sentryClient.setContext('additional', context)

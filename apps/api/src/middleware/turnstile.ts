@@ -1,10 +1,6 @@
-import { Context, Next } from 'hono'
-import { AuthContext } from './auth'
-import { createValidationError, createAuthenticationError, createRateLimitError, ApiError } from './error'
-import {
-  createCloudflareService,
-  CloudflareService,
-} from '../services/cloudflare'
+import type { Context, Next } from 'hono'
+import type { CloudflareService } from '../services/cloudflare'
+import type { AuthContext } from './auth'
 
 // Turnstile configuration
 export interface TurnstileConfig {
@@ -48,7 +44,7 @@ export enum TurnstileErrorCode {
   TIMEOUT_OR_DUPLICATE = 'timeout-or-duplicate',
   INVALID_ELEMENT_ID = 'invalid-element-id',
   BAD_TOKEN = 'bad-token',
-  INTERNAL_ERROR = 'internal-error'
+  INTERNAL_ERROR = 'internal-error',
 }
 
 // Turnstile error types
@@ -61,7 +57,7 @@ export enum TurnstileError {
   SERVICE_ERROR = 'SERVICE_ERROR',
   CONFIGURATION_ERROR = 'CONFIGURATION_ERROR',
   BOT_DETECTED = 'BOT_DETECTED',
-  SUSPICIOUS_ACTIVITY = 'SUSPICIOUS_ACTIVITY'
+  SUSPICIOUS_ACTIVITY = 'SUSPICIOUS_ACTIVITY',
 }
 
 // Bot detection result
@@ -87,7 +83,11 @@ export interface TurnstileMiddlewareOptions {
   action?: string
   skipPaths?: string[]
   customValidation?: (token: string, context: TurnstileContext) => Promise<boolean>
-  onError?: (c: Context, error: TurnstileError, result?: TurnstileValidationResponse) => Response | Promise<Response>
+  onError?: (
+    c: Context,
+    error: TurnstileError,
+    result?: TurnstileValidationResponse
+  ) => Response | Promise<Response>
   onSuccess?: (c: Context, result: TurnstileValidationResponse) => void | Promise<void>
 }
 
@@ -120,10 +120,10 @@ const DEFAULT_CONFIG: TurnstileConfig = {
   scoreThreshold: {
     low: 0.3,
     medium: 0.5,
-    high: 0.7
+    high: 0.7,
   },
   timeout: 5000, // 5 seconds
-  retryAttempts: 3
+  retryAttempts: 3,
 }
 
 /**
@@ -139,7 +139,7 @@ export const turnstileMiddleware = (options: TurnstileMiddlewareOptions = {}) =>
       skipPaths = [],
       customValidation,
       onError,
-      onSuccess
+      onSuccess,
     } = options
 
     // Merge with default configuration
@@ -147,7 +147,7 @@ export const turnstileMiddleware = (options: TurnstileMiddlewareOptions = {}) =>
       ...DEFAULT_CONFIG,
       ...customConfig,
       siteKey: customConfig.siteKey || c.env.TURNSTILE_SITE_KEY || DEFAULT_CONFIG.siteKey,
-      secretKey: customConfig.secretKey || c.env.TURNSTILE_SECRET_KEY || DEFAULT_CONFIG.secretKey
+      secretKey: customConfig.secretKey || c.env.TURNSTILE_SECRET_KEY || DEFAULT_CONFIG.secretKey,
     }
 
     // Check if Turnstile is enabled
@@ -157,8 +157,9 @@ export const turnstileMiddleware = (options: TurnstileMiddlewareOptions = {}) =>
     }
 
     // Skip validation for specified paths
-    const skipCondition = skipPaths.some(path => c.req.path.startsWith(path)) ||
-                         config.skipPaths.some(path => c.req.path.startsWith(path))
+    const skipCondition =
+      skipPaths.some(path => c.req.path.startsWith(path)) ||
+      config.skipPaths.some(path => c.req.path.startsWith(path))
 
     if (skipCondition) {
       await next()
@@ -180,7 +181,7 @@ export const turnstileMiddleware = (options: TurnstileMiddlewareOptions = {}) =>
       user: auth.user,
       sessionId: auth.sessionId,
       requestId,
-      action: action || c.req.header('X-Turnstile-Action')
+      action: action || c.req.header('X-Turnstile-Action'),
     }
 
     try {
@@ -220,11 +221,11 @@ export const turnstileMiddleware = (options: TurnstileMiddlewareOptions = {}) =>
 
         // Log validation failure
         await logTurnstileEvent(cloudflare, 'validation_failed', {
-          token: token.substring(0, 10) + '...',
+          token: `${token.substring(0, 10)}...`,
           errorCodes: validationResult['error-codes'],
           ip: clientIP,
           userAgent,
-          requestId
+          requestId,
         })
 
         if (required) {
@@ -247,7 +248,7 @@ export const turnstileMiddleware = (options: TurnstileMiddlewareOptions = {}) =>
             action: botDetection.action,
             ip: clientIP,
             userAgent,
-            requestId
+            requestId,
           })
 
           if (botDetection.action === 'block' && required) {
@@ -279,7 +280,7 @@ export const turnstileMiddleware = (options: TurnstileMiddlewareOptions = {}) =>
         hostname: validationResult.hostname,
         ip: clientIP,
         userAgent,
-        requestId
+        requestId,
       })
 
       // Call success callback
@@ -289,7 +290,6 @@ export const turnstileMiddleware = (options: TurnstileMiddlewareOptions = {}) =>
       c.set('turnstile', turnstileContext)
 
       await next()
-
     } catch (error) {
       console.error('Turnstile middleware error:', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -304,7 +304,7 @@ export const turnstileMiddleware = (options: TurnstileMiddlewareOptions = {}) =>
         error: error instanceof Error ? error.message : 'Unknown error',
         ip: clientIP,
         userAgent,
-        requestId
+        requestId,
       })
 
       if (required) {
@@ -321,9 +321,10 @@ export const turnstileMiddleware = (options: TurnstileMiddlewareOptions = {}) =>
  */
 function extractTurnstileToken(c: Context): string | null {
   // Try to get token from header
-  const headerToken = c.req.header('X-Turnstile-Token') ||
-                     c.req.header('CF-Turnstile-Token') ||
-                     c.req.header('Turnstile-Token')
+  const headerToken =
+    c.req.header('X-Turnstile-Token') ||
+    c.req.header('CF-Turnstile-Token') ||
+    c.req.header('Turnstile-Token')
 
   if (headerToken) {
     return headerToken
@@ -336,18 +337,23 @@ function extractTurnstileToken(c: Context): string | null {
     if (contentType.includes('application/json')) {
       try {
         const body = c.req.json() as any
-        return body['cf-turnstile-response'] || body['turnstileToken'] || body['token']
+        return body['cf-turnstile-response'] || body.turnstileToken || body.token
       } catch {
         // JSON parsing failed, continue to other methods
       }
     }
 
-    if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
+    if (
+      contentType.includes('application/x-www-form-urlencoded') ||
+      contentType.includes('multipart/form-data')
+    ) {
       try {
         const formData = c.req.formData() as any
-        return formData.get('cf-turnstile-response') ||
-               formData.get('turnstileToken') ||
-               formData.get('token')
+        return (
+          formData.get('cf-turnstile-response') ||
+          formData.get('turnstileToken') ||
+          formData.get('token')
+        )
       } catch {
         // Form data parsing failed
       }
@@ -356,9 +362,11 @@ function extractTurnstileToken(c: Context): string | null {
 
   // Try to get token from query parameters
   const url = new URL(c.req.url)
-  return url.searchParams.get('cf-turnstile-response') ||
-         url.searchParams.get('turnstileToken') ||
-         url.searchParams.get('token')
+  return (
+    url.searchParams.get('cf-turnstile-response') ||
+    url.searchParams.get('turnstileToken') ||
+    url.searchParams.get('token')
+  )
 }
 
 /**
@@ -388,16 +396,15 @@ async function validateTurnstileToken(
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: formData.toString(),
-        signal: AbortSignal.timeout(config.timeout)
+        signal: AbortSignal.timeout(config.timeout),
       })
 
       if (!response.ok) {
         throw new Error(`Turnstile validation failed: ${response.status} ${response.statusText}`)
       }
 
-      const result = await response.json() as TurnstileValidationResponse
+      const result = (await response.json()) as TurnstileValidationResponse
       return result
-
     } catch (error) {
       attempt++
       if (attempt >= maxAttempts) {
@@ -405,7 +412,7 @@ async function validateTurnstileToken(
       }
 
       // Exponential backoff
-      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100))
+      await new Promise(resolve => setTimeout(resolve, 2 ** attempt * 100))
     }
   }
 
@@ -428,8 +435,8 @@ async function performBotDetection(
     action: 'allow',
     metadata: {
       ip: context.ip,
-      userAgent: context.userAgent
-    }
+      userAgent: context.userAgent,
+    },
   }
 
   // Get Cloudflare request information
@@ -482,7 +489,10 @@ async function performBotDetection(
 /**
  * Analyze IP for bot indicators
  */
-function analyzeIP(ip: string, cfData?: any): { score: number; isSuspicious: boolean; reasons: string[] } {
+function analyzeIP(
+  ip: string,
+  cfData?: any
+): { score: number; isSuspicious: boolean; reasons: string[] } {
   const result = { score: 0, isSuspicious: false, reasons: [] as string[] }
 
   if (!ip || ip === 'unknown') {
@@ -522,7 +532,11 @@ function analyzeIP(ip: string, cfData?: any): { score: number; isSuspicious: boo
 /**
  * Analyze User-Agent for bot indicators
  */
-function analyzeUserAgent(userAgent: string): { score: number; isSuspicious: boolean; reasons: string[] } {
+function analyzeUserAgent(userAgent: string): {
+  score: number
+  isSuspicious: boolean
+  reasons: string[]
+} {
   const result = { score: 0, isSuspicious: false, reasons: [] as string[] }
 
   if (!userAgent || userAgent === 'unknown') {
@@ -549,7 +563,7 @@ function analyzeUserAgent(userAgent: string): { score: number; isSuspicious: boo
     /go-http/i,
     /postman/i,
     /insomnia/i,
-    /httpie/i
+    /httpie/i,
   ]
 
   for (const pattern of botPatterns) {
@@ -561,7 +575,16 @@ function analyzeUserAgent(userAgent: string): { score: number; isSuspicious: boo
   }
 
   // Check for missing common browser features
-  const browserFeatures = ['mozilla', 'webkit', 'gecko', 'chromium', 'safari', 'firefox', 'edge', 'chrome']
+  const browserFeatures = [
+    'mozilla',
+    'webkit',
+    'gecko',
+    'chromium',
+    'safari',
+    'firefox',
+    'edge',
+    'chrome',
+  ]
   const hasBrowserFeature = browserFeatures.some(feature => ua.includes(feature))
 
   if (!hasBrowserFeature) {
@@ -585,7 +608,10 @@ function analyzeUserAgent(userAgent: string): { score: number; isSuspicious: boo
 /**
  * Analyze session for suspicious patterns
  */
-function analyzeSession(sessionId: string, user?: any): { score: number; isSuspicious: boolean; reasons: string[] } {
+function analyzeSession(
+  sessionId: string,
+  user?: any
+): { score: number; isSuspicious: boolean; reasons: string[] } {
   const result = { score: 0, isSuspicious: false, reasons: [] as string[] }
 
   if (!sessionId) {
@@ -600,7 +626,7 @@ function analyzeSession(sessionId: string, user?: any): { score: number; isSuspi
   }
 
   // Recently created account
-  if (user && user.createdAt) {
+  if (user?.createdAt) {
     const accountAge = Date.now() - new Date(user.createdAt).getTime()
     const daysSinceCreation = accountAge / (1000 * 60 * 60 * 24)
 
@@ -640,7 +666,7 @@ async function cacheValidationResult(
 async function getCachedValidationResult(
   cloudflare: CloudflareService,
   token: string,
-  ttl: number
+  _ttl: number
 ): Promise<TurnstileValidationResponse | null> {
   try {
     const cacheKey = `turnstile_validation:${token.substring(0, 20)}`
@@ -681,7 +707,11 @@ function handleTurnstileError(
   c: Context,
   error: TurnstileError,
   requestId?: string,
-  onError?: (c: Context, error: TurnstileError, result?: TurnstileValidationResponse) => Response | Promise<Response>,
+  onError?: (
+    c: Context,
+    error: TurnstileError,
+    result?: TurnstileValidationResponse
+  ) => Response | Promise<Response>,
   validationResult?: TurnstileValidationResponse
 ): Response {
   if (onError) {
@@ -691,15 +721,20 @@ function handleTurnstileError(
   const statusCode = getStatusCodeForError(error)
   const message = getErrorMessage(error)
 
-  return c.json({
-    error: 'Turnstile Validation Failed',
-    message,
-    code: error,
-    requestId,
-    details: validationResult ? {
-      errorCodes: validationResult['error-codes']
-    } : undefined
-  }, statusCode)
+  return c.json(
+    {
+      error: 'Turnstile Validation Failed',
+      message,
+      code: error,
+      requestId,
+      details: validationResult
+        ? {
+            errorCodes: validationResult['error-codes'],
+          }
+        : undefined,
+    },
+    statusCode
+  )
 }
 
 /**
@@ -764,11 +799,11 @@ async function logTurnstileEvent(
     const logData = {
       event,
       timestamp: new Date().toISOString(),
-      ...data
+      ...data,
     }
 
     await cloudflare.cacheSet('analytics', `turnstile_event:${data.requestId}`, logData, {
-      ttl: 86400 // 24 hours
+      ttl: 86400, // 24 hours
     })
 
     console.log('Turnstile event:', logData)
@@ -781,10 +816,12 @@ async function logTurnstileEvent(
  * Get client IP address
  */
 function getClientIP(c: Context): string {
-  return c.req.header('CF-Connecting-IP') ||
-         c.req.header('X-Forwarded-For') ||
-         c.req.header('X-Real-IP') ||
-         'unknown'
+  return (
+    c.req.header('CF-Connecting-IP') ||
+    c.req.header('X-Forwarded-For') ||
+    c.req.header('X-Real-IP') ||
+    'unknown'
+  )
 }
 
 /**
@@ -802,7 +839,7 @@ export const TurnstilePresets = {
     scoreThreshold: { low: 0.1, medium: 0.3, high: 0.5 },
     ipBasedValidation: true,
     userAgentBasedValidation: false,
-    sessionBasedValidation: false
+    sessionBasedValidation: false,
   },
 
   // Medium protection for general API endpoints
@@ -811,7 +848,7 @@ export const TurnstilePresets = {
     scoreThreshold: { low: 0.3, medium: 0.5, high: 0.7 },
     ipBasedValidation: true,
     userAgentBasedValidation: true,
-    sessionBasedValidation: false
+    sessionBasedValidation: false,
   },
 
   // High protection for sensitive endpoints
@@ -821,7 +858,7 @@ export const TurnstilePresets = {
     ipBasedValidation: true,
     userAgentBasedValidation: true,
     sessionBasedValidation: true,
-    cachingEnabled: false
+    cachingEnabled: false,
   },
 
   // Maximum protection for critical endpoints
@@ -833,36 +870,36 @@ export const TurnstilePresets = {
     sessionBasedValidation: true,
     cachingEnabled: false,
     timeout: 3000,
-    retryAttempts: 1
-  }
+    retryAttempts: 1,
+  },
 }
 
 // Middleware factory functions
 export const createLowProtection = (customConfig?: Partial<TurnstileMiddlewareOptions>) => {
   return turnstileMiddleware({
     ...TurnstilePresets.LOW_PROTECTION,
-    ...customConfig
+    ...customConfig,
   })
 }
 
 export const createMediumProtection = (customConfig?: Partial<TurnstileMiddlewareOptions>) => {
   return turnstileMiddleware({
     ...TurnstilePresets.MEDIUM_PROTECTION,
-    ...customConfig
+    ...customConfig,
   })
 }
 
 export const createHighProtection = (customConfig?: Partial<TurnstileMiddlewareOptions>) => {
   return turnstileMiddleware({
     ...TurnstilePresets.HIGH_PROTECTION,
-    ...customConfig
+    ...customConfig,
   })
 }
 
 export const createMaximumProtection = (customConfig?: Partial<TurnstileMiddlewareOptions>) => {
   return turnstileMiddleware({
     ...TurnstilePresets.MAXIMUM_PROTECTION,
-    ...customConfig
+    ...customConfig,
   })
 }
 
@@ -885,7 +922,7 @@ export const requireTurnstile = (action?: string) => {
   return turnstileMiddleware({
     required: true,
     action,
-    ...TurnstilePresets.MEDIUM_PROTECTION
+    ...TurnstilePresets.MEDIUM_PROTECTION,
   })
 }
 
@@ -893,7 +930,7 @@ export const optionalTurnstile = (action?: string) => {
   return turnstileMiddleware({
     required: false,
     action,
-    ...TurnstilePresets.LOW_PROTECTION
+    ...TurnstilePresets.LOW_PROTECTION,
   })
 }
 

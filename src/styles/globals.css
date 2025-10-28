@@ -68,7 +68,7 @@ h6 {
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --radius: 0.5rem;
-  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
 /* 暗色主题 */
@@ -104,7 +104,10 @@ h6 {
 }
 
 .transition-colors {
-  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+  transition:
+    color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out;
 }
 
 /* 自定义滚动条 */
@@ -134,7 +137,7 @@ h6 {
 
 /* 拖拽区域样式 */
 .drag-active {
-  border-color: var(--color-primary) !important;
-  background-color: var(--color-primary) !important;
-  background-opacity: 0.1 !important;
+  border-color: var(--color-primary);
+  background-color: var(--color-primary);
+  background-opacity: 0.1;
 }

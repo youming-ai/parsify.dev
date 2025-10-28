@@ -1,19 +1,17 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { UserAvatar } from './user-avatar';
-import { UserProfile } from './user-profile';
-import { LogoutButton } from './logout-button';
-import { useAuth } from './auth-context';
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { useAuth } from './auth-context'
+import { LogoutButton } from './logout-button'
+import { UserAvatar } from './user-avatar'
 
 interface AuthStatusIndicatorProps {
-  variant?: 'badge' | 'text' | 'avatar' | 'dropdown' | 'full';
-  showEmail?: boolean;
-  showLogout?: boolean;
-  className?: string;
-  position?: 'header' | 'sidebar' | 'inline';
+  variant?: 'badge' | 'text' | 'avatar' | 'dropdown' | 'full'
+  showEmail?: boolean
+  showLogout?: boolean
+  className?: string
+  position?: 'header' | 'sidebar' | 'inline'
 }
 
 export function AuthStatusIndicator({
@@ -23,15 +21,15 @@ export function AuthStatusIndicator({
   className,
   position = 'header',
 }: AuthStatusIndicatorProps) {
-  const { user, isAuthenticated, isLoading, error } = useAuth();
+  const { user, isAuthenticated, isLoading, error } = useAuth()
 
   if (isLoading) {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
-        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-        {variant === 'text' && <span className="text-sm text-gray-500">Loading...</span>}
+        <div className="h-4 w-4 animate-spin rounded-full border-blue-600 border-b-2"></div>
+        {variant === 'text' && <span className="text-gray-500 text-sm">Loading...</span>}
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -39,7 +37,7 @@ export function AuthStatusIndicator({
       <Badge variant="destructive" className={className}>
         Authentication Error
       </Badge>
-    );
+    )
   }
 
   if (!isAuthenticated) {
@@ -50,36 +48,32 @@ export function AuthStatusIndicator({
           <Badge variant="outline" className={className}>
             Not signed in
           </Badge>
-        );
+        )
 
       case 'text':
-        return (
-          <span className={`text-sm text-gray-500 ${className}`}>
-            Not signed in
-          </span>
-        );
+        return <span className={`text-gray-500 text-sm ${className}`}>Not signed in</span>
 
       case 'avatar':
-        return null;
+        return null
 
       case 'dropdown':
       case 'full':
         return (
           <div className={`flex items-center gap-2 ${className}`}>
-            <span className="text-sm text-gray-500">Not signed in</span>
+            <span className="text-gray-500 text-sm">Not signed in</span>
             <Button size="sm" variant="outline">
               Sign in
             </Button>
           </div>
-        );
+        )
 
       default:
-        return null;
+        return null
     }
   }
 
   // User is authenticated
-  if (!user) return null;
+  if (!user) return null
 
   switch (variant) {
     case 'badge':
@@ -87,63 +81,51 @@ export function AuthStatusIndicator({
         <Badge variant="default" className={className}>
           {user.name}
         </Badge>
-      );
+      )
 
     case 'text':
       return (
         <div className={className}>
-          <span className="text-sm font-medium text-gray-900">{user.name}</span>
-          {showEmail && (
-            <span className="text-sm text-gray-500 ml-2">{user.email}</span>
-          )}
+          <span className="font-medium text-gray-900 text-sm">{user.name}</span>
+          {showEmail && <span className="ml-2 text-gray-500 text-sm">{user.email}</span>}
         </div>
-      );
+      )
 
     case 'avatar':
       return (
         <div className={`flex items-center gap-2 ${className}`}>
           <UserAvatar user={user} size="sm" />
           {showEmail && (
-            <span className="text-sm text-gray-500 truncate max-w-32">
-              {user.email}
-            </span>
+            <span className="max-w-32 truncate text-gray-500 text-sm">{user.email}</span>
           )}
         </div>
-      );
+      )
 
     case 'dropdown':
       return (
         <div className={`relative ${className}`}>
           <div className="flex items-center gap-2">
             <UserAvatar user={user} size="sm" />
-            <span className="text-sm font-medium text-gray-900">{user.name}</span>
+            <span className="font-medium text-gray-900 text-sm">{user.name}</span>
           </div>
           {/* Note: In a real implementation, you'd want to add dropdown logic here */}
         </div>
-      );
+      )
 
     case 'full':
       return (
         <div className={`flex items-center gap-3 ${className}`}>
           <UserAvatar user={user} size="sm" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">
-              {user.name}
-            </p>
-            {showEmail && (
-              <p className="text-xs text-gray-500 truncate">
-                {user.email}
-              </p>
-            )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-medium text-gray-900 text-sm">{user.name}</p>
+            {showEmail && <p className="truncate text-gray-500 text-xs">{user.email}</p>}
           </div>
-          {showLogout && (
-            <LogoutButton size="sm" variant="ghost" />
-          )}
+          {showLogout && <LogoutButton size="sm" variant="ghost" />}
         </div>
-      );
+      )
 
     default:
-      return null;
+      return null
   }
 }
 
@@ -151,13 +133,7 @@ export function AuthStatusIndicator({
  * Compact auth status indicator for headers
  */
 export function HeaderAuthStatus({ className }: { className?: string }) {
-  return (
-    <AuthStatusIndicator
-      variant="dropdown"
-      className={className}
-      position="header"
-    />
-  );
+  return <AuthStatusIndicator variant="dropdown" className={className} position="header" />
 }
 
 /**
@@ -172,29 +148,26 @@ export function SidebarAuthStatus({ className }: { className?: string }) {
       className={className}
       position="sidebar"
     />
-  );
+  )
 }
 
 /**
  * Simple badge for showing auth status
  */
 export function AuthStatusBadge({ className }: { className?: string }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth()
 
   if (isLoading) {
     return (
       <Badge variant="outline" className={className}>
         Loading...
       </Badge>
-    );
+    )
   }
 
   return (
-    <Badge
-      variant={isAuthenticated ? "default" : "secondary"}
-      className={className}
-    >
+    <Badge variant={isAuthenticated ? 'default' : 'secondary'} className={className}>
       {isAuthenticated ? 'Signed in' : 'Signed out'}
     </Badge>
-  );
+  )
 }

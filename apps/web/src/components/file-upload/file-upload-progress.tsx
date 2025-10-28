@@ -1,8 +1,8 @@
-import React from 'react'
-import { cn } from '@/lib/utils'
-import { Progress } from '@/components/ui/progress'
+import type React from 'react'
 import { Button } from '@/components/ui/button'
-import { FileUploadProgress, FileUploadStatus } from './file-upload-types'
+import { Progress } from '@/components/ui/progress'
+import { cn } from '@/lib/utils'
+import type { FileUploadProgress, FileUploadStatus } from './file-upload-types'
 
 interface FileUploadProgressProps {
   /** Upload progress information */
@@ -42,11 +42,11 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
     const k = 1024
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
   }
 
   const formatSpeed = (bytesPerSecond: number): string => {
-    return formatFileSize(bytesPerSecond) + '/s'
+    return `${formatFileSize(bytesPerSecond)}/s`
   }
 
   const formatTime = (seconds: number): string => {
@@ -59,32 +59,82 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
     switch (status) {
       case 'pending':
         return (
-          <svg className="w-5 h-5 text-gray-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg
+            className="h-5 w-5 animate-pulse text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
         )
       case 'uploading':
         return (
-          <svg className="w-5 h-5 text-blue-500 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          <svg
+            className="h-5 w-5 animate-spin text-blue-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
           </svg>
         )
       case 'success':
         return (
-          <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg
+            className="h-5 w-5 text-green-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
         )
       case 'error':
         return (
-          <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg
+            className="h-5 w-5 text-red-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
         )
       case 'cancelled':
         return (
-          <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="h-5 w-5 text-gray-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         )
       default:
@@ -109,7 +159,7 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
     }
   }
 
-  const getProgressColor = () => {
+  const _getProgressColor = () => {
     switch (status) {
       case 'pending':
         return 'bg-gray-200'
@@ -127,22 +177,20 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
   }
 
   return (
-    <div className={cn('w-full p-4 bg-white rounded-lg border border-gray-200', className)}>
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center space-x-3 flex-1 min-w-0">
+    <div className={cn('w-full rounded-lg border border-gray-200 bg-white p-4', className)}>
+      <div className="mb-3 flex items-start justify-between">
+        <div className="flex min-w-0 flex-1 items-center space-x-3">
           {getStatusIcon()}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">
-              {fileName}
-            </p>
-            <p className="text-xs text-gray-500">
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-medium text-gray-900 text-sm">{fileName}</p>
+            <p className="text-gray-500 text-xs">
               {formatFileSize(loaded)} / {formatFileSize(total)}
             </p>
           </div>
         </div>
 
         <div className="flex items-center space-x-2">
-          <span className={cn('text-sm font-medium', getStatusColor())}>
+          <span className={cn('font-medium text-sm', getStatusColor())}>
             {percentage.toFixed(1)}%
           </span>
 
@@ -151,10 +199,15 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
               variant="ghost"
               size="sm"
               onClick={onCancel}
-              className="text-gray-500 hover:text-red-500 p-1 h-auto"
+              className="h-auto p-1 text-gray-500 hover:text-red-500"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </Button>
           )}
@@ -164,10 +217,15 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
               variant="ghost"
               size="sm"
               onClick={onRetry}
-              className="text-gray-500 hover:text-blue-500 p-1 h-auto"
+              className="h-auto p-1 text-gray-500 hover:text-blue-500"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
               </svg>
             </Button>
           )}
@@ -175,19 +233,12 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
       </div>
 
       <div className="space-y-2">
-        <Progress
-          value={percentage}
-          className="h-2"
-        />
+        <Progress value={percentage} className="h-2" />
 
         {(speed || timeRemaining) && status === 'uploading' && (
-          <div className="flex justify-between text-xs text-gray-500">
-            {speed && (
-              <span>{formatSpeed(speed)}</span>
-            )}
-            {timeRemaining && (
-              <span>{formatTime(timeRemaining)} remaining</span>
-            )}
+          <div className="flex justify-between text-gray-500 text-xs">
+            {speed && <span>{formatSpeed(speed)}</span>}
+            {timeRemaining && <span>{formatTime(timeRemaining)} remaining</span>}
           </div>
         )}
       </div>

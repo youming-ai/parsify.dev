@@ -1,4 +1,4 @@
-import { EnhancedConnectionPool, PoolMetrics, PoolStatistics, ConnectionMetrics } from './pool'
+import type { EnhancedConnectionPool, PoolMetrics } from './pool'
 
 export interface PoolMonitoringConfig {
   enabled: boolean
@@ -49,8 +49,13 @@ export interface DetailedPoolMetrics extends PoolMetrics {
 
 export interface PoolAlert {
   id: string
-  type: 'connection_exhaustion' | 'high_wait_time' | 'health_check_failure' |
-       'scaling_issue' | 'performance_degradation' | 'configuration_error'
+  type:
+    | 'connection_exhaustion'
+    | 'high_wait_time'
+    | 'health_check_failure'
+    | 'scaling_issue'
+    | 'performance_degradation'
+    | 'configuration_error'
   severity: 'info' | 'warning' | 'error' | 'critical'
   message: string
   details: any
@@ -71,7 +76,11 @@ export interface PoolHealthReport {
   metrics: DetailedPoolMetrics
   trends: {
     connectionUtilization: Array<{ timestamp: number; value: number }>
-    performanceMetrics: Array<{ timestamp: number; acquisitionTime: number; queryTime: number }>
+    performanceMetrics: Array<{
+      timestamp: number
+      acquisitionTime: number
+      queryTime: number
+    }>
     healthScore: Array<{ timestamp: number; score: number }>
   }
 }
@@ -150,7 +159,7 @@ export class ConnectionPoolMonitor {
       recommendations,
       alerts: activeAlerts,
       metrics: currentMetrics,
-      trends
+      trends,
     }
   }
 
@@ -231,7 +240,7 @@ export class ConnectionPoolMonitor {
       details,
       timestamp: Date.now(),
       resolved: false,
-      acknowledged: false
+      acknowledged: false,
     }
 
     this.alerts.set(alertId, alert)
@@ -272,9 +281,9 @@ export class ConnectionPoolMonitor {
     }
 
     // Analyze acquisition wait times
-    const avgWaitTime = metrics.performance.acquisitionWaitTimeHistory.reduce(
-      (sum, entry) => sum + entry.value, 0
-    ) / metrics.performance.acquisitionWaitTimeHistory.length
+    const avgWaitTime =
+      metrics.performance.acquisitionWaitTimeHistory.reduce((sum, entry) => sum + entry.value, 0) /
+      metrics.performance.acquisitionWaitTimeHistory.length
 
     if (avgWaitTime > 1000) {
       insights.push('High connection acquisition wait times detected')
@@ -301,15 +310,16 @@ export class ConnectionPoolMonitor {
       potentialIssues.push('Database or application issues may exist')
     }
 
-    const summary = `Pool health score: ${this.lastHealthScore}/100, ` +
-                   `Utilization: ${(utilization * 100).toFixed(1)}%, ` +
-                   `Average wait time: ${avgWaitTime.toFixed(0)}ms`
+    const summary =
+      `Pool health score: ${this.lastHealthScore}/100, ` +
+      `Utilization: ${(utilization * 100).toFixed(1)}%, ` +
+      `Average wait time: ${avgWaitTime.toFixed(0)}ms`
 
     return {
       summary,
       insights,
       recommendations,
-      potentialIssues
+      potentialIssues,
     }
   }
 
@@ -321,11 +331,15 @@ export class ConnectionPoolMonitor {
 
     switch (format) {
       case 'json':
-        return JSON.stringify({
-          metrics: history,
-          alerts: this.getAllAlerts(),
-          healthScore: this.healthScoreHistory
-        }, null, 2)
+        return JSON.stringify(
+          {
+            metrics: history,
+            alerts: this.getAllAlerts(),
+            healthScore: this.healthScoreHistory,
+          },
+          null,
+          2
+        )
 
       case 'csv':
         return this.convertToCSV(history)
@@ -371,19 +385,19 @@ export class ConnectionPoolMonitor {
         acquisitionWaitTime: config.alertThresholds?.acquisitionWaitTime ?? 5000,
         errorRate: config.alertThresholds?.errorRate ?? 0.05,
         healthFailureRate: config.alertThresholds?.healthFailureRate ?? 0.2,
-        scalingFrequency: config.alertThresholds?.scalingFrequency ?? 5
+        scalingFrequency: config.alertThresholds?.scalingFrequency ?? 5,
       },
       historyRetention: {
         metricsHistoryMs: config.historyRetention?.metricsHistoryMs ?? 3600000,
         alertHistoryMs: config.historyRetention?.alertHistoryMs ?? 86400000,
-        maxHistoryEntries: config.historyRetention?.maxHistoryEntries ?? 1000
+        maxHistoryEntries: config.historyRetention?.maxHistoryEntries ?? 1000,
       },
       notifications: {
         enableConsoleLogging: config.notifications?.enableConsoleLogging ?? true,
         enableWebhook: config.notifications?.enableWebhook ?? false,
         webhookUrl: config.notifications?.webhookUrl,
-        webhookTimeoutMs: config.notifications?.webhookTimeoutMs ?? 5000
-      }
+        webhookTimeoutMs: config.notifications?.webhookTimeoutMs ?? 5000,
+      },
     }
   }
 
@@ -399,7 +413,9 @@ export class ConnectionPoolMonitor {
 
     // Limit history size
     if (this.metricsHistory.length > this.config.historyRetention.maxHistoryEntries) {
-      this.metricsHistory = this.metricsHistory.slice(-this.config.historyRetention.maxHistoryEntries)
+      this.metricsHistory = this.metricsHistory.slice(
+        -this.config.historyRetention.maxHistoryEntries
+      )
     }
 
     // Check for alerts
@@ -422,26 +438,27 @@ export class ConnectionPoolMonitor {
       connectionUtilization: poolMetrics.activeConnections / poolMetrics.totalConnections,
       averageConnectionLifetime: statistics.uptime / Math.max(statistics.totalAcquisitions, 1),
       poolEfficiency: poolMetrics.idleConnections / poolMetrics.totalConnections,
-      scalingEfficiency: Math.min(1, statistics.averageConnections / poolMetrics.totalConnections)
+      scalingEfficiency: Math.min(1, statistics.averageConnections / poolMetrics.totalConnections),
     }
 
     // Add performance history
     const recentHistory = this.getMetricsHistory(300000) // Last 5 minutes
     const acquisitionWaitTimeHistory = recentHistory.map(entry => ({
       timestamp: entry.timestamp,
-      value: entry.performance.acquisitionWaitTime
+      value: entry.performance.acquisitionWaitTime,
     }))
 
     const queryTimeHistory = recentHistory.map(entry => ({
       timestamp: entry.timestamp,
-      value: entry.performance.averageQueryTime
+      value: entry.performance.averageQueryTime,
     }))
 
     const performance = {
       acquisitionWaitTimeHistory,
       queryTimeHistory,
       connectionCreationRate: baseMetrics.lifecycle.connectionsCreated / (statistics.uptime / 1000),
-      connectionDestructionRate: baseMetrics.lifecycle.connectionsDestroyed / (statistics.uptime / 1000)
+      connectionDestructionRate:
+        baseMetrics.lifecycle.connectionsDestroyed / (statistics.uptime / 1000),
     }
 
     return {
@@ -449,15 +466,21 @@ export class ConnectionPoolMonitor {
       ...baseMetrics,
       connections,
       efficiency,
-      performance
+      performance,
     }
   }
 
   private async checkForAlerts(metrics: DetailedPoolMetrics): Promise<void> {
     const utilization = metrics.efficiency.connectionUtilization
-    const waitTime = metrics.performance.acquisitionWaitTimeHistory[metrics.performance.acquisitionWaitTimeHistory.length - 1]?.value || 0
-    const errorRate = metrics.performance.failedQueries / Math.max(metrics.performance.totalQueries, 1)
-    const healthFailureRate = metrics.health.healthCheckFailures / Math.max(metrics.health.consecutiveHealthChecks + metrics.health.healthCheckFailures, 1)
+    const waitTime =
+      metrics.performance.acquisitionWaitTimeHistory[
+        metrics.performance.acquisitionWaitTimeHistory.length - 1
+      ]?.value || 0
+    const errorRate =
+      metrics.performance.failedQueries / Math.max(metrics.performance.totalQueries, 1)
+    const healthFailureRate =
+      metrics.health.healthCheckFailures /
+      Math.max(metrics.health.consecutiveHealthChecks + metrics.health.healthCheckFailures, 1)
 
     // Check connection utilization
     if (utilization > this.config.alertThresholds.connectionUtilization) {
@@ -465,7 +488,11 @@ export class ConnectionPoolMonitor {
         'connection_exhaustion',
         'warning',
         `High connection utilization: ${(utilization * 100).toFixed(1)}%`,
-        { utilization, activeConnections: metrics.pool.activeConnections, totalConnections: metrics.pool.totalConnections }
+        {
+          utilization,
+          activeConnections: metrics.pool.activeConnections,
+          totalConnections: metrics.pool.totalConnections,
+        }
       )
     }
 
@@ -485,7 +512,11 @@ export class ConnectionPoolMonitor {
         'performance_degradation',
         'error',
         `High error rate: ${(errorRate * 100).toFixed(2)}%`,
-        { errorRate, totalQueries: metrics.performance.totalQueries, failedQueries: metrics.performance.failedQueries }
+        {
+          errorRate,
+          totalQueries: metrics.performance.totalQueries,
+          failedQueries: metrics.performance.failedQueries,
+        }
       )
     }
 
@@ -495,7 +526,11 @@ export class ConnectionPoolMonitor {
         'health_check_failure',
         'error',
         `High health check failure rate: ${(healthFailureRate * 100).toFixed(2)}%`,
-        { healthFailureRate, failures: metrics.health.healthCheckFailures, totalChecks: metrics.health.consecutiveHealthChecks + metrics.health.healthCheckFailures }
+        {
+          healthFailureRate,
+          failures: metrics.health.healthCheckFailures,
+          totalChecks: metrics.health.consecutiveHealthChecks + metrics.health.healthCheckFailures,
+        }
       )
     }
 
@@ -506,7 +541,11 @@ export class ConnectionPoolMonitor {
         'scaling_issue',
         'warning',
         `Frequent scaling detected: ${recentScaling} operations`,
-        { recentScaling, scaleUps: metrics.scaling.totalScaleUps, scaleDowns: metrics.scaling.totalScaleDowns }
+        {
+          recentScaling,
+          scaleUps: metrics.scaling.totalScaleUps,
+          scaleDowns: metrics.scaling.totalScaleDowns,
+        }
       )
     }
   }
@@ -521,15 +560,16 @@ export class ConnectionPoolMonitor {
     }
 
     // Deduct for high wait times
-    const avgWaitTime = metrics.performance.acquisitionWaitTimeHistory.reduce(
-      (sum, entry) => sum + entry.value, 0
-    ) / Math.max(metrics.performance.acquisitionWaitTimeHistory.length, 1)
+    const avgWaitTime =
+      metrics.performance.acquisitionWaitTimeHistory.reduce((sum, entry) => sum + entry.value, 0) /
+      Math.max(metrics.performance.acquisitionWaitTimeHistory.length, 1)
     if (avgWaitTime > 1000) {
       score -= Math.min(30, (avgWaitTime - 1000) / 100) // Up to 30 points
     }
 
     // Deduct for errors
-    const errorRate = metrics.performance.failedQueries / Math.max(metrics.performance.totalQueries, 1)
+    const errorRate =
+      metrics.performance.failedQueries / Math.max(metrics.performance.totalQueries, 1)
     if (errorRate > 0) {
       score -= Math.min(30, errorRate * 600) // Up to 30 points
     }
@@ -622,14 +662,17 @@ export class ConnectionPoolMonitor {
     return {
       connectionUtilization: history.map(entry => ({
         timestamp: entry.timestamp,
-        value: entry.efficiency.connectionUtilization
+        value: entry.efficiency.connectionUtilization,
       })),
       performanceMetrics: history.map(entry => ({
         timestamp: entry.timestamp,
-        acquisitionTime: entry.performance.acquisitionWaitTimeHistory[entry.performance.acquisitionWaitTimeHistory.length - 1]?.value || 0,
-        queryTime: entry.performance.averageQueryTime
+        acquisitionTime:
+          entry.performance.acquisitionWaitTimeHistory[
+            entry.performance.acquisitionWaitTimeHistory.length - 1
+          ]?.value || 0,
+        queryTime: entry.performance.averageQueryTime,
       })),
-      healthScore: this.healthScoreHistory
+      healthScore: this.healthScoreHistory,
     }
   }
 
@@ -649,9 +692,14 @@ export class ConnectionPoolMonitor {
   private logAlert(alert: PoolAlert): void {
     if (!this.config.notifications.enableConsoleLogging) return
 
-    const level = alert.severity === 'critical' ? 'error' :
-                  alert.severity === 'error' ? 'error' :
-                  alert.severity === 'warning' ? 'warn' : 'info'
+    const level =
+      alert.severity === 'critical'
+        ? 'error'
+        : alert.severity === 'error'
+          ? 'error'
+          : alert.severity === 'warning'
+            ? 'warn'
+            : 'info'
 
     console[level](`[POOL ALERT] ${alert.severity.toUpperCase()}: ${alert.message}`, alert.details)
   }
@@ -671,14 +719,14 @@ export class ConnectionPoolMonitor {
       const response = await fetch(this.config.notifications.webhookUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           alert,
           timestamp: Date.now(),
-          source: 'connection-pool-monitor'
+          source: 'connection-pool-monitor',
         }),
-        signal: AbortSignal.timeout(this.config.notifications.webhookTimeoutMs)
+        signal: AbortSignal.timeout(this.config.notifications.webhookTimeoutMs),
       })
 
       if (!response.ok) {
@@ -703,7 +751,7 @@ export class ConnectionPoolMonitor {
       'totalQueries',
       'successfulQueries',
       'failedQueries',
-      'healthScore'
+      'healthScore',
     ]
 
     const rows = history.map(entry => [
@@ -712,12 +760,14 @@ export class ConnectionPoolMonitor {
       entry.pool.activeConnections,
       entry.pool.idleConnections,
       entry.efficiency.connectionUtilization,
-      entry.performance.acquisitionWaitTimeHistory[entry.performance.acquisitionWaitTimeHistory.length - 1]?.value || 0,
+      entry.performance.acquisitionWaitTimeHistory[
+        entry.performance.acquisitionWaitTimeHistory.length - 1
+      ]?.value || 0,
       entry.performance.averageQueryTime,
       entry.performance.totalQueries,
       entry.performance.successfulQueries,
       entry.performance.failedQueries,
-      this.lastHealthScore
+      this.lastHealthScore,
     ])
 
     return [headers, ...rows].map(row => row.join(',')).join('\n')
@@ -760,7 +810,7 @@ export class ConnectionPoolMonitor {
       '',
       `# HELP pool_health_score Overall pool health score (0-100)`,
       `# TYPE pool_health_score gauge`,
-      `pool_health_score ${this.lastHealthScore}`
+      `pool_health_score ${this.lastHealthScore}`,
     ].join('\n')
   }
 }

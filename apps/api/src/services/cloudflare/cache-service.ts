@@ -6,7 +6,7 @@
  * and intelligent cache invalidation.
  */
 
-import { CloudflareService } from './cloudflare-service'
+import type { CloudflareService } from './cloudflare-service'
 
 export interface CacheOptions {
   ttl?: number
@@ -65,14 +65,11 @@ export class CacheService {
       totalDeletes: 0,
       avgReadTime: 0,
       avgWriteTime: 0,
-      memoryUsage: 0
+      memoryUsage: 0,
     }
   }
 
-  async get<T = any>(
-    key: string,
-    options: CacheOptions = {}
-  ): Promise<T | null> {
+  async get<T = any>(key: string, options: CacheOptions = {}): Promise<T | null> {
     const startTime = Date.now()
     const namespace = options.namespace || 'cache'
 
@@ -81,7 +78,7 @@ export class CacheService {
 
       if (result) {
         // Check if expired
-        if (result.ttl && (Date.now() - result.timestamp) > result.ttl * 1000) {
+        if (result.ttl && Date.now() - result.timestamp > result.ttl * 1000) {
           await this.delete(key, { namespace })
           this.updateStats('miss', Date.now() - startTime)
           return null
@@ -108,11 +105,7 @@ export class CacheService {
     }
   }
 
-  async set<T = any>(
-    key: string,
-    data: T,
-    options: CacheOptions = {}
-  ): Promise<void> {
+  async set<T = any>(key: string, data: T, options: CacheOptions = {}): Promise<void> {
     const startTime = Date.now()
     const namespace = options.namespace || 'cache'
 
@@ -124,7 +117,7 @@ export class CacheService {
         tags: options.tags || [],
         metadata: options.metadata,
         version: '1.0',
-        hits: 0
+        hits: 0,
       }
 
       await this.cloudflare.cacheSet(namespace, key, entry, { ttl: entry.ttl })
@@ -216,9 +209,7 @@ export class CacheService {
   async setMultiple<T = any>(
     entries: Array<{ key: string; data: T; options?: CacheOptions }>
   ): Promise<void> {
-    const promises = entries.map(({ key, data, options }) =>
-      this.set(key, data, options)
-    )
+    const promises = entries.map(({ key, data, options }) => this.set(key, data, options))
 
     await Promise.allSettled(promises)
   }
@@ -273,7 +264,11 @@ export class CacheService {
   }
 
   async warmup<T = any>(
-    entries: Array<{ key: string; fetchFn: () => Promise<T>; options?: CacheOptions }>
+    entries: Array<{
+      key: string
+      fetchFn: () => Promise<T>
+      options?: CacheOptions
+    }>
   ): Promise<{ success: number; failed: number }> {
     let success = 0
     let failed = 0
@@ -300,7 +295,10 @@ export class CacheService {
     options: CacheOptions & { refreshThreshold?: number } = {}
   ): Promise<T> {
     const refreshThreshold = options.refreshThreshold || 0.8 // Refresh at 80% of TTL
-    const cached = await this.get<CacheEntry<T>>(key, { ...options, namespace: 'cache' })
+    const cached = await this.get<CacheEntry<T>>(key, {
+      ...options,
+      namespace: 'cache',
+    })
 
     if (cached) {
       const entry = cached as any // We need the full entry data
@@ -309,9 +307,11 @@ export class CacheService {
 
       if (age > refreshTime) {
         // Refresh in background
-        fetchFn().then(data => {
-          this.set(key, data, options).catch(console.error)
-        }).catch(console.error)
+        fetchFn()
+          .then(data => {
+            this.set(key, data, options).catch(console.error)
+          })
+          .catch(console.error)
       }
 
       return entry.data
@@ -366,7 +366,7 @@ export class CacheService {
 
   getHitRateByKey(key: string): number {
     const tracking = this.hitRateTracking.get(key)
-    if (!tracking || (tracking.hits + tracking.misses) === 0) {
+    if (!tracking || tracking.hits + tracking.misses === 0) {
       return 0
     }
     return tracking.hits / (tracking.hits + tracking.misses)
@@ -377,7 +377,7 @@ export class CacheService {
       .map(([key, tracking]) => ({
         key,
         hitRate: tracking.hits / (tracking.hits + tracking.misses),
-        totalRequests: tracking.hits + tracking.misses
+        totalRequests: tracking.hits + tracking.misses,
       }))
       .sort((a, b) => b.totalRequests - a.totalRequests)
       .slice(0, limit)
@@ -415,14 +415,14 @@ export class CacheService {
         details: {
           cacheSize: this.stats.size,
           hitRate: this.stats.hitRate,
-          avgResponseTime: (this.stats.avgReadTime + this.stats.avgWriteTime) / 2
-        }
+          avgResponseTime: (this.stats.avgReadTime + this.stats.avgWriteTime) / 2,
+        },
       }
     } catch (error) {
       return {
         status: 'unhealthy',
         responseTime: Date.now() - startTime,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   }
@@ -432,15 +432,19 @@ export class CacheService {
     switch (operation) {
       case 'hit':
         this.stats.totalHits++
-        this.stats.avgReadTime = (this.stats.avgReadTime * (this.stats.totalHits - 1) + duration) / this.stats.totalHits
+        this.stats.avgReadTime =
+          (this.stats.avgReadTime * (this.stats.totalHits - 1) + duration) / this.stats.totalHits
         break
       case 'miss':
         this.stats.totalMisses++
-        this.stats.avgReadTime = (this.stats.avgReadTime * (this.stats.totalMisses - 1) + duration) / this.stats.totalMisses
+        this.stats.avgReadTime =
+          (this.stats.avgReadTime * (this.stats.totalMisses - 1) + duration) /
+          this.stats.totalMisses
         break
       case 'set':
         this.stats.totalSets++
-        this.stats.avgWriteTime = (this.stats.avgWriteTime * (this.stats.totalSets - 1) + duration) / this.stats.totalSets
+        this.stats.avgWriteTime =
+          (this.stats.avgWriteTime * (this.stats.totalSets - 1) + duration) / this.stats.totalSets
         break
       case 'delete':
         this.stats.totalDeletes++
@@ -475,26 +479,26 @@ export class CacheService {
       const entry = await this.cloudflare.cacheGet<CacheEntry<any>>(namespace, key)
       if (entry) {
         entry.hits = newHitCount
-        await this.cloudflare.cacheSet(namespace, key, entry, { ttl: entry.ttl })
+        await this.cloudflare.cacheSet(namespace, key, entry, {
+          ttl: entry.ttl,
+        })
       }
-    } catch (error) {
+    } catch (_error) {
       // Ignore errors in background update
     }
   }
 
-  private async updateTagIndex(
-    namespace: string,
-    key: string,
-    tags: string[]
-  ): Promise<void> {
+  private async updateTagIndex(namespace: string, key: string, tags: string[]): Promise<void> {
     try {
       for (const tag of tags) {
         const tagKey = `tag:${tag}`
-        const taggedKeys = await this.cloudflare.cacheGet<string[]>(namespace, tagKey) || []
+        const taggedKeys = (await this.cloudflare.cacheGet<string[]>(namespace, tagKey)) || []
 
         if (!taggedKeys.includes(key)) {
           taggedKeys.push(key)
-          await this.cloudflare.cacheSet(namespace, tagKey, taggedKeys, { ttl: 86400 }) // 24 hours
+          await this.cloudflare.cacheSet(namespace, tagKey, taggedKeys, {
+            ttl: 86400,
+          }) // 24 hours
         }
       }
     } catch (error) {
@@ -502,7 +506,7 @@ export class CacheService {
     }
   }
 
-  private async removeFromTagIndex(namespace: string, key: string): Promise<void> {
+  private async removeFromTagIndex(_namespace: string, _key: string): Promise<void> {
     try {
       // This is a simplified implementation
       // In a real implementation, you'd maintain a proper tag index
@@ -514,20 +518,20 @@ export class CacheService {
   private async getKeysByTag(namespace: string, tag: string): Promise<string[]> {
     try {
       const tagKey = `tag:${tag}`
-      return await this.cloudflare.cacheGet<string[]>(namespace, tagKey) || []
+      return (await this.cloudflare.cacheGet<string[]>(namespace, tagKey)) || []
     } catch (error) {
       console.error('Failed to get keys by tag:', error)
       return []
     }
   }
 
-  private async getKeysByPattern(namespace: string, pattern: string): Promise<string[]> {
+  private async getKeysByPattern(_namespace: string, _pattern: string): Promise<string[]> {
     // This is a simplified implementation
     // In a real implementation, you'd use KV list with prefix matching
     return []
   }
 
-  private async getKeysByAge(namespace: string, cutoffTime: number): Promise<string[]> {
+  private async getKeysByAge(_namespace: string, _cutoffTime: number): Promise<string[]> {
     // This is a simplified implementation
     // In a real implementation, you'd need to track ages or use metadata
     return []

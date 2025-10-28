@@ -1,16 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
-  codeExecutor,
-  ExecutionRequest,
-  ExecutionLimits,
   CodeExecutionError,
-  SecurityError,
-  TimeoutError,
-  UnsupportedLanguageError,
+  codeExecutor,
+  type ExecutionRequest,
   executeCode,
   executeJavaScript,
   executePython,
   executeTypeScript,
+  SecurityError,
+  UnsupportedLanguageError,
 } from '../code_executor'
 
 describe('CodeExecutor', () => {
@@ -176,28 +174,33 @@ describe('CodeExecutor', () => {
     it('should validate input size limits', async () => {
       const largeInput = 'a'.repeat(20000) // > 10KB
 
-      await expect(executeJavaScript('console.log("test");', largeInput))
-        .rejects.toThrow(CodeExecutionError)
+      await expect(executeJavaScript('console.log("test");', largeInput)).rejects.toThrow(
+        CodeExecutionError
+      )
     })
 
     it('should validate argument security', async () => {
       const maliciousArgs = ['--exec', 'rm -rf /']
 
-      await expect(executeCode({
-        code: 'console.log("test");',
-        language: 'javascript',
-        args: maliciousArgs,
-      })).rejects.toThrow(SecurityError)
+      await expect(
+        executeCode({
+          code: 'console.log("test");',
+          language: 'javascript',
+          args: maliciousArgs,
+        })
+      ).rejects.toThrow(SecurityError)
     })
 
     it('should validate environment variable security', async () => {
-      const maliciousEnv = { 'PATH': '/usr/bin', 'HOME': '/root' }
+      const maliciousEnv = { PATH: '/usr/bin', HOME: '/root' }
 
-      await expect(executeCode({
-        code: 'console.log("test");',
-        language: 'javascript',
-        env: maliciousEnv,
-      })).rejects.toThrow(SecurityError)
+      await expect(
+        executeCode({
+          code: 'console.log("test");',
+          language: 'javascript',
+          env: maliciousEnv,
+        })
+      ).rejects.toThrow(SecurityError)
     })
   })
 
@@ -348,27 +351,33 @@ describe('CodeExecutor', () => {
 
   describe('Error Handling', () => {
     it('should handle unsupported language errors', async () => {
-      await expect(executeCode({
-        code: 'print("test");',
-        language: 'ruby' as any,
-      })).rejects.toThrow(UnsupportedLanguageError)
+      await expect(
+        executeCode({
+          code: 'print("test");',
+          language: 'ruby' as any,
+        })
+      ).rejects.toThrow(UnsupportedLanguageError)
     })
 
     it('should handle invalid request format', async () => {
-      await expect(executeCode({
-        code: '',
-        language: 'javascript',
-      })).rejects.toThrow(CodeExecutionError)
+      await expect(
+        executeCode({
+          code: '',
+          language: 'javascript',
+        })
+      ).rejects.toThrow(CodeExecutionError)
     })
 
     it('should handle invalid execution limits', async () => {
-      await expect(executeCode({
-        code: 'console.log("test");',
-        language: 'javascript',
-        limits: {
-          timeoutMs: -1, // Invalid timeout
-        } as any,
-      })).rejects.toThrow(CodeExecutionError)
+      await expect(
+        executeCode({
+          code: 'console.log("test");',
+          language: 'javascript',
+          limits: {
+            timeoutMs: -1, // Invalid timeout
+          } as any,
+        })
+      ).rejects.toThrow(CodeExecutionError)
     })
   })
 

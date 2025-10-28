@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { UserService } from '@/api/src/services/user_service'
 import {
-  createTestDatabase,
-  createMockUser,
-  createMockAuthIdentity,
-  createMockToolUsage,
-  createMockFileUpload,
-  createMockAuditLog,
-  setupTestEnvironment,
   cleanupTestEnvironment,
+  createMockAuditLog,
+  createMockAuthIdentity,
+  createMockFileUpload,
+  createMockToolUsage,
+  createMockUser,
+  createTestDatabase,
   type MockD1Database,
+  setupTestEnvironment,
 } from '../models/database.mock'
 
 // Mock the database client module
@@ -169,7 +169,7 @@ describe('UserService', () => {
       CreateUserSchema.parse.mockReturnValue(userData)
       User.create.mockReturnValue(mockUser)
 
-      mockDbClient.enhancedTransaction.mockImplementation(async (callback) => {
+      mockDbClient.enhancedTransaction.mockImplementation(async callback => {
         await callback(mockDbClient)
         return mockUser
       })
@@ -194,8 +194,9 @@ describe('UserService', () => {
       mockDbClient.queryFirst.mockResolvedValue(existingUser)
       User.fromRow.mockReturnValue(existingUser)
 
-      await expect(userService.createUser(userData))
-        .rejects.toThrow('User with email existing@example.com already exists')
+      await expect(userService.createUser(userData)).rejects.toThrow(
+        'User with email existing@example.com already exists'
+      )
     })
 
     it('should handle database errors gracefully', async () => {
@@ -207,8 +208,9 @@ describe('UserService', () => {
       mockDbClient.queryFirst.mockResolvedValue(null) // No existing user
       mockDbClient.enhancedTransaction.mockRejectedValue(new Error('Database error'))
 
-      await expect(userService.createUser(userData))
-        .rejects.toThrow('Failed to create user: Error: Database error')
+      await expect(userService.createUser(userData)).rejects.toThrow(
+        'Failed to create user: Error: Database error'
+      )
     })
   })
 
@@ -224,10 +226,9 @@ describe('UserService', () => {
       const result = await userService.getUserById(userId)
 
       expect(result).toEqual(mockUser)
-      expect(mockDbClient.queryFirst).toHaveBeenCalledWith(
-        'SELECT * FROM users WHERE id = ?',
-        [userId]
-      )
+      expect(mockDbClient.queryFirst).toHaveBeenCalledWith('SELECT * FROM users WHERE id = ?', [
+        userId,
+      ])
     })
 
     it('should return null when user not found', async () => {
@@ -243,8 +244,9 @@ describe('UserService', () => {
       const userId = 'user-123'
       mockDbClient.queryFirst.mockRejectedValue(new Error('Database error'))
 
-      await expect(userService.getUserById(userId))
-        .rejects.toThrow('Failed to get user: Error: Database error')
+      await expect(userService.getUserById(userId)).rejects.toThrow(
+        'Failed to get user: Error: Database error'
+      )
     })
   })
 
@@ -260,10 +262,9 @@ describe('UserService', () => {
       const result = await userService.getUserByEmail(email)
 
       expect(result).toEqual(mockUser)
-      expect(mockDbClient.queryFirst).toHaveBeenCalledWith(
-        'SELECT * FROM users WHERE email = ?',
-        [email]
-      )
+      expect(mockDbClient.queryFirst).toHaveBeenCalledWith('SELECT * FROM users WHERE email = ?', [
+        email,
+      ])
     })
 
     it('should return null when user not found', async () => {
@@ -288,7 +289,7 @@ describe('UserService', () => {
       const updatedUser = createMockUser({
         id: userId,
         name: 'Updated Name',
-        subscription_tier: 'pro'
+        subscription_tier: 'pro',
       })
 
       mockDbClient.queryFirst.mockResolvedValue(existingUser)
@@ -302,7 +303,7 @@ describe('UserService', () => {
       }
       User.fromRow.mockReturnValue(mockUpdatedInstance)
 
-      mockDbClient.enhancedTransaction.mockImplementation(async (callback) => {
+      mockDbClient.enhancedTransaction.mockImplementation(async callback => {
         await callback(mockDbClient)
         return updatedUser
       })
@@ -320,8 +321,9 @@ describe('UserService', () => {
 
       mockDbClient.queryFirst.mockResolvedValue(null)
 
-      await expect(userService.updateUser(userId, updateData))
-        .rejects.toThrow(`User with ID ${userId} not found`)
+      await expect(userService.updateUser(userId, updateData)).rejects.toThrow(
+        `User with ID ${userId} not found`
+      )
     })
   })
 
@@ -331,7 +333,7 @@ describe('UserService', () => {
       const existingUser = createMockUser({ id: userId, last_login_at: null })
       const updatedUser = createMockUser({
         id: userId,
-        last_login_at: Math.floor(Date.now() / 1000)
+        last_login_at: Math.floor(Date.now() / 1000),
       })
 
       mockDbClient.queryFirst.mockResolvedValue(existingUser)
@@ -356,8 +358,9 @@ describe('UserService', () => {
       const userId = 'nonexistent-user'
       mockDbClient.queryFirst.mockResolvedValue(null)
 
-      await expect(userService.updateLastLogin(userId))
-        .rejects.toThrow(`User with ID ${userId} not found`)
+      await expect(userService.updateLastLogin(userId)).rejects.toThrow(
+        `User with ID ${userId} not found`
+      )
     })
   })
 
@@ -370,22 +373,23 @@ describe('UserService', () => {
       const { User } = require('@/api/src/models/user')
       User.fromRow.mockReturnValue(existingUser)
 
-      mockDbClient.execute.mockResolvedValue({ success: true, meta: { changes: 1 } })
+      mockDbClient.execute.mockResolvedValue({
+        success: true,
+        meta: { changes: 1 },
+      })
 
       await userService.deleteUser(userId, '127.0.0.1', 'test-agent')
 
-      expect(mockDbClient.execute).toHaveBeenCalledWith(
-        'DELETE FROM users WHERE id = ?',
-        [userId]
-      )
+      expect(mockDbClient.execute).toHaveBeenCalledWith('DELETE FROM users WHERE id = ?', [userId])
     })
 
     it('should throw error if user not found', async () => {
       const userId = 'nonexistent-user'
       mockDbClient.queryFirst.mockResolvedValue(null)
 
-      await expect(userService.deleteUser(userId))
-        .rejects.toThrow(`User with ID ${userId} not found`)
+      await expect(userService.deleteUser(userId)).rejects.toThrow(
+        `User with ID ${userId} not found`
+      )
     })
   })
 
@@ -395,7 +399,7 @@ describe('UserService', () => {
 
       mockDbClient.query.mockResolvedValue(mockUsers)
       const { User } = require('@/api/src/models/user')
-      User.fromRow.mockImplementation((row) => row)
+      User.fromRow.mockImplementation(row => row)
 
       const result = await userService.listUsers()
 
@@ -411,7 +415,7 @@ describe('UserService', () => {
 
       mockDbClient.query.mockResolvedValue(mockUsers)
       const { User } = require('@/api/src/models/user')
-      User.fromRow.mockImplementation((row) => row)
+      User.fromRow.mockImplementation(row => row)
 
       const result = await userService.listUsers('pro', 10, 5)
 
@@ -430,7 +434,7 @@ describe('UserService', () => {
 
       mockDbClient.query.mockResolvedValue(mockUsers)
       const { User } = require('@/api/src/models/user')
-      User.fromRow.mockImplementation((row) => row)
+      User.fromRow.mockImplementation(row => row)
 
       const result = await userService.searchUsers(query)
 
@@ -449,7 +453,7 @@ describe('UserService', () => {
 
       mockDbClient.queryFirst
         .mockResolvedValueOnce({ count: 10 }) // tool usage
-        .mockResolvedValueOnce({ count: 5 })  // file uploads
+        .mockResolvedValueOnce({ count: 5 }) // file uploads
         .mockResolvedValueOnce({ total_size_bytes: 1024000 }) // storage
         .mockResolvedValueOnce(mockUser) // user details
 
@@ -471,8 +475,9 @@ describe('UserService', () => {
       const userId = 'nonexistent-user'
       mockDbClient.queryFirst.mockResolvedValue({ count: 0 })
 
-      await expect(userService.getUserStats(userId))
-        .rejects.toThrow(`User with ID ${userId} not found`)
+      await expect(userService.getUserStats(userId)).rejects.toThrow(
+        `User with ID ${userId} not found`
+      )
     })
   })
 
@@ -515,14 +520,11 @@ describe('UserService', () => {
   describe('getUsersByIds', () => {
     it('should return users for valid IDs', async () => {
       const userIds = ['user-123', 'user-456']
-      const mockUsers = [
-        createMockUser({ id: 'user-123' }),
-        createMockUser({ id: 'user-456' }),
-      ]
+      const mockUsers = [createMockUser({ id: 'user-123' }), createMockUser({ id: 'user-456' })]
 
       mockDbClient.query.mockResolvedValue(mockUsers)
       const { User } = require('@/api/src/models/user')
-      User.fromRow.mockImplementation((row) => row)
+      User.fromRow.mockImplementation(row => row)
 
       const result = await userService.getUsersByIds(userIds)
 
@@ -545,18 +547,18 @@ describe('UserService', () => {
       const preferences = { theme: 'dark', language: 'en' }
       const existingUser = createMockUser({
         id: userId,
-        preferences: { theme: 'light' }
+        preferences: { theme: 'light' },
       })
       const updatedUser = createMockUser({
         id: userId,
-        preferences: { theme: 'dark', language: 'en' }
+        preferences: { theme: 'dark', language: 'en' },
       })
 
       mockDbClient.queryFirst.mockResolvedValue(existingUser)
       const { User } = require('@/api/src/models/user')
       User.fromRow.mockReturnValue(existingUser)
 
-      mockDbClient.enhancedTransaction.mockImplementation(async (callback) => {
+      mockDbClient.enhancedTransaction.mockImplementation(async callback => {
         await callback(mockDbClient)
         return updatedUser
       })
@@ -571,22 +573,29 @@ describe('UserService', () => {
       const preferences = { theme: 'dark' }
       mockDbClient.queryFirst.mockResolvedValue(null)
 
-      await expect(userService.updatePreferences(userId, preferences))
-        .rejects.toThrow(`User with ID ${userId} not found`)
+      await expect(userService.updatePreferences(userId, preferences)).rejects.toThrow(
+        `User with ID ${userId} not found`
+      )
     })
   })
 
   describe('upgradeSubscription', () => {
     it('should upgrade subscription successfully', async () => {
       const userId = 'user-123'
-      const existingUser = createMockUser({ id: userId, subscription_tier: 'free' })
-      const updatedUser = createMockUser({ id: userId, subscription_tier: 'pro' })
+      const existingUser = createMockUser({
+        id: userId,
+        subscription_tier: 'free',
+      })
+      const updatedUser = createMockUser({
+        id: userId,
+        subscription_tier: 'pro',
+      })
 
       mockDbClient.queryFirst.mockResolvedValue(existingUser)
       const { User } = require('@/api/src/models/user')
       User.fromRow.mockReturnValue(existingUser)
 
-      mockDbClient.enhancedTransaction.mockImplementation(async (callback) => {
+      mockDbClient.enhancedTransaction.mockImplementation(async callback => {
         await callback(mockDbClient)
         return updatedUser
       })
@@ -598,7 +607,10 @@ describe('UserService', () => {
 
     it('should return same user if already at tier', async () => {
       const userId = 'user-123'
-      const existingUser = createMockUser({ id: userId, subscription_tier: 'pro' })
+      const existingUser = createMockUser({
+        id: userId,
+        subscription_tier: 'pro',
+      })
 
       mockDbClient.queryFirst.mockResolvedValue(existingUser)
       const { User } = require('@/api/src/models/user')
@@ -613,14 +625,20 @@ describe('UserService', () => {
   describe('downgradeSubscription', () => {
     it('should downgrade subscription successfully', async () => {
       const userId = 'user-123'
-      const existingUser = createMockUser({ id: userId, subscription_tier: 'pro' })
-      const updatedUser = createMockUser({ id: userId, subscription_tier: 'free' })
+      const existingUser = createMockUser({
+        id: userId,
+        subscription_tier: 'pro',
+      })
+      const updatedUser = createMockUser({
+        id: userId,
+        subscription_tier: 'free',
+      })
 
       mockDbClient.queryFirst.mockResolvedValue(existingUser)
       const { User } = require('@/api/src/models/user')
       User.fromRow.mockReturnValue(existingUser)
 
-      mockDbClient.enhancedTransaction.mockImplementation(async (callback) => {
+      mockDbClient.enhancedTransaction.mockImplementation(async callback => {
         await callback(mockDbClient)
         return updatedUser
       })
@@ -636,8 +654,9 @@ describe('UserService', () => {
       const userId = 'user-123'
       mockDbClient.queryFirst.mockRejectedValue(new Error('Connection failed'))
 
-      await expect(userService.getUserById(userId))
-        .rejects.toThrow('Failed to get user: Error: Connection failed')
+      await expect(userService.getUserById(userId)).rejects.toThrow(
+        'Failed to get user: Error: Connection failed'
+      )
     })
 
     it('should handle malformed data from database', async () => {
@@ -648,8 +667,9 @@ describe('UserService', () => {
         throw new Error('Invalid user data')
       })
 
-      await expect(userService.getUserById(userId))
-        .rejects.toThrow('Failed to get user: Error: Invalid user data')
+      await expect(userService.getUserById(userId)).rejects.toThrow(
+        'Failed to get user: Error: Invalid user data'
+      )
     })
   })
 
@@ -658,24 +678,34 @@ describe('UserService', () => {
       const userIds = ['user-123', 'user-456']
       const updates = { subscription_tier: 'pro' as const }
 
-      const mockUser1 = createMockUser({ id: 'user-123', subscription_tier: 'free' })
-      const mockUser2 = createMockUser({ id: 'user-456', subscription_tier: 'free' })
-      const updatedUser1 = createMockUser({ id: 'user-123', subscription_tier: 'pro' })
-      const updatedUser2 = createMockUser({ id: 'user-456', subscription_tier: 'pro' })
+      const mockUser1 = createMockUser({
+        id: 'user-123',
+        subscription_tier: 'free',
+      })
+      const mockUser2 = createMockUser({
+        id: 'user-456',
+        subscription_tier: 'free',
+      })
+      const updatedUser1 = createMockUser({
+        id: 'user-123',
+        subscription_tier: 'pro',
+      })
+      const updatedUser2 = createMockUser({
+        id: 'user-456',
+        subscription_tier: 'pro',
+      })
 
-      mockDbClient.queryFirst
-        .mockResolvedValueOnce(mockUser1)
-        .mockResolvedValueOnce(mockUser2)
+      mockDbClient.queryFirst.mockResolvedValueOnce(mockUser1).mockResolvedValueOnce(mockUser2)
 
       const { User } = require('@/api/src/models/user')
       User.fromRow.mockReturnValue(mockUser1).mockReturnValueOnce(mockUser2)
 
       mockDbClient.enhancedTransaction
-        .mockImplementationOnce(async (callback) => {
+        .mockImplementationOnce(async callback => {
           await callback(mockDbClient)
           return updatedUser1
         })
-        .mockImplementationOnce(async (callback) => {
+        .mockImplementationOnce(async callback => {
           await callback(mockDbClient)
           return updatedUser2
         })
@@ -691,17 +721,21 @@ describe('UserService', () => {
       const userIds = ['user-123', 'user-456']
       const updates = { subscription_tier: 'pro' as const }
 
-      const mockUser1 = createMockUser({ id: 'user-123', subscription_tier: 'free' })
-      const updatedUser1 = createMockUser({ id: 'user-123', subscription_tier: 'pro' })
+      const mockUser1 = createMockUser({
+        id: 'user-123',
+        subscription_tier: 'free',
+      })
+      const updatedUser1 = createMockUser({
+        id: 'user-123',
+        subscription_tier: 'pro',
+      })
 
-      mockDbClient.queryFirst
-        .mockResolvedValueOnce(mockUser1)
-        .mockResolvedValueOnce(null) // Second user not found
+      mockDbClient.queryFirst.mockResolvedValueOnce(mockUser1).mockResolvedValueOnce(null) // Second user not found
 
       const { User } = require('@/api/src/models/user')
       User.fromRow.mockReturnValue(mockUser1)
 
-      mockDbClient.enhancedTransaction.mockImplementation(async (callback) => {
+      mockDbClient.enhancedTransaction.mockImplementation(async callback => {
         await callback(mockDbClient)
         return updatedUser1
       })

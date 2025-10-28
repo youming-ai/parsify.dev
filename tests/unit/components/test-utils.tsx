@@ -1,6 +1,6 @@
-import { ReactElement } from 'react'
-import { render, RenderOptions } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { type RenderOptions, render } from '@testing-library/react'
+import type { ReactElement } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 
 // Test wrapper with providers
@@ -19,10 +19,8 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
   )
 }
 
-const customRender = (
-  ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>
-) => render(ui, { wrapper: AllTheProviders, ...options })
+const customRender = (ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) =>
+  render(ui, { wrapper: AllTheProviders, ...options })
 
 // Re-export everything from testing-library
 export * from '@testing-library/react'

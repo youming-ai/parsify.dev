@@ -8,7 +8,7 @@ export const ToolCategorySchema = z.enum([
   'text',
   'image',
   'network',
-  'crypto'
+  'crypto',
 ])
 export type ToolCategory = z.infer<typeof ToolCategorySchema>
 
@@ -21,22 +21,28 @@ export const ToolConfigSchema = z.object({
   inputSchema: z.record(z.any()),
   outputSchema: z.record(z.any()),
   executionMode: ExecutionModeSchema,
-  quotas: z.object({
-    maxInputSize: z.number().default(1024 * 1024), // 1MB default
-    maxExecutionTime: z.number().default(5000), // 5s default
-    requiresAuth: z.boolean().default(false)
-  }).default({
-    maxInputSize: 1024 * 1024,
-    maxExecutionTime: 5000,
-    requiresAuth: false
-  }),
-  parameters: z.array(z.object({
-    name: z.string(),
-    type: z.string(),
-    required: z.boolean().default(false),
-    default: z.any().optional(),
-    description: z.string().optional()
-  })).default([])
+  quotas: z
+    .object({
+      maxInputSize: z.number().default(1024 * 1024), // 1MB default
+      maxExecutionTime: z.number().default(5000), // 5s default
+      requiresAuth: z.boolean().default(false),
+    })
+    .default({
+      maxInputSize: 1024 * 1024,
+      maxExecutionTime: 5000,
+      requiresAuth: false,
+    }),
+  parameters: z
+    .array(
+      z.object({
+        name: z.string(),
+        type: z.string(),
+        required: z.boolean().default(false),
+        default: z.any().optional(),
+        description: z.string().optional(),
+      })
+    )
+    .default([]),
 })
 
 export type ToolConfig = z.infer<typeof ToolConfigSchema>
@@ -53,7 +59,7 @@ export const ToolSchema = z.object({
   beta: z.boolean().default(false),
   sort_order: z.number().default(0),
   created_at: z.number(),
-  updated_at: z.number()
+  updated_at: z.number(),
 })
 
 export type Tool = z.infer<typeof ToolSchema>
@@ -65,7 +71,7 @@ export const CreateToolSchema = ToolSchema.partial({
   updated_at: true,
   enabled: true,
   beta: true,
-  sort_order: true
+  sort_order: true,
 })
 
 export type CreateTool = z.infer<typeof CreateToolSchema>
@@ -74,7 +80,7 @@ export type CreateTool = z.infer<typeof CreateToolSchema>
 export const UpdateToolSchema = ToolSchema.partial({
   id: true,
   created_at: true,
-  updated_at: true
+  updated_at: true,
 })
 
 export type UpdateTool = z.infer<typeof UpdateToolSchema>
@@ -117,15 +123,17 @@ export class Tool {
       enabled: true,
       beta: false,
       sort_order: 0,
-      ...data
+      ...data,
     })
   }
 
   static fromRow(row: any): Tool {
-    return new Tool(ToolSchema.parse({
-      ...row,
-      config: JSON.parse(row.config)
-    }))
+    return new Tool(
+      ToolSchema.parse({
+        ...row,
+        config: JSON.parse(row.config),
+      })
+    )
   }
 
   toRow(): Record<string, any> {
@@ -140,7 +148,7 @@ export class Tool {
       beta: this.beta,
       sort_order: this.sort_order,
       created_at: this.created_at,
-      updated_at: this.updated_at
+      updated_at: this.updated_at,
     }
   }
 
@@ -148,7 +156,7 @@ export class Tool {
     return new Tool({
       ...this,
       ...data,
-      updated_at: Math.floor(Date.now() / 1000)
+      updated_at: Math.floor(Date.now() / 1000),
     })
   }
 
@@ -236,7 +244,7 @@ export class Tool {
       }
 
       return { valid: true }
-    } catch (error) {
+    } catch (_error) {
       return { valid: false, errors: ['Validation error'] }
     }
   }
@@ -262,12 +270,18 @@ export class Tool {
       }
 
       return { valid: true }
-    } catch (error) {
+    } catch (_error) {
       return { valid: false, errors: ['Output validation error'] }
     }
   }
 
-  getParameterSchema(): Array<{ name: string; type: string; required: boolean; default?: any; description?: string }> {
+  getParameterSchema(): Array<{
+    name: string
+    type: string
+    required: boolean
+    default?: any
+    description?: string
+  }> {
     return this.config.parameters
   }
 
@@ -283,31 +297,63 @@ export class Tool {
           type: 'object',
           properties: {
             json: { type: 'string', description: 'JSON string to format' },
-            indent: { type: 'number', default: 2, description: 'Indentation spaces' },
-            sort_keys: { type: 'boolean', default: false, description: 'Sort object keys alphabetically' }
+            indent: {
+              type: 'number',
+              default: 2,
+              description: 'Indentation spaces',
+            },
+            sort_keys: {
+              type: 'boolean',
+              default: false,
+              description: 'Sort object keys alphabetically',
+            },
           },
-          required: ['json']
+          required: ['json'],
         },
         outputSchema: {
           type: 'object',
           properties: {
             formatted: { type: 'string', description: 'Formatted JSON string' },
-            valid: { type: 'boolean', description: 'Whether input was valid JSON' },
-            errors: { type: 'array', items: { type: 'string' }, description: 'Validation errors if any' }
-          }
+            valid: {
+              type: 'boolean',
+              description: 'Whether input was valid JSON',
+            },
+            errors: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Validation errors if any',
+            },
+          },
         },
         executionMode: 'sync' as const,
         quotas: {
           maxInputSize: 1024 * 1024, // 1MB
           maxExecutionTime: 1000, // 1s
-          requiresAuth: false
+          requiresAuth: false,
         },
         parameters: [
-          { name: 'json', type: 'string', required: true, description: 'JSON string to format' },
-          { name: 'indent', type: 'number', required: false, default: 2, description: 'Indentation spaces' },
-          { name: 'sort_keys', type: 'boolean', required: false, default: false, description: 'Sort object keys alphabetically' }
-        ]
-      }
+          {
+            name: 'json',
+            type: 'string',
+            required: true,
+            description: 'JSON string to format',
+          },
+          {
+            name: 'indent',
+            type: 'number',
+            required: false,
+            default: 2,
+            description: 'Indentation spaces',
+          },
+          {
+            name: 'sort_keys',
+            type: 'boolean',
+            required: false,
+            default: false,
+            description: 'Sort object keys alphabetically',
+          },
+        ],
+      },
     })
   }
 
@@ -322,24 +368,31 @@ export class Tool {
           type: 'object',
           properties: {
             json: { type: 'string', description: 'JSON string to validate' },
-            schema: { type: 'object', description: 'JSON schema to validate against' }
+            schema: {
+              type: 'object',
+              description: 'JSON schema to validate against',
+            },
           },
-          required: ['json']
+          required: ['json'],
         },
         outputSchema: {
           type: 'object',
           properties: {
             valid: { type: 'boolean', description: 'Whether JSON is valid' },
-            errors: { type: 'array', items: { type: 'string' }, description: 'Validation errors' }
-          }
+            errors: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Validation errors',
+            },
+          },
         },
         executionMode: 'sync' as const,
         quotas: {
           maxInputSize: 1024 * 1024, // 1MB
           maxExecutionTime: 2000, // 2s
-          requiresAuth: false
-        }
-      }
+          requiresAuth: false,
+        },
+      },
     })
   }
 
@@ -354,11 +407,22 @@ export class Tool {
           type: 'object',
           properties: {
             code: { type: 'string', description: 'Code to execute' },
-            language: { type: 'string', enum: ['javascript', 'typescript', 'python'], description: 'Programming language' },
-            input: { type: 'string', description: 'Standard input for the code' },
-            timeout: { type: 'number', default: 5000, description: 'Execution timeout in milliseconds' }
+            language: {
+              type: 'string',
+              enum: ['javascript', 'typescript', 'python'],
+              description: 'Programming language',
+            },
+            input: {
+              type: 'string',
+              description: 'Standard input for the code',
+            },
+            timeout: {
+              type: 'number',
+              default: 5000,
+              description: 'Execution timeout in milliseconds',
+            },
           },
-          required: ['code', 'language']
+          required: ['code', 'language'],
         },
         outputSchema: {
           type: 'object',
@@ -366,17 +430,23 @@ export class Tool {
             output: { type: 'string', description: 'Program output' },
             error: { type: 'string', description: 'Error output if any' },
             exit_code: { type: 'number', description: 'Program exit code' },
-            execution_time: { type: 'number', description: 'Execution time in milliseconds' },
-            memory_usage: { type: 'number', description: 'Memory usage in bytes' }
-          }
+            execution_time: {
+              type: 'number',
+              description: 'Execution time in milliseconds',
+            },
+            memory_usage: {
+              type: 'number',
+              description: 'Memory usage in bytes',
+            },
+          },
         },
         executionMode: 'async' as const,
         quotas: {
           maxInputSize: 100 * 1024, // 100KB
           maxExecutionTime: 10000, // 10s
-          requiresAuth: true
-        }
-      }
+          requiresAuth: true,
+        },
+      },
     })
   }
 }
@@ -403,7 +473,7 @@ export const TOOL_QUERIES = {
     'CREATE INDEX IF NOT EXISTS idx_tools_category ON tools(category);',
     'CREATE INDEX IF NOT EXISTS idx_tools_enabled ON tools(enabled);',
     'CREATE INDEX IF NOT EXISTS idx_tools_sort ON tools(sort_order);',
-    'CREATE INDEX IF NOT EXISTS idx_tools_slug ON tools(slug);'
+    'CREATE INDEX IF NOT EXISTS idx_tools_slug ON tools(slug);',
   ],
 
   INSERT: `
@@ -461,5 +531,5 @@ export const TOOL_QUERIES = {
 
   COUNT_BY_CATEGORY: `
     SELECT COUNT(*) as count FROM tools WHERE category = ? AND enabled = true;
-  `
+  `,
 } as const

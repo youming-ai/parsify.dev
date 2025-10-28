@@ -17,10 +17,7 @@ interface TabsContextValue {
 const TabsContext = React.createContext<TabsContextValue | undefined>(undefined)
 
 const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
-  (
-    { defaultValue, value, onValueChange, className, children, ...props },
-    ref
-  ) => {
+  ({ defaultValue, value, onValueChange, className, children, ...props }, ref) => {
     const [internalValue, setInternalValue] = React.useState(defaultValue || '')
 
     const currentValue = value !== undefined ? value : internalValue
@@ -35,9 +32,7 @@ const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
     )
 
     return (
-      <TabsContext.Provider
-        value={{ value: currentValue, onValueChange: handleValueChange }}
-      >
+      <TabsContext.Provider value={{ value: currentValue, onValueChange: handleValueChange }}>
         <div ref={ref} className={cn('w-full', className)} {...props}>
           {children}
         </div>
@@ -88,10 +83,8 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
-          isActive
-            ? 'bg-white text-gray-900 shadow-sm'
-            : 'text-gray-600 hover:text-gray-900',
+          'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 font-medium text-sm ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+          isActive ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900',
           className
         )}
         onClick={() => onValueChange(value)}

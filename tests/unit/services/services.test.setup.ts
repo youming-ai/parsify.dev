@@ -8,9 +8,9 @@
 
 // Mock Cloudflare Workers environment
 global.D1Database = class MockD1Database {
-  prepare(query: string) {
+  prepare(_query: string) {
     return {
-      bind: (...args: any[]) => this,
+      bind: (..._args: any[]) => this,
       first: async () => null,
       run: async () => ({ success: true }),
       all: async () => ({ results: [] }),

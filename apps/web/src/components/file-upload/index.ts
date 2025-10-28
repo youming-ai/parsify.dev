@@ -1,53 +1,49 @@
 // Export all types and interfaces
-export * from './file-upload-types'
 
-// Export validation utilities
-export * from './file-validation'
-
-// Export API service
-export * from './file-upload-api'
-
+export { BatchDownloadButton, DownloadButton } from './download-button'
 // Export components
 export { default as FileDropZone } from './file-drop-zone'
-export { default as FileUploadProgressIndicator } from './file-upload-progress'
-export { default as FilePreview } from './file-preview'
 export { default as FileListManager } from './file-list-manager'
-export { DownloadButton, BatchDownloadButton } from './download-button'
-export { default as FileUploadComponent } from './file-upload-component'
-
+export { default as FilePreview } from './file-preview'
+// Export API service
+export * from './file-upload-api'
+export {
+  createFileUploadService,
+  FileUploadApiService,
+  fileUploadApiService,
+} from './file-upload-api'
 // Main default export for convenience
-export { default as FileUpload } from './file-upload-component'
+export {
+  default as FileUploadComponent,
+  default as FileUpload,
+} from './file-upload-component'
+export { default as FileUploadProgressIndicator } from './file-upload-progress'
+export * from './file-upload-types'
 
 // Re-export commonly used utilities
 export {
-  DEFAULT_FILE_UPLOAD_CONFIG,
   COMMON_MIME_TYPES,
+  DEFAULT_FILE_UPLOAD_CONFIG,
   FILE_TYPE_ICONS,
-  FILE_TYPE_GROUPS,
-  DEFAULT_VALIDATORS,
 } from './file-upload-types'
 
+// Export validation utilities
+export * from './file-validation'
 export {
-  validateFile,
-  validateFiles,
-  isPreviewable,
+  canUploadFiles,
+  fileSizeToBytes,
+  formatFileSize,
+  generateUniqueFilename,
   getFileCategory,
+  getFileExtension,
   getFileTypeDescription,
   isImageFile,
-  isTextFile,
   isJsonFile,
-  validateJsonContent,
+  isPreviewable,
+  isTextFile,
   sanitizeFilename,
-  generateUniqueFilename,
-  getFileExtension,
+  validateFile,
+  validateFiles,
+  validateJsonContent,
   validateMimeType,
-  formatFileSize,
-  fileSizeToBytes,
-  canUploadFiles,
 } from './file-validation'
-
-export {
-  FileUploadApiService,
-  fileUploadApiService,
-  createFileUploadService,
-} from './file-upload-api'

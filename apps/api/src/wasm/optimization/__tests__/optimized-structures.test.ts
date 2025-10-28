@@ -1,21 +1,21 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
-  CompactArray,
-  CompactObject,
-  CompactMap,
-  CompactSet,
-  MemoryPool,
   BufferPool,
-  MemoryEfficientCache,
-  StringBuilder,
-  MemoryTracker,
-  createCompactArray,
-  createCompactObject,
-  createCompactMap,
-  createMemoryPool,
+  CompactArray,
+  CompactMap,
+  CompactObject,
+  CompactSet,
   createCache,
+  createCompactArray,
+  createCompactMap,
+  createCompactObject,
+  createMemoryPool,
+  createMemoryTracker,
   createStringBuilder,
-  createMemoryTracker
+  MemoryEfficientCache,
+  MemoryPool,
+  MemoryTracker,
+  StringBuilder,
 } from '../memory-optimized-structures'
 
 describe('Memory Optimized Structures', () => {
@@ -247,7 +247,7 @@ describe('Memory Optimized Structures', () => {
           createCount++
           return { value: 0 }
         },
-        (obj) => {
+        obj => {
           resetCount++
           obj.value = 0
         }

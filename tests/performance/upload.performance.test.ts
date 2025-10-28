@@ -1,15 +1,11 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
+import { API_BASE_URL, TestDataGenerator, UPLOAD_ENDPOINTS } from '../utils/endpoint-configs'
 import {
-  runLoadTest,
-  runConcurrencyTest,
   assertPerformanceRequirements,
   generatePerformanceReport,
+  runConcurrencyTest,
+  runLoadTest,
 } from '../utils/performance-utils'
-import {
-  UPLOAD_ENDPOINTS,
-  API_BASE_URL,
-  TestDataGenerator,
-} from '../utils/endpoint-configs'
 
 describe('Upload API Performance Tests', () => {
   beforeAll(async () => {
@@ -68,9 +64,7 @@ describe('Upload API Performance Tests', () => {
       ]
 
       for (const fileInfo of fileSizes) {
-        console.log(
-          `Testing upload signing for ${fileInfo.description} (${fileInfo.name})...`
-        )
+        console.log(`Testing upload signing for ${fileInfo.description} (${fileInfo.name})...`)
 
         const result = await runLoadTest({
           url: `${API_BASE_URL}/upload/sign`,
@@ -78,10 +72,7 @@ describe('Upload API Performance Tests', () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: TestDataGenerator.generateUploadData(
-            `test-${fileInfo.name}.json`,
-            fileInfo.size
-          ),
+          body: TestDataGenerator.generateUploadData(`test-${fileInfo.name}.json`, fileInfo.size),
           concurrentRequests: 5,
           totalRequests: 25,
           timeout: 5000,
@@ -193,9 +184,7 @@ describe('Upload API Performance Tests', () => {
         expect(result.p95).toBeLessThan(100)
 
         // Should handle all requests (even error responses)
-        expect(result.successfulRequests + result.failedRequests).toBe(
-          result.totalRequests
-        )
+        expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
 
         // Should get appropriate error status codes
         const errorResponses = result.metrics.filter(m => m.statusCode >= 400)
@@ -206,9 +195,7 @@ describe('Upload API Performance Tests', () => {
 
   describe('GET /upload/status/:fileId - Get upload status', () => {
     it('should handle upload status requests efficiently', async () => {
-      const endpoint = UPLOAD_ENDPOINTS.find(
-        e => e.path === '/upload/status/test-file-id'
-      )
+      const endpoint = UPLOAD_ENDPOINTS.find(e => e.path === '/upload/status/test-file-id')
       if (!endpoint) throw new Error('Endpoint configuration not found')
 
       const result = await runLoadTest({
@@ -226,9 +213,7 @@ describe('Upload API Performance Tests', () => {
       // Expect consistent 404 responses for non-existent file ID
       expect(result.p95).toBeLessThan(endpoint.maxP95ResponseTime!)
 
-      const statusCode404Count = result.metrics.filter(
-        m => m.statusCode === 404
-      ).length
+      const statusCode404Count = result.metrics.filter(m => m.statusCode === 404).length
       expect(statusCode404Count).toBeGreaterThan(0)
 
       // Response times should be very consistent
@@ -261,9 +246,7 @@ describe('Upload API Performance Tests', () => {
         expect(result.p95).toBeLessThan(100)
 
         // Should handle all requests
-        expect(result.successfulRequests + result.failedRequests).toBe(
-          result.totalRequests
-        )
+        expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
       }
     })
 
@@ -282,13 +265,10 @@ describe('Upload API Performance Tests', () => {
 
       // Check that all concurrency levels meet requirements
       Object.entries(concurrencyResults).forEach(([concurrency, result]) => {
-        const maxAllowedTime =
-          parseInt(concurrency) > 50 ? 75 : endpoint.maxP95ResponseTime!
+        const maxAllowedTime = parseInt(concurrency, 10) > 50 ? 75 : endpoint.maxP95ResponseTime!
 
         expect(result.p95).toBeLessThan(maxAllowedTime)
-        expect(result.successfulRequests + result.failedRequests).toBe(
-          result.totalRequests
-        )
+        expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
       })
     })
   })
@@ -317,9 +297,7 @@ describe('Upload API Performance Tests', () => {
       expect(result.p95).toBeLessThan(150)
 
       // Should handle all requests (even 404 responses)
-      expect(result.successfulRequests + result.failedRequests).toBe(
-        result.totalRequests
-      )
+      expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
     })
 
     it('should handle confirmation requests with different payload sizes', async () => {
@@ -340,9 +318,7 @@ describe('Upload API Performance Tests', () => {
       ]
 
       for (const payload of payloadSizes) {
-        console.log(
-          `Testing upload confirmation with ${payload.name} payload...`
-        )
+        console.log(`Testing upload confirmation with ${payload.name} payload...`)
 
         const result = await runLoadTest({
           url: `${API_BASE_URL}/upload/confirm/test-file-id`,
@@ -358,9 +334,7 @@ describe('Upload API Performance Tests', () => {
 
         // Payload size shouldn't significantly impact confirmation time
         expect(result.p95).toBeLessThan(150)
-        expect(result.successfulRequests + result.failedRequests).toBe(
-          result.totalRequests
-        )
+        expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
       }
     })
   })
@@ -383,9 +357,7 @@ describe('Upload API Performance Tests', () => {
       expect(result.p95).toBeLessThan(100)
 
       // Should handle all requests (even 404 responses)
-      expect(result.successfulRequests + result.failedRequests).toBe(
-        result.totalRequests
-      )
+      expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
     })
   })
 
@@ -407,9 +379,7 @@ describe('Upload API Performance Tests', () => {
       expect(result.p95).toBeLessThan(150)
 
       // Should handle all requests (even 404 responses)
-      expect(result.successfulRequests + result.failedRequests).toBe(
-        result.totalRequests
-      )
+      expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
     })
   })
 
@@ -431,18 +401,11 @@ describe('Upload API Performance Tests', () => {
       expect(result.p95).toBeLessThan(200)
 
       // Should handle all requests
-      expect(result.successfulRequests + result.failedRequests).toBe(
-        result.totalRequests
-      )
+      expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
     })
 
     it('should handle filtered upload listings efficiently', async () => {
-      const filters = [
-        '?status=completed',
-        '?status=uploading',
-        '?limit=10',
-        '?limit=5&offset=10',
-      ]
+      const filters = ['?status=completed', '?status=uploading', '?limit=10', '?limit=5&offset=10']
 
       for (const filter of filters) {
         const result = await runLoadTest({
@@ -454,9 +417,7 @@ describe('Upload API Performance Tests', () => {
         })
 
         expect(result.p95).toBeLessThan(200)
-        expect(result.successfulRequests + result.failedRequests).toBe(
-          result.totalRequests
-        )
+        expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
       }
     })
   })
@@ -483,9 +444,7 @@ describe('Upload API Performance Tests', () => {
       expect(result.p95).toBeLessThan(100)
 
       // Should handle all requests (even error responses)
-      expect(result.successfulRequests + result.failedRequests).toBe(
-        result.totalRequests
-      )
+      expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
     })
 
     it('should handle requests with invalid HTTP methods efficiently', async () => {
@@ -509,9 +468,7 @@ describe('Upload API Performance Tests', () => {
       expect(result.p95).toBeLessThan(100)
 
       // Should handle all requests
-      expect(result.successfulRequests + result.failedRequests).toBe(
-        result.totalRequests
-      )
+      expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
     })
   })
 
@@ -544,17 +501,12 @@ describe('Upload API Performance Tests', () => {
       const results = []
 
       for (const endpoint of uploadEndpoints) {
-        console.log(
-          `Testing comprehensive performance for ${endpoint.description}...`
-        )
+        console.log(`Testing comprehensive performance for ${endpoint.description}...`)
 
         const result = await runLoadTest({
           url: `${API_BASE_URL}${endpoint.path}`,
           method: endpoint.method,
-          headers:
-            endpoint.method === 'POST'
-              ? { 'Content-Type': 'application/json' }
-              : {},
+          headers: endpoint.method === 'POST' ? { 'Content-Type': 'application/json' } : {},
           body: endpoint.body,
           concurrentRequests: 5,
           totalRequests: 25,
@@ -565,36 +517,23 @@ describe('Upload API Performance Tests', () => {
 
         // Upload operations should be fast
         expect(result.p95).toBeLessThan(200)
-        expect(result.successfulRequests + result.failedRequests).toBe(
-          result.totalRequests
-        )
+        expect(result.successfulRequests + result.failedRequests).toBe(result.totalRequests)
       }
 
       // Log comprehensive results
       console.log('\n=== Comprehensive Upload Performance Summary ===')
       results.forEach(({ endpoint, result }) => {
-        const successRate = (
-          (result.successfulRequests / result.totalRequests) *
-          100
-        ).toFixed(1)
-        console.log(
-          `${endpoint}: P95=${result.p95.toFixed(2)}ms, Success Rate=${successRate}%`
-        )
+        const successRate = ((result.successfulRequests / result.totalRequests) * 100).toFixed(1)
+        console.log(`${endpoint}: P95=${result.p95.toFixed(2)}ms, Success Rate=${successRate}%`)
       })
 
       // Calculate overall statistics
-      const totalRequests = results.reduce(
-        (sum, { result }) => sum + result.totalRequests,
-        0
-      )
+      const totalRequests = results.reduce((sum, { result }) => sum + result.totalRequests, 0)
       const totalHandled = results.reduce(
-        (sum, { result }) =>
-          sum + result.successfulRequests + result.failedRequests,
+        (sum, { result }) => sum + result.successfulRequests + result.failedRequests,
         0
       )
-      const avgP95 =
-        results.reduce((sum, { result }) => sum + result.p95, 0) /
-        results.length
+      const avgP95 = results.reduce((sum, { result }) => sum + result.p95, 0) / results.length
 
       console.log(
         `\nOverall: P95 avg=${avgP95.toFixed(2)}ms, Handled Rate=${((totalHandled / totalRequests) * 100).toFixed(1)}%`

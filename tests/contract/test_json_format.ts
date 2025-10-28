@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 
 // Mock app for TDD phase - will be replaced with actual implementation in Phase 3.3
 const mockApp = {
-  request: async (path: string, options: any, env?: any) => {
+  request: async (_path: string, _options: any, _env?: any) => {
     // Mock response structure
     return {
       status: 501,
@@ -10,12 +10,12 @@ const mockApp = {
         ['Content-Type', 'application/json'],
         ['X-RateLimit-Limit', '20'],
         ['X-RateLimit-Remaining', '19'],
-        ['X-RateLimit-Reset', Math.floor(Date.now() / 1000) + 3600]
+        ['X-RateLimit-Reset', Math.floor(Date.now() / 1000) + 3600],
       ]),
       json: async () => ({ error: 'Not implemented yet' }),
-      body: JSON.stringify({ error: 'Not implemented yet' })
+      body: JSON.stringify({ error: 'Not implemented yet' }),
     }
-  }
+  },
 }
 
 describe('POST /api/v1/tools/json/format', () => {
@@ -30,17 +30,21 @@ describe('POST /api/v1/tools/json/format', () => {
   it('should format valid JSON with default settings', async () => {
     const inputJson = '{"name":"John","age":30,"city":"New York"}'
 
-    const res = await mockApp.request('/api/v1/tools/json/format', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await mockApp.request(
+      '/api/v1/tools/json/format',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: inputJson,
+          indent: 2,
+          sort_keys: false,
+        }),
       },
-      body: JSON.stringify({
-        json: inputJson,
-        indent: 2,
-        sort_keys: false
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -56,17 +60,21 @@ describe('POST /api/v1/tools/json/format', () => {
   it('should sort JSON keys when requested', async () => {
     const inputJson = '{"z":1,"a":2,"m":3}'
 
-    const res = await mockApp.request('/api/v1/tools/json/format', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await mockApp.request(
+      '/api/v1/tools/json/format',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: inputJson,
+          indent: 2,
+          sort_keys: true,
+        }),
       },
-      body: JSON.stringify({
-        json: inputJson,
-        indent: 2,
-        sort_keys: true
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -82,17 +90,21 @@ describe('POST /api/v1/tools/json/format', () => {
   it('should handle invalid JSON gracefully', async () => {
     const invalidJson = '{"name":"John","age":30,' // Missing closing brace
 
-    const res = await mockApp.request('/api/v1/tools/json/format', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await mockApp.request(
+      '/api/v1/tools/json/format',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: invalidJson,
+          indent: 2,
+          sort_keys: false,
+        }),
       },
-      body: JSON.stringify({
-        json: invalidJson,
-        indent: 2,
-        sort_keys: false
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -104,16 +116,20 @@ describe('POST /api/v1/tools/json/format', () => {
   })
 
   it('should validate required parameters', async () => {
-    const res = await mockApp.request('/api/v1/tools/json/format', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await mockApp.request(
+      '/api/v1/tools/json/format',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // Missing required 'json' parameter
+          indent: 2,
+        }),
       },
-      body: JSON.stringify({
-        // Missing required 'json' parameter
-        indent: 2
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(400)
 
@@ -122,17 +138,21 @@ describe('POST /api/v1/tools/json/format', () => {
   })
 
   it('should handle empty JSON object', async () => {
-    const res = await mockApp.request('/api/v1/tools/json/format', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await mockApp.request(
+      '/api/v1/tools/json/format',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: '{}',
+          indent: 2,
+          sort_keys: false,
+        }),
       },
-      body: JSON.stringify({
-        json: '{}',
-        indent: 2,
-        sort_keys: false
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(200)
 
@@ -142,17 +162,21 @@ describe('POST /api/v1/tools/json/format', () => {
   })
 
   it('should respect indentation limits', async () => {
-    const res = await mockApp.request('/api/v1/tools/json/format', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await mockApp.request(
+      '/api/v1/tools/json/format',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          json: '{"test": true}',
+          indent: 10, // Above maximum allowed (8)
+          sort_keys: false,
+        }),
       },
-      body: JSON.stringify({
-        json: '{"test": true}',
-        indent: 10, // Above maximum allowed (8)
-        sort_keys: false
-      })
-    }, testEnv)
+      testEnv
+    )
 
     expect(res.status).toBe(400)
 

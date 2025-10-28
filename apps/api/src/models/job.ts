@@ -20,7 +20,7 @@ export const JobSchema = z.object({
   started_at: z.number().nullable(),
   completed_at: z.number().nullable(),
   created_at: z.number(),
-  updated_at: z.number()
+  updated_at: z.number(),
 })
 
 export type Job = z.infer<typeof JobSchema>
@@ -35,7 +35,7 @@ export const CreateJobSchema = JobSchema.partial({
   started_at: true,
   completed_at: true,
   created_at: true,
-  updated_at: true
+  updated_at: true,
 })
 
 export type CreateJob = z.infer<typeof CreateJobSchema>
@@ -45,7 +45,7 @@ export const UpdateJobSchema = JobSchema.partial({
   id: true,
   user_id: true,
   tool_id: true,
-  created_at: true
+  created_at: true,
 })
 
 export type UpdateJob = z.infer<typeof UpdateJobSchema>
@@ -59,7 +59,7 @@ export const JobQueueSchema = z.object({
   priority: JobPrioritySchema.default('normal'),
   max_retries: z.number().min(0).max(10).default(3),
   timeout_ms: z.number().min(1000).default(30000),
-  delay_ms: z.number().min(0).default(0)
+  delay_ms: z.number().min(0).default(0),
 })
 
 export type JobQueue = z.infer<typeof JobQueueSchema>
@@ -112,16 +112,18 @@ export class Job {
       completed_at: null,
       created_at: now,
       updated_at: now,
-      ...data
+      ...data,
     })
   }
 
   static fromRow(row: any): Job {
-    return new Job(JobSchema.parse({
-      ...row,
-      input_data: row.input_data ? JSON.parse(row.input_data) : null,
-      output_data: row.output_data ? JSON.parse(row.output_data) : null
-    }))
+    return new Job(
+      JobSchema.parse({
+        ...row,
+        input_data: row.input_data ? JSON.parse(row.input_data) : null,
+        output_data: row.output_data ? JSON.parse(row.output_data) : null,
+      })
+    )
   }
 
   toRow(): Record<string, any> {
@@ -140,7 +142,7 @@ export class Job {
       started_at: this.started_at,
       completed_at: this.completed_at,
       created_at: this.created_at,
-      updated_at: this.updated_at
+      updated_at: this.updated_at,
     }
   }
 
@@ -148,7 +150,7 @@ export class Job {
     return new Job({
       ...this,
       ...data,
-      updated_at: Math.floor(Date.now() / 1000)
+      updated_at: Math.floor(Date.now() / 1000),
     })
   }
 
@@ -157,7 +159,7 @@ export class Job {
     return this.update({
       status: 'running',
       started_at: Math.floor(Date.now() / 1000),
-      progress: 0
+      progress: 0,
     })
   }
 
@@ -168,7 +170,7 @@ export class Job {
       output_ref: outputRef || null,
       progress: 100,
       completed_at: Math.floor(Date.now() / 1000),
-      error_message: null
+      error_message: null,
     })
   }
 
@@ -178,7 +180,7 @@ export class Job {
       status: 'failed',
       error_message: errorMessage,
       retry_count: newRetryCount,
-      completed_at: Math.floor(Date.now() / 1000)
+      completed_at: Math.floor(Date.now() / 1000),
     })
   }
 
@@ -188,13 +190,13 @@ export class Job {
       error_message: null,
       started_at: null,
       completed_at: null,
-      progress: 0
+      progress: 0,
     })
   }
 
   updateProgress(progress: number): Job {
     return this.update({
-      progress: Math.max(0, Math.min(100, progress))
+      progress: Math.max(0, Math.min(100, progress)),
     })
   }
 
@@ -265,7 +267,7 @@ export class Job {
       user_id: userId,
       tool_id: toolId,
       input_data: inputData,
-      input_ref: inputRef || null
+      input_ref: inputRef || null,
     })
   }
 
@@ -313,8 +315,8 @@ export const JOB_QUERIES = {
     'CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);',
     'CREATE INDEX IF NOT EXISTS idx_jobs_created_at ON jobs(created_at);',
     'CREATE INDEX IF NOT EXISTS idx_jobs_tool_id ON jobs(tool_id);',
-    'CREATE INDEX IF NOT EXISTS idx_jobs_pending ON jobs(status, created_at) WHERE status = \'pending\';',
-    'CREATE INDEX IF NOT EXISTS idx_jobs_running ON jobs(status, started_at) WHERE status = \'running\';'
+    "CREATE INDEX IF NOT EXISTS idx_jobs_pending ON jobs(status, created_at) WHERE status = 'pending';",
+    "CREATE INDEX IF NOT EXISTS idx_jobs_running ON jobs(status, started_at) WHERE status = 'running';",
   ],
 
   INSERT: `
@@ -425,5 +427,5 @@ export const JOB_QUERIES = {
     WHERE created_at >= ?
     GROUP BY DATE(created_at, 'unixepoch')
     ORDER BY date DESC;
-  `
+  `,
 } as const

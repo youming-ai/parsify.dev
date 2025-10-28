@@ -1,19 +1,17 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
-  Tool,
-  ToolSchema,
   CreateToolSchema,
-  UpdateToolSchema,
-  ToolCategorySchema,
-  ExecutionModeSchema,
+  TOOL_QUERIES,
+  Tool,
   ToolConfigSchema,
-  TOOL_QUERIES
+  ToolSchema,
+  UpdateToolSchema,
 } from '../../../../apps/api/src/models/tool'
 import {
-  createTestDatabase,
+  cleanupTestEnvironment,
   createMockTool,
+  createTestDatabase,
   setupTestEnvironment,
-  cleanupTestEnvironment
 } from './database.mock'
 
 describe('Tool Model', () => {
@@ -62,7 +60,15 @@ describe('Tool Model', () => {
     })
 
     it('should accept valid categories', () => {
-      const validCategories = ['json', 'formatting', 'execution', 'text', 'image', 'network', 'crypto']
+      const validCategories = [
+        'json',
+        'formatting',
+        'execution',
+        'text',
+        'image',
+        'network',
+        'crypto',
+      ]
 
       validCategories.forEach(category => {
         const tool = createMockTool({ category: category as any })
@@ -82,9 +88,9 @@ describe('Tool Model', () => {
           quotas: {
             maxInputSize: 1024,
             maxExecutionTime: 5000,
-            requiresAuth: false
+            requiresAuth: false,
           },
-          parameters: []
+          parameters: [],
         }
         const result = ToolConfigSchema.safeParse(config)
         expect(result.success).toBe(true)
@@ -104,10 +110,10 @@ describe('Tool Model', () => {
           quotas: {
             maxInputSize: 1024,
             maxExecutionTime: 5000,
-            requiresAuth: false
+            requiresAuth: false,
           },
-          parameters: []
-        }
+          parameters: [],
+        },
       }
 
       const result = CreateToolSchema.safeParse(createData)
@@ -119,7 +125,7 @@ describe('Tool Model', () => {
         name: 'Updated Tool',
         description: 'Updated description',
         enabled: false,
-        beta: true
+        beta: true,
       }
 
       const result = UpdateToolSchema.safeParse(updateData)
@@ -153,10 +159,10 @@ describe('Tool Model', () => {
           quotas: {
             maxInputSize: 2048,
             maxExecutionTime: 10000,
-            requiresAuth: true
+            requiresAuth: true,
           },
-          parameters: []
-        }
+          parameters: [],
+        },
       }
 
       const tool = Tool.create(createData)
@@ -192,12 +198,12 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 1024,
           maxExecutionTime: 5000,
-          requiresAuth: false
+          requiresAuth: false,
         },
-        parameters: []
+        parameters: [],
       }
       const rowData = createMockTool({
-        config: JSON.stringify(config)
+        config: JSON.stringify(config),
       })
 
       const tool = Tool.fromRow(rowData)
@@ -206,7 +212,7 @@ describe('Tool Model', () => {
 
     it('should handle invalid JSON in config', () => {
       const rowData = createMockTool({
-        config: 'invalid json string'
+        config: 'invalid json string',
       })
 
       expect(() => Tool.fromRow(rowData)).toThrow()
@@ -222,9 +228,9 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 1024,
           maxExecutionTime: 5000,
-          requiresAuth: false
+          requiresAuth: false,
         },
-        parameters: []
+        parameters: [],
       }
       const toolData = createMockTool({ config })
       const tool = new Tool(toolData)
@@ -247,7 +253,7 @@ describe('Tool Model', () => {
         const updateData = {
           name: 'Updated Tool',
           description: 'Updated description',
-          enabled: false
+          enabled: false,
         }
 
         const updatedTool = tool.update(updateData)
@@ -330,9 +336,9 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 2048,
           maxExecutionTime: 5000,
-          requiresAuth: false
+          requiresAuth: false,
         },
-        parameters: []
+        parameters: [],
       }
       const tool = new Tool(createMockTool({ config }))
 
@@ -347,9 +353,9 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 1024,
           maxExecutionTime: 15000,
-          requiresAuth: false
+          requiresAuth: false,
         },
-        parameters: []
+        parameters: [],
       }
       const tool = new Tool(createMockTool({ config }))
 
@@ -364,9 +370,9 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 1024,
           maxExecutionTime: 5000,
-          requiresAuth: false
+          requiresAuth: false,
         },
-        parameters: []
+        parameters: [],
       }
       const privateToolConfig = {
         inputSchema: { type: 'string' },
@@ -375,9 +381,9 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 1024,
           maxExecutionTime: 5000,
-          requiresAuth: true
+          requiresAuth: true,
         },
-        parameters: []
+        parameters: [],
       }
 
       const publicTool = new Tool(createMockTool({ config: publicToolConfig }))
@@ -395,9 +401,9 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 1024,
           maxExecutionTime: 5000,
-          requiresAuth: false
+          requiresAuth: false,
         },
-        parameters: []
+        parameters: [],
       }
       const asyncConfig = {
         inputSchema: { type: 'string' },
@@ -406,9 +412,9 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 1024,
           maxExecutionTime: 5000,
-          requiresAuth: false
+          requiresAuth: false,
         },
-        parameters: []
+        parameters: [],
       }
 
       const syncTool = new Tool(createMockTool({ config: syncConfig }))
@@ -426,9 +432,9 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 1024,
           maxExecutionTime: 5000,
-          requiresAuth: false
+          requiresAuth: false,
         },
-        parameters: []
+        parameters: [],
       }
       const asyncConfig = {
         inputSchema: { type: 'string' },
@@ -437,9 +443,9 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 1024,
           maxExecutionTime: 5000,
-          requiresAuth: false
+          requiresAuth: false,
         },
-        parameters: []
+        parameters: [],
       }
       const streamingConfig = {
         inputSchema: { type: 'string' },
@@ -448,9 +454,9 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 1024,
           maxExecutionTime: 5000,
-          requiresAuth: false
+          requiresAuth: false,
         },
-        parameters: []
+        parameters: [],
       }
 
       const syncTool = new Tool(createMockTool({ config: syncConfig }))
@@ -470,12 +476,22 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 1024,
           maxExecutionTime: 5000,
-          requiresAuth: false
+          requiresAuth: false,
         },
         parameters: [
-          { name: 'required_param', type: 'string', required: true, description: 'A required parameter' },
-          { name: 'optional_param', type: 'number', required: false, description: 'An optional parameter' }
-        ]
+          {
+            name: 'required_param',
+            type: 'string',
+            required: true,
+            description: 'A required parameter',
+          },
+          {
+            name: 'optional_param',
+            type: 'number',
+            required: false,
+            description: 'An optional parameter',
+          },
+        ],
       }
       const tool = new Tool(createMockTool({ config }))
 
@@ -505,9 +521,9 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 1024,
           maxExecutionTime: 5000,
-          requiresAuth: false
+          requiresAuth: false,
         },
-        parameters: []
+        parameters: [],
       }
       const tool = new Tool(createMockTool({ config }))
 
@@ -525,8 +541,19 @@ describe('Tool Model', () => {
 
     it('should return parameter schema', () => {
       const parameters = [
-        { name: 'param1', type: 'string', required: true, description: 'First parameter' },
-        { name: 'param2', type: 'number', required: false, default: 42, description: 'Second parameter' }
+        {
+          name: 'param1',
+          type: 'string',
+          required: true,
+          description: 'First parameter',
+        },
+        {
+          name: 'param2',
+          type: 'number',
+          required: false,
+          default: 42,
+          description: 'Second parameter',
+        },
       ]
       const config = {
         inputSchema: { type: 'object' },
@@ -535,9 +562,9 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 1024,
           maxExecutionTime: 5000,
-          requiresAuth: false
+          requiresAuth: false,
         },
-        parameters
+        parameters,
       }
       const tool = new Tool(createMockTool({ config }))
 
@@ -599,15 +626,15 @@ describe('Tool Model', () => {
           quotas: {
             maxInputSize: 1024,
             maxExecutionTime: 5000,
-            requiresAuth: false
+            requiresAuth: false,
           },
-          parameters: []
+          parameters: [],
         }),
         enabled: true,
         beta: false,
         sort_order: 0,
         created_at: 1234567890,
-        updated_at: 1234567890
+        updated_at: 1234567890,
       }
 
       const tool = new Tool(minimalToolData)
@@ -623,7 +650,7 @@ describe('Tool Model', () => {
         slug: 'invalid slug!',
         name: 'Test Tool',
         category: 'invalid',
-        config: '{}'
+        config: '{}',
       }
 
       expect(() => Tool.fromRow(invalidRow)).toThrow()
@@ -637,9 +664,9 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 1024,
           maxExecutionTime: 5000,
-          requiresAuth: false
+          requiresAuth: false,
         },
-        parameters: []
+        parameters: [],
       }
       const tool = new Tool(createMockTool({ config }))
 
@@ -655,15 +682,15 @@ describe('Tool Model', () => {
           type: 'object',
           required: true,
           description: 'A complex parameter',
-          default: null
+          default: null,
         },
         {
           name: 'array_param',
           type: 'array',
           required: false,
           description: 'An array parameter',
-          default: []
-        }
+          default: [],
+        },
       ]
       const config = {
         inputSchema: { type: 'object' },
@@ -672,9 +699,9 @@ describe('Tool Model', () => {
         quotas: {
           maxInputSize: 1024,
           maxExecutionTime: 5000,
-          requiresAuth: false
+          requiresAuth: false,
         },
-        parameters
+        parameters,
       }
       const tool = new Tool(createMockTool({ config }))
 
@@ -740,19 +767,21 @@ describe('Tool Model', () => {
       const toolData = createMockTool()
 
       // Test INSERT
-      const insertStmt = mockDb.prepare(TOOL_QUERIES.INSERT).bind(
-        toolData.id,
-        toolData.slug,
-        toolData.name,
-        toolData.category,
-        toolData.description,
-        toolData.config,
-        toolData.enabled,
-        toolData.beta,
-        toolData.sort_order,
-        toolData.created_at,
-        toolData.updated_at
-      )
+      const insertStmt = mockDb
+        .prepare(TOOL_QUERIES.INSERT)
+        .bind(
+          toolData.id,
+          toolData.slug,
+          toolData.name,
+          toolData.category,
+          toolData.description,
+          toolData.config,
+          toolData.enabled,
+          toolData.beta,
+          toolData.sort_order,
+          toolData.created_at,
+          toolData.updated_at
+        )
 
       const result = await insertStmt.run()
       expect(result.success).toBe(true)
@@ -780,7 +809,9 @@ describe('Tool Model', () => {
       mockDb.setTableData('tools', [toolData])
 
       // Test SELECT by category
-      const selectStmt = mockDb.prepare(TOOL_QUERIES.SELECT_BY_CATEGORY).bind(toolData.category, 10, 0)
+      const selectStmt = mockDb
+        .prepare(TOOL_QUERIES.SELECT_BY_CATEGORY)
+        .bind(toolData.category, 10, 0)
       const result = await selectStmt.all()
 
       expect(result.results).toHaveLength(1)
@@ -795,17 +826,19 @@ describe('Tool Model', () => {
       const now = Math.floor(Date.now() / 1000)
 
       // Test UPDATE
-      const updateStmt = mockDb.prepare(TOOL_QUERIES.UPDATE).bind(
-        updatedName,
-        toolData.category,
-        toolData.description,
-        toolData.config,
-        toolData.enabled,
-        toolData.beta,
-        toolData.sort_order,
-        now,
-        toolData.id
-      )
+      const updateStmt = mockDb
+        .prepare(TOOL_QUERIES.UPDATE)
+        .bind(
+          updatedName,
+          toolData.category,
+          toolData.description,
+          toolData.config,
+          toolData.enabled,
+          toolData.beta,
+          toolData.sort_order,
+          now,
+          toolData.id
+        )
 
       const result = await updateStmt.run()
       expect(result.success).toBe(true)
@@ -830,10 +863,7 @@ describe('Tool Model', () => {
 
     it('should handle counting tools by category', async () => {
       const category = 'json'
-      const tools = [
-        createMockTool({ category }),
-        createMockTool({ category })
-      ]
+      const tools = [createMockTool({ category }), createMockTool({ category })]
       mockDb.setTableData('tools', tools)
 
       // Test COUNT

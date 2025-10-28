@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { FileService } from '@/api/src/services/file_service'
 import {
-  createTestDatabase,
-  createMockFileUpload,
-  createMockUser,
-  createMockToolUsage,
-  createMockAuditLog,
-  setupTestEnvironment,
   cleanupTestEnvironment,
+  createMockAuditLog,
+  createMockFileUpload,
+  createMockToolUsage,
+  createMockUser,
+  createTestDatabase,
   type MockD1Database,
+  setupTestEnvironment,
 } from '../models/database.mock'
 
 // Mock the database client module
@@ -186,14 +186,11 @@ describe('FileService', () => {
 
       expect(result.valid).toBe(true)
       expect(FileUpload.validateFilename).toHaveBeenCalledWith(options.filename)
-      expect(FileUpload.validateMimeType).toHaveBeenCalledWith(
-        options.mimeType,
-        ['application/json', 'text/plain']
-      )
-      expect(FileUpload.validateFileSize).toHaveBeenCalledWith(
-        options.size,
-        10 * 1024 * 1024
-      )
+      expect(FileUpload.validateMimeType).toHaveBeenCalledWith(options.mimeType, [
+        'application/json',
+        'text/plain',
+      ])
+      expect(FileUpload.validateFileSize).toHaveBeenCalledWith(options.size, 10 * 1024 * 1024)
     })
 
     it('should reject invalid filename', async () => {
@@ -297,11 +294,7 @@ describe('FileService', () => {
         customMetadata: { uploadUrl },
       })
 
-      const result = await fileService.createUploadRequest(
-        options,
-        '127.0.0.1',
-        'test-agent'
-      )
+      const result = await fileService.createUploadRequest(options, '127.0.0.1', 'test-agent')
 
       expect(result.success).toBe(true)
       expect(result.fileId).toBe(mockFileUpload.id)
@@ -391,8 +384,9 @@ describe('FileService', () => {
       const fileId = 'file-123'
       mockDbClient.queryFirst.mockRejectedValue(new Error('Database error'))
 
-      await expect(fileService.getFileById(fileId))
-        .rejects.toThrow('Failed to get file: Error: Database error')
+      await expect(fileService.getFileById(fileId)).rejects.toThrow(
+        'Failed to get file: Error: Database error'
+      )
     })
   })
 
@@ -445,8 +439,9 @@ describe('FileService', () => {
 
       mockDbClient.queryFirst.mockResolvedValue(null)
 
-      await expect(fileService.updateFile(fileId, updateData))
-        .rejects.toThrow(`File with ID ${fileId} not found`)
+      await expect(fileService.updateFile(fileId, updateData)).rejects.toThrow(
+        `File with ID ${fileId} not found`
+      )
     })
   })
 
@@ -459,15 +454,17 @@ describe('FileService', () => {
       const { FileUpload } = require('@/api/src/models/file_upload')
       FileUpload.fromRow.mockReturnValue(existingFile)
 
-      mockDbClient.execute.mockResolvedValue({ success: true, meta: { changes: 1 } })
+      mockDbClient.execute.mockResolvedValue({
+        success: true,
+        meta: { changes: 1 },
+      })
       mockR2.delete.mockResolvedValue(undefined)
 
       await fileService.deleteFile(fileId, '127.0.0.1', 'test-agent')
 
-      expect(mockDbClient.execute).toHaveBeenCalledWith(
-        'DELETE FROM file_uploads WHERE id = ?',
-        [fileId]
-      )
+      expect(mockDbClient.execute).toHaveBeenCalledWith('DELETE FROM file_uploads WHERE id = ?', [
+        fileId,
+      ])
       expect(mockR2.delete).toHaveBeenCalledWith(existingFile.path)
     })
 
@@ -475,8 +472,9 @@ describe('FileService', () => {
       const fileId = 'nonexistent-file'
       mockDbClient.queryFirst.mockResolvedValue(null)
 
-      await expect(fileService.deleteFile(fileId))
-        .rejects.toThrow(`File with ID ${fileId} not found`)
+      await expect(fileService.deleteFile(fileId)).rejects.toThrow(
+        `File with ID ${fileId} not found`
+      )
     })
   })
 
@@ -494,7 +492,7 @@ describe('FileService', () => {
 
       mockDbClient.query.mockResolvedValue(mockFiles)
       const { FileUpload } = require('@/api/src/models/file_upload')
-      FileUpload.fromRow.mockImplementation((row) => row)
+      FileUpload.fromRow.mockImplementation(row => row)
 
       const result = await fileService.listFiles(filter)
 
@@ -510,7 +508,7 @@ describe('FileService', () => {
 
       mockDbClient.query.mockResolvedValue(mockFiles)
       const { FileUpload } = require('@/api/src/models/file_upload')
-      FileUpload.fromRow.mockImplementation((row) => row)
+      FileUpload.fromRow.mockImplementation(row => row)
 
       const result = await fileService.listFiles()
 
@@ -539,8 +537,9 @@ describe('FileService', () => {
 
         mockR2.head.mockRejectedValue(new Error('R2 error'))
 
-        await expect((fileService as any).generatePresignedUploadUrl(mockFile))
-          .rejects.toThrow('Failed to generate presigned URL: Error: R2 error')
+        await expect((fileService as any).generatePresignedUploadUrl(mockFile)).rejects.toThrow(
+          'Failed to generate presigned URL: Error: R2 error'
+        )
       })
     })
 
@@ -695,7 +694,7 @@ describe('FileService', () => {
   describe('File Cleanup', () => {
     describe('cleanupExpiredFiles', () => {
       it('should cleanup expired files', async () => {
-        const expiredTime = Math.floor(Date.now() / 1000) - (24 * 60 * 60) // 24 hours ago
+        const expiredTime = Math.floor(Date.now() / 1000) - 24 * 60 * 60 // 24 hours ago
         const mockFiles = [
           createMockFileUpload({
             id: 'file-1',
@@ -709,9 +708,12 @@ describe('FileService', () => {
 
         mockDbClient.query.mockResolvedValue(mockFiles)
         const { FileUpload } = require('@/api/src/models/file_upload')
-        FileUpload.fromRow.mockImplementation((row) => row)
+        FileUpload.fromRow.mockImplementation(row => row)
 
-        mockDbClient.execute.mockResolvedValue({ success: true, meta: { changes: 1 } })
+        mockDbClient.execute.mockResolvedValue({
+          success: true,
+          meta: { changes: 1 },
+        })
         mockR2.delete.mockResolvedValue(undefined)
 
         const result = await fileService.cleanupExpiredFiles()
@@ -722,7 +724,7 @@ describe('FileService', () => {
       })
 
       it('should not cleanup recent files', async () => {
-        const recentTime = Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours from now
+        const recentTime = Math.floor(Date.now() / 1000) + 24 * 60 * 60 // 24 hours from now
         const mockFiles = [
           createMockFileUpload({
             id: 'file-1',
@@ -732,7 +734,7 @@ describe('FileService', () => {
 
         mockDbClient.query.mockResolvedValue(mockFiles)
         const { FileUpload } = require('@/api/src/models/file_upload')
-        FileUpload.fromRow.mockImplementation((row) => row)
+        FileUpload.fromRow.mockImplementation(row => row)
 
         const result = await fileService.cleanupExpiredFiles()
 
@@ -861,8 +863,9 @@ describe('FileService', () => {
         const sourceFileId = 'nonexistent-file'
         mockDbClient.queryFirst.mockResolvedValue(null)
 
-        await expect(fileService.copyFile(sourceFileId, 'copy.json'))
-          .rejects.toThrow(`Source file with ID ${sourceFileId} not found`)
+        await expect(fileService.copyFile(sourceFileId, 'copy.json')).rejects.toThrow(
+          `Source file with ID ${sourceFileId} not found`
+        )
       })
     })
 
@@ -908,8 +911,9 @@ describe('FileService', () => {
       const fileId = 'file-123'
       mockR2.get.mockRejectedValue(new Error('R2 connection failed'))
 
-      await expect(fileService.getFileContent(fileId))
-        .rejects.toThrow('Failed to read file content: Error: R2 connection failed')
+      await expect(fileService.getFileContent(fileId)).rejects.toThrow(
+        'Failed to read file content: Error: R2 connection failed'
+      )
     })
 
     it('should handle malformed file data', async () => {
@@ -920,8 +924,9 @@ describe('FileService', () => {
         throw new Error('Invalid file data')
       })
 
-      await expect(fileService.getFileById(fileId))
-        .rejects.toThrow('Failed to get file: Error: Invalid file data')
+      await expect(fileService.getFileById(fileId)).rejects.toThrow(
+        'Failed to get file: Error: Invalid file data'
+      )
     })
 
     it('should handle quota exceeded errors', async () => {

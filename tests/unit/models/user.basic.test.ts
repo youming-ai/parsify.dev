@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 // Simple user test without imports first
 describe('User Model Tests', () => {
@@ -29,18 +29,9 @@ describe('User Model Tests', () => {
   })
 
   it('should validate email format', () => {
-    const validEmails = [
-      'test@example.com',
-      'user.name@domain.co.uk',
-      'user+tag@example.org',
-    ]
+    const validEmails = ['test@example.com', 'user.name@domain.co.uk', 'user+tag@example.org']
 
-    const invalidEmails = [
-      'invalid-email',
-      '@example.com',
-      'user@',
-      'user@.com',
-    ]
+    const invalidEmails = ['invalid-email', '@example.com', 'user@', 'user@.com']
 
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 

@@ -59,7 +59,7 @@ export class createMockD1Database implements MockD1Database {
   }
 
   batch(statements: MockD1Statement[]): Promise<MockD1BatchResult> {
-    const results = statements.map(stmt => ({
+    const results = statements.map(_stmt => ({
       success: true,
       meta: {
         duration: 1,
@@ -211,10 +211,7 @@ export class MockD1Statement implements MockD1Statement {
 
     if (this.boundArgs.length > 0 && this.query.includes('WHERE')) {
       // Simple WHERE clause handling for equality checks
-      const whereClause = this.query
-        .split('WHERE')[1]
-        .split('ORDER')[0]
-        .split('LIMIT')[0]
+      const whereClause = this.query.split('WHERE')[1].split('ORDER')[0].split('LIMIT')[0]
       const conditions = whereClause.split('AND').map(c => c.trim())
 
       filteredData = tableData.filter(row => {
@@ -231,10 +228,7 @@ export class MockD1Statement implements MockD1Statement {
 
     // Apply ORDER BY
     if (this.query.includes('ORDER BY')) {
-      const orderClause = this.query
-        .split('ORDER BY')[1]
-        .split('LIMIT')[0]
-        .trim()
+      const orderClause = this.query.split('ORDER BY')[1].split('LIMIT')[0].trim()
       const [column, direction] = orderClause.split(' ')
 
       filteredData.sort((a, b) => {
@@ -250,7 +244,7 @@ export class MockD1Statement implements MockD1Statement {
     if (this.query.includes('LIMIT')) {
       const limitMatch = this.query.match(/LIMIT\s+(\d+)/i)
       if (limitMatch) {
-        const limit = parseInt(limitMatch[1])
+        const limit = parseInt(limitMatch[1], 10)
         filteredData = filteredData.slice(0, limit)
       }
     }
@@ -259,7 +253,7 @@ export class MockD1Statement implements MockD1Statement {
     if (this.query.includes('OFFSET')) {
       const offsetMatch = this.query.match(/OFFSET\s+(\d+)/i)
       if (offsetMatch) {
-        const offset = parseInt(offsetMatch[1])
+        const offset = parseInt(offsetMatch[1], 10)
         filteredData = filteredData.slice(offset)
       }
     }
@@ -358,9 +352,7 @@ export class MockD1Statement implements MockD1Statement {
 }
 
 // Helper function to create a mock database with test data
-export function createTestDatabase(
-  data?: Record<string, any[]>
-): MockD1Database {
+export function createTestDatabase(data?: Record<string, any[]>): MockD1Database {
   return new createMockD1Database(data)
 }
 

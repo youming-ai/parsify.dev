@@ -1,14 +1,13 @@
+import { AUDIT_LOG_QUERIES, AuditLog } from '../models/audit_log'
 import {
-  QuotaCounter,
-  QuotaLimit,
-  QuotaLimitSchema,
-  QuotaPeriod,
   QUOTA_COUNTER_QUERIES,
+  QuotaCounter,
+  type QuotaLimit,
+  type QuotaPeriod,
 } from '../models/quota_counter'
-import { User, USER_QUERIES } from '../models/user'
-import { AuditLog, AUDIT_LOG_QUERIES } from '../models/audit_log'
-import { CloudflareService } from './cloudflare/cloudflare-service'
-import { KVCacheService } from './cloudflare/kv-cache'
+import { USER_QUERIES, User } from '../models/user'
+import type { CloudflareService } from './cloudflare/cloudflare-service'
+import type { KVCacheService } from './cloudflare/kv-cache'
 
 export interface RateLimitServiceOptions {
   db: D1Database
@@ -82,14 +81,7 @@ export class RateLimitService {
 
   // Rate limiting operations
   async checkRateLimit(options: RateLimitOptions): Promise<RateLimitCheck> {
-    const {
-      identifier,
-      quotaType,
-      amount = 1,
-      bypassForUser,
-      customLimit,
-      customPeriod,
-    } = options
+    const { identifier, quotaType, amount = 1, bypassForUser, customLimit, customPeriod } = options
 
     // Bypass for specific users
     if (bypassForUser && identifier === bypassForUser) {
@@ -148,29 +140,15 @@ export class RateLimitService {
     }
   }
 
-  async resetQuota(
-    identifier: string,
-    quotaType: string,
-    period?: QuotaPeriod
-  ): Promise<void> {
+  async resetQuota(identifier: string, quotaType: string, period?: QuotaPeriod): Promise<void> {
     try {
       const actualPeriod = period || 'hour'
-      const periodInfo = QuotaCounter.createPeriod(
-        quotaType as any,
-        actualPeriod
-      )
+      const periodInfo = QuotaCounter.createPeriod(quotaType as any, actualPeriod)
 
       // Find existing quota counter
-      const stmt = this.db.prepare(
-        QUOTA_COUNTER_QUERIES.SELECT_BY_USER_AND_TYPE
-      )
+      const stmt = this.db.prepare(QUOTA_COUNTER_QUERIES.SELECT_BY_USER_AND_TYPE)
       const result = await stmt
-        .bind(
-          identifier,
-          quotaType,
-          periodInfo.period_start,
-          periodInfo.period_end
-        )
+        .bind(identifier, quotaType, periodInfo.period_start, periodInfo.period_end)
         .first()
 
       if (result) {
@@ -199,11 +177,7 @@ export class RateLimitService {
     periodEnd: number
   }> {
     try {
-      const quotaCounter = await this.getQuotaCounter(
-        identifier,
-        quotaType,
-        period
-      )
+      const quotaCounter = await this.getQuotaCounter(identifier, quotaType, period)
 
       if (!quotaCounter) {
         const limitConfig = this.getLimitConfig(quotaType, period)
@@ -236,10 +210,7 @@ export class RateLimitService {
     }
   }
 
-  async getQuotaStats(
-    quotaType: string,
-    period: QuotaPeriod = 'hour'
-  ): Promise<RateLimitStats> {
+  async getQuotaStats(quotaType: string, period: QuotaPeriod = 'hour'): Promise<RateLimitStats> {
     try {
       const periodInfo = QuotaCounter.createPeriod(quotaType as any, period)
       const periodStart = periodInfo.period_start
@@ -316,9 +287,7 @@ export class RateLimitService {
         }
 
         // Also get daily usage for some types
-        if (
-          ['api_requests', 'execution_time', 'bandwidth'].includes(quotaType)
-        ) {
+        if (['api_requests', 'execution_time', 'bandwidth'].includes(quotaType)) {
           const dailyUsage = await this.getQuotaUsage(userId, quotaType, 'day')
           quotas[`${quotaType}_daily`] = {
             ...dailyUsage,
@@ -402,8 +371,8 @@ export class RateLimitService {
 
       const violations = result.results.map(row => ({
         identifier: row.ip_address || row.user_id || 'unknown',
-        requests: parseInt(row.violation_count),
-        violations: parseInt(row.violation_count),
+        requests: parseInt(row.violation_count, 10),
+        violations: parseInt(row.violation_count, 10),
         violationRate: 100, // Simplified calculation
         lastViolation: Date.now() - Math.random() * 86400000, // Mock data
       }))
@@ -427,33 +396,25 @@ export class RateLimitService {
   }> {
     try {
       const stmt = this.db.prepare(QUOTA_COUNTER_QUERIES.QUOTA_UTILIZATION)
-      const result = await stmt
-        .bind(Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60)
-        .all()
+      const result = await stmt.bind(Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60).all()
 
       const utilization = result.results.map(row => ({
         quotaType: row.quota_type,
         utilization: parseFloat(row.avg_utilization_percent),
-        requests: parseInt(row.total_counters),
+        requests: parseInt(row.total_counters, 10),
       }))
 
-      const totalRequests = utilization.reduce(
-        (sum, item) => sum + item.requests,
-        0
-      )
+      const totalRequests = utilization.reduce((sum, item) => sum + item.requests, 0)
       const averageUtilization =
         utilization.length > 0
-          ? utilization.reduce((sum, item) => sum + item.utilization, 0) /
-            utilization.length
+          ? utilization.reduce((sum, item) => sum + item.utilization, 0) / utilization.length
           : 0
 
       return {
         totalQuotaTypes: utilization.length,
         totalQuotaCounters: totalRequests,
         averageUtilization: Math.round(averageUtilization * 100) / 100,
-        topUtilizedTypes: utilization
-          .sort((a, b) => b.utilization - a.utilization)
-          .slice(0, 10),
+        topUtilizedTypes: utilization.sort((a, b) => b.utilization - a.utilization).slice(0, 10),
       }
     } catch (error) {
       console.error('Failed to get system utilization:', error)
@@ -467,10 +428,7 @@ export class RateLimitService {
   }
 
   // Private helper methods
-  private getLimitConfig(
-    quotaType: string,
-    customPeriod?: QuotaPeriod
-  ): QuotaLimit | null {
+  private getLimitConfig(quotaType: string, customPeriod?: QuotaPeriod): QuotaLimit | null {
     const defaultLimits = QuotaCounter.getDefaultLimits()
     const limit = defaultLimits.find(
       l => l.type === quotaType && (!customPeriod || l.period === customPeriod)
@@ -528,22 +486,12 @@ export class RateLimitService {
       if (this.isIpAddress(identifier)) {
         stmt = this.db.prepare(QUOTA_COUNTER_QUERIES.SELECT_BY_IP_AND_TYPE)
         result = await stmt
-          .bind(
-            identifier,
-            quotaType,
-            periodInfo.period_start,
-            periodInfo.period_end
-          )
+          .bind(identifier, quotaType, periodInfo.period_start, periodInfo.period_end)
           .first()
       } else {
         stmt = this.db.prepare(QUOTA_COUNTER_QUERIES.SELECT_BY_USER_AND_TYPE)
         result = await stmt
-          .bind(
-            identifier,
-            quotaType,
-            periodInfo.period_start,
-            periodInfo.period_end
-          )
+          .bind(identifier, quotaType, periodInfo.period_start, periodInfo.period_end)
           .first()
       }
 
@@ -571,13 +519,7 @@ export class RateLimitService {
             limit,
             periodInfo.period_start
           )
-        : QuotaCounter.createForUser(
-            identifier,
-            quotaType,
-            period,
-            limit,
-            periodInfo.period_start
-          )
+        : QuotaCounter.createForUser(identifier, quotaType, period, limit, periodInfo.period_start)
 
       const stmt = this.db.prepare(QUOTA_COUNTER_QUERIES.INSERT)
       await stmt
@@ -797,17 +739,8 @@ export class RateLimitService {
     return !expiry || Date.now() > expiry
   }
 
-  private async calculateRateLimit(
-    options: RateLimitOptions
-  ): Promise<RateLimitCheck> {
-    const {
-      identifier,
-      quotaType,
-      amount = 1,
-      bypassForUser,
-      customLimit,
-      customPeriod,
-    } = options
+  private async calculateRateLimit(options: RateLimitOptions): Promise<RateLimitCheck> {
+    const { identifier, quotaType, amount = 1, bypassForUser, customLimit, customPeriod } = options
 
     // Bypass for specific users
     if (bypassForUser && identifier === bypassForUser) {
@@ -832,18 +765,10 @@ export class RateLimitService {
       }
 
       // Calculate actual limit based on user tier
-      const actualLimit = await this.calculateActualLimit(
-        identifier,
-        limitConfig,
-        customLimit
-      )
+      const actualLimit = await this.calculateActualLimit(identifier, limitConfig, customLimit)
 
       // Get current quota counter
-      let quotaCounter = await this.getQuotaCounter(
-        identifier,
-        quotaType,
-        customPeriod
-      )
+      let quotaCounter = await this.getQuotaCounter(identifier, quotaType, customPeriod)
 
       if (!quotaCounter) {
         // Create new quota counter
@@ -872,10 +797,7 @@ export class RateLimitService {
         }
 
         // Update local cache
-        this.cache.set(
-          `${identifier}:${quotaType}:${customPeriod || 'hour'}`,
-          result
-        )
+        this.cache.set(`${identifier}:${quotaType}:${customPeriod || 'hour'}`, result)
         this.cacheExpiry.set(
           `${identifier}:${quotaType}:${customPeriod || 'hour'}`,
           Date.now() + 60000
@@ -894,19 +816,11 @@ export class RateLimitService {
 
         // Log rate limit event
         if (this.auditEnabled) {
-          await this.logRateLimitEvent(
-            identifier,
-            quotaType,
-            actualLimit,
-            quotaCounter.used_count
-          )
+          await this.logRateLimitEvent(identifier, quotaType, actualLimit, quotaCounter.used_count)
         }
 
         // Cache negative result for shorter time
-        this.cache.set(
-          `${identifier}:${quotaType}:${customPeriod || 'hour'}`,
-          result
-        )
+        this.cache.set(`${identifier}:${quotaType}:${customPeriod || 'hour'}`, result)
         this.cacheExpiry.set(
           `${identifier}:${quotaType}:${customPeriod || 'hour'}`,
           Date.now() + 30000

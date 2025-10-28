@@ -33,7 +33,7 @@ export class JsonFileModel implements JsonFile {
       errors.push({
         code: 'UNSUPPORTED_FORMAT',
         message: 'Unsupported file format. Only .md and .txt files are supported.',
-        severity: 'error'
+        severity: 'error',
       })
     }
 
@@ -43,7 +43,7 @@ export class JsonFileModel implements JsonFile {
       errors.push({
         code: 'FILE_TOO_LARGE',
         message: `File size exceeds 1MB limit. Current size: ${Math.round(this.size / 1024)}KB`,
-        severity: 'error'
+        severity: 'error',
       })
     }
 
@@ -52,7 +52,7 @@ export class JsonFileModel implements JsonFile {
       errors.push({
         code: 'EMPTY_FILE',
         message: 'File is empty or contains only whitespace.',
-        severity: 'warning'
+        severity: 'warning',
       })
     }
 
@@ -67,14 +67,14 @@ export class JsonFileModel implements JsonFile {
         errors.push({
           code: 'INVALID_ENCODING',
           message: 'File contains invalid UTF-8 characters.',
-          severity: 'error'
+          severity: 'error',
         })
       }
     } catch {
       errors.push({
         code: 'INVALID_ENCODING',
         message: 'File encoding validation failed.',
-        severity: 'error'
+        severity: 'error',
       })
     }
 
@@ -91,13 +91,17 @@ export class JsonFileModel implements JsonFile {
       const reader = new FileReader()
       const jsonFile = new JsonFileModel(file)
 
-      reader.onload = (event) => {
+      reader.onload = event => {
         try {
           const content = event.target?.result as string
           jsonFile.setContent(content)
           resolve(jsonFile)
         } catch (error) {
-          reject(new Error(`Failed to read file: ${error instanceof Error ? error.message : 'Unknown error'}`))
+          reject(
+            new Error(
+              `Failed to read file: ${error instanceof Error ? error.message : 'Unknown error'}`
+            )
+          )
         }
       }
 

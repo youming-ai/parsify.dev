@@ -1,25 +1,19 @@
-import React, { useState, useCallback, useRef } from 'react'
-import { cn } from '@/lib/utils'
+import React, { useCallback, useRef, useState } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { FileDropZone } from './file-drop-zone'
-import { FileUploadProgressIndicator } from './file-upload-progress'
-import { FilePreview } from './file-preview'
 import { FileListManager } from './file-list-manager'
-import { DownloadButton } from './download-button'
+import { FilePreview } from './file-preview'
+import { createFileUploadService } from './file-upload-api'
+import { FileUploadProgressIndicator } from './file-upload-progress'
 import {
-  validateFiles,
-  canUploadFiles,
-  formatFileSize
-} from './file-validation'
-import { fileUploadApiService } from './file-upload-api'
-import {
-  FileUploadConfig,
-  UploadedFile,
-  FileUploadProgress,
-  FileValidationError,
   DEFAULT_FILE_UPLOAD_CONFIG,
+  type FileUploadConfig,
+  type FileValidationError,
+  type UploadedFile,
 } from './file-upload-types'
+import { validateFiles } from './file-validation'
 
 interface FileUploadComponentProps {
   /** File upload configuration */
@@ -58,178 +52,189 @@ export const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
   onError,
 }) => {
   const finalConfig = { ...DEFAULT_FILE_UPLOAD_CONFIG, ...config }
-  const {
-    maxSize,
-    accept,
-    multiple,
-    autoUpload,
-    endpoint,
-    headers,
-    validator,
-  } = finalConfig
+  const { maxSize, accept, multiple, autoUpload, endpoint, headers, validator } = finalConfig
 
   const [files, setFiles] = useState<UploadedFile[]>([])
   const [errors, setErrors] = useState<FileValidationError[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [selectedFile, setSelectedFile] = useState<UploadedFile | null>(null)
-  const [dragOver, setDragOver] = useState(false)
+  const [_dragOver, setDragOver] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Initialize API service with config
   const apiService = React.useMemo(() => {
-    return new fileUploadApiService.constructor({
+    return createFileUploadService({
       baseUrl: endpoint,
       defaultHeaders: headers,
     })
   }, [endpoint, headers])
 
-  const handleFilesSelected = useCallback(async (selectedFiles: File[]) => {
-    try {
-      // Validate files
-      const validation = validateFiles(selectedFiles, {
-        maxSize,
-        accept,
-        multiple,
-        validator,
-      })
-
-      if (validation.errors.length > 0) {
-        setErrors(validation.errors)
-      }
-
-      if (validation.validFiles.length === 0) {
-        return
-      }
-
-      // Create uploaded file objects
-      const newUploadedFiles: UploadedFile[] = validation.validFiles.map(file => ({
-        id: `${file.name}_${file.size}_${Date.now()}`,
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        lastModified: file.lastModified,
-        status: 'pending',
-        progress: 0,
-      }))
-
-      // Add to files list
-      const updatedFiles = multiple ? [...files, ...newUploadedFiles] : newUploadedFiles
-      setFiles(updatedFiles)
-      onFilesChange?.(updatedFiles)
-
-      // Auto-upload if enabled
-      if (autoUpload) {
-        await uploadFiles(newUploadedFiles)
-      }
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error('Failed to process files')
-      onError?.(err)
-    }
-  }, [files, maxSize, accept, multiple, autoUpload, validator, onFilesChange, onError])
-
-  const uploadFiles = useCallback(async (filesToUpload: UploadedFile[]) => {
-    if (filesToUpload.length === 0) return
-
-    setIsUploading(true)
-    setErrors([])
-
-    try {
-      // Convert UploadedFile objects back to File objects for upload
-      const fileObjects = await Promise.all(
-        filesToUpload.map(async (uploadedFile) => {
-          // For now, we'll need to reconstruct the File object
-          // In a real implementation, you might want to store the original File objects
-          const response = await fetch(uploadedFile.url || '')
-          const blob = await response.blob()
-          return new File([blob], uploadedFile.name, { type: uploadedFile.type })
-        })
-      )
-
-      // Upload files
-      const uploadedFiles = await apiService.uploadFiles(
-        fileObjects,
-        {
+  const handleFilesSelected = useCallback(
+    async (selectedFiles: File[]) => {
+      try {
+        // Validate files
+        const validation = validateFiles(selectedFiles, {
           maxSize,
           accept,
           multiple,
-          endpoint,
-          headers,
           validator,
-        },
-        (fileId, progress) => {
-          setFiles(prevFiles =>
-            prevFiles.map(file =>
-              file.id === fileId
-                ? { ...file, status: 'uploading' as const, progress: progress.percentage }
-                : file
-            )
-          )
-        }
-      )
-
-      // Update files with upload results
-      setFiles(prevFiles => {
-        const updatedFiles = [...prevFiles]
-        uploadedFiles.forEach((uploadedFile, index) => {
-          const fileIndex = updatedFiles.findIndex(f => f.id === filesToUpload[index].id)
-          if (fileIndex !== -1) {
-            updatedFiles[fileIndex] = {
-              ...updatedFiles[fileIndex],
-              ...uploadedFile,
-              status: uploadedFile.status === 'success' ? 'success' : 'error',
-            }
-          }
         })
-        return updatedFiles
-      })
 
-      onUploadComplete?.(uploadedFiles)
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error('Upload failed')
-      onError?.(err)
+        if (validation.errors.length > 0) {
+          setErrors(validation.errors)
+        }
 
-      // Update file statuses to error
+        if (validation.validFiles.length === 0) {
+          return
+        }
+
+        // Create uploaded file objects
+        const newUploadedFiles: UploadedFile[] = validation.validFiles.map(file => ({
+          id: `${file.name}_${file.size}_${Date.now()}`,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          lastModified: file.lastModified,
+          status: 'pending',
+          progress: 0,
+        }))
+
+        // Add to files list
+        const updatedFiles = multiple ? [...files, ...newUploadedFiles] : newUploadedFiles
+        setFiles(updatedFiles)
+        onFilesChange?.(updatedFiles)
+
+        // Auto-upload if enabled
+        if (autoUpload) {
+          await uploadFiles(newUploadedFiles)
+        }
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error('Failed to process files')
+        onError?.(err)
+      }
+    },
+    [files, maxSize, accept, multiple, autoUpload, validator, onFilesChange, onError]
+  )
+
+  const uploadFiles = useCallback(
+    async (filesToUpload: UploadedFile[]) => {
+      if (filesToUpload.length === 0) return
+
+      setIsUploading(true)
+      setErrors([])
+
+      try {
+        // Convert UploadedFile objects back to File objects for upload
+        const fileObjects = await Promise.all(
+          filesToUpload.map(async uploadedFile => {
+            // For now, we'll need to reconstruct the File object
+            // In a real implementation, you might want to store the original File objects
+            const response = await fetch(uploadedFile.url || '')
+            const blob = await response.blob()
+            return new File([blob], uploadedFile.name, {
+              type: uploadedFile.type,
+            })
+          })
+        )
+
+        // Upload files
+        const uploadedFiles = await apiService.uploadFiles(
+          fileObjects,
+          {
+            maxSize,
+            accept,
+            multiple,
+            endpoint,
+            headers,
+            validator,
+          },
+          (fileId, progress) => {
+            setFiles(prevFiles =>
+              prevFiles.map(file =>
+                file.id === fileId
+                  ? {
+                      ...file,
+                      status: 'uploading' as const,
+                      progress: progress.percentage,
+                    }
+                  : file
+              )
+            )
+          }
+        )
+
+        // Update files with upload results
+        setFiles(prevFiles => {
+          const updatedFiles = [...prevFiles]
+          uploadedFiles.forEach((uploadedFile, index) => {
+            const fileIndex = updatedFiles.findIndex(f => f.id === filesToUpload[index].id)
+            if (fileIndex !== -1) {
+              updatedFiles[fileIndex] = {
+                ...updatedFiles[fileIndex],
+                ...uploadedFile,
+                status: uploadedFile.status === 'success' ? 'success' : 'error',
+              }
+            }
+          })
+          return updatedFiles
+        })
+
+        onUploadComplete?.(uploadedFiles)
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error('Upload failed')
+        onError?.(err)
+
+        // Update file statuses to error
+        setFiles(prevFiles =>
+          prevFiles.map(file =>
+            filesToUpload.some(f => f.id === file.id)
+              ? { ...file, status: 'error' as const, error: err.message }
+              : file
+          )
+        )
+      } finally {
+        setIsUploading(false)
+      }
+    },
+    [apiService, maxSize, accept, multiple, endpoint, headers, validator, onUploadComplete, onError]
+  )
+
+  const handleFileRemove = useCallback(
+    (fileId: string) => {
+      setFiles(prevFiles => prevFiles.filter(file => file.id !== fileId))
+      onFilesChange?.(files.filter(file => file.id !== fileId))
+    },
+    [files, onFilesChange]
+  )
+
+  const handleFileRetry = useCallback(
+    async (fileId: string) => {
+      const fileToRetry = files.find(f => f.id === fileId)
+      if (fileToRetry) {
+        await uploadFiles([fileToRetry])
+      }
+    },
+    [files, uploadFiles]
+  )
+
+  const handleFileCancel = useCallback(
+    (fileId: string) => {
+      apiService.cancelUpload(fileId)
       setFiles(prevFiles =>
         prevFiles.map(file =>
-          filesToUpload.some(f => f.id === file.id)
-            ? { ...file, status: 'error' as const, error: err.message }
-            : file
+          file.id === fileId ? { ...file, status: 'cancelled' as const } : file
         )
       )
-    } finally {
-      setIsUploading(false)
-    }
-  }, [apiService, maxSize, accept, multiple, endpoint, headers, validator, onUploadComplete, onError])
-
-  const handleFileRemove = useCallback((fileId: string) => {
-    setFiles(prevFiles => prevFiles.filter(file => file.id !== fileId))
-    onFilesChange?.(files.filter(file => file.id !== fileId))
-  }, [files, onFilesChange])
-
-  const handleFileRetry = useCallback(async (fileId: string) => {
-    const fileToRetry = files.find(f => f.id === fileId)
-    if (fileToRetry) {
-      await uploadFiles([fileToRetry])
-    }
-  }, [files, uploadFiles])
-
-  const handleFileCancel = useCallback((fileId: string) => {
-    apiService.cancelUpload(fileId)
-    setFiles(prevFiles =>
-      prevFiles.map(file =>
-        file.id === fileId
-          ? { ...file, status: 'cancelled' as const }
-          : file
-      )
-    )
-  }, [apiService])
+    },
+    [apiService]
+  )
 
   const handleFilePreview = useCallback((file: UploadedFile) => {
     setSelectedFile(file)
   }, [])
 
-  const handleFileDownload = useCallback((file: UploadedFile) => {
+  const handleFileDownload = useCallback((_file: UploadedFile | File) => {
     // Download will be handled by the DownloadButton component
   }, [])
 
@@ -282,7 +287,7 @@ export const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
           <AlertDescription>
             <div className="space-y-2">
               <p className="font-medium text-red-800">Validation Errors:</p>
-              <ul className="list-disc list-inside space-y-1 text-sm text-red-700">
+              <ul className="list-inside list-disc space-y-1 text-red-700 text-sm">
                 {errors.map((error, index) => (
                   <li key={index}>{error.message}</li>
                 ))}
@@ -295,7 +300,7 @@ export const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
       {/* Progress Indicators */}
       {showProgress && hasUploadingFiles && (
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Uploading Files...</h3>
+          <h3 className="font-medium text-lg">Uploading Files...</h3>
           {files
             .filter(file => file.status === 'uploading')
             .map(file => (
@@ -320,15 +325,15 @@ export const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
       {showFileList && hasFiles && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">
+            <h3 className="font-medium text-lg">
               Files ({files.length})
               {hasCompletedFiles && (
-                <span className="ml-2 text-sm text-green-600">
+                <span className="ml-2 text-green-600 text-sm">
                   ({files.filter(f => f.status === 'success').length} uploaded)
                 </span>
               )}
               {hasFailedFiles && (
-                <span className="ml-2 text-sm text-red-600">
+                <span className="ml-2 text-red-600 text-sm">
                   ({files.filter(f => f.status === 'error').length} failed)
                 </span>
               )}
@@ -336,21 +341,11 @@ export const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
 
             <div className="flex space-x-2">
               {hasFailedFiles && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRetryAll}
-                  disabled={isUploading}
-                >
+                <Button variant="outline" size="sm" onClick={handleRetryAll} disabled={isUploading}>
                   Retry Failed
                 </Button>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleClearAll}
-                disabled={isUploading}
-              >
+              <Button variant="outline" size="sm" onClick={handleClearAll} disabled={isUploading}>
                 Clear All
               </Button>
             </div>
@@ -375,19 +370,15 @@ export const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
       {showPreview && selectedFile && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">File Preview</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSelectedFile(null)}
-            >
+            <h3 className="font-medium text-lg">File Preview</h3>
+            <Button variant="outline" size="sm" onClick={() => setSelectedFile(null)}>
               Close Preview
             </Button>
           </div>
 
           <FilePreview
             file={selectedFile}
-            onCopy={(content) => {
+            onCopy={content => {
               navigator.clipboard.writeText(content)
             }}
             onDownload={handleFileDownload}
@@ -403,7 +394,9 @@ export const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
             disabled={isUploading}
             size="lg"
           >
-            {isUploading ? 'Uploading...' : `Upload ${files.filter(f => f.status === 'pending').length} Files`}
+            {isUploading
+              ? 'Uploading...'
+              : `Upload ${files.filter(f => f.status === 'pending').length} Files`}
           </Button>
         </div>
       )}
@@ -414,7 +407,7 @@ export const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
         type="file"
         multiple={multiple}
         accept={accept?.join(',')}
-        onChange={(e) => {
+        onChange={e => {
           const selectedFiles = Array.from(e.target.files || [])
           if (selectedFiles.length > 0) {
             handleFilesSelected(selectedFiles)

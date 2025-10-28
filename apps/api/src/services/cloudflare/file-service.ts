@@ -6,8 +6,8 @@
  * and CDN integration.
  */
 
-import { CloudflareService } from './cloudflare-service'
-import { R2FileMetadata } from '../../config/cloudflare/r2-config'
+import type { R2FileMetadata } from '../../config/cloudflare/r2-config'
+import type { CloudflareService } from './cloudflare-service'
 
 export interface FileUploadOptions {
   contentType?: string
@@ -75,9 +75,9 @@ export class FileService {
         'application/json',
         'application/xml',
         'application/pdf',
-        'application/zip'
+        'application/zip',
       ],
-      ...defaultOptions
+      ...defaultOptions,
     }
   }
 
@@ -98,7 +98,7 @@ export class FileService {
           success: false,
           error: validation.error,
           uploadTime: Date.now() - startTime,
-          size: this.getFileSize(file)
+          size: this.getFileSize(file),
         }
       }
 
@@ -120,14 +120,14 @@ export class FileService {
         uploadedAt: Date.now(),
         userId,
         compressed,
-        ...mergedOptions.customMetadata
+        ...mergedOptions.customMetadata,
       }
 
       // Upload file
       const result = await this.cloudflare.uploadFile(userId, processedFile, filename, {
         contentType: mergedOptions.contentType,
         metadata,
-        tags: mergedOptions.tags
+        tags: mergedOptions.tags,
       })
 
       return {
@@ -135,14 +135,14 @@ export class FileService {
         file: result,
         uploadTime: Date.now() - startTime,
         compressed,
-        size: result.size
+        size: result.size,
       }
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
         uploadTime: Date.now() - startTime,
-        size: this.getFileSize(file)
+        size: this.getFileSize(file),
       }
     }
   }
@@ -166,21 +166,21 @@ export class FileService {
       const contentType = response.headers.get('content-type') || options.contentType
 
       // Upload with content type from URL
-      return this.uploadFile(userId, buffer, filename, { ...options, contentType })
+      return this.uploadFile(userId, buffer, filename, {
+        ...options,
+        contentType,
+      })
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
         uploadTime: Date.now() - startTime,
-        size: 0
+        size: 0,
       }
     }
   }
 
-  async downloadFile(
-    key: string,
-    options: FileDownloadOptions = {}
-  ): Promise<FileDownloadResult> {
+  async downloadFile(key: string, options: FileDownloadOptions = {}): Promise<FileDownloadResult> {
     const startTime = Date.now()
 
     try {
@@ -190,13 +190,13 @@ export class FileService {
         return {
           success: false,
           error: 'File not found',
-          downloadTime: Date.now() - startTime
+          downloadTime: Date.now() - startTime,
         }
       }
 
       // Handle range requests
-      let file = result.file
-      let metadata = result.metadata
+      const file = result.file
+      const metadata = result.metadata
 
       if (options.range && options.range.start >= 0 && options.range.end >= options.range.start) {
         // This would need to be implemented with R2 range requests
@@ -208,13 +208,13 @@ export class FileService {
         file,
         metadata,
         downloadTime: Date.now() - startTime,
-        fromCache: false // Would need actual cache checking
+        fromCache: false, // Would need actual cache checking
       }
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-        downloadTime: Date.now() - startTime
+        downloadTime: Date.now() - startTime,
       }
     }
   }
@@ -248,7 +248,7 @@ export class FileService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   }
@@ -264,14 +264,14 @@ export class FileService {
       return {
         success: results.failed.length === 0,
         deleted: results.deleted,
-        failed: results.failed
+        failed: results.failed,
       }
     } catch (error) {
       return {
         success: false,
         deleted: [],
         failed: keys,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   }
@@ -290,7 +290,7 @@ export class FileService {
       const result = await this.cloudflare.listUserFiles(userId, {
         limit: options.limit,
         cursor: options.cursor,
-        prefix: options.prefix
+        prefix: options.prefix,
       })
 
       // Sort results if needed
@@ -304,7 +304,7 @@ export class FileService {
         files,
         totalCount: files.length,
         hasMore: result.truncated,
-        cursor: result.cursor
+        cursor: result.cursor,
       }
     } catch (error) {
       return {
@@ -312,7 +312,7 @@ export class FileService {
         files: [],
         totalCount: 0,
         hasMore: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   }
@@ -327,7 +327,9 @@ export class FileService {
     newestFile: R2FileMetadata | null
   }> {
     try {
-      const result = await this.cloudflare.listUserFiles(userId, { limit: 1000 })
+      const result = await this.cloudflare.listUserFiles(userId, {
+        limit: 1000,
+      })
 
       const files = result.files
       const totalFiles = files.length
@@ -365,7 +367,7 @@ export class FileService {
         averageSize,
         largestFile,
         oldestFile,
-        newestFile
+        newestFile,
       }
     } catch (error) {
       throw new Error(`Failed to get user file stats: ${error}`)
@@ -387,7 +389,7 @@ export class FileService {
           success: false,
           error: 'Source file not found',
           uploadTime: Date.now() - startTime,
-          size: 0
+          size: 0,
         }
       }
 
@@ -401,15 +403,15 @@ export class FileService {
         customMetadata: {
           ...sourceResult.metadata.metadata,
           copiedFrom: sourceKey,
-          copiedAt: Date.now()
-        }
+          copiedAt: Date.now(),
+        },
       })
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
         uploadTime: Date.now() - startTime,
-        size: 0
+        size: 0,
       }
     }
   }
@@ -440,13 +442,13 @@ export class FileService {
       // For now, return placeholder values
       return {
         success: true,
-        deletedCount: 0
+        deletedCount: 0,
       }
     } catch (error) {
       return {
         success: false,
         deletedCount: 0,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   }
@@ -477,14 +479,14 @@ export class FileService {
           totalFiles: 0, // Would need actual stats
           totalSize: 0,
           avgUploadTime: 0,
-          avgDownloadTime: 0
-        }
+          avgDownloadTime: 0,
+        },
       }
     } catch (error) {
       return {
         status: 'unhealthy',
         responseTime: Date.now() - startTime,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   }
@@ -502,7 +504,7 @@ export class FileService {
     if (size > maxSize) {
       return {
         valid: false,
-        error: `File size (${size} bytes) exceeds maximum allowed size (${maxSize} bytes)`
+        error: `File size (${size} bytes) exceeds maximum allowed size (${maxSize} bytes)`,
       }
     }
 
@@ -513,7 +515,7 @@ export class FileService {
     if (contentType && !allowedTypes.includes(contentType)) {
       return {
         valid: false,
-        error: `MIME type ${contentType} is not allowed`
+        error: `MIME type ${contentType} is not allowed`,
       }
     }
 
@@ -530,7 +532,7 @@ export class FileService {
       'application/json',
       'application/xml',
       'application/javascript',
-      'application/x-javascript'
+      'application/x-javascript',
     ]
 
     return compressibleTypes.some(type => contentType?.startsWith(type))
@@ -538,8 +540,12 @@ export class FileService {
 
   private async compressFile(
     file: ArrayBuffer | ReadableStream | Uint8Array,
-    contentType?: string
-  ): Promise<{ success: boolean; data?: ArrayBuffer | ReadableStream | Uint8Array; error?: string }> {
+    _contentType?: string
+  ): Promise<{
+    success: boolean
+    data?: ArrayBuffer | ReadableStream | Uint8Array
+    error?: string
+  }> {
     // This is a placeholder for compression logic
     // In a real implementation, you would use compression libraries
     // like CompressionStream API or other compression methods
@@ -550,7 +556,7 @@ export class FileService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Compression failed'
+        error: error instanceof Error ? error.message : 'Compression failed',
       }
     }
   }
@@ -569,16 +575,16 @@ export class FileService {
     const extension = filename.split('.').pop()?.toLowerCase()
 
     const mimeTypes: Record<string, string> = {
-      'txt': 'text/plain',
-      'json': 'application/json',
-      'xml': 'application/xml',
-      'pdf': 'application/pdf',
-      'zip': 'application/zip',
-      'jpg': 'image/jpeg',
-      'jpeg': 'image/jpeg',
-      'png': 'image/png',
-      'gif': 'image/gif',
-      'webp': 'image/webp'
+      txt: 'text/plain',
+      json: 'application/json',
+      xml: 'application/xml',
+      pdf: 'application/pdf',
+      zip: 'application/zip',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      gif: 'image/gif',
+      webp: 'image/webp',
     }
 
     return mimeTypes[extension || ''] || 'application/octet-stream'
@@ -612,6 +618,9 @@ export class FileService {
   }
 }
 
-export function createFileService(cloudflare: CloudflareService, defaultOptions?: FileUploadOptions): FileService {
+export function createFileService(
+  cloudflare: CloudflareService,
+  defaultOptions?: FileUploadOptions
+): FileService {
   return new FileService(cloudflare, defaultOptions)
 }

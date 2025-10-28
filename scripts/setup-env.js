@@ -7,17 +7,17 @@
  * and other infrastructure components for different deployment environments.
  */
 
-const { execSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
-const crypto = require('crypto')
-const readline = require('readline')
+const { execSync } = require('node:child_process')
+const fs = require('node:fs')
+const path = require('node:path')
+const crypto = require('node:crypto')
+const readline = require('node:readline')
 
 // Configuration
 const PROJECT_ROOT = path.resolve(__dirname, '..')
 const ENV_DIR = path.join(PROJECT_ROOT, '.env')
 const ENV_EXAMPLE_FILE = path.join(PROJECT_ROOT, '.env.example')
-const ENV_LOCAL_FILE = path.join(PROJECT_ROOT, '.env.local')
+const _ENV_LOCAL_FILE = path.join(PROJECT_ROOT, '.env.local')
 
 // Available environments
 const ENVIRONMENTS = ['development', 'staging', 'production']
@@ -70,7 +70,7 @@ const colors = {
   error: '\x1b[31m',
   warning: '\x1b[33m',
   info: '\x1b[34m',
-  reset: '\x1b[0m'
+  reset: '\x1b[0m',
 }
 
 function log(level, message) {
@@ -80,13 +80,13 @@ function log(level, message) {
 function createInterface() {
   return readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   })
 }
 
 function askQuestion(rl, question) {
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
+  return new Promise(resolve => {
+    rl.question(question, answer => {
       resolve(answer.trim())
     })
   })
@@ -144,7 +144,7 @@ function createEnvironmentFile(env, vars = {}) {
       ENABLE_METRICS: 'true',
       ENABLE_HEALTH_CHECKS: 'true',
       SENTRY_TRACES_SAMPLE_RATE: '1.0',
-      SENTRY_DEBUG: 'true'
+      SENTRY_DEBUG: 'true',
     },
     staging: {
       ENVIRONMENT: 'staging',
@@ -153,7 +153,7 @@ function createEnvironmentFile(env, vars = {}) {
       ENABLE_METRICS: 'true',
       ENABLE_HEALTH_CHECKS: 'true',
       SENTRY_TRACES_SAMPLE_RATE: '0.5',
-      SENTRY_DEBUG: 'true'
+      SENTRY_DEBUG: 'true',
     },
     production: {
       ENVIRONMENT: 'production',
@@ -162,8 +162,8 @@ function createEnvironmentFile(env, vars = {}) {
       ENABLE_METRICS: 'true',
       ENABLE_HEALTH_CHECKS: 'true',
       SENTRY_TRACES_SAMPLE_RATE: '0.1',
-      SENTRY_DEBUG: 'false'
-    }
+      SENTRY_DEBUG: 'false',
+    },
   }
 
   // Merge defaults with provided variables
@@ -245,16 +245,13 @@ async function setupDevelopmentEnvironment() {
     log('info', 'Please provide the following configuration values:')
 
     const cloudflareAccountId = await askQuestion(
-      rl, 'Cloudflare Account ID (leave empty for local development): '
+      rl,
+      'Cloudflare Account ID (leave empty for local development): '
     )
 
-    const sentryDsn = await askQuestion(
-      rl, 'Sentry DSN (leave empty to disable error tracking): '
-    )
+    const sentryDsn = await askQuestion(rl, 'Sentry DSN (leave empty to disable error tracking): ')
 
-    const databaseId = await askQuestion(
-      rl, 'Cloudflare D1 Database ID (leave empty for local): '
-    )
+    const databaseId = await askQuestion(rl, 'Cloudflare D1 Database ID (leave empty for local): ')
 
     // Create environment variables
     const envVars = {
@@ -272,7 +269,7 @@ async function setupDevelopmentEnvironment() {
       GOOGLE_CLIENT_ID: '',
       GOOGLE_CLIENT_SECRET: '',
       GITHUB_CLIENT_ID: '',
-      GITHUB_CLIENT_SECRET: ''
+      GITHUB_CLIENT_SECRET: '',
     }
 
     // Create environment file
@@ -285,7 +282,6 @@ async function setupDevelopmentEnvironment() {
     } else {
       log('error', 'Development environment configuration failed')
     }
-
   } catch (error) {
     log('error', `Development environment setup failed: ${error.message}`)
   } finally {
@@ -322,15 +318,13 @@ async function setupStagingEnvironment() {
       'SENTRY_DSN',
       'SENTRY_AUTH_TOKEN',
       'SENTRY_ORG',
-      'SENTRY_PROJECT'
+      'SENTRY_PROJECT',
     ]
 
     const envVars = {}
 
     for (const field of requiredFields) {
-      const value = await askQuestion(
-        rl, `${field}: `
-      )
+      const value = await askQuestion(rl, `${field}: `)
       envVars[field] = value
     }
 
@@ -339,17 +333,13 @@ async function setupStagingEnvironment() {
     envVars.SESSION_SECRET = generateSecret(64)
 
     // Optional fields
-    envVars.KV_CACHE_ID = await askQuestion(
-      rl, 'KV Cache ID (optional): '
-    ) || ''
+    envVars.KV_CACHE_ID = (await askQuestion(rl, 'KV Cache ID (optional): ')) || ''
 
-    envVars.KV_SESSIONS_ID = await askQuestion(
-      rl, 'KV Sessions ID (optional): '
-    ) || ''
+    envVars.KV_SESSIONS_ID = (await askQuestion(rl, 'KV Sessions ID (optional): ')) || ''
 
-    envVars.R2_BUCKET_NAME = await askQuestion(
-      rl, 'R2 Bucket Name (default: parsify-files-staging): '
-    ) || 'parsify-files-staging'
+    envVars.R2_BUCKET_NAME =
+      (await askQuestion(rl, 'R2 Bucket Name (default: parsify-files-staging): ')) ||
+      'parsify-files-staging'
 
     // Create environment file
     const envFile = createEnvironmentFile('staging', envVars)
@@ -361,7 +351,6 @@ async function setupStagingEnvironment() {
     } else {
       log('error', 'Staging environment configuration failed')
     }
-
   } catch (error) {
     log('error', `Staging environment setup failed: ${error.message}`)
   } finally {
@@ -410,15 +399,13 @@ async function setupProductionEnvironment() {
       'SENTRY_DSN',
       'SENTRY_AUTH_TOKEN',
       'SENTRY_ORG',
-      'SENTRY_PROJECT'
+      'SENTRY_PROJECT',
     ]
 
     const envVars = {}
 
     for (const field of requiredFields) {
-      const value = await askQuestion(
-        rl, `${field} (required): `
-      )
+      const value = await askQuestion(rl, `${field} (required): `)
 
       if (!value) {
         log('error', `${field} is required for production environment`)
@@ -436,47 +423,34 @@ async function setupProductionEnvironment() {
 
     // OAuth configuration
     log('info', 'OAuth configuration (leave empty if not using OAuth):')
-    envVars.GOOGLE_CLIENT_ID = await askQuestion(
-      rl, 'Google Client ID (optional): '
-    ) || ''
+    envVars.GOOGLE_CLIENT_ID = (await askQuestion(rl, 'Google Client ID (optional): ')) || ''
 
-    envVars.GOOGLE_CLIENT_SECRET = await askQuestion(
-      rl, 'Google Client Secret (optional): '
-    ) || ''
+    envVars.GOOGLE_CLIENT_SECRET =
+      (await askQuestion(rl, 'Google Client Secret (optional): ')) || ''
 
-    envVars.GITHUB_CLIENT_ID = await askQuestion(
-      rl, 'GitHub Client ID (optional): '
-    ) || ''
+    envVars.GITHUB_CLIENT_ID = (await askQuestion(rl, 'GitHub Client ID (optional): ')) || ''
 
-    envVars.GITHUB_CLIENT_SECRET = await askQuestion(
-      rl, 'GitHub Client Secret (optional): '
-    ) || ''
+    envVars.GITHUB_CLIENT_SECRET =
+      (await askQuestion(rl, 'GitHub Client Secret (optional): ')) || ''
 
     // Storage configuration
-    envVars.KV_CACHE_ID = await askQuestion(
-      rl, 'KV Cache ID (required): '
-    )
+    envVars.KV_CACHE_ID = await askQuestion(rl, 'KV Cache ID (required): ')
 
-    envVars.KV_SESSIONS_ID = await askQuestion(
-      rl, 'KV Sessions ID (required): '
-    )
+    envVars.KV_SESSIONS_ID = await askQuestion(rl, 'KV Sessions ID (required): ')
 
-    envVars.KV_UPLOADS_ID = await askQuestion(
-      rl, 'KV Uploads ID (required): '
-    )
+    envVars.KV_UPLOADS_ID = await askQuestion(rl, 'KV Uploads ID (required): ')
 
-    envVars.KV_ANALYTICS_ID = await askQuestion(
-      rl, 'KV Analytics ID (required): '
-    )
+    envVars.KV_ANALYTICS_ID = await askQuestion(rl, 'KV Analytics ID (required): ')
 
-    envVars.R2_BUCKET_NAME = await askQuestion(
-      rl, 'R2 Bucket Name (required): '
-    )
+    envVars.R2_BUCKET_NAME = await askQuestion(rl, 'R2 Bucket Name (required): ')
 
     // Validate required production fields
     const requiredProdFields = [
-      'KV_CACHE_ID', 'KV_SESSIONS_ID', 'KV_UPLOADS_ID',
-      'KV_ANALYTICS_ID', 'R2_BUCKET_NAME'
+      'KV_CACHE_ID',
+      'KV_SESSIONS_ID',
+      'KV_UPLOADS_ID',
+      'KV_ANALYTICS_ID',
+      'R2_BUCKET_NAME',
     ]
 
     for (const field of requiredProdFields) {
@@ -494,11 +468,13 @@ async function setupProductionEnvironment() {
     if (validateEnvironmentFile(envFile)) {
       log('success', 'Production environment configured successfully')
       log('info', `Environment file: ${envFile}`)
-      log('warning', 'Please store this environment file securely and never commit it to version control')
+      log(
+        'warning',
+        'Please store this environment file securely and never commit it to version control'
+      )
     } else {
       log('error', 'Production environment configuration failed')
     }
-
   } catch (error) {
     log('error', `Production environment setup failed: ${error.message}`)
   } finally {
@@ -658,7 +634,7 @@ module.exports = {
   createEnvironmentFile,
   validateEnvironmentFile,
   loadEnvironment,
-  generateSecret
+  generateSecret,
 }
 
 // Run the script if called directly

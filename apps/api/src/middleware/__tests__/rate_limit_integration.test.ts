@@ -3,38 +3,35 @@
  * Tests the middleware in realistic scenarios with authentication and services
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { Hono } from 'hono'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { authMiddleware } from '../../middleware/auth'
 import {
-  rateLimitMiddleware,
-  RateLimitStrategy,
   createApiRateLimit,
   createFileUploadRateLimit,
-  createJobExecutionRateLimit,
-  createAuthRateLimit
+  RateLimitStrategy,
+  rateLimitMiddleware,
 } from '../rate_limit'
-import { authMiddleware } from '../../middleware/auth'
-import { RateLimitService } from '../../services/rate_limit_service'
 
 // Mock environment
 const mockEnv = {
   DB: {
     prepare: vi.fn(),
     batch: vi.fn(),
-    exec: vi.fn()
+    exec: vi.fn(),
   } as any,
   CACHE: {
     get: vi.fn(),
     put: vi.fn(),
     delete: vi.fn(),
-    list: vi.fn()
+    list: vi.fn(),
   } as any,
   SESSIONS: {} as KVNamespace,
   UPLOADS: {} as KVNamespace,
   ANALYTICS: {} as KVNamespace,
   FILES: {} as R2Bucket,
   JWT_SECRET: 'test-secret',
-  ENVIRONMENT: 'test'
+  ENVIRONMENT: 'test',
 } as any
 
 // Mock Cloudflare service
@@ -43,7 +40,7 @@ const mockCloudflareService = {
   cacheSet: vi.fn(),
   cacheDelete: vi.fn(),
   query: vi.fn(),
-  getHealthStatus: vi.fn()
+  getHealthStatus: vi.fn(),
 }
 
 // Mock user data
@@ -51,18 +48,18 @@ const mockUsers = {
   free: {
     id: 'user-free-123',
     subscription_tier: 'free',
-    email: 'free@example.com'
+    email: 'free@example.com',
   },
   pro: {
     id: 'user-pro-123',
     subscription_tier: 'pro',
-    email: 'pro@example.com'
+    email: 'pro@example.com',
   },
   enterprise: {
     id: 'user-enterprise-123',
     subscription_tier: 'enterprise',
-    email: 'enterprise@example.com'
-  }
+    email: 'enterprise@example.com',
+  },
 }
 
 describe('Rate Limit Middleware Integration Tests', () => {
@@ -89,8 +86,8 @@ describe('Rate Limit Middleware Integration Tests', () => {
       bind: vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue(null),
         all: vi.fn().mockResolvedValue({ results: [] }),
-        run: vi.fn().mockResolvedValue({ success: true })
-      })
+        run: vi.fn().mockResolvedValue({ success: true }),
+      }),
     })
   })
 
@@ -104,32 +101,39 @@ describe('Rate Limit Middleware Integration Tests', () => {
       app.use('/api/*', authMiddleware({ required: true }))
 
       // Setup rate limiting
-      app.use('/api/*', rateLimitMiddleware({
-        strategy: RateLimitStrategy.TOKEN_BUCKET,
-        requests: 100,
-        window: 3600,
-        limits: {
-          anonymous: 10,
-          free: 100,
-          pro: 500,
-          enterprise: 5000
-        }
-      }))
+      app.use(
+        '/api/*',
+        rateLimitMiddleware({
+          strategy: RateLimitStrategy.TOKEN_BUCKET,
+          requests: 100,
+          window: 3600,
+          limits: {
+            anonymous: 10,
+            free: 100,
+            pro: 500,
+            enterprise: 5000,
+          },
+        })
+      )
 
-      app.get('/api/test', (c) => {
+      app.get('/api/test', c => {
         const auth = c.get('auth')
         return c.json({
           message: 'success',
-          userTier: auth.user?.subscription_tier
+          userTier: auth.user?.subscription_tier,
         })
       })
 
       // Test free user
-      const freeResponse = await app.request('/api/test', {
-        headers: {
-          'Authorization': 'Bearer free-user-token'
-        }
-      }, mockEnv)
+      const freeResponse = await app.request(
+        '/api/test',
+        {
+          headers: {
+            Authorization: 'Bearer free-user-token',
+          },
+        },
+        mockEnv
+      )
 
       expect(freeResponse.status).toBe(200)
       expect(freeResponse.headers.get('X-Rate-Limit-Limit')).toBe('100')
@@ -138,43 +142,57 @@ describe('Rate Limit Middleware Integration Tests', () => {
     it('should bypass rate limiting for enterprise users when configured', async () => {
       app.use('/api/*', authMiddleware({ required: true }))
 
-      app.use('/api/*', rateLimitMiddleware({
-        requests: 10,
-        window: 3600,
-        bypassUsers: [mockUsers.enterprise.id]
-      }))
+      app.use(
+        '/api/*',
+        rateLimitMiddleware({
+          requests: 10,
+          window: 3600,
+          bypassUsers: [mockUsers.enterprise.id],
+        })
+      )
 
-      app.get('/api/test', (c) => c.json({ message: 'success' }))
+      app.get('/api/test', c => c.json({ message: 'success' }))
 
       // Make many requests that would normally exceed the limit
       for (let i = 0; i < 20; i++) {
-        const res = await app.request('/api/test', {
-          headers: {
-            'Authorization': 'Bearer enterprise-user-token'
-          }
-        }, mockEnv)
+        const res = await app.request(
+          '/api/test',
+          {
+            headers: {
+              Authorization: 'Bearer enterprise-user-token',
+            },
+          },
+          mockEnv
+        )
         expect(res.status).toBe(200)
       }
     })
 
     it('should use IP-based rate limiting for unauthenticated requests', async () => {
-      app.use('/api/*', rateLimitMiddleware({
-        strategy: RateLimitStrategy.TOKEN_BUCKET,
-        requests: 50,
-        window: 3600,
-        limits: {
-          anonymous: 50,
-          free: 500
-        }
-      }))
+      app.use(
+        '/api/*',
+        rateLimitMiddleware({
+          strategy: RateLimitStrategy.TOKEN_BUCKET,
+          requests: 50,
+          window: 3600,
+          limits: {
+            anonymous: 50,
+            free: 500,
+          },
+        })
+      )
 
-      app.get('/api/public', (c) => c.json({ message: 'public endpoint' }))
+      app.get('/api/public', c => c.json({ message: 'public endpoint' }))
 
-      const res = await app.request('/api/public', {
-        headers: {
-          'CF-Connecting-IP': '192.168.1.100'
-        }
-      }, mockEnv)
+      const res = await app.request(
+        '/api/public',
+        {
+          headers: {
+            'CF-Connecting-IP': '192.168.1.100',
+          },
+        },
+        mockEnv
+      )
 
       expect(res.status).toBe(200)
       expect(res.headers.get('X-Rate-Limit-Limit')).toBe('50')
@@ -184,38 +202,41 @@ describe('Rate Limit Middleware Integration Tests', () => {
   describe('Multi-strategy Rate Limiting', () => {
     it('should apply different strategies to different endpoints', async () => {
       // Token bucket for general API
-      app.use('/api/general/*',
+      app.use(
+        '/api/general/*',
         authMiddleware({ required: true }),
         rateLimitMiddleware({
           strategy: RateLimitStrategy.TOKEN_BUCKET,
           requests: 100,
-          window: 3600
+          window: 3600,
         })
       )
 
       // Sliding window for file uploads
-      app.use('/api/upload/*',
+      app.use(
+        '/api/upload/*',
         authMiddleware({ required: true }),
         rateLimitMiddleware({
           strategy: RateLimitStrategy.SLIDING_WINDOW,
           requests: 25,
-          window: 3600
+          window: 3600,
         })
       )
 
       // Fixed window for job execution
-      app.use('/api/jobs/*',
+      app.use(
+        '/api/jobs/*',
         authMiddleware({ required: true }),
         rateLimitMiddleware({
           strategy: RateLimitStrategy.FIXED_WINDOW,
           requests: 20,
-          window: 3600
+          window: 3600,
         })
       )
 
-      app.get('/api/general/test', (c) => c.json({ endpoint: 'general' }))
-      app.post('/api/upload/file', (c) => c.json({ endpoint: 'upload' }))
-      app.post('/api/jobs/run', (c) => c.json({ endpoint: 'jobs' }))
+      app.get('/api/general/test', c => c.json({ endpoint: 'general' }))
+      app.post('/api/upload/file', c => c.json({ endpoint: 'upload' }))
+      app.post('/api/jobs/run', c => c.json({ endpoint: 'jobs' }))
 
       const generalRes = await app.request('/api/general/test', {}, mockEnv)
       const uploadRes = await app.request('/api/upload/file', {}, mockEnv)
@@ -229,20 +250,27 @@ describe('Rate Limit Middleware Integration Tests', () => {
 
   describe('Distributed Rate Limiting', () => {
     it('should coordinate rate limits across multiple instances via KV', async () => {
-      app.use('/api/*', rateLimitMiddleware({
-        strategy: RateLimitStrategy.TOKEN_BUCKET,
-        requests: 10,
-        window: 3600,
-        distributed: true,
-        cacheTTL: 300
-      }))
+      app.use(
+        '/api/*',
+        rateLimitMiddleware({
+          strategy: RateLimitStrategy.TOKEN_BUCKET,
+          requests: 10,
+          window: 3600,
+          distributed: true,
+          cacheTTL: 300,
+        })
+      )
 
-      app.get('/api/test', (c) => c.json({ message: 'success' }))
+      app.get('/api/test', c => c.json({ message: 'success' }))
 
       // Simulate first instance
-      await app.request('/api/test', {
-        headers: { 'CF-Connecting-IP': '192.168.1.1' }
-      }, mockEnv)
+      await app.request(
+        '/api/test',
+        {
+          headers: { 'CF-Connecting-IP': '192.168.1.1' },
+        },
+        mockEnv
+      )
 
       // Verify KV was used
       expect(mockCloudflareService.cacheGet).toHaveBeenCalled()
@@ -258,14 +286,17 @@ describe('Rate Limit Middleware Integration Tests', () => {
       mockCloudflareService.cacheGet.mockRejectedValue(new Error('KV unavailable'))
       mockCloudflareService.cacheSet.mockRejectedValue(new Error('KV unavailable'))
 
-      app.use('/api/*', rateLimitMiddleware({
-        strategy: RateLimitStrategy.TOKEN_BUCKET,
-        requests: 10,
-        window: 3600,
-        distributed: true
-      }))
+      app.use(
+        '/api/*',
+        rateLimitMiddleware({
+          strategy: RateLimitStrategy.TOKEN_BUCKET,
+          requests: 10,
+          window: 3600,
+          distributed: true,
+        })
+      )
 
-      app.get('/api/test', (c) => c.json({ message: 'success' }))
+      app.get('/api/test', c => c.json({ message: 'success' }))
 
       // Should still work despite KV failures
       const res = await app.request('/api/test', {}, mockEnv)
@@ -278,17 +309,18 @@ describe('Rate Limit Middleware Integration Tests', () => {
       app.use('/api/*', createApiRateLimit())
 
       // Additional rate limiting for expensive operations
-      app.use('/api/tools/execute',
+      app.use(
+        '/api/tools/execute',
         rateLimitMiddleware({
           strategy: RateLimitStrategy.TOKEN_BUCKET,
           requests: 25,
           window: 3600,
-          route: { weight: 5 }
+          route: { weight: 5 },
         })
       )
 
-      app.get('/api/data', (c) => c.json({ endpoint: 'data' }))
-      app.post('/api/tools/execute', (c) => c.json({ endpoint: 'execute' }))
+      app.get('/api/data', c => c.json({ endpoint: 'data' }))
+      app.post('/api/tools/execute', c => c.json({ endpoint: 'execute' }))
 
       const dataRes = await app.request('/api/data', {}, mockEnv)
       const executeRes = await app.request('/api/tools/execute', {}, mockEnv)
@@ -299,24 +331,31 @@ describe('Rate Limit Middleware Integration Tests', () => {
     })
 
     it('should use custom key generators for specialized rate limiting', async () => {
-      app.use('/api/webhooks/*', rateLimitMiddleware({
-        strategy: RateLimitStrategy.SLIDING_WINDOW,
-        requests: 100,
-        window: 3600,
-        keyGenerator: async (c) => {
-          const webhookId = c.req.param('webhookId') || 'default'
-          return `webhook:${webhookId}`
-        }
-      }))
+      app.use(
+        '/api/webhooks/*',
+        rateLimitMiddleware({
+          strategy: RateLimitStrategy.SLIDING_WINDOW,
+          requests: 100,
+          window: 3600,
+          keyGenerator: async c => {
+            const webhookId = c.req.param('webhookId') || 'default'
+            return `webhook:${webhookId}`
+          },
+        })
+      )
 
-      app.post('/api/webhooks/:webhookId', (c) => {
+      app.post('/api/webhooks/:webhookId', c => {
         const webhookId = c.req.param('webhookId')
         return c.json({ webhookId })
       })
 
-      const res = await app.request('/api/webhooks/webhook-123', {
-        method: 'POST'
-      }, mockEnv)
+      const res = await app.request(
+        '/api/webhooks/webhook-123',
+        {
+          method: 'POST',
+        },
+        mockEnv
+      )
 
       expect(res.status).toBe(200)
       // Verify the custom key generator was used (would need more complex mocking to capture the exact key)
@@ -332,29 +371,34 @@ describe('Rate Limit Middleware Integration Tests', () => {
       app.use('/api/v1/*', createApiRateLimit())
 
       // Specific endpoint with additional limits
-      app.use('/api/v1/process',
+      app.use(
+        '/api/v1/process',
         rateLimitMiddleware({
           strategy: RateLimitStrategy.TOKEN_BUCKET,
           requests: 50,
           window: 3600,
-          route: { weight: 3 }
+          route: { weight: 3 },
         })
       )
 
-      app.get('/api/v1/status', (c) => c.json({ status: 'ok' }))
-      app.post('/api/v1/process', (c) => c.json({ processed: true }))
+      app.get('/api/v1/status', c => c.json({ status: 'ok' }))
+      app.post('/api/v1/process', c => c.json({ processed: true }))
 
       const statusRes = await app.request('/api/v1/status', {}, mockEnv)
-      const processRes = await app.request('/api/v1/process', {
-        method: 'POST'
-      }, mockEnv)
+      const processRes = await app.request(
+        '/api/v1/process',
+        {
+          method: 'POST',
+        },
+        mockEnv
+      )
 
       expect(statusRes.status).toBe(200)
       expect(processRes.status).toBe(200)
 
       // Process endpoint should have consumed more tokens
-      const statusRemaining = parseInt(statusRes.headers.get('X-Rate-Limit-Remaining') || '0')
-      const processRemaining = parseInt(processRes.headers.get('X-Rate-Limit-Remaining') || '0')
+      const statusRemaining = parseInt(statusRes.headers.get('X-Rate-Limit-Remaining') || '0', 10)
+      const processRemaining = parseInt(processRes.headers.get('X-Rate-Limit-Remaining') || '0', 10)
       expect(processRemaining).toBeLessThan(statusRemaining)
     })
 
@@ -362,47 +406,62 @@ describe('Rate Limit Middleware Integration Tests', () => {
       app.use('/api/*', authMiddleware({ required: true }))
       app.use('/api/upload', createFileUploadRateLimit())
 
-      app.post('/api/upload', (c) => {
+      app.post('/api/upload', c => {
         const contentLength = c.req.header('Content-Length')
         return c.json({
           message: 'file uploaded',
-          size: contentLength
+          size: contentLength,
         })
       })
 
       // Small file upload
-      const smallFileRes = await app.request('/api/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Length': '1024' // 1KB
-        }
-      }, mockEnv)
+      const smallFileRes = await app.request(
+        '/api/upload',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Length': '1024', // 1KB
+          },
+        },
+        mockEnv
+      )
 
       // Large file upload
-      const largeFileRes = await app.request('/api/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Length': '52428800' // 50MB
-        }
-      }, mockEnv)
+      const largeFileRes = await app.request(
+        '/api/upload',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Length': '52428800', // 50MB
+          },
+        },
+        mockEnv
+      )
 
       expect(smallFileRes.status).toBe(200)
       expect(largeFileRes.status).toBe(200)
 
       // Both should be under the file upload rate limit
-      expect(parseInt(smallFileRes.headers.get('X-Rate-Limit-Remaining') || '0')).toBeGreaterThanOrEqual(0)
-      expect(parseInt(largeFileRes.headers.get('X-Rate-Limit-Remaining') || '0')).toBeGreaterThanOrEqual(0)
+      expect(
+        parseInt(smallFileRes.headers.get('X-Rate-Limit-Remaining') || '0', 10)
+      ).toBeGreaterThanOrEqual(0)
+      expect(
+        parseInt(largeFileRes.headers.get('X-Rate-Limit-Remaining') || '0', 10)
+      ).toBeGreaterThanOrEqual(0)
     })
 
     it('should handle burst traffic with token bucket strategy', async () => {
-      app.use('/api/*', rateLimitMiddleware({
-        strategy: RateLimitStrategy.TOKEN_BUCKET,
-        requests: 100,
-        window: 3600,
-        distributed: false
-      }))
+      app.use(
+        '/api/*',
+        rateLimitMiddleware({
+          strategy: RateLimitStrategy.TOKEN_BUCKET,
+          requests: 100,
+          window: 3600,
+          distributed: false,
+        })
+      )
 
-      app.get('/api/test', (c) => c.json({ message: 'success' }))
+      app.get('/api/test', c => c.json({ message: 'success' }))
 
       // Send burst of requests
       const requests = []
@@ -419,14 +478,17 @@ describe('Rate Limit Middleware Integration Tests', () => {
     })
 
     it('should handle sustained traffic with sliding window strategy', async () => {
-      app.use('/api/*', rateLimitMiddleware({
-        strategy: RateLimitStrategy.SLIDING_WINDOW,
-        requests: 10,
-        window: 60, // 1 minute
-        distributed: false
-      }))
+      app.use(
+        '/api/*',
+        rateLimitMiddleware({
+          strategy: RateLimitStrategy.SLIDING_WINDOW,
+          requests: 10,
+          window: 60, // 1 minute
+          distributed: false,
+        })
+      )
 
-      app.get('/api/test', (c) => c.json({ message: 'success' }))
+      app.get('/api/test', c => c.json({ message: 'success' }))
 
       // Send requests at a steady rate
       let successCount = 0
@@ -451,18 +513,21 @@ describe('Rate Limit Middleware Integration Tests', () => {
         tokens: 0,
         lastRefill: Date.now(),
         refillRate: 10 / 3600,
-        maxTokens: 10
+        maxTokens: 10,
       }
       mockCloudflareService.cacheGet.mockResolvedValue(JSON.stringify(fullBucket))
 
-      app.use('/api/*', rateLimitMiddleware({
-        strategy: RateLimitStrategy.TOKEN_BUCKET,
-        requests: 10,
-        window: 3600,
-        distributed: true
-      }))
+      app.use(
+        '/api/*',
+        rateLimitMiddleware({
+          strategy: RateLimitStrategy.TOKEN_BUCKET,
+          requests: 10,
+          window: 3600,
+          distributed: true,
+        })
+      )
 
-      app.get('/api/test', (c) => c.json({ message: 'success' }))
+      app.get('/api/test', c => c.json({ message: 'success' }))
 
       const res = await app.request('/api/test', {}, mockEnv)
 
@@ -479,14 +544,17 @@ describe('Rate Limit Middleware Integration Tests', () => {
     it('should handle malformed rate limit state in KV', async () => {
       mockCloudflareService.cacheGet.mockResolvedValue('invalid-json')
 
-      app.use('/api/*', rateLimitMiddleware({
-        strategy: RateLimitStrategy.TOKEN_BUCKET,
-        requests: 10,
-        window: 3600,
-        distributed: true
-      }))
+      app.use(
+        '/api/*',
+        rateLimitMiddleware({
+          strategy: RateLimitStrategy.TOKEN_BUCKET,
+          requests: 10,
+          window: 3600,
+          distributed: true,
+        })
+      )
 
-      app.get('/api/test', (c) => c.json({ message: 'success' }))
+      app.get('/api/test', c => c.json({ message: 'success' }))
 
       // Should handle malformed data gracefully
       const res = await app.request('/api/test', {}, mockEnv)
@@ -494,14 +562,17 @@ describe('Rate Limit Middleware Integration Tests', () => {
     })
 
     it('should handle service initialization failures', async () => {
-      app.use('/api/*', rateLimitMiddleware({
-        strategy: RateLimitStrategy.TOKEN_BUCKET,
-        requests: 10,
-        window: 3600,
-        distributed: true
-      }))
+      app.use(
+        '/api/*',
+        rateLimitMiddleware({
+          strategy: RateLimitStrategy.TOKEN_BUCKET,
+          requests: 10,
+          window: 3600,
+          distributed: true,
+        })
+      )
 
-      app.get('/api/test', (c) => c.json({ message: 'success' }))
+      app.get('/api/test', c => c.json({ message: 'success' }))
 
       // Mock service failure
       mockCloudflareService.cacheGet.mockRejectedValue(new Error('Service unavailable'))

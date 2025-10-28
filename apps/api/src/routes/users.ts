@@ -1,12 +1,5 @@
 import { Hono } from 'hono'
-import {
-  authMiddleware,
-  requirePremium,
-  getCurrentUser,
-  isAuthenticated,
-  hasPremiumFeatures,
-  getUserQuota,
-} from '../middleware/auth'
+import { authMiddleware, getCurrentUser, getUserQuota, requirePremium } from '../middleware/auth'
 
 const app = new Hono()
 
@@ -62,7 +55,7 @@ app.put('/profile', authMiddleware({ required: true }), async c => {
         },
       },
     })
-  } catch (error) {
+  } catch (_error) {
     return c.json({ error: 'Invalid request body' }, 400)
   }
 })
@@ -122,16 +115,13 @@ app.post('/subscription', authMiddleware({ required: true }), async c => {
         email: user.email,
         subscription_tier: tier,
         new_quotas: {
-          daily_api_limit:
-            tier === 'free' ? 100 : tier === 'pro' ? 1000 : 10000,
-          max_file_size:
-            tier === 'free' ? 10485760 : tier === 'pro' ? 52428800 : 524288000,
-          max_execution_time:
-            tier === 'free' ? 5000 : tier === 'pro' ? 15000 : 60000,
+          daily_api_limit: tier === 'free' ? 100 : tier === 'pro' ? 1000 : 10000,
+          max_file_size: tier === 'free' ? 10485760 : tier === 'pro' ? 52428800 : 524288000,
+          max_execution_time: tier === 'free' ? 5000 : tier === 'pro' ? 15000 : 60000,
         },
       },
     })
-  } catch (error) {
+  } catch (_error) {
     return c.json({ error: 'Invalid request body' }, 400)
   }
 })

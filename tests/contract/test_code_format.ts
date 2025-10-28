@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../../apps/api/src/index'
 
 describe('POST /api/v1/tools/code/format', () => {
@@ -21,16 +21,20 @@ console.log(obj.name);
 }
 `
 
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: unformattedJs,
+            language: 'javascript',
+          }),
         },
-        body: JSON.stringify({
-          code: unformattedJs,
-          language: 'javascript'
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(200)
 
@@ -50,21 +54,25 @@ console.log(obj.name);
     it('should format JavaScript code with custom options', async () => {
       const unformattedJs = `function test(){const obj={name:'John',age:30};return obj;}`
 
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: unformattedJs,
+            language: 'javascript',
+            options: {
+              indent_size: 4,
+              use_tabs: true,
+              max_preserve_newlines: 2,
+            },
+          }),
         },
-        body: JSON.stringify({
-          code: unformattedJs,
-          language: 'javascript',
-          options: {
-            indent_size: 4,
-            use_tabs: true,
-            max_preserve_newlines: 2
-          }
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(200)
 
@@ -74,7 +82,7 @@ console.log(obj.name);
       expect(data.options).toMatchObject({
         indent_size: 4,
         use_tabs: true,
-        max_preserve_newlines: 2
+        max_preserve_newlines: 2,
       })
     })
   })
@@ -91,16 +99,20 @@ return {name:'John',age:30};
 }
 `
 
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: unformattedTs,
+            language: 'typescript',
+          }),
         },
-        body: JSON.stringify({
-          code: unformattedTs,
-          language: 'typescript'
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(200)
 
@@ -120,16 +132,20 @@ function map<T,U>(arr:T[],fn:(item:T)=>U):U[]{return arr.map(fn);}
 type Maybe<T>=T|null;
 `
 
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: complexTs,
+            language: 'typescript',
+          }),
         },
-        body: JSON.stringify({
-          code: complexTs,
-          language: 'typescript'
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(200)
 
@@ -153,16 +169,20 @@ class Calculator:
         self.history=[]
 `
 
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: unformattedPython,
+            language: 'python',
+          }),
         },
-        body: JSON.stringify({
-          code: unformattedPython,
-          language: 'python'
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(200)
 
@@ -181,19 +201,23 @@ class Calculator:
     it('should format Python with proper line length and spacing', async () => {
       const longLinePython = `def very_long_function_name_that_exceeds_pep8_limit(parameter_one, parameter_two, parameter_three, parameter_four): return parameter_one + parameter_two + parameter_three + parameter_four`
 
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: longLinePython,
+            language: 'python',
+            options: {
+              max_line_length: 79,
+            },
+          }),
         },
-        body: JSON.stringify({
-          code: longLinePython,
-          language: 'python',
-          options: {
-            max_line_length: 79
-          }
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(200)
 
@@ -208,16 +232,20 @@ class Calculator:
 
   describe('Error Handling', () => {
     it('should validate required parameters', async () => {
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            // Missing required 'code' parameter
+            language: 'javascript',
+          }),
         },
-        body: JSON.stringify({
-          // Missing required 'code' parameter
-          language: 'javascript'
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(400)
 
@@ -227,16 +255,20 @@ class Calculator:
     })
 
     it('should validate language parameter', async () => {
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: 'function test() {}',
+            language: 'ruby', // Unsupported language in MVP
+          }),
         },
-        body: JSON.stringify({
-          code: 'function test() {}',
-          language: 'ruby' // Unsupported language in MVP
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(400)
 
@@ -246,16 +278,20 @@ class Calculator:
     })
 
     it('should handle empty code gracefully', async () => {
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: '',
+            language: 'javascript',
+          }),
         },
-        body: JSON.stringify({
-          code: '',
-          language: 'javascript'
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(200)
 
@@ -272,16 +308,20 @@ function test() {
   // Missing closing brace
 `
 
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: invalidJs,
+            language: 'javascript',
+          }),
         },
-        body: JSON.stringify({
-          code: invalidJs,
-          language: 'javascript'
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(400)
 
@@ -293,16 +333,20 @@ function test() {
     it('should reject oversized code inputs', async () => {
       const largeCode = 'function test() {'.repeat(100000) // Very large string
 
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: largeCode,
+            language: 'javascript',
+          }),
         },
-        body: JSON.stringify({
-          code: largeCode,
-          language: 'javascript'
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(413)
 
@@ -314,20 +358,24 @@ function test() {
 
   describe('Options Validation', () => {
     it('should handle invalid formatting options', async () => {
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: 'function test() {}',
+            language: 'javascript',
+            options: {
+              indent_size: -1, // Invalid value
+              max_line_length: 'invalid', // Wrong type
+            },
+          }),
         },
-        body: JSON.stringify({
-          code: 'function test() {}',
-          language: 'javascript',
-          options: {
-            indent_size: -1, // Invalid value
-            max_line_length: 'invalid' // Wrong type
-          }
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(400)
 
@@ -337,17 +385,21 @@ function test() {
     })
 
     it('should use default options when none provided', async () => {
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: 'function test(){return true;}',
+            language: 'javascript',
+            // No options provided
+          }),
         },
-        body: JSON.stringify({
-          code: 'function test(){return true;}',
-          language: 'javascript'
-          // No options provided
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(200)
 
@@ -365,16 +417,20 @@ function test() {
     it('should suggest language detection when not specified', async () => {
       const jsCode = 'function test() { console.log("Hello"); }'
 
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: jsCode,
+            // No language specified
+          }),
         },
-        body: JSON.stringify({
-          code: jsCode
-          // No language specified
-        })
-      }, testEnv)
+        testEnv
+      )
 
       // In MVP, this should return an error requiring explicit language
       expect(res.status).toBe(400)
@@ -387,46 +443,52 @@ function test() {
 
   describe('Response Format', () => {
     it('should return consistent response format', async () => {
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: 'function test() { return true; }',
+            language: 'javascript',
+            options: {
+              indent_size: 2,
+            },
+          }),
         },
-        body: JSON.stringify({
-          code: 'function test() { return true; }',
-          language: 'javascript',
-          options: {
-            indent_size: 2
-          }
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(200)
 
       const data = await res.json()
-      expect(Object.keys(data)).toEqual(expect.arrayContaining([
-        'formatted',
-        'language',
-        'options'
-      ]))
+      expect(Object.keys(data)).toEqual(
+        expect.arrayContaining(['formatted', 'language', 'options'])
+      )
       expect(typeof data.formatted).toBe('string')
       expect(typeof data.language).toBe('string')
       expect(typeof data.options).toBe('object')
     })
 
     it('should include metadata about formatting changes', async () => {
-      const messyCode = 'function    test( ) {const  obj={name:\'John\'};}'
+      const messyCode = "function    test( ) {const  obj={name:'John'};}"
 
-      const res = await app.request('/api/v1/tools/code/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const res = await app.request(
+        '/api/v1/tools/code/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: messyCode,
+            language: 'javascript',
+          }),
         },
-        body: JSON.stringify({
-          code: messyCode,
-          language: 'javascript'
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(res.status).toBe(200)
 

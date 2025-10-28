@@ -1,13 +1,12 @@
 import * as React from 'react'
-import { ToolWrapper } from '../tool-wrapper'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { JsonInputEditor } from './json-input-editor'
-import { JsonViewer } from './json-viewer'
-import { JsonValidator } from './json-validator'
-import { JsonFormatter } from './json-formatter'
+import { ToolWrapper } from '../tool-wrapper'
 import { JsonConverter } from './json-converter'
-import { JsonValidationResult, JsonFormatOptions, JsonConversionOptions } from './json-types'
-import { cn } from '@/lib/utils'
+import { JsonFormatter } from './json-formatter'
+import { JsonInputEditor } from './json-input-editor'
+import type { JsonConversionOptions, JsonFormatOptions, JsonValidationResult } from './json-types'
+import { JsonValidator } from './json-validator'
+import { JsonViewer } from './json-viewer'
 
 interface JsonToolCompleteProps {
   className?: string
@@ -17,29 +16,29 @@ export function JsonToolComplete({ className }: JsonToolCompleteProps) {
   const [jsonInput, setJsonInput] = React.useState('')
   const [validationResult, setValidationResult] = React.useState<JsonValidationResult>({
     isValid: false,
-    errors: []
+    errors: [],
   })
-  const [formattedOutput, setFormattedOutput] = React.useState('')
-  const [convertedOutput, setConvertedOutput] = React.useState('')
+  const [_formattedOutput, setFormattedOutput] = React.useState('')
+  const [_convertedOutput, setConvertedOutput] = React.useState('')
   const [formatError, setFormatError] = React.useState('')
   const [convertError, setConvertError] = React.useState('')
   const [parsedData, setParsedData] = React.useState<unknown>(null)
 
   // Format options
-  const [formatOptions, setFormatOptions] = React.useState<JsonFormatOptions>({
+  const [formatOptions, _setFormatOptions] = React.useState<JsonFormatOptions>({
     indent: 2,
     sortKeys: false,
     compact: false,
-    trailingComma: false
+    trailingComma: false,
   })
 
   // Conversion options
-  const [conversionOptions, setConversionOptions] = React.useState<JsonConversionOptions>({
+  const [conversionOptions, _setConversionOptions] = React.useState<JsonConversionOptions>({
     targetFormat: 'xml',
     rootElement: 'root',
     arrayItemName: 'item',
     flatten: false,
-    csvDelimiter: ','
+    csvDelimiter: ',',
   })
 
   // Parse JSON when it's valid
@@ -48,7 +47,7 @@ export function JsonToolComplete({ className }: JsonToolCompleteProps) {
       try {
         const parsed = JSON.parse(jsonInput)
         setParsedData(parsed)
-      } catch (error) {
+      } catch (_error) {
         setParsedData(null)
       }
     } else {
@@ -121,7 +120,7 @@ export function JsonToolComplete({ className }: JsonToolCompleteProps) {
         'JSON to XML/YAML/CSV Conversion',
         'Interactive JSON Tree Viewer',
         'Real-time Syntax Highlighting',
-        'Copy & Download Functionality'
+        'Copy & Download Functionality',
       ]}
       className={className}
     >
@@ -137,10 +136,10 @@ export function JsonToolComplete({ className }: JsonToolCompleteProps) {
         <TabsContent value="editor" className="space-y-4">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium">JSON Editor</h3>
+              <h3 className="font-medium text-lg">JSON Editor</h3>
               <button
                 onClick={() => setJsonInput(sampleJson)}
-                className="text-sm text-blue-600 hover:text-blue-800"
+                className="text-blue-600 text-sm hover:text-blue-800"
               >
                 Load Sample
               </button>
@@ -156,7 +155,7 @@ export function JsonToolComplete({ className }: JsonToolCompleteProps) {
 
         <TabsContent value="viewer" className="space-y-4">
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">JSON Tree Viewer</h3>
+            <h3 className="font-medium text-lg">JSON Tree Viewer</h3>
             {parsedData ? (
               <JsonViewer
                 data={parsedData}
@@ -165,12 +164,10 @@ export function JsonToolComplete({ className }: JsonToolCompleteProps) {
                 copyable={true}
               />
             ) : (
-              <div className="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+              <div className="rounded-lg border-2 border-gray-300 border-dashed py-12 text-center text-gray-500">
                 <div className="space-y-2">
                   <p>No valid JSON data to display</p>
-                  <p className="text-sm">
-                    Enter valid JSON in the Editor tab to see the tree view
-                  </p>
+                  <p className="text-sm">Enter valid JSON in the Editor tab to see the tree view</p>
                 </div>
               </div>
             )}
@@ -179,7 +176,7 @@ export function JsonToolComplete({ className }: JsonToolCompleteProps) {
 
         <TabsContent value="validator" className="space-y-4">
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">JSON Validator</h3>
+            <h3 className="font-medium text-lg">JSON Validator</h3>
             <JsonValidator
               input={jsonInput}
               onValidationChange={handleValidationChange}
@@ -190,7 +187,7 @@ export function JsonToolComplete({ className }: JsonToolCompleteProps) {
 
         <TabsContent value="formatter" className="space-y-4">
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">JSON Formatter</h3>
+            <h3 className="font-medium text-lg">JSON Formatter</h3>
             <JsonFormatter
               input={jsonInput}
               options={formatOptions}
@@ -202,7 +199,7 @@ export function JsonToolComplete({ className }: JsonToolCompleteProps) {
 
         <TabsContent value="converter" className="space-y-4">
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">JSON Converter</h3>
+            <h3 className="font-medium text-lg">JSON Converter</h3>
             <JsonConverter
               input={jsonInput}
               options={conversionOptions}

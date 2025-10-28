@@ -1,18 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
-  FileUpload,
-  FileUploadSchema,
   CreateFileUploadSchema,
-  UpdateFileUploadSchema,
-  FileUploadStatusSchema,
-  FileUploadOptionsSchema,
   FILE_UPLOAD_QUERIES,
+  FileUpload,
+  FileUploadOptionsSchema,
+  FileUploadSchema,
 } from '../../../../apps/api/src/models/file_upload'
 import {
-  createTestDatabase,
-  createMockFileUpload,
-  setupTestEnvironment,
   cleanupTestEnvironment,
+  createMockFileUpload,
+  createTestDatabase,
+  setupTestEnvironment,
 } from './database.mock'
 
 describe('FileUpload Model', () => {
@@ -131,12 +129,7 @@ describe('FileUpload Model', () => {
 
   describe('Factory Methods', () => {
     it('should create file upload for user', () => {
-      const file = FileUpload.createForUpload(
-        'test.json',
-        'application/json',
-        1024,
-        'user-123'
-      )
+      const file = FileUpload.createForUpload('test.json', 'application/json', 1024, 'user-123')
 
       expect(file.filename).toBe('test.json')
       expect(file.mime_type).toBe('application/json')
@@ -146,11 +139,7 @@ describe('FileUpload Model', () => {
     })
 
     it('should create anonymous file upload', () => {
-      const file = FileUpload.createForUpload(
-        'test.json',
-        'application/json',
-        1024
-      )
+      const file = FileUpload.createForUpload('test.json', 'application/json', 1024)
 
       expect(file.user_id).toBeNull()
       expect(file.r2_key).toContain('anonymous/')
@@ -241,18 +230,10 @@ describe('FileUpload Model', () => {
 
   describe('Helper Methods and Business Logic', () => {
     it('should correctly identify file states', () => {
-      const uploadingFile = new FileUpload(
-        createMockFileUpload({ status: 'uploading' })
-      )
-      const completedFile = new FileUpload(
-        createMockFileUpload({ status: 'completed' })
-      )
-      const expiredFile = new FileUpload(
-        createMockFileUpload({ status: 'expired' })
-      )
-      const failedFile = new FileUpload(
-        createMockFileUpload({ status: 'failed' })
-      )
+      const uploadingFile = new FileUpload(createMockFileUpload({ status: 'uploading' }))
+      const completedFile = new FileUpload(createMockFileUpload({ status: 'completed' }))
+      const expiredFile = new FileUpload(createMockFileUpload({ status: 'expired' }))
+      const failedFile = new FileUpload(createMockFileUpload({ status: 'failed' }))
 
       expect(uploadingFile.isUploading).toBe(true)
       expect(uploadingFile.isCompleted).toBe(false)
@@ -288,9 +269,7 @@ describe('FileUpload Model', () => {
           expires_at: Math.floor(Date.now() / 1000) - 3600, // Past
         })
       )
-      const failedFile = new FileUpload(
-        createMockFileUpload({ status: 'failed' })
-      )
+      const failedFile = new FileUpload(createMockFileUpload({ status: 'failed' }))
 
       expect(completedFile.isAccessible).toBe(true)
       expect(expiredFile.isAccessible).toBe(false)
@@ -298,12 +277,8 @@ describe('FileUpload Model', () => {
     })
 
     it('should correctly identify anonymous files', () => {
-      const userFile = new FileUpload(
-        createMockFileUpload({ user_id: 'user-123' })
-      )
-      const anonymousFile = new FileUpload(
-        createMockFileUpload({ user_id: null })
-      )
+      const userFile = new FileUpload(createMockFileUpload({ user_id: 'user-123' }))
+      const anonymousFile = new FileUpload(createMockFileUpload({ user_id: null }))
 
       expect(userFile.isAnonymous).toBe(false)
       expect(anonymousFile.isAnonymous).toBe(true)
@@ -311,9 +286,7 @@ describe('FileUpload Model', () => {
 
     it('should format file size correctly', () => {
       const file1 = new FileUpload(createMockFileUpload({ size_bytes: 1024 }))
-      const file2 = new FileUpload(
-        createMockFileUpload({ size_bytes: 1024 * 1024 })
-      )
+      const file2 = new FileUpload(createMockFileUpload({ size_bytes: 1024 * 1024 }))
       const file3 = new FileUpload(createMockFileUpload({ size_bytes: 0 }))
 
       expect(file1.sizeString).toBe('1 KB')
@@ -322,18 +295,10 @@ describe('FileUpload Model', () => {
     })
 
     it('should extract file extension correctly', () => {
-      const file1 = new FileUpload(
-        createMockFileUpload({ filename: 'test.json' })
-      )
-      const file2 = new FileUpload(
-        createMockFileUpload({ filename: 'document.pdf' })
-      )
-      const file3 = new FileUpload(
-        createMockFileUpload({ filename: 'noextension' })
-      )
-      const file4 = new FileUpload(
-        createMockFileUpload({ filename: '.hidden' })
-      )
+      const file1 = new FileUpload(createMockFileUpload({ filename: 'test.json' }))
+      const file2 = new FileUpload(createMockFileUpload({ filename: 'document.pdf' }))
+      const file3 = new FileUpload(createMockFileUpload({ filename: 'noextension' }))
+      const file4 = new FileUpload(createMockFileUpload({ filename: '.hidden' }))
 
       expect(file1.fileExtension).toBe('json')
       expect(file2.fileExtension).toBe('pdf')
@@ -479,9 +444,7 @@ describe('FileUpload Model', () => {
   describe('Validation Methods', () => {
     it('should validate filename correctly', () => {
       expect(FileUpload.validateFilename('test.json').valid).toBe(true)
-      expect(FileUpload.validateFilename('file with spaces.txt').valid).toBe(
-        true
-      )
+      expect(FileUpload.validateFilename('file with spaces.txt').valid).toBe(true)
       expect(FileUpload.validateFilename('').valid).toBe(false)
       expect(FileUpload.validateFilename('file<name>.txt').valid).toBe(false)
       expect(FileUpload.validateFilename('CON.txt').valid).toBe(false) // Windows reserved name
@@ -491,15 +454,9 @@ describe('FileUpload Model', () => {
     it('should validate MIME type correctly', () => {
       const allowedTypes = ['application/json', 'text/plain', 'image/*']
 
-      expect(
-        FileUpload.validateMimeType('application/json', allowedTypes).valid
-      ).toBe(true)
-      expect(
-        FileUpload.validateMimeType('image/jpeg', allowedTypes).valid
-      ).toBe(true)
-      expect(
-        FileUpload.validateMimeType('application/xml', allowedTypes).valid
-      ).toBe(false)
+      expect(FileUpload.validateMimeType('application/json', allowedTypes).valid).toBe(true)
+      expect(FileUpload.validateMimeType('image/jpeg', allowedTypes).valid).toBe(true)
+      expect(FileUpload.validateMimeType('application/xml', allowedTypes).valid).toBe(false)
       expect(FileUpload.validateMimeType('', allowedTypes).valid).toBe(false)
     })
 
@@ -507,9 +464,7 @@ describe('FileUpload Model', () => {
       expect(FileUpload.validateFileSize(1024, 1024 * 1024).valid).toBe(true)
       expect(FileUpload.validateFileSize(0, 1024 * 1024).valid).toBe(true)
       expect(FileUpload.validateFileSize(-1, 1024 * 1024).valid).toBe(false)
-      expect(
-        FileUpload.validateFileSize(2 * 1024 * 1024, 1024 * 1024).valid
-      ).toBe(false)
+      expect(FileUpload.validateFileSize(2 * 1024 * 1024, 1024 * 1024).valid).toBe(false)
     })
   })
 
@@ -562,9 +517,7 @@ describe('FileUpload Model', () => {
     })
 
     it('should have proper table creation query', () => {
-      expect(FILE_UPLOAD_QUERIES.CREATE_TABLE).toContain(
-        'CREATE TABLE IF NOT EXISTS file_uploads'
-      )
+      expect(FILE_UPLOAD_QUERIES.CREATE_TABLE).toContain('CREATE TABLE IF NOT EXISTS file_uploads')
       expect(FILE_UPLOAD_QUERIES.CREATE_TABLE).toContain('id TEXT PRIMARY KEY')
       expect(FILE_UPLOAD_QUERIES.CREATE_TABLE).toContain(
         'FOREIGN KEY (user_id) REFERENCES users(id)'
@@ -572,9 +525,7 @@ describe('FileUpload Model', () => {
     })
 
     it('should have parameterized queries', () => {
-      expect(FILE_UPLOAD_QUERIES.INSERT).toContain(
-        'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-      )
+      expect(FILE_UPLOAD_QUERIES.INSERT).toContain('VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
       expect(FILE_UPLOAD_QUERIES.SELECT_BY_ID).toContain('WHERE id = ?')
       expect(FILE_UPLOAD_QUERIES.SELECT_BY_USER).toContain('WHERE user_id = ?')
       expect(FILE_UPLOAD_QUERIES.DELETE).toContain('WHERE id = ?')
@@ -587,9 +538,7 @@ describe('FileUpload Model', () => {
       mockDb.setTableData('file_uploads', [fileData])
 
       // Test SELECT by ID
-      const selectStmt = mockDb
-        .prepare(FILE_UPLOAD_QUERIES.SELECT_BY_ID)
-        .bind(fileData.id)
+      const selectStmt = mockDb.prepare(FILE_UPLOAD_QUERIES.SELECT_BY_ID).bind(fileData.id)
       const result = await selectStmt.first()
 
       expect(result).toEqual(fileData)
@@ -624,9 +573,7 @@ describe('FileUpload Model', () => {
       mockDb.setTableData('file_uploads', [fileData])
 
       // Test SELECT by R2 key
-      const selectStmt = mockDb
-        .prepare(FILE_UPLOAD_QUERIES.SELECT_BY_R2_KEY)
-        .bind(fileData.r2_key)
+      const selectStmt = mockDb.prepare(FILE_UPLOAD_QUERIES.SELECT_BY_R2_KEY).bind(fileData.r2_key)
       const result = await selectStmt.first()
 
       expect(result).toEqual(fileData)

@@ -20,13 +20,13 @@ export class ErrorHandler {
       validationError = {
         code: 'UNKNOWN_ERROR',
         message: error,
-        severity: 'error'
+        severity: 'error',
       }
     } else if (error instanceof Error) {
       validationError = {
         code: 'RUNTIME_ERROR',
         message: error.message,
-        severity: 'error'
+        severity: 'error',
       }
     } else {
       validationError = error
@@ -48,7 +48,7 @@ export class ErrorHandler {
     const warning: ValidationError = {
       code: 'WARNING',
       message: context ? `${context}: ${message}` : message,
-      severity: 'warning'
+      severity: 'warning',
     }
 
     this.errors.push(warning)
@@ -62,7 +62,7 @@ export class ErrorHandler {
     const info: ValidationError = {
       code: 'INFO',
       message: context ? `${context}: ${message}` : message,
-      severity: 'info'
+      severity: 'info',
     }
 
     this.errors.push(info)
@@ -113,7 +113,7 @@ export class ErrorHandler {
       errors: 0,
       warnings: 0,
       info: 0,
-      byCode: {} as Record<string, number>
+      byCode: {} as Record<string, number>,
     }
 
     this.errors.forEach(error => {
@@ -138,21 +138,21 @@ export class ErrorHandler {
   // User-friendly error message conversion
   getUserFriendlyMessage(error: ValidationError): string {
     const messageMap: Record<string, string> = {
-      'FILE_TOO_LARGE': 'The file is too big. Please choose a file smaller than 1MB.',
-      'UNSUPPORTED_FORMAT': 'This file type is not supported. Please use .md or .txt files.',
-      'EMPTY_FILE': 'The file is empty. Please choose a file with content.',
-      'INVALID_JSON_SYNTAX': 'The JSON format is invalid. Please check for syntax errors.',
-      'NO_JSON_FOUND': 'No JSON content was found in the file.',
-      'PARSING_ERROR': 'Failed to process the file. Please check the file format.',
-      'MAX_DEPTH_EXCEEDED': 'The JSON structure is too complex. Please simplify nested objects.',
-      'ARRAY_TOO_LARGE': 'The JSON array is too large. Please reduce the number of items.',
-      'STRING_TOO_LARGE': 'The JSON contains very long text. Please shorten it.',
-      'EMPTY_CONTENT': 'The file has no content.',
-      'CONTENT_TOO_LARGE': 'The file content is too large to process.',
-      'UNKNOWN_ERROR': 'An unexpected error occurred. Please try again.',
-      'RUNTIME_ERROR': 'A technical error occurred. Please refresh the page.',
-      'WARNING': 'Please note: ',
-      'INFO': 'Information: '
+      FILE_TOO_LARGE: 'The file is too big. Please choose a file smaller than 1MB.',
+      UNSUPPORTED_FORMAT: 'This file type is not supported. Please use .md or .txt files.',
+      EMPTY_FILE: 'The file is empty. Please choose a file with content.',
+      INVALID_JSON_SYNTAX: 'The JSON format is invalid. Please check for syntax errors.',
+      NO_JSON_FOUND: 'No JSON content was found in the file.',
+      PARSING_ERROR: 'Failed to process the file. Please check the file format.',
+      MAX_DEPTH_EXCEEDED: 'The JSON structure is too complex. Please simplify nested objects.',
+      ARRAY_TOO_LARGE: 'The JSON array is too large. Please reduce the number of items.',
+      STRING_TOO_LARGE: 'The JSON contains very long text. Please shorten it.',
+      EMPTY_CONTENT: 'The file has no content.',
+      CONTENT_TOO_LARGE: 'The file content is too large to process.',
+      UNKNOWN_ERROR: 'An unexpected error occurred. Please try again.',
+      RUNTIME_ERROR: 'A technical error occurred. Please refresh the page.',
+      WARNING: 'Please note: ',
+      INFO: 'Information: ',
     }
 
     const baseMessage = messageMap[error.code] || error.message
@@ -162,48 +162,50 @@ export class ErrorHandler {
   // Error recovery suggestions
   getRecoverySuggestions(error: ValidationError): string[] {
     const suggestions: Record<string, string[]> = {
-      'FILE_TOO_LARGE': [
+      FILE_TOO_LARGE: [
         'Remove unnecessary content from the file',
         'Split the file into smaller parts',
-        'Compress large string values'
+        'Compress large string values',
       ],
-      'UNSUPPORTED_FORMAT': [
+      UNSUPPORTED_FORMAT: [
         'Convert the file to .md or .txt format',
         'Copy the JSON content into a markdown file',
-        'Use a text editor to save the file with the correct extension'
+        'Use a text editor to save the file with the correct extension',
       ],
-      'EMPTY_FILE': [
+      EMPTY_FILE: [
         'Add content to the file',
         'Choose a different file with content',
-        'Check if the file was saved correctly'
+        'Check if the file was saved correctly',
       ],
-      'INVALID_JSON_SYNTAX': [
+      INVALID_JSON_SYNTAX: [
         'Use a JSON validator to check syntax',
         'Check for missing commas, quotes, or brackets',
-        'Remove trailing commas in objects and arrays'
+        'Remove trailing commas in objects and arrays',
       ],
-      'NO_JSON_FOUND': [
+      NO_JSON_FOUND: [
         'Add JSON content in code blocks (```json ... ```)',
         'Ensure JSON is properly formatted with braces',
-        'Check if JSON is hidden in other markdown elements'
+        'Check if JSON is hidden in other markdown elements',
       ],
-      'MAX_DEPTH_EXCEEDED': [
+      MAX_DEPTH_EXCEEDED: [
         'Flatten nested JSON structures',
         'Use references instead of deep nesting',
-        'Split into multiple JSON documents'
+        'Split into multiple JSON documents',
       ],
-      'ARRAY_TOO_LARGE': [
+      ARRAY_TOO_LARGE: [
         'Divide large arrays into smaller chunks',
         'Use pagination for array data',
-        'Remove unnecessary array items'
-      ]
+        'Remove unnecessary array items',
+      ],
     }
 
-    return suggestions[error.code] || [
-      'Try refreshing the page',
-      'Check the file format and content',
-      'Contact support if the problem persists'
-    ]
+    return (
+      suggestions[error.code] || [
+        'Try refreshing the page',
+        'Check the file format and content',
+        'Contact support if the problem persists',
+      ]
+    )
   }
 
   // Error categorization for UI display
@@ -215,7 +217,7 @@ export class ErrorHandler {
     return {
       critical: errors.filter(error => error.severity === 'error'),
       warnings: errors.filter(error => error.severity === 'warning'),
-      info: errors.filter(error => error.severity === 'info')
+      info: errors.filter(error => error.severity === 'info'),
     }
   }
 
@@ -231,7 +233,7 @@ export class ErrorHandler {
       if (Array.isArray(errors)) {
         this.errors = errors
       }
-    } catch (error) {
+    } catch (_error) {
       this.logError('Failed to import errors', 'ErrorHandler.importErrors')
     }
   }

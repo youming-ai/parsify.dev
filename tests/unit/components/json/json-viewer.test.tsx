@@ -1,13 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen, fireEvent, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { render } from '../test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { JsonViewer } from '@/web/components/tools/json/json-viewer'
-import { SAMPLE_JSON } from '../test-utils'
+import { render, SAMPLE_JSON } from '../test-utils'
 
 // Mock the json-utils module
 vi.mock('@/web/components/tools/json/json-utils', () => ({
-  parseJsonToTree: vi.fn((data) => [
+  parseJsonToTree: vi.fn(data => [
     {
       path: 'root',
       key: 'root',
@@ -18,20 +17,21 @@ vi.mock('@/web/components/tools/json/json-utils', () => ({
         key,
         type: typeof value === 'object' && value !== null ? 'object' : typeof value,
         value,
-        children: typeof value === 'object' && value !== null
-          ? Object.entries(value as any).map(([k, v]) => ({
-              path: `root.${key}.${k}`,
-              key: k,
-              type: typeof v === 'object' && v !== null ? 'object' : typeof v,
-              value: v,
-              children: typeof v === 'object' && v !== null ? [] : undefined
-            }))
-          : undefined
-      }))
-    }
+        children:
+          typeof value === 'object' && value !== null
+            ? Object.entries(value as any).map(([k, v]) => ({
+                path: `root.${key}.${k}`,
+                key: k,
+                type: typeof v === 'object' && v !== null ? 'object' : typeof v,
+                value: v,
+                children: typeof v === 'object' && v !== null ? [] : undefined,
+              }))
+            : undefined,
+      })),
+    },
   ]),
   copyToClipboard: vi.fn(() => Promise.resolve()),
-  downloadFile: vi.fn()
+  downloadFile: vi.fn(),
 }))
 
 describe('JsonViewer Component', () => {
@@ -188,7 +188,7 @@ describe('JsonViewer Component', () => {
       boolean: true,
       nullValue: null,
       array: [1, 2, 3],
-      object: { nested: 'value' }
+      object: { nested: 'value' },
     }
 
     render(<JsonViewer data={testData} />)
@@ -207,10 +207,10 @@ describe('JsonViewer Component', () => {
       level1: {
         level2: {
           level3: {
-            deep: 'value'
-          }
-        }
-      }
+            deep: 'value',
+          },
+        },
+      },
     }
 
     render(<JsonViewer data={complexData} />)

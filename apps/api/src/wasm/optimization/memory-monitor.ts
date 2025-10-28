@@ -2,7 +2,7 @@
  * Memory monitoring and profiling for WASM modules
  */
 
-import { IWasmModule } from '../modules/interfaces/wasm-module.interface'
+import type { IWasmModule } from '../modules/interfaces/wasm-module.interface'
 
 /**
  * Memory usage statistics
@@ -206,7 +206,7 @@ export class WasmMemoryMonitor {
         low: 60,
         medium: 75,
         high: 85,
-        critical: 95
+        critical: 95,
       },
       maxHistorySize: 1000,
       leakDetection: true,
@@ -214,7 +214,7 @@ export class WasmMemoryMonitor {
       gcThreshold: 80,
       profiling: true,
       maxProfilingDuration: 60000,
-      ...config
+      ...config,
     }
   }
 
@@ -230,8 +230,8 @@ export class WasmMemoryMonitor {
       module,
       this.config,
       memoryLimit,
-      (warning) => this.handleWarning(warning),
-      (profile) => this.handleProfile(profile)
+      warning => this.handleWarning(warning),
+      profile => this.handleProfile(profile)
     )
 
     this.monitors.set(module.id, monitor)
@@ -302,7 +302,7 @@ export class WasmMemoryMonitor {
       totalMemoryUsage,
       totalAllocations,
       averageEfficiency: this.monitors.size > 0 ? totalEfficiency / this.monitors.size : 0,
-      activeWarnings
+      activeWarnings,
     }
   }
 
@@ -408,8 +408,16 @@ class MemoryMonitorInstance {
 
   private currentStats: MemoryStats
   private baselineStats: MemoryStats
-  private memoryHistory: Array<{ timestamp: number; memory: number; operation: string }> = []
-  private allocations: Array<{ size: number; timestamp: number; operation: string }> = []
+  private memoryHistory: Array<{
+    timestamp: number
+    memory: number
+    operation: string
+  }> = []
+  private allocations: Array<{
+    size: number
+    timestamp: number
+    operation: string
+  }> = []
   private operations: Map<string, { count: number; totalSize: number }> = new Map()
   private activeWarnings: MemoryWarning[] = []
   private lastGC = 0
@@ -530,7 +538,7 @@ class MemoryMonitorInstance {
       this.memoryHistory.push({
         timestamp: Date.now(),
         memory: newStats.used,
-        operation: 'monitor_tick'
+        operation: 'monitor_tick',
       })
 
       // Limit history size
@@ -573,7 +581,7 @@ class MemoryMonitorInstance {
     // Calculate derived metrics
     const allocationCount = metadata.executionCount || 0
     const deallocationCount = Math.floor(allocationCount * 0.9)
-    const fragmentationRatio = allocated > 0 ? 1 - (used / allocated) : 0
+    const fragmentationRatio = allocated > 0 ? 1 - used / allocated : 0
     const gcCount = Math.floor(Math.random() * 10)
     const gcTime = gcCount * (10 + Math.random() * 50)
 
@@ -603,7 +611,7 @@ class MemoryMonitorInstance {
       gcCount,
       gcTime,
       growthRate,
-      leakProbability
+      leakProbability,
     }
   }
 
@@ -614,8 +622,8 @@ class MemoryMonitorInstance {
     const usagePercentage = this.memoryLimit > 0 ? (stats.used / this.memoryLimit) * 100 : 0
 
     // Clear old warnings
-    this.activeWarnings = this.activeWarnings.filter(w =>
-      Date.now() - w.timestamp.getTime() < 60000 // Keep warnings for 1 minute
+    this.activeWarnings = this.activeWarnings.filter(
+      w => Date.now() - w.timestamp.getTime() < 60000 // Keep warnings for 1 minute
     )
 
     let level: MemoryWarningLevel | null = null
@@ -643,13 +651,14 @@ class MemoryMonitorInstance {
         memoryUsage: stats.used,
         limit: this.memoryLimit,
         timestamp: new Date(),
-        suggestions: this.getSuggestions(level, usagePercentage)
+        suggestions: this.getSuggestions(level, usagePercentage),
       }
 
       // Check if we already have a similar recent warning
-      const hasSimilarWarning = this.activeWarnings.some(w =>
-        w.level === level &&
-        Math.abs(w.memoryUsage - warning.memoryUsage) < (this.memoryLimit * 0.05)
+      const hasSimilarWarning = this.activeWarnings.some(
+        w =>
+          w.level === level &&
+          Math.abs(w.memoryUsage - warning.memoryUsage) < this.memoryLimit * 0.05
       )
 
       if (!hasSimilarWarning) {
@@ -662,17 +671,19 @@ class MemoryMonitorInstance {
   /**
    * Detect memory leaks
    */
-  private detectMemoryLeaks(currentStats: MemoryStats, previousStats: MemoryStats): void {
+  private detectMemoryLeaks(currentStats: MemoryStats, _previousStats: MemoryStats): void {
     const growthRate = currentStats.growthRate
     const fragmentation = currentStats.fragmentationRatio
     const leakProbability = currentStats.leakProbability
 
     // Update leak probability based on patterns
-    if (growthRate > 1024) { // Growing faster than 1KB/s
+    if (growthRate > 1024) {
+      // Growing faster than 1KB/s
       currentStats.leakProbability = Math.min(1, leakProbability + 0.1)
     }
 
-    if (fragmentation > 0.8) { // High fragmentation
+    if (fragmentation > 0.8) {
+      // High fragmentation
       currentStats.leakProbability = Math.min(1, leakProbability + 0.05)
     }
 
@@ -690,8 +701,8 @@ class MemoryMonitorInstance {
           'Ensure proper cleanup of event listeners and callbacks',
           'Review large object allocations',
           'Consider implementing object pooling',
-          'Check for unclosed database connections or file handles'
-        ]
+          'Check for unclosed database connections or file handles',
+        ],
       }
 
       const hasLeakWarning = this.activeWarnings.some(w =>
@@ -712,8 +723,8 @@ class MemoryMonitorInstance {
     const usagePercentage = this.memoryLimit > 0 ? (stats.used / this.memoryLimit) * 100 : 0
     const now = Date.now()
 
-    if (usagePercentage >= this.config.gcThreshold &&
-        (now - this.lastGC) > 5000) { // At least 5 seconds between GCs
+    if (usagePercentage >= this.config.gcThreshold && now - this.lastGC > 5000) {
+      // At least 5 seconds between GCs
       this.forceGarbageCollection()
       this.lastGC = now
     }
@@ -725,7 +736,8 @@ class MemoryMonitorInstance {
   private updateOperationTracking(currentStats: MemoryStats, previousStats: MemoryStats): void {
     const memoryDiff = currentStats.used - previousStats.used
 
-    if (Math.abs(memoryDiff) > 1024) { // Only track changes > 1KB
+    if (Math.abs(memoryDiff) > 1024) {
+      // Only track changes > 1KB
       const operation = memoryDiff > 0 ? 'allocation' : 'deallocation'
       const size = Math.abs(memoryDiff)
 
@@ -734,7 +746,7 @@ class MemoryMonitorInstance {
         this.allocations.push({
           size,
           timestamp: Date.now(),
-          operation
+          operation,
         })
 
         // Keep only largest allocations
@@ -745,7 +757,10 @@ class MemoryMonitorInstance {
       }
 
       // Update operation statistics
-      const existing = this.operations.get(operation) || { count: 0, totalSize: 0 }
+      const existing = this.operations.get(operation) || {
+        count: 0,
+        totalSize: 0,
+      }
       existing.count++
       existing.totalSize += size
       this.operations.set(operation, existing)
@@ -762,7 +777,8 @@ class MemoryMonitorInstance {
     if (this.memoryHistory.length > 20) {
       const recent = this.memoryHistory.slice(-20)
       const slope = this.calculateSlope(recent.map(h => h.memory))
-      if (slope > 100) { // Growing faster than 100B per tick
+      if (slope > 100) {
+        // Growing faster than 100B per tick
         probability += 0.3
       }
     }
@@ -773,9 +789,12 @@ class MemoryMonitorInstance {
     }
 
     // Factor 3: Allocation/deallocation imbalance
-    const allocRatio = this.currentStats.allocationCount > 0 ?
-      this.currentStats.deallocationCount / this.currentStats.allocationCount : 1
-    if (allocRatio < 0.8) { // Significantly more allocations than deallocations
+    const allocRatio =
+      this.currentStats.allocationCount > 0
+        ? this.currentStats.deallocationCount / this.currentStats.allocationCount
+        : 1
+    if (allocRatio < 0.8) {
+      // Significantly more allocations than deallocations
       probability += 0.3
     }
 
@@ -794,7 +813,10 @@ class MemoryMonitorInstance {
     if (values.length < 2) return 0
 
     const n = values.length
-    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0
+    let sumX = 0
+    let sumY = 0
+    let sumXY = 0
+    let sumX2 = 0
 
     for (let i = 0; i < n; i++) {
       sumX += i
@@ -820,7 +842,7 @@ class MemoryMonitorInstance {
         operation,
         count: stats.count,
         totalSize: stats.totalSize,
-        averageSize: stats.totalSize / stats.count
+        averageSize: stats.totalSize / stats.count,
       }))
       .sort((a, b) => b.totalSize - a.totalSize)
       .slice(0, 10)
@@ -835,7 +857,7 @@ class MemoryMonitorInstance {
       timeline: this.memoryHistory,
       largestAllocations: this.allocations,
       hotspots,
-      efficiencyScore
+      efficiencyScore,
     }
 
     this.profileCallback(profile)
@@ -859,8 +881,10 @@ class MemoryMonitorInstance {
     }
 
     // Reward good allocation/deallocation ratio
-    const allocRatio = this.currentStats.allocationCount > 0 ?
-      this.currentStats.deallocationCount / this.currentStats.allocationCount : 1
+    const allocRatio =
+      this.currentStats.allocationCount > 0
+        ? this.currentStats.deallocationCount / this.currentStats.allocationCount
+        : 1
     if (allocRatio > 0.95) {
       score += 10
     }
@@ -871,7 +895,7 @@ class MemoryMonitorInstance {
   /**
    * Get suggestions for memory warnings
    */
-  private getSuggestions(level: MemoryWarningLevel, usagePercentage: number): string[] {
+  private getSuggestions(level: MemoryWarningLevel, _usagePercentage: number): string[] {
     const suggestions: string[] = []
 
     switch (level) {
@@ -899,10 +923,7 @@ class MemoryMonitorInstance {
         )
         break
       case 'low':
-        suggestions.push(
-          'Keep monitoring memory usage',
-          'Consider pre-allocating memory buffers'
-        )
+        suggestions.push('Keep monitoring memory usage', 'Consider pre-allocating memory buffers')
         break
     }
 
@@ -924,7 +945,7 @@ class MemoryMonitorInstance {
       gcCount: 0,
       gcTime: 0,
       growthRate: 0,
-      leakProbability: 0
+      leakProbability: 0,
     }
   }
 
@@ -955,11 +976,11 @@ class MemoryMonitorInstance {
           operation,
           count: stats.count,
           totalSize: stats.totalSize,
-          averageSize: stats.totalSize / stats.count
+          averageSize: stats.totalSize / stats.count,
         }))
         .sort((a, b) => b.totalSize - a.totalSize)
         .slice(0, 10),
-      efficiencyScore: this.calculateEfficiencyScore()
+      efficiencyScore: this.calculateEfficiencyScore(),
     }
   }
 

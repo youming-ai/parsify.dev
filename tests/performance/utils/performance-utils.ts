@@ -60,7 +60,7 @@ export async function measureRequest(
   try {
     const response = await fetch(url, {
       ...options,
-      signal: AbortSignal.timeout(options.timeout || 30000)
+      signal: AbortSignal.timeout(options.timeout || 30000),
     })
 
     const endTime = performance.now()
@@ -87,7 +87,7 @@ export async function measureRequest(
       success: response.status >= 200 && response.status < 400,
       timestamp,
       responseSize,
-      error: response.status >= 400 ? `HTTP ${response.status}` : undefined
+      error: response.status >= 400 ? `HTTP ${response.status}` : undefined,
     }
   } catch (error) {
     const endTime = performance.now()
@@ -100,7 +100,7 @@ export async function measureRequest(
       statusCode: 0,
       success: false,
       timestamp,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     }
   }
 }
@@ -117,7 +117,7 @@ export async function runLoadTest(config: LoadTestConfig): Promise<LoadTestResul
     concurrentRequests,
     totalRequests,
     duration,
-    timeout = 30000
+    timeout = 30000,
   } = config
 
   const metrics: PerformanceMetrics[] = []
@@ -127,10 +127,10 @@ export async function runLoadTest(config: LoadTestConfig): Promise<LoadTestResul
     method,
     headers: {
       'Content-Type': 'application/json',
-      ...headers
+      ...headers,
     },
     timeout,
-    body: body ? JSON.stringify(body) : undefined
+    body: body ? JSON.stringify(body) : undefined,
   }
 
   // Calculate how many batches we need
@@ -178,7 +178,8 @@ function calculateLoadTestMetrics(
   const responseTimes = successfulMetrics.map(m => m.responseTime)
   responseTimes.sort((a, b) => a - b)
 
-  const totalTestTime = Math.max(...metrics.map(m => m.timestamp)) - Math.min(...metrics.map(m => m.timestamp)) || 1
+  const totalTestTime =
+    Math.max(...metrics.map(m => m.timestamp)) - Math.min(...metrics.map(m => m.timestamp)) || 1
   const totalResponseSize = successfulMetrics.reduce((sum, m) => sum + (m.responseSize || 0), 0)
 
   // Calculate percentiles
@@ -196,7 +197,7 @@ function calculateLoadTestMetrics(
 
   const errors = Array.from(errorCounts.entries()).map(([error, count]) => ({
     error,
-    count
+    count,
   }))
 
   return {
@@ -205,9 +206,10 @@ function calculateLoadTestMetrics(
     totalRequests: metrics.length,
     successfulRequests: successfulMetrics.length,
     failedRequests: failedMetrics.length,
-    averageResponseTime: responseTimes.length > 0
-      ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
-      : 0,
+    averageResponseTime:
+      responseTimes.length > 0
+        ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
+        : 0,
     minResponseTime: responseTimes.length > 0 ? responseTimes[0] : 0,
     maxResponseTime: responseTimes.length > 0 ? responseTimes[responseTimes.length - 1] : 0,
     p50,
@@ -217,7 +219,7 @@ function calculateLoadTestMetrics(
     requestsPerSecond: metrics.length / (totalTestTime / 1000),
     throughputBytesPerSecond: totalResponseSize / (totalTestTime / 1000),
     errors,
-    metrics
+    metrics,
   }
 }
 
@@ -231,7 +233,9 @@ export async function runConcurrencyTest(
 ): Promise<ConcurrencyTestResult> {
   const results: ConcurrencyTestResult = {}
 
-  console.log(`Running concurrency test for ${baseUrl} with levels: ${concurrencyLevels.join(', ')}`)
+  console.log(
+    `Running concurrency test for ${baseUrl} with levels: ${concurrencyLevels.join(', ')}`
+  )
 
   for (const concurrency of concurrencyLevels) {
     console.log(`Testing concurrency level: ${concurrency}`)
@@ -240,7 +244,7 @@ export async function runConcurrencyTest(
       ...config,
       url: baseUrl,
       concurrentRequests: concurrency,
-      totalRequests: Math.min(config.totalRequests || 100, concurrency * 10)
+      totalRequests: Math.min(config.totalRequests || 100, concurrency * 10),
     })
 
     results[concurrency] = result
@@ -280,15 +284,21 @@ Throughput:
 - Requests/sec: ${result.requestsPerSecond.toFixed(2)}
 - Throughput: ${result.throughputBytesPerSecond ? `${(result.throughputBytesPerSecond / 1024).toFixed(2)} KB/s` : 'N/A'}
 
-${result.errors.length > 0 ? `
+${
+  result.errors.length > 0
+    ? `
 Errors:
 ${result.errors.map(e => `- ${e.error}: ${e.count} times`).join('\n')}
-` : ''}
+`
+    : ''
+}
 `.trim()
   } else {
     // Concurrency test result
     const concurrencyResults = results as ConcurrencyTestResult
-    const levels = Object.keys(concurrencyResults).map(Number).sort((a, b) => a - b)
+    const levels = Object.keys(concurrencyResults)
+      .map(Number)
+      .sort((a, b) => a - b)
 
     let report = `
 Concurrency Test Report
@@ -326,27 +336,33 @@ export function assertPerformanceRequirements(
   const {
     maxP95ResponseTime = 200,
     minSuccessRate = 0.95,
-    minRequestsPerSecond = 10
+    minRequestsPerSecond = 10,
   } = requirements
 
   const failures: string[] = []
 
   if (result.p95 > maxP95ResponseTime) {
-    failures.push(`P95 response time ${result.p95.toFixed(2)}ms exceeds requirement of ${maxP95ResponseTime}ms`)
+    failures.push(
+      `P95 response time ${result.p95.toFixed(2)}ms exceeds requirement of ${maxP95ResponseTime}ms`
+    )
   }
 
   const successRate = result.successfulRequests / result.totalRequests
   if (successRate < minSuccessRate) {
-    failures.push(`Success rate ${(successRate * 100).toFixed(1)}% below requirement of ${(minSuccessRate * 100).toFixed(1)}%`)
+    failures.push(
+      `Success rate ${(successRate * 100).toFixed(1)}% below requirement of ${(minSuccessRate * 100).toFixed(1)}%`
+    )
   }
 
   if (result.requestsPerSecond < minRequestsPerSecond) {
-    failures.push(`Throughput ${result.requestsPerSecond.toFixed(2)} req/s below requirement of ${minRequestsPerSecond} req/s`)
+    failures.push(
+      `Throughput ${result.requestsPerSecond.toFixed(2)} req/s below requirement of ${minRequestsPerSecond} req/s`
+    )
   }
 
   return {
     passed: failures.length === 0,
-    failures
+    failures,
   }
 }
 
@@ -359,7 +375,7 @@ export async function savePerformanceResults(
 ): Promise<void> {
   const data = {
     timestamp: new Date().toISOString(),
-    results
+    results,
   }
 
   // In a real implementation, this would save to a file

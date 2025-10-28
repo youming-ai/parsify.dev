@@ -15,7 +15,7 @@ export const FileUploadSchema = z.object({
   checksum: z.string().length(64).nullable(), // SHA-256 hash
   status: FileUploadStatusSchema.default('uploading'),
   expires_at: z.number().nullable(),
-  created_at: z.number()
+  created_at: z.number(),
 })
 
 export type FileUpload = z.infer<typeof FileUploadSchema>
@@ -25,7 +25,7 @@ export const CreateFileUploadSchema = FileUploadSchema.partial({
   id: true,
   status: true,
   expires_at: true,
-  created_at: true
+  created_at: true,
 })
 
 export type CreateFileUpload = z.infer<typeof CreateFileUploadSchema>
@@ -38,27 +38,32 @@ export const UpdateFileUploadSchema = FileUploadSchema.partial({
   mime_type: true,
   size_bytes: true,
   r2_key: true,
-  created_at: true
+  created_at: true,
 })
 
 export type UpdateFileUpload = z.infer<typeof UpdateFileUploadSchema>
 
 // File upload options
 export const FileUploadOptionsSchema = z.object({
-  max_size_bytes: z.number().min(1).default(10 * 1024 * 1024), // 10MB default
-  allowed_mime_types: z.array(z.string()).default([
-    'application/json',
-    'text/plain',
-    'text/csv',
-    'application/xml',
-    'text/xml',
-    'application/javascript',
-    'application/typescript',
-    'text/html',
-    'text/css'
-  ]),
+  max_size_bytes: z
+    .number()
+    .min(1)
+    .default(10 * 1024 * 1024), // 10MB default
+  allowed_mime_types: z
+    .array(z.string())
+    .default([
+      'application/json',
+      'text/plain',
+      'text/csv',
+      'application/xml',
+      'text/xml',
+      'application/javascript',
+      'application/typescript',
+      'text/html',
+      'text/css',
+    ]),
   retention_hours: z.number().min(1).default(72), // 3 days default
-  require_auth: z.boolean().default(false)
+  require_auth: z.boolean().default(false),
 })
 
 export type FileUploadOptions = z.infer<typeof FileUploadOptionsSchema>
@@ -98,8 +103,8 @@ export class FileUpload {
       id: crypto.randomUUID(),
       status: 'uploading',
       created_at: now,
-      expires_at: opts.retention_hours ? now + (opts.retention_hours * 3600) : null,
-      ...data
+      expires_at: opts.retention_hours ? now + opts.retention_hours * 3600 : null,
+      ...data,
     })
   }
 
@@ -118,14 +123,14 @@ export class FileUpload {
       checksum: this.checksum,
       status: this.status,
       expires_at: this.expires_at,
-      created_at: this.created_at
+      created_at: this.created_at,
     }
   }
 
   update(data: UpdateFileUpload): FileUpload {
     return new FileUpload({
       ...this,
-      ...data
+      ...data,
     })
   }
 
@@ -133,26 +138,26 @@ export class FileUpload {
   complete(checksum?: string): FileUpload {
     return this.update({
       status: 'completed',
-      checksum: checksum || null
+      checksum: checksum || null,
     })
   }
 
   fail(): FileUpload {
     return this.update({
-      status: 'failed'
+      status: 'failed',
     })
   }
 
   expire(): FileUpload {
     return this.update({
-      status: 'expired'
+      status: 'expired',
     })
   }
 
   extendExpiration(hours: number): FileUpload {
-    const newExpiresAt = Math.floor(Date.now() / 1000) + (hours * 3600)
+    const newExpiresAt = Math.floor(Date.now() / 1000) + hours * 3600
     return this.update({
-      expires_at: newExpiresAt
+      expires_at: newExpiresAt,
     })
   }
 
@@ -187,7 +192,7 @@ export class FileUpload {
       const k = 1024
       const sizes = ['B', 'KB', 'MB', 'GB']
       const i = Math.floor(Math.log(bytes) / Math.log(k))
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+      return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
     }
 
     return formatBytes(this.size_bytes)
@@ -205,7 +210,7 @@ export class FileUpload {
       'application/javascript',
       'application/typescript',
       'application/xml',
-      'application/xhtml+xml'
+      'application/xhtml+xml',
     ]
     return textMimeTypes.some(type => this.mime_type.startsWith(type))
   }
@@ -221,10 +226,12 @@ export class FileUpload {
       'application/typescript',
       'text/x-python',
       'text/x-java-source',
-      'text/x-c++src'
+      'text/x-c++src',
     ]
-    return codeExtensions.includes(this.fileExtension) ||
-           codeMimeTypes.some(type => this.mime_type.startsWith(type))
+    return (
+      codeExtensions.includes(this.fileExtension) ||
+      codeMimeTypes.some(type => this.mime_type.startsWith(type))
+    )
   }
 
   get remainingTime(): number | null {
@@ -260,7 +267,10 @@ export class FileUpload {
   }
 
   // Validation methods
-  static validateFilename(filename: string): { valid: boolean; error?: string } {
+  static validateFilename(filename: string): {
+    valid: boolean
+    error?: string
+  } {
     if (!filename || filename.trim().length === 0) {
       return { valid: false, error: 'Filename cannot be empty' }
     }
@@ -284,18 +294,22 @@ export class FileUpload {
     return { valid: true }
   }
 
-  static validateMimeType(mimeType: string, allowedTypes: string[]): { valid: boolean; error?: string } {
+  static validateMimeType(
+    mimeType: string,
+    allowedTypes: string[]
+  ): { valid: boolean; error?: string } {
     if (!mimeType) {
       return { valid: false, error: 'MIME type is required' }
     }
 
-    const isAllowed = allowedTypes.length === 0 ||
-                     allowedTypes.some(type => {
-                       if (type.endsWith('/*')) {
-                         return mimeType.startsWith(type.slice(0, -1))
-                       }
-                       return mimeType === type
-                     })
+    const isAllowed =
+      allowedTypes.length === 0 ||
+      allowedTypes.some(type => {
+        if (type.endsWith('/*')) {
+          return mimeType.startsWith(type.slice(0, -1))
+        }
+        return mimeType === type
+      })
 
     if (!isAllowed) {
       return { valid: false, error: `MIME type ${mimeType} is not allowed` }
@@ -304,14 +318,20 @@ export class FileUpload {
     return { valid: true }
   }
 
-  static validateFileSize(sizeBytes: number, maxSizeBytes: number): { valid: boolean; error?: string } {
+  static validateFileSize(
+    sizeBytes: number,
+    maxSizeBytes: number
+  ): { valid: boolean; error?: string } {
     if (sizeBytes < 0) {
       return { valid: false, error: 'File size cannot be negative' }
     }
 
     if (sizeBytes > maxSizeBytes) {
-      const maxSizeString = this.formatBytes(maxSizeBytes)
-      return { valid: false, error: `File size exceeds maximum allowed size (${maxSizeString})` }
+      const maxSizeString = FileUpload.formatBytes(maxSizeBytes)
+      return {
+        valid: false,
+        error: `File size exceeds maximum allowed size (${maxSizeString})`,
+      }
     }
 
     return { valid: true }
@@ -322,7 +342,7 @@ export class FileUpload {
     const k = 1024
     const sizes = ['B', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
   }
 
   // Factory methods
@@ -338,13 +358,16 @@ export class FileUpload {
       ? `users/${userId}/${Date.now()}-${filename}`
       : `anonymous/${Date.now()}-${filename}`
 
-    return FileUpload.create({
-      user_id: userId || null,
-      filename,
-      mime_type: mimeType,
-      size_bytes: sizeBytes,
-      r2_key: r2Key
-    }, opts)
+    return FileUpload.create(
+      {
+        user_id: userId || null,
+        filename,
+        mime_type: mimeType,
+        size_bytes: sizeBytes,
+        r2_key: r2Key,
+      },
+      opts
+    )
   }
 
   static createWithR2Key(
@@ -355,13 +378,16 @@ export class FileUpload {
     userId?: string,
     options?: FileUploadOptions
   ): FileUpload {
-    return FileUpload.create({
-      user_id: userId || null,
-      filename,
-      mime_type: mimeType,
-      size_bytes: sizeBytes,
-      r2_key: r2Key
-    }, options)
+    return FileUpload.create(
+      {
+        user_id: userId || null,
+        filename,
+        mime_type: mimeType,
+        size_bytes: sizeBytes,
+        r2_key: r2Key,
+      },
+      options
+    )
   }
 }
 
@@ -388,7 +414,7 @@ export const FILE_UPLOAD_QUERIES = {
     'CREATE INDEX IF NOT EXISTS idx_file_uploads_status ON file_uploads(status);',
     'CREATE INDEX IF NOT EXISTS idx_file_uploads_expires_at ON file_uploads(expires_at);',
     'CREATE INDEX IF NOT EXISTS idx_file_uploads_r2_key ON file_uploads(r2_key);',
-    'CREATE INDEX IF NOT EXISTS idx_file_uploads_created_at ON file_uploads(created_at);'
+    'CREATE INDEX IF NOT EXISTS idx_file_uploads_created_at ON file_uploads(created_at);',
   ],
 
   INSERT: `
@@ -487,5 +513,5 @@ export const FILE_UPLOAD_QUERIES = {
     WHERE created_at >= ?
     GROUP BY user_id
     ORDER BY total_size_bytes DESC;
-  `
+  `,
 } as const

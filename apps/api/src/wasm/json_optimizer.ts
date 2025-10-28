@@ -3,26 +3,40 @@
  */
 
 import { z } from 'zod'
-import { JsonFormatter, JsonFormattingOptions, JsonFormattingResult } from './json_formatter'
-import { JsonValidator, JsonValidationOptions, JsonValidationResult } from './json_validator'
-import { JsonConverter, JsonConversionOptions, JsonConversionResult } from './json_converter'
 import {
-  initializeMemoryOptimization,
+  type JsonConversionOptions,
+  type JsonConversionResult,
+  JsonConverter,
+} from './json_converter'
+import {
+  JsonFormatter,
+  type JsonFormattingOptions,
+  type JsonFormattingResult,
+} from './json_formatter'
+import {
+  type JsonValidationOptions,
+  type JsonValidationResult,
+  JsonValidator,
+} from './json_validator'
+import {
   cleanupMemoryOptimization,
   getMemoryReport,
+  initializeMemoryOptimization,
+  MemoryEfficientCache,
+  memoryLeakDetector,
   wasmMemoryManager,
   wasmMemoryMonitor,
-  memoryLeakDetector,
-  createCompactArray,
-  createCompactMap,
-  createCache,
-  MemoryEfficientCache
 } from './optimization'
 
 // Enhanced configuration schemas with memory optimization options
 export const JsonServiceConfigSchema = z.object({
   enableMemoryOptimization: z.boolean().default(true),
-  memoryLimit: z.number().int().min(1024 * 1024).max(1024 * 1024 * 1024).default(64 * 1024 * 1024), // 64MB default
+  memoryLimit: z
+    .number()
+    .int()
+    .min(1024 * 1024)
+    .max(1024 * 1024 * 1024)
+    .default(64 * 1024 * 1024), // 64MB default
   enableLeakDetection: z.boolean().default(true),
   enableMemoryMonitoring: z.boolean().default(true),
   enableMemoryProfiling: z.boolean().default(true),
@@ -30,9 +44,19 @@ export const JsonServiceConfigSchema = z.object({
   cacheEnabled: z.boolean().default(true),
   cacheMaxSize: z.number().int().min(10).max(10000).default(1000),
   cacheTTL: z.number().int().min(1000).max(3600000).default(300000), // 5 minutes default
-  maxInputSize: z.number().int().min(1024).max(100 * 1024 * 1024).default(10 * 1024 * 1024), // 10MB default
+  maxInputSize: z
+    .number()
+    .int()
+    .min(1024)
+    .max(100 * 1024 * 1024)
+    .default(10 * 1024 * 1024), // 10MB default
   enableStreamProcessing: z.boolean().default(true),
-  streamChunkSize: z.number().int().min(1024).max(1024 * 1024).default(64 * 1024), // 64KB chunks
+  streamChunkSize: z
+    .number()
+    .int()
+    .min(1024)
+    .max(1024 * 1024)
+    .default(64 * 1024), // 64KB chunks
   enableObjectPooling: z.boolean().default(true),
   poolMaxSize: z.number().int().min(10).max(1000).default(100),
 })
@@ -129,17 +153,14 @@ export class JsonOptimizer {
 
       // Initialize cache
       if (this.config.cacheEnabled) {
-        this.cache = new MemoryEfficientCache(
-          this.config.cacheMaxSize,
-          this.config.cacheTTL
-        )
+        this.cache = new MemoryEfficientCache(this.config.cacheMaxSize, this.config.cacheTTL)
       }
 
       // Initialize underlying services
       await Promise.all([
         this.formatter.initialize(),
         this.validator.initialize(),
-        this.converter.initialize()
+        this.converter.initialize(),
       ])
 
       // Configure services with memory limits
@@ -147,7 +168,9 @@ export class JsonOptimizer {
 
       this.isInitialized = true
     } catch (error) {
-      throw new Error(`Failed to initialize JSON optimizer: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to initialize JSON optimizer: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -180,7 +203,9 @@ export class JsonOptimizer {
       // Check memory availability
       const inputSize = jsonString.length
       if (inputSize > this.config.maxInputSize) {
-        throw new Error(`Input size (${inputSize}) exceeds maximum allowed size (${this.config.maxInputSize})`)
+        throw new Error(
+          `Input size (${inputSize}) exceeds maximum allowed size (${this.config.maxInputSize})`
+        )
       }
 
       // Record allocation
@@ -230,7 +255,11 @@ export class JsonOptimizer {
         cacheHit,
         streamProcessed,
         objectsPooled: 0,
-        efficiency: this.calculateEfficiency(inputSize, result.formatted?.length || 0, processingTime)
+        efficiency: this.calculateEfficiency(
+          inputSize,
+          result.formatted?.length || 0,
+          processingTime
+        ),
       })
 
       return result
@@ -262,7 +291,12 @@ export class JsonOptimizer {
     try {
       // Check cache first
       if (this.cache) {
-        const cacheKey = this.generateCacheKey('validate', JSON.stringify(jsonData), schema, options)
+        const cacheKey = this.generateCacheKey(
+          'validate',
+          JSON.stringify(jsonData),
+          schema,
+          options
+        )
         const cached = this.cache.get(cacheKey)
         if (cached) {
           cacheHit = true
@@ -286,7 +320,12 @@ export class JsonOptimizer {
 
       // Cache the result
       if (this.cache && result.valid) {
-        const cacheKey = this.generateCacheKey('validate', JSON.stringify(jsonData), schema, options)
+        const cacheKey = this.generateCacheKey(
+          'validate',
+          JSON.stringify(jsonData),
+          schema,
+          options
+        )
         this.cache.set(cacheKey, result)
       }
 
@@ -316,7 +355,11 @@ export class JsonOptimizer {
         cacheHit,
         streamProcessed: false,
         objectsPooled: 0,
-        efficiency: this.calculateEfficiency(inputSize, JSON.stringify(result).length, processingTime)
+        efficiency: this.calculateEfficiency(
+          inputSize,
+          JSON.stringify(result).length,
+          processingTime
+        ),
       })
 
       return result
@@ -347,7 +390,12 @@ export class JsonOptimizer {
     try {
       // Check cache first
       if (this.cache) {
-        const cacheKey = this.generateCacheKey('convert', JSON.stringify(jsonData), targetFormat, options)
+        const cacheKey = this.generateCacheKey(
+          'convert',
+          JSON.stringify(jsonData),
+          targetFormat,
+          options
+        )
         const cached = this.cache.get(cacheKey)
         if (cached) {
           cacheHit = true
@@ -371,7 +419,12 @@ export class JsonOptimizer {
 
       // Cache the result
       if (this.cache && result.success) {
-        const cacheKey = this.generateCacheKey('convert', JSON.stringify(jsonData), targetFormat, options)
+        const cacheKey = this.generateCacheKey(
+          'convert',
+          JSON.stringify(jsonData),
+          targetFormat,
+          options
+        )
         this.cache.set(cacheKey, result)
       }
 
@@ -402,7 +455,11 @@ export class JsonOptimizer {
         cacheHit,
         streamProcessed: false,
         objectsPooled: 0,
-        efficiency: this.calculateEfficiency(inputSize, JSON.stringify(result).length, processingTime)
+        efficiency: this.calculateEfficiency(
+          inputSize,
+          JSON.stringify(result).length,
+          processingTime
+        ),
       })
 
       return result
@@ -444,9 +501,9 @@ export class JsonOptimizer {
         gcStats: {
           totalGCs: report.management?.gcStats?.totalGCs || 0,
           totalGCTime: report.management?.gcStats?.totalGCTime || 0,
-          memoryReclaimed: report.management?.gcStats?.memoryReclaimed || 0
+          memoryReclaimed: report.management?.gcStats?.memoryReclaimed || 0,
         },
-        timestamp: new Date()
+        timestamp: new Date(),
       }
     } catch (error) {
       console.error('Error getting memory stats:', error)
@@ -525,7 +582,7 @@ export class JsonOptimizer {
       await Promise.all([
         this.formatter.dispose(),
         this.validator.dispose(),
-        this.converter.dispose()
+        this.converter.dispose(),
       ])
 
       // Cleanup memory optimization
@@ -583,7 +640,7 @@ export class JsonOptimizer {
         checksum: '',
         supportedFormats: [],
         capabilities: [],
-        limitations: []
+        limitations: [],
       }),
       execute: async () => ({ success: true }),
       dispose: async () => {},
@@ -593,8 +650,8 @@ export class JsonOptimizer {
         responseTime: 0,
         memoryUsage: 0,
         errorRate: 0,
-        uptime: 0
-      })
+        uptime: 0,
+      }),
     }
 
     initializeMemoryOptimization(mockModule, {
@@ -604,9 +661,9 @@ export class JsonOptimizer {
       memoryLimit: this.config.memoryLimit,
       customConfig: {
         gc: {
-          strategy: this.config.gcStrategy as any
-        }
-      }
+          strategy: this.config.gcStrategy as any,
+        },
+      },
     })
   }
 
@@ -659,16 +716,20 @@ export class JsonOptimizer {
    * Generate cache key
    */
   private generateCacheKey(...args: any[]): string {
-    const key = args.map(arg =>
-      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-    ).join(':')
+    const key = args
+      .map(arg => (typeof arg === 'object' ? JSON.stringify(arg) : String(arg)))
+      .join(':')
     return `json_opt_${key}`
   }
 
   /**
    * Calculate efficiency score
    */
-  private calculateEfficiency(inputSize: number, outputSize: number, processingTime: number): number {
+  private calculateEfficiency(
+    inputSize: number,
+    outputSize: number,
+    processingTime: number
+  ): number {
     if (processingTime === 0) return 100
 
     // Simple efficiency calculation based on throughput
@@ -753,12 +814,12 @@ export async function convertJsonOptimized(
   return optimizer.convert(jsonData, targetFormat, options)
 }
 
-export function getJsonMemoryStats(serviceId?: string): JsonMemoryStats | null {
+export function getJsonMemoryStats(_serviceId?: string): JsonMemoryStats | null {
   const optimizer = JsonOptimizer.getInstance()
   return optimizer.getMemoryStats()
 }
 
-export async function checkJsonMemoryLeaks(serviceId?: string): Promise<boolean> {
+export async function checkJsonMemoryLeaks(_serviceId?: string): Promise<boolean> {
   const optimizer = JsonOptimizer.getInstance()
   return optimizer.checkMemoryLeaks()
 }

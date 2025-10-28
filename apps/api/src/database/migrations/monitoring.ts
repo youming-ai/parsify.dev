@@ -1,14 +1,12 @@
-import { D1Database } from '@cloudflare/workers-types'
+import type { D1Database } from '@cloudflare/workers-types'
 import { DatabaseClient } from '../client'
 import {
-  Migration,
-  MigrationStatus,
-  MigrationLogEntry,
-  MigrationStats,
-  MigrationHealthCheck,
-  DatabaseSchemaInfo,
-  MigrationLogger,
-  DEFAULT_DATABASE_CLIENT_CONFIG
+  type DatabaseSchemaInfo,
+  DEFAULT_DATABASE_CLIENT_CONFIG,
+  type MigrationHealthCheck,
+  type MigrationLogEntry,
+  type MigrationLogger,
+  type MigrationStats,
 } from './types'
 
 /**
@@ -69,7 +67,7 @@ export class MigrationMonitor {
       timestamp: Date.now(),
       message,
       details,
-      level
+      level,
     }
 
     // Add to memory
@@ -97,16 +95,19 @@ export class MigrationMonitor {
       const total = recentLogs.filter(l => l.action === 'complete').length
       const applied = recentLogs.filter(l => l.action === 'complete' && l.level !== 'error').length
       const failed = recentLogs.filter(l => l.action === 'fail').length
-      const rolledBack = recentLogs.filter(l => l.action === 'rollback' && l.level !== 'error').length
+      const rolledBack = recentLogs.filter(
+        l => l.action === 'rollback' && l.level !== 'error'
+      ).length
 
       // Calculate average execution time from logs
       const executionTimes = recentLogs
         .filter(l => l.action === 'complete' && l.details?.executionTime)
         .map(l => l.details.executionTime as number)
 
-      const averageExecutionTime = executionTimes.length > 0
-        ? executionTimes.reduce((sum, time) => sum + time, 0) / executionTimes.length
-        : 0
+      const averageExecutionTime =
+        executionTimes.length > 0
+          ? executionTimes.reduce((sum, time) => sum + time, 0) / executionTimes.length
+          : 0
 
       // Get last migration time
       const lastMigration = recentLogs
@@ -126,12 +127,11 @@ export class MigrationMonitor {
         rolledBack,
         averageExecutionTime,
         lastMigrationTime: lastMigration?.timestamp,
-        oldestPendingMigration: oldestPendingLog?.timestamp
+        oldestPendingMigration: oldestPendingLog?.timestamp,
       }
 
       this.logger.debug('Migration statistics retrieved', stats)
       return stats
-
     } catch (error) {
       this.logger.error('Failed to fetch migration statistics', error)
 
@@ -142,7 +142,7 @@ export class MigrationMonitor {
         pending: 0,
         failed: 0,
         rolledBack: 0,
-        averageExecutionTime: 0
+        averageExecutionTime: 0,
       }
     }
   }
@@ -166,13 +166,13 @@ export class MigrationMonitor {
 
     // Check for long-running migrations
     const longRunningMigrations = recentLogs.filter(
-      l => l.action === 'start' &&
-      l.level === 'info' &&
-      !recentLogs.some(r =>
-        r.migrationId === l.migrationId &&
-        r.action === 'complete' &&
-        r.timestamp > l.timestamp
-      )
+      l =>
+        l.action === 'start' &&
+        l.level === 'info' &&
+        !recentLogs.some(
+          r =>
+            r.migrationId === l.migrationId && r.action === 'complete' && r.timestamp > l.timestamp
+        )
     )
 
     if (longRunningMigrations.length > 0) {
@@ -181,16 +181,20 @@ export class MigrationMonitor {
     }
 
     // Check for high failure rate
-    const totalRecent = recentLogs.filter(l => l.action === 'complete' || l.action === 'fail').length
+    const totalRecent = recentLogs.filter(
+      l => l.action === 'complete' || l.action === 'fail'
+    ).length
     const failureRate = totalRecent > 0 ? stats.failed / totalRecent : 0
 
-    if (failureRate > 0.1) { // More than 10% failure rate
+    if (failureRate > 0.1) {
+      // More than 10% failure rate
       issues.push(`High migration failure rate: ${(failureRate * 100).toFixed(1)}%`)
       recommendations.push('Investigate root causes of migration failures')
     }
 
     // Check for performance issues
-    if (stats.averageExecutionTime > 30000) { // More than 30 seconds average
+    if (stats.averageExecutionTime > 30000) {
+      // More than 30 seconds average
       issues.push(`Slow migrations detected: average ${stats.averageExecutionTime}ms`)
       recommendations.push('Optimize migration SQL or break into smaller migrations')
     }
@@ -199,7 +203,7 @@ export class MigrationMonitor {
     let isHealthy = true
     try {
       await this.db.query('SELECT 1 as health_check')
-    } catch (error) {
+    } catch (_error) {
       isHealthy = false
       issues.push('Database connectivity issues detected')
       recommendations.push('Check database connection and credentials')
@@ -212,13 +216,13 @@ export class MigrationMonitor {
       failedMigrations: stats.failed,
       totalMigrations: stats.total,
       issues,
-      recommendations
+      recommendations,
     }
 
     this.logger.debug('Migration health check completed', {
       healthy: healthCheck.isHealthy,
       issues: issues.length,
-      recommendations: recommendations.length
+      recommendations: recommendations.length,
     })
 
     return healthCheck
@@ -232,34 +236,34 @@ export class MigrationMonitor {
 
     try {
       // Get table information
-      const tables = await this.db.query<Array<{ name: string, sql: string }>>(`
+      const tables = await this.db.query<Array<{ name: string; sql: string }>>(`
         SELECT name, sql FROM sqlite_master
         WHERE type='table' AND name NOT LIKE '__%'
         ORDER BY name
       `)
 
       // Get view information
-      const views = await this.db.query<Array<{ name: string, sql: string }>>(`
+      const views = await this.db.query<Array<{ name: string; sql: string }>>(`
         SELECT name, sql FROM sqlite_master
         WHERE type='view' ORDER BY name
       `)
 
       // Get index information
-      const indexes = await this.db.query<Array<{ name: string, tbl_name: string }>>(`
+      const indexes = await this.db.query<Array<{ name: string; tbl_name: string }>>(`
         SELECT name, tbl_name FROM sqlite_master
         WHERE type='index' AND name NOT LIKE 'sqlite_%'
         ORDER BY name
       `)
 
       // Get trigger information
-      const triggers = await this.db.query<Array<{ name: string, tbl_name: string }>>(`
+      const triggers = await this.db.query<Array<{ name: string; tbl_name: string }>>(`
         SELECT name, tbl_name FROM sqlite_master
         WHERE type='trigger' ORDER BY name
       `)
 
       // Get migration information
       const migrationInfo = await this.db.queryFirst<{
-        version: string,
+        version: string
         count: number
       }>(`
         SELECT version, COUNT(*) as count FROM __schema_migrations
@@ -274,18 +278,17 @@ export class MigrationMonitor {
         indexes: indexes.map(i => i.name),
         triggers: triggers.map(t => t.name),
         lastMigration: migrationInfo?.version,
-        migrationCount: migrationInfo?.count || 0
+        migrationCount: migrationInfo?.count || 0,
       }
 
       this.logger.debug('Database schema information retrieved', {
         tables: schemaInfo.tables.length,
         views: schemaInfo.views.length,
         indexes: schemaInfo.indexes.length,
-        triggers: schemaInfo.triggers.length
+        triggers: schemaInfo.triggers.length,
       })
 
       return schemaInfo
-
     } catch (error) {
       this.logger.error('Failed to fetch database schema information', error)
 
@@ -296,7 +299,7 @@ export class MigrationMonitor {
         views: [],
         indexes: [],
         triggers: [],
-        migrationCount: 0
+        migrationCount: 0,
       }
     }
   }
@@ -373,15 +376,16 @@ export class MigrationMonitor {
   /**
    * Clear logs
    */
-  async clearLogs(options: {
-      olderThan?: number
-      migrationId?: string
-      level?: MigrationLogEntry['level']
-    } = {}
+  async clearLogs(
+    options: { olderThan?: number; migrationId?: string; level?: MigrationLogEntry['level'] } = {}
   ): Promise<void> {
     const { olderThan, migrationId, level } = options
 
-    this.logger.info('Clearing migration logs', { olderThan, migrationId, level })
+    this.logger.info('Clearing migration logs', {
+      olderThan,
+      migrationId,
+      level,
+    })
 
     // Clear from memory
     this.logEntries = this.logEntries.filter(log => {
@@ -416,33 +420,37 @@ export class MigrationMonitor {
 
         if (conditions.length > 0) {
           whereClause = conditions.join(' AND ')
-          await this.db.execute(`
+          await this.db.execute(
+            `
             DELETE FROM ${this.logTableName}
             WHERE ${whereClause}
-          `, params)
+          `,
+            params
+          )
         }
 
         this.logger.info('Migration logs cleared from persistence')
-
       } catch (error) {
         this.logger.error('Failed to clear migration logs from persistence', error)
       }
     }
 
     this.logger.info('Migration logs cleared', {
-      remainingLogs: this.logEntries.length
+      remainingLogs: this.logEntries.length,
     })
   }
 
   /**
    * Export logs to JSON
    */
-  exportLogs(options: {
-    format?: 'json' | 'csv'
-    migrationId?: string
-    startTime?: number
-    endTime?: number
-  } = {}): string {
+  exportLogs(
+    options: {
+      format?: 'json' | 'csv'
+      migrationId?: string
+      startTime?: number
+      endTime?: number
+    } = {}
+  ): string {
     const logs = this.getLogs(options)
     const { format = 'json' } = options
 
@@ -454,7 +462,7 @@ export class MigrationMonitor {
         log.action,
         log.timestamp,
         `"${log.message.replace(/"/g, '""')}"`, // Escape quotes
-        log.level
+        log.level,
       ])
 
       return [headers, ...rows].map(row => row.join(',')).join('\n')
@@ -480,19 +488,22 @@ export class MigrationMonitor {
    */
   private async persistLogEntry(entry: MigrationLogEntry): Promise<void> {
     try {
-      await this.db.execute(`
+      await this.db.execute(
+        `
         INSERT INTO ${this.logTableName} (
           id, migration_id, action, timestamp, message, details, level
         ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      `, [
-        entry.id,
-        entry.migrationId,
-        entry.action,
-        entry.timestamp,
-        entry.message,
-        entry.details ? JSON.stringify(entry.details) : null,
-        entry.level
-      ])
+      `,
+        [
+          entry.id,
+          entry.migrationId,
+          entry.action,
+          entry.timestamp,
+          entry.message,
+          entry.details ? JSON.stringify(entry.details) : null,
+          entry.level,
+        ]
+      )
     } catch (error) {
       this.logger.error('Failed to persist log entry', error)
     }
@@ -535,7 +546,6 @@ export class MigrationMonitor {
         CREATE INDEX IF NOT EXISTS idx_${this.logTableName}_level
         ON ${this.logTableName}(level)
       `)
-
     } catch (error) {
       this.logger.error('Failed to create log table', error)
       throw error
@@ -547,14 +557,17 @@ export class MigrationMonitor {
    */
   private async loadPersistedLogs(): Promise<void> {
     try {
-      const rows = await this.db.query<MigrationLogEntry>(`
+      const rows = await this.db.query<MigrationLogEntry>(
+        `
         SELECT
           id, migration_id as migrationId, action, timestamp,
           message, details, level
         FROM ${this.logTableName}
         ORDER BY timestamp DESC
         LIMIT ?
-      `, [this.maxLogEntries])
+      `,
+        [this.maxLogEntries]
+      )
 
       for (const row of rows) {
         if (row.details) {
@@ -568,7 +581,6 @@ export class MigrationMonitor {
       }
 
       this.logger.debug(`Loaded ${rows.length} persisted log entries`)
-
     } catch (error) {
       this.logger.error('Failed to load persisted logs', error)
     }
@@ -609,7 +621,7 @@ export class MigrationMonitor {
       },
       log: (level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: any[]) => {
         console[level](`[MigrationMonitor] ${message}`, ...args)
-      }
+      },
     }
   }
 }

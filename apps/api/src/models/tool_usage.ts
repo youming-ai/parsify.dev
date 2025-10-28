@@ -16,7 +16,7 @@ export const ToolUsageSchema = z.object({
   error_message: z.string().nullable(),
   ip_address: z.string().ip().nullable(),
   user_agent: z.string().nullable(),
-  created_at: z.number()
+  created_at: z.number(),
 })
 
 export type ToolUsage = z.infer<typeof ToolUsageSchema>
@@ -26,7 +26,7 @@ export const CreateToolUsageSchema = ToolUsageSchema.partial({
   id: true,
   created_at: true,
   input_size: true,
-  output_size: true
+  output_size: true,
 })
 
 export type CreateToolUsage = z.infer<typeof CreateToolUsageSchema>
@@ -42,7 +42,7 @@ export const ToolUsageAnalyticsSchema = z.object({
   total_input_size_bytes: z.number(),
   total_output_size_bytes: z.number(),
   unique_users: z.number(),
-  anonymous_requests: z.number()
+  anonymous_requests: z.number(),
 })
 
 export type ToolUsageAnalytics = z.infer<typeof ToolUsageAnalyticsSchema>
@@ -82,7 +82,7 @@ export class ToolUsage {
       created_at: Math.floor(Date.now() / 1000),
       input_size: 0,
       output_size: 0,
-      ...data
+      ...data,
     })
   }
 
@@ -102,7 +102,7 @@ export class ToolUsage {
       error_message: this.error_message,
       ip_address: this.ip_address,
       user_agent: this.user_agent,
-      created_at: this.created_at
+      created_at: this.created_at,
     }
   }
 
@@ -125,7 +125,7 @@ export class ToolUsage {
       status: 'success',
       error_message: null,
       ip_address: ipAddress || null,
-      user_agent: userAgent || null
+      user_agent: userAgent || null,
     })
   }
 
@@ -147,7 +147,7 @@ export class ToolUsage {
       status: 'error',
       error_message: errorMessage,
       ip_address: ipAddress || null,
-      user_agent: userAgent || null
+      user_agent: userAgent || null,
     })
   }
 
@@ -168,7 +168,7 @@ export class ToolUsage {
       status: 'timeout',
       error_message: 'Execution timeout',
       ip_address: ipAddress || null,
-      user_agent: userAgent || null
+      user_agent: userAgent || null,
     })
   }
 
@@ -204,7 +204,7 @@ export class ToolUsage {
       const k = 1024
       const sizes = ['B', 'KB', 'MB', 'GB']
       const i = Math.floor(Math.log(bytes) / Math.log(k))
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+      return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
     }
 
     const input = formatBytes(this.input_size)
@@ -224,7 +224,7 @@ export class ToolUsage {
       if (!groupedByToolAndDate.has(key)) {
         groupedByToolAndDate.set(key, [])
       }
-      groupedByToolAndDate.get(key)!.push(usage)
+      groupedByToolAndDate.get(key)?.push(usage)
     }
 
     // Calculate analytics for each group
@@ -236,9 +236,10 @@ export class ToolUsage {
       const uniqueUsers = new Set(toolUsages.filter(u => u.user_id).map(u => u.user_id)).size
       const anonymousCount = toolUsages.filter(u => !u.user_id).length
 
-      const avgExecutionTime = successful.length > 0
-        ? successful.reduce((sum, u) => sum + (u.execution_time_ms || 0), 0) / successful.length
-        : 0
+      const avgExecutionTime =
+        successful.length > 0
+          ? successful.reduce((sum, u) => sum + (u.execution_time_ms || 0), 0) / successful.length
+          : 0
 
       analytics.push({
         tool_id: toolId,
@@ -250,7 +251,7 @@ export class ToolUsage {
         total_input_size_bytes: toolUsages.reduce((sum, u) => sum + u.input_size, 0),
         total_output_size_bytes: toolUsages.reduce((sum, u) => sum + u.output_size, 0),
         unique_users: uniqueUsers,
-        anonymous_requests: anonymousCount
+        anonymous_requests: anonymousCount,
       })
     }
 
@@ -259,12 +260,12 @@ export class ToolUsage {
 
   // Performance metrics
   static getPerformanceMetrics(usages: ToolUsage[]): {
-    total_requests: number;
-    success_rate: number;
-    avg_execution_time_ms: number;
-    p95_execution_time_ms: number;
-    total_data_processed_bytes: number;
-    most_used_tool_id: string | null;
+    total_requests: number
+    success_rate: number
+    avg_execution_time_ms: number
+    p95_execution_time_ms: number
+    total_data_processed_bytes: number
+    most_used_tool_id: string | null
   } {
     if (usages.length === 0) {
       return {
@@ -273,7 +274,7 @@ export class ToolUsage {
         avg_execution_time_ms: 0,
         p95_execution_time_ms: 0,
         total_data_processed_bytes: 0,
-        most_used_tool_id: null
+        most_used_tool_id: null,
       }
     }
 
@@ -285,9 +286,10 @@ export class ToolUsage {
       .filter((time): time is number => time !== null)
       .sort((a, b) => a - b)
 
-    const avgExecutionTime = executionTimes.length > 0
-      ? executionTimes.reduce((sum, time) => sum + time, 0) / executionTimes.length
-      : 0
+    const avgExecutionTime =
+      executionTimes.length > 0
+        ? executionTimes.reduce((sum, time) => sum + time, 0) / executionTimes.length
+        : 0
 
     const p95Index = Math.floor(executionTimes.length * 0.95)
     const p95ExecutionTime = executionTimes.length > 0 ? executionTimes[p95Index] || 0 : 0
@@ -315,7 +317,7 @@ export class ToolUsage {
       avg_execution_time_ms: Math.round(avgExecutionTime),
       p95_execution_time_ms: p95ExecutionTime,
       total_data_processed_bytes: totalDataProcessed,
-      most_used_tool_id: mostUsedToolId
+      most_used_tool_id: mostUsedToolId,
     }
   }
 }
@@ -345,7 +347,7 @@ export const TOOL_USAGE_QUERIES = {
     'CREATE INDEX IF NOT EXISTS idx_tool_usage_tool_id ON tool_usage(tool_id);',
     'CREATE INDEX IF NOT EXISTS idx_tool_usage_created_at ON tool_usage(created_at);',
     'CREATE INDEX IF NOT EXISTS idx_tool_usage_status ON tool_usage(status);',
-    'CREATE INDEX IF NOT EXISTS idx_tool_usage_user_date ON tool_usage(user_id, created_at);'
+    'CREATE INDEX IF NOT EXISTS idx_tool_usage_user_date ON tool_usage(user_id, created_at);',
   ],
 
   INSERT: `
@@ -420,5 +422,5 @@ export const TOOL_USAGE_QUERIES = {
 
   CLEANUP_OLD: `
     DELETE FROM tool_usage WHERE created_at < ?;
-  `
+  `,
 } as const

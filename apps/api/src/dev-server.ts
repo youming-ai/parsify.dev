@@ -18,8 +18,8 @@ const mockHealthStatus = {
   services: {
     database: 'healthy',
     cache: 'healthy',
-    storage: 'healthy'
-  }
+    storage: 'healthy',
+  },
 }
 
 const mockTools = [
@@ -27,20 +27,20 @@ const mockTools = [
     id: 'json-formatter',
     name: 'JSON Formatter',
     description: 'Format and validate JSON data',
-    endpoint: '/api/v1/tools/json/format'
+    endpoint: '/api/v1/tools/json/format',
   },
   {
     id: 'code-executor',
     name: 'Code Executor',
     description: 'Execute code in a secure sandbox',
-    endpoint: '/api/v1/tools/code/execute'
+    endpoint: '/api/v1/tools/code/execute',
   },
   {
     id: 'file-converter',
     name: 'File Converter',
     description: 'Convert between different file formats',
-    endpoint: '/api/v1/tools/file/convert'
-  }
+    endpoint: '/api/v1/tools/file/convert',
+  },
 ]
 
 async function handleRequest(request: Request): Promise<Response> {
@@ -65,30 +65,33 @@ async function handleRequest(request: Request): Promise<Response> {
   try {
     // Route handling
     if (path === '/' && method === 'GET') {
-      return new Response(JSON.stringify({
-        name: 'Parsify API (Development)',
-        version: 'v1',
-        status: 'operational',
-        timestamp: new Date().toISOString(),
-        endpoints: {
-          health: '/health',
-          tools: '/api/v1/tools',
-          docs: '/api/v1/docs'
+      return new Response(
+        JSON.stringify({
+          name: 'Parsify API (Development)',
+          version: 'v1',
+          status: 'operational',
+          timestamp: new Date().toISOString(),
+          endpoints: {
+            health: '/health',
+            tools: '/api/v1/tools',
+            docs: '/api/v1/docs',
+          },
+        }),
+        {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
         }
-      }), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
-      })
+      )
     }
 
     if (path === '/health' && method === 'GET') {
       return new Response(JSON.stringify(mockHealthStatus), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       })
     }
 
     if (path === '/api/v1/tools' && method === 'GET') {
       return new Response(JSON.stringify({ tools: mockTools }), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       })
     }
 
@@ -102,36 +105,45 @@ async function handleRequest(request: Request): Promise<Response> {
         try {
           parsed = typeof json === 'string' ? JSON.parse(json) : json
         } catch (e) {
-          return new Response(JSON.stringify({
-            error: 'Invalid JSON',
-            message: e.message
-          }), {
-            status: 400,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
-          })
+          return new Response(
+            JSON.stringify({
+              error: 'Invalid JSON',
+              message: e.message,
+            }),
+            {
+              status: 400,
+              headers: { 'Content-Type': 'application/json', ...corsHeaders },
+            }
+          )
         }
 
         const formatted = JSON.stringify(parsed, null, indent)
 
-        return new Response(JSON.stringify({
-          success: true,
-          result: formatted,
-          original: json,
-          stats: {
-            characters: formatted.length,
-            lines: formatted.split('\n').length
+        return new Response(
+          JSON.stringify({
+            success: true,
+            result: formatted,
+            original: json,
+            stats: {
+              characters: formatted.length,
+              lines: formatted.split('\n').length,
+            },
+          }),
+          {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
           }
-        }), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        })
+        )
       } catch (e) {
-        return new Response(JSON.stringify({
-          error: 'Request Error',
-          message: e.message
-        }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        })
+        return new Response(
+          JSON.stringify({
+            error: 'Request Error',
+            message: e.message,
+          }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          }
+        )
       }
     }
 
@@ -155,45 +167,62 @@ async function handleRequest(request: Request): Promise<Response> {
           result = `Error: ${e.message}`
         }
 
-        return new Response(JSON.stringify({
-          success: true,
-          result,
-          language,
-          executionTime: Math.random() * 100 // Mock execution time
-        }), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        })
+        return new Response(
+          JSON.stringify({
+            success: true,
+            result,
+            language,
+            executionTime: Math.random() * 100, // Mock execution time
+          }),
+          {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          }
+        )
       } catch (e) {
-        return new Response(JSON.stringify({
-          error: 'Request Error',
-          message: e.message
-        }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        })
+        return new Response(
+          JSON.stringify({
+            error: 'Request Error',
+            message: e.message,
+          }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          }
+        )
       }
     }
 
     // 404 handler
-    return new Response(JSON.stringify({
-      error: 'Not Found',
-      message: `The endpoint ${method} ${path} was not found`,
-      availableEndpoints: ['/', '/health', '/api/v1/tools', '/api/v1/tools/json/format', '/api/v1/tools/code/execute']
-    }), {
-      status: 404,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders }
-    })
-
+    return new Response(
+      JSON.stringify({
+        error: 'Not Found',
+        message: `The endpoint ${method} ${path} was not found`,
+        availableEndpoints: [
+          '/',
+          '/health',
+          '/api/v1/tools',
+          '/api/v1/tools/json/format',
+          '/api/v1/tools/code/execute',
+        ],
+      }),
+      {
+        status: 404,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      }
+    )
   } catch (error) {
     console.error('Server error:', error)
-    return new Response(JSON.stringify({
-      error: 'Internal Server Error',
-      message: error.message,
-      timestamp: new Date().toISOString()
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders }
-    })
+    return new Response(
+      JSON.stringify({
+        error: 'Internal Server Error',
+        message: error.message,
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      }
+    )
   }
 }
 

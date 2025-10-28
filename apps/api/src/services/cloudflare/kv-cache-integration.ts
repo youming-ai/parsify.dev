@@ -6,11 +6,11 @@
  * for initialization, configuration, and usage patterns.
  */
 
-import { CloudflareService, createCloudflareService } from './cloudflare-service'
-import { KVCacheService } from './kv-cache'
-import { AuthService, AuthServiceOptions } from '../auth_service'
-import { ToolService, ToolServiceOptions } from '../tool_service'
-import { RateLimitService, RateLimitServiceOptions } from '../rate_limit_service'
+import { AuthService, type AuthServiceOptions } from '../auth_service'
+import { RateLimitService, type RateLimitServiceOptions } from '../rate_limit_service'
+import { ToolService, type ToolServiceOptions } from '../tool_service'
+import { type CloudflareService, createCloudflareService } from './cloudflare-service'
+import type { KVCacheService } from './kv-cache'
 
 export interface CacheIntegrationConfig {
   cloudflare: {
@@ -194,7 +194,7 @@ export class CacheIntegratedServices {
       await Promise.all([
         this.authService.invalidateUserCache(userId),
         this.cloudflareService.invalidateCache({
-          tags: [`user:${userId}`]
+          tags: [`user:${userId}`],
         }),
         this.rateLimitService.invalidateRateLimitCache(userId),
       ])

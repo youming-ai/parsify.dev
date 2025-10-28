@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 // Simple test to verify the test setup works
 describe('Test Setup', () => {

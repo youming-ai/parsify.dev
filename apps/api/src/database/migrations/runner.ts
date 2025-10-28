@@ -1,19 +1,19 @@
-import { D1Database } from '@cloudflare/workers-types'
+import type { D1Database } from '@cloudflare/workers-types'
 import { DatabaseClient } from '../client'
+import { createMigrationStorage, type MigrationStorage } from './storage'
 import {
-  Migration,
+  DEFAULT_DATABASE_CLIENT_CONFIG,
+  type Migration,
+  type MigrationContext,
+  type MigrationHook,
+  type MigrationLogger,
+  type MigrationOptions,
+  type MigrationPlan,
+  type MigrationResult,
   MigrationStatus,
-  MigrationOptions,
-  MigrationResult,
-  RollbackResult,
-  MigrationPlan,
-  MigrationValidationError,
-  MigrationLogger,
-  MigrationContext,
-  MigrationHook,
-  DEFAULT_DATABASE_CLIENT_CONFIG
+  type MigrationValidationError,
+  type RollbackResult,
 } from './types'
-import { createMigrationStorage, MigrationStorage } from './storage'
 
 /**
  * Main migration runner for D1 database
@@ -51,7 +51,7 @@ export class MigrationRunner {
       retries: options.retries ?? 3,
       validateChecksums: options.validateChecksums ?? true,
       stopOnFirstError: options.stopOnFirstError ?? true,
-      batch: options.batch ?? false
+      batch: options.batch ?? false,
     }
   }
 
@@ -80,14 +80,14 @@ export class MigrationRunner {
       dryRun: mergedOptions.dryRun!,
       options: mergedOptions,
       startTime,
-      logger: this.logger
+      logger: this.logger,
     }
 
     this.logger.info('Starting migration', {
       id: migration.id,
       version: migration.version,
       name: migration.name,
-      dryRun: mergedOptions.dryRun
+      dryRun: mergedOptions.dryRun,
     })
 
     try {
@@ -104,7 +104,7 @@ export class MigrationRunner {
       // Execute the migration
       if (mergedOptions.dryRun) {
         this.logger.info('[DRY RUN] Would execute migration SQL', {
-          sql: migration.up.substring(0, 200) + (migration.up.length > 200 ? '...' : '')
+          sql: migration.up.substring(0, 200) + (migration.up.length > 200 ? '...' : ''),
         })
       } else {
         await this.executeMigrationSQL(migration.up, mergedOptions)
@@ -125,7 +125,7 @@ export class MigrationRunner {
       this.logger.info('Migration completed successfully', {
         id: migration.id,
         version: migration.version,
-        executionTime
+        executionTime,
       })
 
       return {
@@ -133,13 +133,12 @@ export class MigrationRunner {
           ...migration,
           status: MigrationStatus.COMPLETED,
           appliedAt: Date.now(),
-          executionTime
+          executionTime,
         },
         success: true,
         executionTime,
-        dryRun: mergedOptions.dryRun
+        dryRun: mergedOptions.dryRun,
       }
-
     } catch (error) {
       const executionTime = Date.now() - startTime
       const errorMessage = (error as Error).message
@@ -148,28 +147,24 @@ export class MigrationRunner {
         id: migration.id,
         version: migration.version,
         error: errorMessage,
-        executionTime
+        executionTime,
       })
 
       // Update status to failed
       if (!mergedOptions.dryRun) {
-        await this.storage.updateMigrationStatus(
-          migration.id,
-          MigrationStatus.FAILED,
-          errorMessage
-        )
+        await this.storage.updateMigrationStatus(migration.id, MigrationStatus.FAILED, errorMessage)
       }
 
       return {
         migration: {
           ...migration,
           status: MigrationStatus.FAILED,
-          errorMessage
+          errorMessage,
         },
         success: false,
         executionTime,
         error: errorMessage,
-        dryRun: mergedOptions.dryRun
+        dryRun: mergedOptions.dryRun,
       }
     }
   }
@@ -188,7 +183,7 @@ export class MigrationRunner {
       dryRun: mergedOptions.dryRun!,
       options: mergedOptions,
       startTime,
-      logger: this.logger
+      logger: this.logger,
     }
 
     if (!migration.down) {
@@ -199,7 +194,7 @@ export class MigrationRunner {
       id: migration.id,
       version: migration.version,
       name: migration.name,
-      dryRun: mergedOptions.dryRun
+      dryRun: mergedOptions.dryRun,
     })
 
     try {
@@ -211,7 +206,7 @@ export class MigrationRunner {
       // Execute the rollback
       if (mergedOptions.dryRun) {
         this.logger.info('[DRY RUN] Would execute rollback SQL', {
-          sql: migration.down.substring(0, 200) + (migration.down.length > 200 ? '...' : '')
+          sql: migration.down.substring(0, 200) + (migration.down.length > 200 ? '...' : ''),
         })
       } else {
         await this.executeMigrationSQL(migration.down, mergedOptions)
@@ -232,19 +227,18 @@ export class MigrationRunner {
       this.logger.info('Migration rollback completed successfully', {
         id: migration.id,
         version: migration.version,
-        executionTime
+        executionTime,
       })
 
       return {
         migration: {
           ...migration,
-          status: MigrationStatus.ROLLED_BACK
+          status: MigrationStatus.ROLLED_BACK,
         },
         success: true,
         executionTime,
-        dryRun: mergedOptions.dryRun
+        dryRun: mergedOptions.dryRun,
       }
-
     } catch (error) {
       const executionTime = Date.now() - startTime
       const errorMessage = (error as Error).message
@@ -253,19 +247,19 @@ export class MigrationRunner {
         id: migration.id,
         version: migration.version,
         error: errorMessage,
-        executionTime
+        executionTime,
       })
 
       return {
         migration: {
           ...migration,
           status: MigrationStatus.FAILED,
-          errorMessage
+          errorMessage,
         },
         success: false,
         executionTime,
         error: errorMessage,
-        dryRun: mergedOptions.dryRun
+        dryRun: mergedOptions.dryRun,
       }
     }
   }
@@ -283,7 +277,7 @@ export class MigrationRunner {
     this.logger.info('Starting batch migration', {
       count: migrations.length,
       dryRun: mergedOptions.dryRun,
-      stopOnFirstError: mergedOptions.stopOnFirstError
+      stopOnFirstError: mergedOptions.stopOnFirstError,
     })
 
     if (mergedOptions.batch && !mergedOptions.dryRun) {
@@ -299,7 +293,7 @@ export class MigrationRunner {
       if (!result.success && mergedOptions.stopOnFirstError) {
         this.logger.error('Stopping migration batch due to error', {
           failedMigration: migration.version,
-          error: result.error
+          error: result.error,
         })
         break
       }
@@ -312,7 +306,7 @@ export class MigrationRunner {
       total: results.length,
       successful,
       failed,
-      dryRun: mergedOptions.dryRun
+      dryRun: mergedOptions.dryRun,
     })
 
     return results
@@ -334,7 +328,7 @@ export class MigrationRunner {
     this.logger.info('Starting batch rollback', {
       count: reversedMigrations.length,
       dryRun: mergedOptions.dryRun,
-      stopOnFirstError: mergedOptions.stopOnFirstError
+      stopOnFirstError: mergedOptions.stopOnFirstError,
     })
 
     for (const migration of reversedMigrations) {
@@ -344,7 +338,7 @@ export class MigrationRunner {
       if (!result.success && mergedOptions.stopOnFirstError) {
         this.logger.error('Stopping rollback batch due to error', {
           failedMigration: migration.version,
-          error: result.error
+          error: result.error,
         })
         break
       }
@@ -357,7 +351,7 @@ export class MigrationRunner {
       total: results.length,
       successful,
       failed,
-      dryRun: mergedOptions.dryRun
+      dryRun: mergedOptions.dryRun,
     })
 
     return results
@@ -366,9 +360,7 @@ export class MigrationRunner {
   /**
    * Get migration plan (pending migrations with dependencies)
    */
-  async getMigrationPlan(
-    allMigrations: Migration[]
-  ): Promise<MigrationPlan> {
+  async getMigrationPlan(allMigrations: Migration[]): Promise<MigrationPlan> {
     const appliedMigrations = await this.storage.getAppliedMigrations()
     const appliedVersions = new Set(appliedMigrations.map(m => m.version))
 
@@ -392,7 +384,7 @@ export class MigrationRunner {
       dependencies: this.buildDependencyMap(pendingMigrations),
       estimatedTime,
       warnings,
-      errors
+      errors,
     }
   }
 
@@ -416,7 +408,7 @@ export class MigrationRunner {
             migration,
             type: 'dependency_missing',
             message: `Missing dependency: ${dependency}`,
-            details: { dependency }
+            details: { dependency },
           })
         }
       }
@@ -509,11 +501,7 @@ export class MigrationRunner {
       }
 
       // Check for potentially unsafe operations
-      const unsafePatterns = [
-        /DROP\s+TABLE/i,
-        /DELETE\s+FROM\s+\w+\s*$/i,
-        /TRUNCATE/i
-      ]
+      const unsafePatterns = [/DROP\s+TABLE/i, /DELETE\s+FROM\s+\w+\s*$/i, /TRUNCATE/i]
 
       for (const pattern of unsafePatterns) {
         if (pattern.test(migration.up)) {
@@ -531,16 +519,16 @@ export class MigrationRunner {
    */
   private async runMigrationsInBatch(
     migrations: Migration[],
-    options: MigrationOptions
+    _options: MigrationOptions
   ): Promise<MigrationResult[]> {
     this.logger.info('Running migrations in batch transaction', {
-      count: migrations.length
+      count: migrations.length,
     })
 
     const results: MigrationResult[] = []
 
     try {
-      await this.db.transaction(async (tx) => {
+      await this.db.transaction(async tx => {
         for (const migration of migrations) {
           const startTime = Date.now()
 
@@ -553,10 +541,10 @@ export class MigrationRunner {
                 ...migration,
                 status: MigrationStatus.COMPLETED,
                 appliedAt: Date.now(),
-                executionTime
+                executionTime,
               },
               success: true,
-              executionTime
+              executionTime,
             })
           } catch (error) {
             const executionTime = Date.now() - startTime
@@ -566,11 +554,11 @@ export class MigrationRunner {
               migration: {
                 ...migration,
                 status: MigrationStatus.FAILED,
-                errorMessage
+                errorMessage,
               },
               success: false,
               executionTime,
-              error: errorMessage
+              error: errorMessage,
             })
 
             throw error // This will rollback the entire transaction
@@ -581,13 +569,9 @@ export class MigrationRunner {
       // Record all successful migrations
       for (const result of results) {
         if (result.success) {
-          await this.storage.recordMigration(
-            result.migration,
-            result.executionTime
-          )
+          await this.storage.recordMigration(result.migration, result.executionTime)
         }
       }
-
     } catch (error) {
       this.logger.error('Batch transaction failed, all migrations rolled back', error)
 
@@ -609,10 +593,7 @@ export class MigrationRunner {
   /**
    * Execute migration SQL with safety checks
    */
-  private async executeMigrationSQL(
-    sql: string,
-    options: MigrationOptions
-  ): Promise<void> {
+  private async executeMigrationSQL(sql: string, options: MigrationOptions): Promise<void> {
     const statements = this.splitSQLStatements(sql)
 
     for (const statement of statements) {
@@ -620,12 +601,14 @@ export class MigrationRunner {
 
       // Safety check for destructive operations
       if (!options.force && this.hasDestructiveOperation(statement)) {
-        throw new Error(`Destructive operation detected in migration: ${statement.substring(0, 100)}...`)
+        throw new Error(
+          `Destructive operation detected in migration: ${statement.substring(0, 100)}...`
+        )
       }
 
       await this.db.execute(statement, undefined, {
         timeout: options.timeout,
-        retries: options.retries
+        retries: options.retries,
       })
     }
   }
@@ -689,7 +672,7 @@ export class MigrationRunner {
     const destructivePatterns = [
       /DROP\s+TABLE\s+IF\s+EXISTS\s+(?!__schema_migrations)/i,
       /DELETE\s+FROM\s+\w+\s*$/i,
-      /TRUNCATE\s+TABLE/i
+      /TRUNCATE\s+TABLE/i,
     ]
 
     return destructivePatterns.some(pattern => pattern.test(sql))
@@ -716,7 +699,7 @@ export class MigrationRunner {
       },
       log: (level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: any[]) => {
         console[level](`[MigrationRunner] ${message}`, ...args)
-      }
+      },
     }
   }
 }

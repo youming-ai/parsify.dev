@@ -1,20 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
+  QUOTA_COUNTER_QUERIES,
   QuotaCounter,
   QuotaCounterSchema,
-  CreateQuotaCounterSchema,
-  UpdateQuotaCounterSchema,
-  QuotaTypeSchema,
-  QuotaPeriodSchema,
   QuotaLimitSchema,
   QuotaUsageSchema,
-  QUOTA_COUNTER_QUERIES
 } from '../../../../apps/api/src/models/quota_counter'
 import {
-  createTestDatabase,
+  cleanupTestEnvironment,
   createMockQuotaCounter,
+  createTestDatabase,
   setupTestEnvironment,
-  cleanupTestEnvironment
 } from './database.mock'
 
 describe('QuotaCounter Model', () => {
@@ -43,7 +39,9 @@ describe('QuotaCounter Model', () => {
     })
 
     it('should reject invalid quota type', () => {
-      const invalidQuota = createMockQuotaCounter({ quota_type: 'invalid' as any })
+      const invalidQuota = createMockQuotaCounter({
+        quota_type: 'invalid' as any,
+      })
       const result = QuotaCounterSchema.safeParse(invalidQuota)
 
       expect(result.success).toBe(false)
@@ -53,7 +51,15 @@ describe('QuotaCounter Model', () => {
     })
 
     it('should accept valid quota types', () => {
-      const validTypes = ['api_requests', 'file_uploads', 'execution_time', 'bandwidth', 'storage', 'jobs_per_hour', 'file_size']
+      const validTypes = [
+        'api_requests',
+        'file_uploads',
+        'execution_time',
+        'bandwidth',
+        'storage',
+        'jobs_per_hour',
+        'file_size',
+      ]
 
       validTypes.forEach(type => {
         const quota = createMockQuotaCounter({ quota_type: type as any })
@@ -81,7 +87,7 @@ describe('QuotaCounter Model', () => {
         window_minutes: 60,
         applies_to_anonymous: true,
         applies_to_authenticated: true,
-        user_tier_multipliers: { free: 1, pro: 10, enterprise: 100 }
+        user_tier_multipliers: { free: 1, pro: 10, enterprise: 100 },
       }
 
       const result = QuotaLimitSchema.safeParse(limitData)
@@ -96,7 +102,7 @@ describe('QuotaCounter Model', () => {
         remaining: 50,
         reset_time: Math.floor(Date.now() / 1000) + 3600,
         period_seconds: 3600,
-        is_anonymous: false
+        is_anonymous: false,
       }
 
       const result = QuotaUsageSchema.safeParse(usageData)
@@ -123,7 +129,7 @@ describe('QuotaCounter Model', () => {
         period_start: Math.floor(Date.now() / 1000),
         period_end: Math.floor(Date.now() / 1000) + 3600,
         limit_count: 50,
-        ip_address: '127.0.0.1'
+        ip_address: '127.0.0.1',
       }
 
       const quota = QuotaCounter.create(createData)
@@ -150,12 +156,7 @@ describe('QuotaCounter Model', () => {
 
   describe('Factory Methods', () => {
     it('should create quota counter for user', () => {
-      const quota = QuotaCounter.createForUser(
-        'user-123',
-        'api_requests',
-        'hour',
-        1000
-      )
+      const quota = QuotaCounter.createForUser('user-123', 'api_requests', 'hour', 1000)
 
       expect(quota.user_id).toBe('user-123')
       expect(quota.quota_type).toBe('api_requests')
@@ -165,12 +166,7 @@ describe('QuotaCounter Model', () => {
     })
 
     it('should create quota counter for anonymous user', () => {
-      const quota = QuotaCounter.createForAnonymous(
-        '127.0.0.1',
-        'api_requests',
-        'hour',
-        100
-      )
+      const quota = QuotaCounter.createForAnonymous('127.0.0.1', 'api_requests', 'hour', 100)
 
       expect(quota.user_id).toBeNull()
       expect(quota.ip_address).toBe('127.0.0.1')
@@ -240,9 +236,15 @@ describe('QuotaCounter Model', () => {
 
   describe('Helper Methods and Business Logic', () => {
     it('should correctly identify exceeded quota', () => {
-      const underLimitQuota = new QuotaCounter(createMockQuotaCounter({ used_count: 50, limit_count: 100 }))
-      const atLimitQuota = new QuotaCounter(createMockQuotaCounter({ used_count: 100, limit_count: 100 }))
-      const overLimitQuota = new QuotaCounter(createMockQuotaCounter({ used_count: 150, limit_count: 100 }))
+      const underLimitQuota = new QuotaCounter(
+        createMockQuotaCounter({ used_count: 50, limit_count: 100 })
+      )
+      const atLimitQuota = new QuotaCounter(
+        createMockQuotaCounter({ used_count: 100, limit_count: 100 })
+      )
+      const overLimitQuota = new QuotaCounter(
+        createMockQuotaCounter({ used_count: 150, limit_count: 100 })
+      )
 
       expect(underLimitQuota.isExceeded).toBe(false)
       expect(atLimitQuota.isExceeded).toBe(true)
@@ -250,9 +252,15 @@ describe('QuotaCounter Model', () => {
     })
 
     it('should correctly identify near limit quota', () => {
-      const lowUsageQuota = new QuotaCounter(createMockQuotaCounter({ used_count: 50, limit_count: 100 }))
-      const nearLimitQuota = new QuotaCounter(createMockQuotaCounter({ used_count: 90, limit_count: 100 }))
-      const atLimitQuota = new QuotaCounter(createMockQuotaCounter({ used_count: 100, limit_count: 100 }))
+      const lowUsageQuota = new QuotaCounter(
+        createMockQuotaCounter({ used_count: 50, limit_count: 100 })
+      )
+      const nearLimitQuota = new QuotaCounter(
+        createMockQuotaCounter({ used_count: 90, limit_count: 100 })
+      )
+      const atLimitQuota = new QuotaCounter(
+        createMockQuotaCounter({ used_count: 100, limit_count: 100 })
+      )
 
       expect(lowUsageQuota.isNearLimit).toBe(false)
       expect(nearLimitQuota.isNearLimit).toBe(true)
@@ -281,12 +289,16 @@ describe('QuotaCounter Model', () => {
 
     it('should correctly identify expired quota', () => {
       const now = Math.floor(Date.now() / 1000)
-      const validQuota = new QuotaCounter(createMockQuotaCounter({
-        period_end: now + 3600
-      }))
-      const expiredQuota = new QuotaCounter(createMockQuotaCounter({
-        period_end: now - 3600
-      }))
+      const validQuota = new QuotaCounter(
+        createMockQuotaCounter({
+          period_end: now + 3600,
+        })
+      )
+      const expiredQuota = new QuotaCounter(
+        createMockQuotaCounter({
+          period_end: now - 3600,
+        })
+      )
 
       expect(validQuota.isExpired).toBe(false)
       expect(expiredQuota.isExpired).toBe(true)
@@ -294,12 +306,16 @@ describe('QuotaCounter Model', () => {
 
     it('should calculate time until reset correctly', () => {
       const now = Math.floor(Date.now() / 1000)
-      const futureQuota = new QuotaCounter(createMockQuotaCounter({
-        period_end: now + 1800 // 30 minutes from now
-      }))
-      const pastQuota = new QuotaCounter(createMockQuotaCounter({
-        period_end: now - 1800 // 30 minutes ago
-      }))
+      const futureQuota = new QuotaCounter(
+        createMockQuotaCounter({
+          period_end: now + 1800, // 30 minutes from now
+        })
+      )
+      const pastQuota = new QuotaCounter(
+        createMockQuotaCounter({
+          period_end: now - 1800, // 30 minutes ago
+        })
+      )
 
       expect(futureQuota.timeUntilReset).toBeGreaterThan(0)
       expect(futureQuota.timeUntilReset).toBeLessThanOrEqual(1800)
@@ -308,18 +324,26 @@ describe('QuotaCounter Model', () => {
 
     it('should format time until reset correctly', () => {
       const now = Math.floor(Date.now() / 1000)
-      const secondsQuota = new QuotaCounter(createMockQuotaCounter({
-        period_end: now + 30
-      }))
-      const minutesQuota = new QuotaCounter(createMockQuotaCounter({
-        period_end: now + 150 // 2.5 minutes
-      }))
-      const hoursQuota = new QuotaCounter(createMockQuotaCounter({
-        period_end: now + 7200 // 2 hours
-      }))
-      const expiredQuota = new QuotaCounter(createMockQuotaCounter({
-        period_end: now - 3600
-      }))
+      const secondsQuota = new QuotaCounter(
+        createMockQuotaCounter({
+          period_end: now + 30,
+        })
+      )
+      const minutesQuota = new QuotaCounter(
+        createMockQuotaCounter({
+          period_end: now + 150, // 2.5 minutes
+        })
+      )
+      const hoursQuota = new QuotaCounter(
+        createMockQuotaCounter({
+          period_end: now + 7200, // 2 hours
+        })
+      )
+      const expiredQuota = new QuotaCounter(
+        createMockQuotaCounter({
+          period_end: now - 3600,
+        })
+      )
 
       expect(secondsQuota.timeUntilResetString).toBe('30s')
       expect(minutesQuota.timeUntilResetString).toBe('2m 30s')
@@ -345,15 +369,21 @@ describe('QuotaCounter Model', () => {
       const dayPeriod = QuotaCounter.createPeriod('api_requests', 'day', baseTime)
 
       // Minute should align to the start of the minute
-      expect(minutePeriod.period_start).toBe(Math.floor(new Date('2023-12-01T12:30:00Z').getTime() / 1000))
+      expect(minutePeriod.period_start).toBe(
+        Math.floor(new Date('2023-12-01T12:30:00Z').getTime() / 1000)
+      )
       expect(minutePeriod.period_end - minutePeriod.period_start).toBe(60)
 
       // Hour should align to the start of the hour
-      expect(hourPeriod.period_start).toBe(Math.floor(new Date('2023-12-01T12:00:00Z').getTime() / 1000))
+      expect(hourPeriod.period_start).toBe(
+        Math.floor(new Date('2023-12-01T12:00:00Z').getTime() / 1000)
+      )
       expect(hourPeriod.period_end - hourPeriod.period_start).toBe(3600)
 
       // Day should align to the start of the day
-      expect(dayPeriod.period_start).toBe(Math.floor(new Date('2023-12-01T00:00:00Z').getTime() / 1000))
+      expect(dayPeriod.period_start).toBe(
+        Math.floor(new Date('2023-12-01T00:00:00Z').getTime() / 1000)
+      )
       expect(dayPeriod.period_end - dayPeriod.period_start).toBe(86400)
     })
 
@@ -362,7 +392,9 @@ describe('QuotaCounter Model', () => {
       const weekPeriod = QuotaCounter.createPeriod('api_requests', 'week', baseTime)
 
       // Week should start on Sunday
-      expect(weekPeriod.period_start).toBe(Math.floor(new Date('2023-12-03T00:00:00Z').getTime() / 1000))
+      expect(weekPeriod.period_start).toBe(
+        Math.floor(new Date('2023-12-03T00:00:00Z').getTime() / 1000)
+      )
       expect(weekPeriod.period_end - weekPeriod.period_start).toBe(7 * 86400)
     })
 
@@ -371,8 +403,12 @@ describe('QuotaCounter Model', () => {
       const monthPeriod = QuotaCounter.createPeriod('api_requests', 'month', baseTime)
 
       // Month should start on the 1st
-      expect(monthPeriod.period_start).toBe(Math.floor(new Date('2023-12-01T00:00:00Z').getTime() / 1000))
-      expect(monthPeriod.period_end).toBe(Math.floor(new Date('2024-01-01T00:00:00Z').getTime() / 1000))
+      expect(monthPeriod.period_start).toBe(
+        Math.floor(new Date('2023-12-01T00:00:00Z').getTime() / 1000)
+      )
+      expect(monthPeriod.period_end).toBe(
+        Math.floor(new Date('2024-01-01T00:00:00Z').getTime() / 1000)
+      )
     })
 
     it('should handle year period correctly', () => {
@@ -380,8 +416,12 @@ describe('QuotaCounter Model', () => {
       const yearPeriod = QuotaCounter.createPeriod('api_requests', 'year', baseTime)
 
       // Year should start on Jan 1st
-      expect(yearPeriod.period_start).toBe(Math.floor(new Date('2023-01-01T00:00:00Z').getTime() / 1000))
-      expect(yearPeriod.period_end).toBe(Math.floor(new Date('2024-01-01T00:00:00Z').getTime() / 1000))
+      expect(yearPeriod.period_start).toBe(
+        Math.floor(new Date('2023-01-01T00:00:00Z').getTime() / 1000)
+      )
+      expect(yearPeriod.period_end).toBe(
+        Math.floor(new Date('2024-01-01T00:00:00Z').getTime() / 1000)
+      )
     })
   })
 
@@ -400,8 +440,8 @@ describe('QuotaCounter Model', () => {
       const limit = QuotaCounter.getLimitForType('api_requests', 'hour')
 
       expect(limit).toBeDefined()
-      expect(limit!.type).toBe('api_requests')
-      expect(limit!.period).toBe('hour')
+      expect(limit?.type).toBe('api_requests')
+      expect(limit?.period).toBe('hour')
     })
 
     it('should return null for unknown limit', () => {
@@ -409,7 +449,7 @@ describe('QuotaCounter Model', () => {
 
       expect(limit).toBeNull()
     })
-  }
+  })
 
   describe('Usage Calculations', () => {
     it('should calculate usage correctly', () => {
@@ -443,16 +483,24 @@ describe('QuotaCounter Model', () => {
     })
 
     it('should have proper table creation query', () => {
-      expect(QUOTA_COUNTER_QUERIES.CREATE_TABLE).toContain('CREATE TABLE IF NOT EXISTS quota_counters')
+      expect(QUOTA_COUNTER_QUERIES.CREATE_TABLE).toContain(
+        'CREATE TABLE IF NOT EXISTS quota_counters'
+      )
       expect(QUOTA_COUNTER_QUERIES.CREATE_TABLE).toContain('id TEXT PRIMARY KEY')
-      expect(QUOTA_COUNTER_QUERIES.CREATE_TABLE).toContain('FOREIGN KEY (user_id) REFERENCES users(id)')
-      expect(QUOTA_COUNTER_QUERIES.CREATE_TABLE).toContain('UNIQUE(user_id, quota_type, period_start, ip_address)')
+      expect(QUOTA_COUNTER_QUERIES.CREATE_TABLE).toContain(
+        'FOREIGN KEY (user_id) REFERENCES users(id)'
+      )
+      expect(QUOTA_COUNTER_QUERIES.CREATE_TABLE).toContain(
+        'UNIQUE(user_id, quota_type, period_start, ip_address)'
+      )
     })
 
     it('should have parameterized queries', () => {
       expect(QUOTA_COUNTER_QUERIES.INSERT).toContain('VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
       expect(QUOTA_COUNTER_QUERIES.SELECT_BY_ID).toContain('WHERE id = ?')
-      expect(QUOTA_COUNTER_QUERIES.SELECT_BY_USER_AND_TYPE).toContain('WHERE user_id = ? AND quota_type = ?')
+      expect(QUOTA_COUNTER_QUERIES.SELECT_BY_USER_AND_TYPE).toContain(
+        'WHERE user_id = ? AND quota_type = ?'
+      )
       expect(QUOTA_COUNTER_QUERIES.DELETE).toContain('WHERE id = ?')
     })
   })
@@ -473,18 +521,20 @@ describe('QuotaCounter Model', () => {
       const quotaData = createMockQuotaCounter()
 
       // Test INSERT
-      const insertStmt = mockDb.prepare(QUOTA_COUNTER_QUERIES.INSERT).bind(
-        quotaData.id,
-        quotaData.user_id,
-        quotaData.quota_type,
-        quotaData.period_start,
-        quotaData.period_end,
-        quotaData.used_count,
-        quotaData.limit_count,
-        quotaData.ip_address,
-        quotaData.created_at,
-        quotaData.updated_at
-      )
+      const insertStmt = mockDb
+        .prepare(QUOTA_COUNTER_QUERIES.INSERT)
+        .bind(
+          quotaData.id,
+          quotaData.user_id,
+          quotaData.quota_type,
+          quotaData.period_start,
+          quotaData.period_end,
+          quotaData.used_count,
+          quotaData.limit_count,
+          quotaData.ip_address,
+          quotaData.created_at,
+          quotaData.updated_at
+        )
 
       const result = await insertStmt.run()
       expect(result.success).toBe(true)
@@ -494,16 +544,16 @@ describe('QuotaCounter Model', () => {
     it('should handle quota counter lookup by user and type', async () => {
       const quotaData = createMockQuotaCounter({
         user_id: 'user-123',
-        quota_type: 'api_requests'
+        quota_type: 'api_requests',
       })
       mockDb.setTableData('quota_counters', [quotaData])
 
       const now = Math.floor(Date.now() / 1000)
 
       // Test SELECT by user and type
-      const selectStmt = mockDb.prepare(QUOTA_COUNTER_QUERIES.SELECT_BY_USER_AND_TYPE).bind(
-        'user-123', 'api_requests', now, now
-      )
+      const selectStmt = mockDb
+        .prepare(QUOTA_COUNTER_QUERIES.SELECT_BY_USER_AND_TYPE)
+        .bind('user-123', 'api_requests', now, now)
       const result = await selectStmt.first()
 
       expect(result).toEqual(quotaData)
@@ -513,16 +563,16 @@ describe('QuotaCounter Model', () => {
       const quotaData = createMockQuotaCounter({
         user_id: null,
         ip_address: '127.0.0.1',
-        quota_type: 'api_requests'
+        quota_type: 'api_requests',
       })
       mockDb.setTableData('quota_counters', [quotaData])
 
       const now = Math.floor(Date.now() / 1000)
 
       // Test SELECT by IP and type
-      const selectStmt = mockDb.prepare(QUOTA_COUNTER_QUERIES.SELECT_BY_IP_AND_TYPE).bind(
-        '127.0.0.1', 'api_requests', now, now
-      )
+      const selectStmt = mockDb
+        .prepare(QUOTA_COUNTER_QUERIES.SELECT_BY_IP_AND_TYPE)
+        .bind('127.0.0.1', 'api_requests', now, now)
       const result = await selectStmt.first()
 
       expect(result).toEqual(quotaData)

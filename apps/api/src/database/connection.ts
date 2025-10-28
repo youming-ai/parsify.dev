@@ -1,4 +1,4 @@
-import { D1Database } from '@cloudflare/workers-types'
+import type { D1Database } from '@cloudflare/workers-types'
 
 export interface DatabaseConfig {
   maxConnections?: number
@@ -24,7 +24,7 @@ export interface QueryOptions {
   metrics?: boolean
 }
 
-export interface QueryResult<T = any> {
+export interface QueryResult<T = unknown> {
   success: boolean
   data?: T
   error?: string
@@ -39,7 +39,7 @@ export class DatabaseConnection {
   private db: D1Database
   private config: Required<DatabaseConfig>
   private metrics: DatabaseMetrics
-  private queryCache: Map<string, { data: any; expiry: number }>
+  private queryCache: Map<string, { data: unknown; expiry: number }>
   private connectionPool: Set<string>
   private lastHealthCheck: number = 0
   private healthCheckInterval: number = 60000 // 1 minute
@@ -51,7 +51,7 @@ export class DatabaseConnection {
       connectionTimeoutMs: config.connectionTimeoutMs ?? 30000,
       retryAttempts: config.retryAttempts ?? 3,
       retryDelayMs: config.retryDelayMs ?? 1000,
-      enableMetrics: config.enableMetrics ?? true
+      enableMetrics: config.enableMetrics ?? true,
     }
 
     this.metrics = {
@@ -61,7 +61,7 @@ export class DatabaseConnection {
       averageQueryTime: 0,
       connectionPoolSize: 0,
       lastHealthCheck: 0,
-      isHealthy: true
+      isHealthy: true,
     }
 
     this.queryCache = new Map()
@@ -71,9 +71,9 @@ export class DatabaseConnection {
   /**
    * Execute a prepared statement with retry logic and metrics
    */
-  async execute<T = any>(
+  async execute<T = unknown>(
     query: string,
-    params?: any[],
+    params?: unknown[],
     options: QueryOptions = {}
   ): Promise<QueryResult<T>> {
     const startTime = Date.now()
@@ -88,13 +88,13 @@ export class DatabaseConnection {
     // Check cache for SELECT queries
     const cacheKey = this.getCacheKey(query, params)
     if (query.trim().toUpperCase().startsWith('SELECT') && this.queryCache.has(cacheKey)) {
-      const cached = this.queryCache.get(cacheKey)!
-      if (Date.now() < cached.expiry) {
+      const cached = this.queryCache.get(cacheKey)
+      if (cached && Date.now() < cached.expiry) {
         return {
           success: true,
           data: cached.data,
           executionTime: Date.now() - startTime,
-          cached: true
+          cached: true,
         }
       } else {
         this.queryCache.delete(cacheKey)
@@ -126,22 +126,21 @@ export class DatabaseConnection {
         if (query.trim().toUpperCase().startsWith('SELECT') && result.results) {
           this.queryCache.set(cacheKey, {
             data: result.results,
-            expiry: Date.now() + 300000 // 5 minutes
+            expiry: Date.now() + 300000, // 5 minutes
           })
         }
 
         return {
           success: true,
           data: result.results,
-          executionTime
+          executionTime,
         }
-
       } catch (error) {
         lastError = error as Error
 
         if (attempt < maxRetries) {
           // Wait before retry
-          await this.delay(this.config.retryDelayMs * Math.pow(2, attempt))
+          await this.delay(this.config.retryDelayMs * 2 ** attempt)
         }
       }
     }
@@ -154,16 +153,16 @@ export class DatabaseConnection {
     return {
       success: false,
       error: lastError?.message || 'Unknown database error',
-      executionTime: Date.now() - startTime
+      executionTime: Date.now() - startTime,
     }
   }
 
   /**
    * Execute a prepared statement and return the first result
    */
-  async first<T = any>(
+  async first<T = unknown>(
     query: string,
-    params?: any[],
+    params?: unknown[],
     options: QueryOptions = {}
   ): Promise<QueryResult<T>> {
     const result = await this.execute<T[]>(query, params, options)
@@ -172,14 +171,14 @@ export class DatabaseConnection {
       return {
         success: true,
         data: undefined,
-        executionTime: result.executionTime
+        executionTime: result.executionTime,
       }
     }
 
     return {
       success: true,
       data: result.data[0],
-      executionTime: result.executionTime
+      executionTime: result.executionTime,
     }
   }
 
@@ -188,7 +187,7 @@ export class DatabaseConnection {
    */
   async run(
     query: string,
-    params?: any[],
+    params?: unknown[],
     options: QueryOptions = {}
   ): Promise<QueryResult<{ changes: number; lastRowId?: number }>> {
     const startTime = Date.now()
@@ -223,16 +222,15 @@ export class DatabaseConnection {
           success: true,
           data: {
             changes: result.changes || 0,
-            lastRowId: result.meta?.last_row_id
+            lastRowId: result.meta?.last_row_id,
           },
-          executionTime
+          executionTime,
         }
-
       } catch (error) {
         lastError = error as Error
 
         if (attempt < maxRetries) {
-          await this.delay(this.config.retryDelayMs * Math.pow(2, attempt))
+          await this.delay(this.config.retryDelayMs * 2 ** attempt)
         }
       }
     }
@@ -244,7 +242,7 @@ export class DatabaseConnection {
     return {
       success: false,
       error: lastError?.message || 'Unknown database error',
-      executionTime: Date.now() - startTime
+      executionTime: Date.now() - startTime,
     }
   }
 
@@ -252,11 +250,11 @@ export class DatabaseConnection {
    * Execute multiple statements in a batch
    */
   async batch(
-    queries: Array<{ query: string; params?: any[] }>,
+    queries: Array<{ query: string; params?: unknown[] }>,
     options: QueryOptions = {}
-  ): Promise<QueryResult<any[]>> {
+  ): Promise<QueryResult<unknown[]>> {
     const startTime = Date.now()
-    const results: any[] = []
+    const results: unknown[] = []
 
     try {
       for (const { query, params } of queries) {
@@ -265,7 +263,7 @@ export class DatabaseConnection {
           return {
             success: false,
             error: result.error,
-            executionTime: Date.now() - startTime
+            executionTime: Date.now() - startTime,
           }
         }
         results.push(result.data)
@@ -274,13 +272,13 @@ export class DatabaseConnection {
       return {
         success: true,
         data: results,
-        executionTime: Date.now() - startTime
+        executionTime: Date.now() - startTime,
       }
     } catch (error) {
       return {
         success: false,
         error: (error as Error).message,
-        executionTime: Date.now() - startTime
+        executionTime: Date.now() - startTime,
       }
     }
   }
@@ -303,7 +301,7 @@ export class DatabaseConnection {
       this.lastHealthCheck = now
 
       return result.success
-    } catch (error) {
+    } catch (_error) {
       this.metrics.isHealthy = false
       this.metrics.lastHealthCheck = now
       this.lastHealthCheck = now
@@ -319,7 +317,7 @@ export class DatabaseConnection {
     return {
       ...this.metrics,
       connectionPoolSize: this.connectionPool.size,
-      lastHealthCheck: this.lastHealthCheck
+      lastHealthCheck: this.lastHealthCheck,
     }
   }
 
@@ -341,9 +339,9 @@ export class DatabaseConnection {
   // Private helper methods
   private async executeQueryWithTimeout(
     query: string,
-    params: any[] | undefined,
+    params: unknown[] | undefined,
     timeout: number
-  ): Promise<any> {
+  ): Promise<unknown> {
     const stmt = this.db.prepare(query)
     const preparedStmt = params ? stmt.bind(...params) : stmt
     return this.executeWithTimeout(preparedStmt.all(), timeout)
@@ -372,7 +370,7 @@ export class DatabaseConnection {
     this.connectionPool.delete(connectionId)
   }
 
-  private getCacheKey(query: string, params?: any[]): string {
+  private getCacheKey(query: string, params?: unknown[]): string {
     return `${query}:${JSON.stringify(params || [])}`
   }
 
@@ -405,5 +403,5 @@ export const DEFAULT_DATABASE_CONFIG: DatabaseConfig = {
   connectionTimeoutMs: 30000,
   retryAttempts: 3,
   retryDelayMs: 1000,
-  enableMetrics: true
+  enableMetrics: true,
 }

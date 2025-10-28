@@ -6,8 +6,7 @@
  * and connection management.
  */
 
-import { CloudflareService } from './cloudflare-service'
-import { executeQuery } from '../../config/cloudflare/d1-config'
+import type { CloudflareService } from './cloudflare-service'
 
 export interface DatabaseQueryOptions {
   useCache?: boolean
@@ -17,11 +16,7 @@ export interface DatabaseQueryOptions {
 }
 
 export interface DatabaseTransactionOptions {
-  isolation?:
-    | 'READ_UNCOMMITTED'
-    | 'READ_COMMITTED'
-    | 'REPEATABLE_READ'
-    | 'SERIALIZABLE'
+  isolation?: 'READ_UNCOMMITTED' | 'READ_COMMITTED' | 'REPEATABLE_READ' | 'SERIALIZABLE'
   timeout?: number
   rollbackOnError?: boolean
 }
@@ -37,10 +32,7 @@ export interface QueryResult<T = any> {
 
 export class DatabaseService {
   private cloudflare: CloudflareService
-  private queryCache: Map<
-    string,
-    { data: any; timestamp: number; ttl: number }
-  > = new Map()
+  private queryCache: Map<string, { data: any; timestamp: number; ttl: number }> = new Map()
 
   constructor(cloudflare: CloudflareService) {
     this.cloudflare = cloudflare
@@ -122,11 +114,7 @@ export class DatabaseService {
     params?: any[],
     options: DatabaseQueryOptions = {}
   ): Promise<T | null> {
-    const result = await this.queryFirst<Record<string, T>>(
-      sql,
-      params,
-      options
-    )
+    const result = await this.queryFirst<Record<string, T>>(sql, params, options)
 
     if (result.success && result.data.length > 0) {
       const firstRow = result.data[0] as Record<string, T>
@@ -137,7 +125,7 @@ export class DatabaseService {
     return null
   }
 
-  async insert<T = any>(
+  async insert<_T = any>(
     table: string,
     data: Record<string, any>,
     options: DatabaseQueryOptions = {}
@@ -155,7 +143,7 @@ export class DatabaseService {
     return this.query<{ insertId: string }>(sql, values, options)
   }
 
-  async update<T = any>(
+  async update<_T = any>(
     table: string,
     data: Record<string, any>,
     where: string,
@@ -173,14 +161,10 @@ export class DatabaseService {
       RETURNING changes() as changes
     `
 
-    return this.query<{ changes: number }>(
-      sql,
-      [...values, ...whereParams],
-      options
-    )
+    return this.query<{ changes: number }>(sql, [...values, ...whereParams], options)
   }
 
-  async delete<T = any>(
+  async delete<_T = any>(
     table: string,
     where: string,
     whereParams: any[] = [],
@@ -195,7 +179,7 @@ export class DatabaseService {
     return this.query<{ changes: number }>(sql, whereParams, options)
   }
 
-  async upsert<T = any>(
+  async upsert<_T = any>(
     table: string,
     data: Record<string, any>,
     conflictColumns: string[],
@@ -205,9 +189,7 @@ export class DatabaseService {
     const values = Object.values(data)
     const placeholders = columns.map(() => '?').join(', ')
     const conflictClause = conflictColumns.join(', ')
-    const updateClause = columns
-      .map(col => `${col} = excluded.${col}`)
-      .join(', ')
+    const updateClause = columns.map(col => `${col} = excluded.${col}`).join(', ')
 
     const sql = `
       INSERT INTO ${table} (${columns.join(', ')})
@@ -217,11 +199,7 @@ export class DatabaseService {
       RETURNING rowid as insertId, changes() as changes
     `
 
-    return this.query<{ insertId: string; changes: number }>(
-      sql,
-      values,
-      options
-    )
+    return this.query<{ insertId: string; changes: number }>(sql, values, options)
   }
 
   async transaction<T = any>(
@@ -243,11 +221,7 @@ export class DatabaseService {
     try {
       // D1 doesn't support explicit transactions, so we'll execute queries sequentially
       for (const query of queries) {
-        const result = await this.query<T>(
-          query.sql,
-          query.params,
-          query.options
-        )
+        const result = await this.query<T>(query.sql, query.params, query.options)
         results.push(result)
 
         if (!result.success && options.rollbackOnError) {
@@ -556,8 +530,6 @@ export class DatabaseService {
   }
 }
 
-export function createDatabaseService(
-  cloudflare: CloudflareService
-): DatabaseService {
+export function createDatabaseService(cloudflare: CloudflareService): DatabaseService {
   return new DatabaseService(cloudflare)
 }

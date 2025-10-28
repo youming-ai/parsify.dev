@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import {
   CodeFormatter,
   codeFormatter,
-  formatCode,
   detectLanguage,
-  SupportedLanguage,
+  formatCode,
+  type SupportedLanguage,
 } from '../code_formatter'
 
 describe('CodeFormatter', () => {
@@ -93,16 +93,14 @@ describe('CodeFormatter', () => {
     })
 
     it('should handle empty code', async () => {
-      await expect(formatter.format('', 'javascript')).rejects.toThrow(
-        'Code cannot be empty'
-      )
+      await expect(formatter.format('', 'javascript')).rejects.toThrow('Code cannot be empty')
     })
 
     it('should handle unsupported language', async () => {
       const code = 'some code'
-      await expect(
-        formatter.format(code, 'unsupported' as SupportedLanguage)
-      ).rejects.toThrow("Language 'unsupported' is not supported")
+      await expect(formatter.format(code, 'unsupported' as SupportedLanguage)).rejects.toThrow(
+        "Language 'unsupported' is not supported"
+      )
     })
   })
 
@@ -136,12 +134,7 @@ describe('CodeFormatter', () => {
         caseSensitive: true,
       }
 
-      const result = await formatter.format(
-        originalCode,
-        'javascript',
-        {},
-        diffConfig
-      )
+      const result = await formatter.format(originalCode, 'javascript', {}, diffConfig)
 
       expect(result.success).toBe(true)
       expect(result.diff).toBeTruthy()

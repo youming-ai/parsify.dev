@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Simplified implementations for testing
 interface BatchOperation<T = any> {
@@ -22,11 +22,7 @@ interface TransactionWorkflow {
   steps: Array<{
     name: string
     execute: (tx: any, context: any) => Promise<any>
-    rollback?: (
-      tx: any,
-      context: any,
-      result: any
-    ) => Promise<void>
+    rollback?: (tx: any, context: any, result: any) => Promise<void>
     retries?: number
     timeout?: number
   }>
@@ -70,7 +66,7 @@ class TransactionHelper {
   static async executeBatch<T = any>(
     connection: any,
     operations: BatchOperation<T>[],
-    config?: any
+    _config?: any
   ): Promise<T[]> {
     const results: T[] = []
 
@@ -84,8 +80,6 @@ class TransactionHelper {
         case 'changes':
           result = await connection.execute(operation.sql, operation.params)
           break
-        case 'result':
-        case 'any':
         default:
           result = await connection.query(operation.sql, operation.params)
           break
@@ -104,16 +98,14 @@ class TransactionHelper {
   static async executeTemplate<T = any>(
     connection: any,
     template: TransactionTemplate,
-    context?: Record<string, any>
+    _context?: Record<string, any>
   ): Promise<T[]> {
     try {
-      const results = await this.executeBatch<T>(connection, template.operations)
+      const results = await TransactionHelper.executeBatch<T>(connection, template.operations)
 
       // Validate results if validator is provided
       if (template.validate && !template.validate(results)) {
-        throw new Error(
-          `Transaction template '${template.name}' validation failed`
-        )
+        throw new Error(`Transaction template '${template.name}' validation failed`)
       }
 
       // Call success callback
@@ -153,14 +145,8 @@ class TransactionHelper {
       errors.push('Retry delay should not exceed 30 seconds')
     }
 
-    if (
-      config.isolationLevel === 'SERIALIZABLE' &&
-      config.timeout &&
-      config.timeout > 60000
-    ) {
-      errors.push(
-        'Serializable transactions should have shorter timeouts to prevent deadlocks'
-      )
+    if (config.isolationLevel === 'SERIALIZABLE' && config.timeout && config.timeout > 60000) {
+      errors.push('Serializable transactions should have shorter timeouts to prevent deadlocks')
     }
 
     return {
@@ -172,11 +158,7 @@ class TransactionHelper {
 
 // Simplified TransactionTemplates for testing
 class TransactionTemplates {
-  static createUser(
-    userId: string,
-    email: string,
-    name?: string
-  ): TransactionTemplate {
+  static createUser(userId: string, email: string, name?: string): TransactionTemplate {
     return {
       name: 'create_user',
       description: 'Create a new user with audit logging',
@@ -244,12 +226,12 @@ class TransactionTemplates {
 
 describe('TransactionHelper', () => {
   let mockConnection: any
-  let mockTransaction: any
+  let _mockTransaction: any
 
   beforeEach(() => {
     vi.clearAllMocks()
     mockConnection = new MockDatabaseConnection()
-    mockTransaction = new MockTransaction('test-transaction-id')
+    _mockTransaction = new MockTransaction('test-transaction-id')
   })
 
   afterEach(() => {
@@ -277,8 +259,13 @@ describe('TransactionHelper', () => {
       const result = await TransactionHelper.executeBatch(mockConnection, operations)
 
       expect(result).toHaveLength(2)
-      expect(mockConnection.execute).toHaveBeenCalledWith('INSERT INTO users (id, name) VALUES (?, ?)', ['1', 'John'])
-      expect(mockConnection.queryFirst).toHaveBeenCalledWith('SELECT * FROM users WHERE id = ?', ['1'])
+      expect(mockConnection.execute).toHaveBeenCalledWith(
+        'INSERT INTO users (id, name) VALUES (?, ?)',
+        ['1', 'John']
+      )
+      expect(mockConnection.queryFirst).toHaveBeenCalledWith('SELECT * FROM users WHERE id = ?', [
+        '1',
+      ])
     })
 
     it('should handle transform functions', async () => {
@@ -325,7 +312,7 @@ describe('TransactionHelper', () => {
             expectedResult: 'changes',
           },
         ],
-        validate: (results) => results[0].changes > 0,
+        validate: results => results[0].changes > 0,
       }
 
       mockConnection.execute.mockResolvedValue({ changes: 1 })
@@ -495,14 +482,14 @@ describe('TransactionTemplates', () => {
       const template = TransactionTemplates.createUser('user-123', 'test@example.com')
       const results = [{ changes: 1 }, { changes: 1 }]
 
-      expect(template.validate!(results)).toBe(true)
+      expect(template.validate?.(results)).toBe(true)
     })
 
     it('should reject failed user creation', () => {
       const template = TransactionTemplates.createUser('user-123', 'test@example.com')
       const results = [{ changes: 0 }, { changes: 1 }]
 
-      expect(template.validate!(results)).toBe(false)
+      expect(template.validate?.(results)).toBe(false)
     })
   })
 
@@ -521,9 +508,7 @@ describe('TransactionTemplates', () => {
     })
 
     it('should generate correct SQL for updates', () => {
-      const updates = [
-        { table: 'users', id: '1', data: { name: 'John', status: 'active' } },
-      ]
+      const updates = [{ table: 'users', id: '1', data: { name: 'John', status: 'active' } }]
 
       const template = TransactionTemplates.batchUpdate(updates)
 

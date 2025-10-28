@@ -1,6 +1,6 @@
-import { EnhancedConnectionPool } from './pool'
-import { ConnectionPoolMonitor } from './pool-monitoring'
-import { PoolHealthChecker } from './pool-health-checker'
+import type { EnhancedConnectionPool } from './pool'
+import type { PoolHealthChecker } from './pool-health-checker'
+import type { ConnectionPoolMonitor } from './pool-monitoring'
 
 export interface AdaptiveSizingConfig {
   enabled: boolean
@@ -138,7 +138,6 @@ export interface AdaptiveSizingMetrics {
 export class AdaptivePoolSizer {
   private pool: EnhancedConnectionPool
   private monitor: ConnectionPoolMonitor
-  private healthChecker: PoolHealthChecker
   private config: Required<AdaptiveSizingConfig>
   private loadHistory: LoadPattern[] = []
   private scalingHistory: ScalingDecision[] = []
@@ -169,34 +168,34 @@ export class AdaptivePoolSizer {
         lastScaleUp: 0,
         lastScaleDown: 0,
         averageScaleUpTime: 0,
-        averageScaleDownTime: 0
+        averageScaleDownTime: 0,
       },
       prediction: {
         accuracy: 0,
         predictions: 0,
         correctPredictions: 0,
         lastPrediction: 0,
-        modelVersion: '1.0'
+        modelVersion: '1.0',
       },
       performance: {
         averageUtilization: 0,
         peakUtilization: 0,
         averageWaitTime: 0,
         peakWaitTime: 0,
-        slaCompliance: 100
+        slaCompliance: 100,
       },
       efficiency: {
         connectionEfficiency: 0,
         resourceUtilization: 0,
         costEfficiency: 0,
-        wasteReduction: 0
+        wasteReduction: 0,
       },
       patterns: {
         detectedPatterns: [],
         peakHours: [],
         seasonalVariations: [],
-        trend: 'stable'
-      }
+        trend: 'stable',
+      },
     }
 
     if (this.config.enabled) {
@@ -255,9 +254,7 @@ export class AdaptivePoolSizer {
    * Get scaling history
    */
   getScalingHistory(limit = 50): ScalingDecision[] {
-    return this.scalingHistory
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, limit)
+    return this.scalingHistory.sort((a, b) => b.timestamp - a.timestamp).slice(0, limit)
   }
 
   /**
@@ -278,16 +275,18 @@ export class AdaptivePoolSizer {
       timestamp: Date.now(),
       action: targetSize > currentSize ? 'scale_up' : 'scale_down',
       currentSize,
-      targetSize: Math.max(this.config.constraints.minConnections,
-                           Math.min(this.config.constraints.maxConnections, targetSize)),
+      targetSize: Math.max(
+        this.config.constraints.minConnections,
+        Math.min(this.config.constraints.maxConnections, targetSize)
+      ),
       reason: `Manual scaling: ${reason}`,
       confidence: 1.0,
       metrics: await this.getCurrentMetrics(),
       constraints: {
         minSize: this.config.constraints.minConnections,
         maxSize: this.config.constraints.maxConnections,
-        maxStep: Math.abs(targetSize - currentSize)
-      }
+        maxStep: Math.abs(targetSize - currentSize),
+      },
     }
 
     await this.executeScaling(decision)
@@ -332,7 +331,9 @@ export class AdaptivePoolSizer {
     const normalSize = this.calculateOptimalSize()
     await this.manualScaling(normalSize, 'Burst mode deactivated')
 
-    console.info(`Burst mode deactivated after ${burstDuration}ms, scaling to ${normalSize} connections`)
+    console.info(
+      `Burst mode deactivated after ${burstDuration}ms, scaling to ${normalSize} connections`
+    )
   }
 
   /**
@@ -377,13 +378,13 @@ export class AdaptivePoolSizer {
           utilization: 0.8,
           waitTime: 1000,
           errorRate: 0.05,
-          consecutivePeriods: 2
+          consecutivePeriods: 2,
         },
         scaleDown: {
           utilization: 0.3,
           idleTime: 30000,
-          consecutivePeriods: 3
-        }
+          consecutivePeriods: 3,
+        },
       },
 
       constraints: {
@@ -394,7 +395,7 @@ export class AdaptivePoolSizer {
         scaleUpCooldownMs: 60000, // 1 minute
         scaleDownCooldownMs: 300000, // 5 minutes
         burstCapacity: 10,
-        burstDurationMs: 300000 // 5 minutes
+        burstDurationMs: 300000, // 5 minutes
       },
 
       prediction: {
@@ -402,13 +403,13 @@ export class AdaptivePoolSizer {
         historyWindowMs: 3600000, // 1 hour
         predictionHorizonMs: 300000, // 5 minutes
         model: 'linear',
-        confidenceThreshold: 0.7
+        confidenceThreshold: 0.7,
       },
 
       environment: {
         type: 'production',
         timezone: 'UTC',
-        adaptiveThresholds: true
+        adaptiveThresholds: true,
       },
 
       optimization: {
@@ -416,8 +417,8 @@ export class AdaptivePoolSizer {
         enablePreWarmConnections: true,
         enablePredictiveScaling: true,
         enableResourceAwareScaling: true,
-        enableCostOptimization: true
-      }
+        enableCostOptimization: true,
+      },
     }
 
     // Apply environment-specific optimizations
@@ -474,21 +475,27 @@ export class AdaptivePoolSizer {
       totalConnections: poolMetrics.pool.totalConnections,
       activeConnections: poolMetrics.pool.activeConnections,
       idleConnections: poolMetrics.pool.idleConnections,
-      utilization: poolMetrics.pool.totalConnections > 0
-        ? poolMetrics.pool.activeConnections / poolMetrics.pool.totalConnections
-        : 0,
-      averageWaitTime: monitorMetrics.performance.acquisitionWaitTimeHistory[
-        monitorMetrics.performance.acquisitionWaitTimeHistory.length - 1
-      ]?.value || 0,
+      utilization:
+        poolMetrics.pool.totalConnections > 0
+          ? poolMetrics.pool.activeConnections / poolMetrics.pool.totalConnections
+          : 0,
+      averageWaitTime:
+        monitorMetrics.performance.acquisitionWaitTimeHistory[
+          monitorMetrics.performance.acquisitionWaitTimeHistory.length - 1
+        ]?.value || 0,
       averageResponseTime: poolMetrics.performance.averageQueryTime,
-      errorRate: poolMetrics.performance.totalQueries > 0
-        ? poolMetrics.performance.failedQueries / poolMetrics.performance.totalQueries
-        : 0,
-      queueDepth: Math.max(0, poolMetrics.pool.totalConnections - poolMetrics.pool.activeConnections)
+      errorRate:
+        poolMetrics.performance.totalQueries > 0
+          ? poolMetrics.performance.failedQueries / poolMetrics.performance.totalQueries
+          : 0,
+      queueDepth: Math.max(
+        0,
+        poolMetrics.pool.totalConnections - poolMetrics.pool.activeConnections
+      ),
     }
   }
 
-  private createLoadPattern(metrics: any): LoadPattern {
+  private createLoadPattern(metrics: PoolMetrics): LoadPattern {
     return {
       timestamp: Date.now(),
       totalRequests: metrics.totalConnections,
@@ -496,7 +503,7 @@ export class AdaptivePoolSizer {
       averageResponseTime: metrics.averageResponseTime,
       errorRate: metrics.errorRate,
       queueDepth: metrics.queueDepth,
-      throughput: metrics.activeConnections / Math.max(metrics.averageResponseTime, 1)
+      throughput: metrics.activeConnections / Math.max(metrics.averageResponseTime, 1),
     }
   }
 
@@ -510,7 +517,7 @@ export class AdaptivePoolSizer {
     }
   }
 
-  private shouldTriggerBurstMode(metrics: any): boolean {
+  private shouldTriggerBurstMode(metrics: PoolMetrics): boolean {
     if (this.burstModeActive) return false
 
     // Check for sudden traffic spike
@@ -528,7 +535,7 @@ export class AdaptivePoolSizer {
     return recentAvg > olderAvg * 2 && metrics.utilization > 0.9
   }
 
-  private async handleBurstMode(metrics: any): Promise<ScalingDecision> {
+  private async handleBurstMode(metrics: PoolMetrics): Promise<ScalingDecision> {
     await this.activateBurstMode(this.config.constraints.burstDurationMs)
 
     const currentSize = this.getCurrentPoolSize()
@@ -548,13 +555,13 @@ export class AdaptivePoolSizer {
         utilization: metrics.utilization,
         waitTime: metrics.averageWaitTime,
         errorRate: metrics.errorRate,
-        predictedLoad: 0
+        predictedLoad: 0,
       },
       constraints: {
         minSize: this.config.constraints.minConnections,
         maxSize: this.config.constraints.maxConnections,
-        maxStep: this.config.constraints.burstCapacity
-      }
+        maxStep: this.config.constraints.burstCapacity,
+      },
     }
   }
 
@@ -588,10 +595,10 @@ export class AdaptivePoolSizer {
 
     // Simple linear regression on active connections
     const n = recent.length
-    const sumX = recent.reduce((sum, p, i) => sum + i, 0)
+    const sumX = recent.reduce((sum, _p, i) => sum + i, 0)
     const sumY = recent.reduce((sum, p) => sum + p.activeConnections, 0)
     const sumXY = recent.reduce((sum, p, i) => sum + i * p.activeConnections, 0)
-    const sumX2 = recent.reduce((sum, p, i) => sum + i * i, 0)
+    const sumX2 = recent.reduce((sum, _p, i) => sum + i * i, 0)
 
     const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX)
     const intercept = (sumY - slope * sumX) / n
@@ -603,7 +610,7 @@ export class AdaptivePoolSizer {
     return Math.max(0, predictedValue)
   }
 
-  private exponentialSmoothingPredict(targetTime: number): number {
+  private exponentialSmoothingPredict(_targetTime: number): number {
     const recent = this.loadHistory.slice(-10)
     if (recent.length === 0) return 0
 
@@ -634,7 +641,10 @@ export class AdaptivePoolSizer {
     return similarPatterns.reduce((sum, p) => sum + p.activeConnections, 0) / similarPatterns.length
   }
 
-  private evaluateScalingDecision(currentMetrics: any, predictedLoad: number): ScalingDecision {
+  private evaluateScalingDecision(
+    currentMetrics: PoolMetrics,
+    predictedLoad: number
+  ): ScalingDecision {
     const currentSize = this.getCurrentPoolSize()
     const now = Date.now()
 
@@ -652,13 +662,13 @@ export class AdaptivePoolSizer {
           utilization: currentMetrics.utilization,
           waitTime: currentMetrics.averageWaitTime,
           errorRate: currentMetrics.errorRate,
-          predictedLoad
+          predictedLoad,
         },
         constraints: {
           minSize: this.config.constraints.minConnections,
           maxSize: this.config.constraints.maxConnections,
-          maxStep: this.config.constraints.maxScaleUpStep
-        }
+          maxStep: this.config.constraints.maxScaleUpStep,
+        },
       }
     }
 
@@ -676,13 +686,13 @@ export class AdaptivePoolSizer {
           utilization: currentMetrics.utilization,
           waitTime: currentMetrics.averageWaitTime,
           errorRate: currentMetrics.errorRate,
-          predictedLoad
+          predictedLoad,
         },
         constraints: {
           minSize: this.config.constraints.minConnections,
           maxSize: this.config.constraints.maxConnections,
-          maxStep: this.config.constraints.maxScaleDownStep
-        }
+          maxStep: this.config.constraints.maxScaleDownStep,
+        },
       }
     }
 
@@ -690,7 +700,7 @@ export class AdaptivePoolSizer {
     return this.createNoActionDecision('Metrics within normal range')
   }
 
-  private shouldScaleUp(metrics: any, now: number): boolean {
+  private shouldScaleUp(metrics: PoolMetrics, now: number): boolean {
     // Check cooldown
     if (now - this.lastScaleUp < this.config.constraints.scaleUpCooldownMs) {
       return false
@@ -716,8 +726,8 @@ export class AdaptivePoolSizer {
     // Check consecutive periods
     if (this.loadHistory.length >= thresholds.consecutivePeriods) {
       const recent = this.loadHistory.slice(-thresholds.consecutivePeriods)
-      const allAboveThreshold = recent.every(pattern =>
-        pattern.activeConnections / this.getCurrentPoolSize() >= thresholds.utilization
+      const allAboveThreshold = recent.every(
+        pattern => pattern.activeConnections / this.getCurrentPoolSize() >= thresholds.utilization
       )
       if (allAboveThreshold) return true
     }
@@ -725,7 +735,7 @@ export class AdaptivePoolSizer {
     return false
   }
 
-  private shouldScaleDown(metrics: any, now: number): boolean {
+  private shouldScaleDown(metrics: PoolMetrics, now: number): boolean {
     // Check cooldown
     if (now - this.lastScaleDown < this.config.constraints.scaleDownCooldownMs) {
       return false
@@ -746,8 +756,8 @@ export class AdaptivePoolSizer {
     // Check consecutive periods
     if (this.loadHistory.length >= thresholds.consecutivePeriods) {
       const recent = this.loadHistory.slice(-thresholds.consecutivePeriods)
-      const allBelowThreshold = recent.every(pattern =>
-        pattern.activeConnections / this.getCurrentPoolSize() <= thresholds.utilization
+      const allBelowThreshold = recent.every(
+        pattern => pattern.activeConnections / this.getCurrentPoolSize() <= thresholds.utilization
       )
       if (allBelowThreshold) return true
     }
@@ -755,7 +765,7 @@ export class AdaptivePoolSizer {
     return false
   }
 
-  private calculateScaleUpTarget(metrics: any, predictedLoad: number): number {
+  private calculateScaleUpTarget(metrics: PoolMetrics, predictedLoad: number): number {
     const currentSize = this.getCurrentPoolSize()
     let targetSize = currentSize
 
@@ -855,10 +865,11 @@ export class AdaptivePoolSizer {
 
     // Calculate average utilization over recent history
     const recent = this.loadHistory.slice(-10)
-    const avgUtilization = recent.reduce((sum, p) => {
-      const currentSize = this.getCurrentPoolSize()
-      return sum + (p.activeConnections / Math.max(currentSize, 1))
-    }, 0) / recent.length
+    const _avgUtilization =
+      recent.reduce((sum, p) => {
+        const currentSize = this.getCurrentPoolSize()
+        return sum + p.activeConnections / Math.max(currentSize, 1)
+      }, 0) / recent.length
 
     // Target 70% utilization
     const optimalConnections = recent[recent.length - 1].activeConnections / 0.7
@@ -879,7 +890,7 @@ export class AdaptivePoolSizer {
       utilization: metrics.utilization,
       waitTime: metrics.averageWaitTime,
       errorRate: metrics.errorRate,
-      predictedLoad: 0
+      predictedLoad: 0,
     }
   }
 
@@ -896,13 +907,13 @@ export class AdaptivePoolSizer {
         utilization: 0,
         waitTime: 0,
         errorRate: 0,
-        predictedLoad: 0
+        predictedLoad: 0,
       },
       constraints: {
         minSize: this.config.constraints.minConnections,
         maxSize: this.config.constraints.maxConnections,
-        maxStep: 0
-      }
+        maxStep: 0,
+      },
     }
   }
 
@@ -912,7 +923,9 @@ export class AdaptivePoolSizer {
     try {
       // In a real implementation, this would interact with the pool
       // to actually scale up or down
-      console.info(`Executing scaling: ${decision.action} from ${decision.currentSize} to ${decision.targetSize}`)
+      console.info(
+        `Executing scaling: ${decision.action} from ${decision.currentSize} to ${decision.targetSize}`
+      )
 
       // Simulate scaling delay
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -937,7 +950,8 @@ export class AdaptivePoolSizer {
         // Update average scale down time
         const totalScaleDowns = this.metrics.scaling.totalScaleDowns
         this.metrics.scaling.averageScaleDownTime =
-          (this.metrics.scaling.averageScaleDownTime * (totalScaleDowns - 1) + duration) / totalScaleDowns
+          (this.metrics.scaling.averageScaleDownTime * (totalScaleDowns - 1) + duration) /
+          totalScaleDowns
       } else if (decision.action === 'emergency_scale') {
         this.metrics.scaling.emergencyScalings++
       }
@@ -951,14 +965,13 @@ export class AdaptivePoolSizer {
       }
 
       console.info(`Scaling completed: ${decision.action} in ${duration}ms`)
-
     } catch (error) {
       console.error(`Scaling failed: ${decision.action}`, error)
       throw error
     }
   }
 
-  private updateMetrics(currentMetrics: any, decision: ScalingDecision): void {
+  private updateMetrics(currentMetrics: any, _decision: ScalingDecision): void {
     // Update performance metrics
     this.metrics.performance.averageUtilization =
       (this.metrics.performance.averageUtilization + currentMetrics.utilization) / 2
@@ -1000,7 +1013,7 @@ export class AdaptivePoolSizer {
     this.metrics.patterns.peakHours = hourlyUsage
       .map((usage, hour) => ({
         hour,
-        intensity: hourlyCounts[hour] > 0 ? usage / hourlyCounts[hour] : 0
+        intensity: hourlyCounts[hour] > 0 ? usage / hourlyCounts[hour] : 0,
       }))
       .sort((a, b) => b.intensity - a.intensity)
       .slice(0, 6) // Top 6 peak hours

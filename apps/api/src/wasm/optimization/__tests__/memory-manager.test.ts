@@ -1,22 +1,40 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { WasmMemoryManager, MemoryManagerConfig } from '../memory-manager'
-import { IWasmModule } from '../../modules/interfaces/wasm-module.interface'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import type { IWasmModule } from '../../modules/interfaces/wasm-module.interface'
+import { WasmMemoryManager } from '../memory-manager'
 
 // Mock WASM module for testing
 class MockWasmModule implements IWasmModule {
   constructor(public readonly id: string) {}
 
-  get name(): string { return this.id }
-  get version(): string { return '1.0.0' }
-  get description(): string { return `Mock module ${this.id}` }
-  get category(): string { return 'test' }
-  get authors(): string[] { return ['Test Author'] }
-  get dependencies(): string[] { return [] }
-  get apiVersion(): string { return '1.0.0' }
+  get name(): string {
+    return this.id
+  }
+  get version(): string {
+    return '1.0.0'
+  }
+  get description(): string {
+    return `Mock module ${this.id}`
+  }
+  get category(): string {
+    return 'test'
+  }
+  get authors(): string[] {
+    return ['Test Author']
+  }
+  get dependencies(): string[] {
+    return []
+  }
+  get apiVersion(): string {
+    return '1.0.0'
+  }
 
-  async isCompatible(): Promise<boolean> { return true }
+  async isCompatible(): Promise<boolean> {
+    return true
+  }
   async initialize(): Promise<void> {}
-  isInitialized(): boolean { return true }
+  isInitialized(): boolean {
+    return true
+  }
   getMetadata() {
     return {
       id: this.id,
@@ -34,10 +52,12 @@ class MockWasmModule implements IWasmModule {
       checksum: '',
       supportedFormats: [],
       capabilities: [],
-      limitations: []
+      limitations: [],
     }
   }
-  async execute(): Promise<any> { return { success: true } }
+  async execute(): Promise<any> {
+    return { success: true }
+  }
   async dispose(): Promise<void> {}
   async getHealth() {
     return {
@@ -46,7 +66,7 @@ class MockWasmModule implements IWasmModule {
       responseTime: 0,
       memoryUsage: 0,
       errorRate: 0,
-      uptime: 0
+      uptime: 0,
     }
   }
 }
@@ -64,7 +84,7 @@ describe('WasmMemoryManager', () => {
         growthRateLimit: 1024 * 1024, // 1MB/s
         maxAllocationSize: 1024 * 1024, // 1MB
         quotaResetInterval: 60000,
-        enableQuotas: true
+        enableQuotas: true,
       },
       gc: {
         autoGC: false, // Disable for testing
@@ -75,13 +95,13 @@ describe('WasmMemoryManager', () => {
         incrementalGC: true,
         strategy: 'balanced',
         enableCompaction: true,
-        compactionThreshold: 70
+        compactionThreshold: 70,
       },
       monitoringInterval: 100,
       enablePressureHandling: false, // Disable for testing
       enableBudgetTracking: true,
       memoryBudget: 20 * 1024 * 1024, // 20MB
-      budgetWindow: 60000
+      budgetWindow: 60000,
     })
     mockModule = new MockWasmModule('test-module')
   })
@@ -111,7 +131,7 @@ describe('WasmMemoryManager', () => {
       const customLimits = {
         hardLimit: 5 * 1024 * 1024, // 5MB
         softLimit: 4 * 1024 * 1024, // 4MB
-        criticalLimit: 4.5 * 1024 * 1024 // 4.5MB
+        criticalLimit: 4.5 * 1024 * 1024, // 4.5MB
       }
 
       manager.registerModule(mockModule, customLimits)
@@ -180,7 +200,8 @@ describe('WasmMemoryManager', () => {
 
     it('should prevent quota exceeded allocations', () => {
       // Use up most of the quota
-      for (let i = 0; i < 15; i++) { // 15MB total (exceeds 20MB budget with overhead)
+      for (let i = 0; i < 15; i++) {
+        // 15MB total (exceeds 20MB budget with overhead)
         manager.recordAllocation('test-module', 1024 * 1024) // 1MB each
       }
 
@@ -253,7 +274,7 @@ describe('WasmMemoryManager', () => {
       const handler = {
         level: 'high' as const,
         priority: 1,
-        handler: () => {}
+        handler: () => {},
       }
 
       manager.addPressureHandler(handler)
@@ -269,7 +290,7 @@ describe('WasmMemoryManager', () => {
 
       const newLimits = {
         hardLimit: 5 * 1024 * 1024, // 5MB
-        softLimit: 4 * 1024 * 1024  // 4MB
+        softLimit: 4 * 1024 * 1024, // 4MB
       }
 
       manager.setMemoryLimits('test-module', newLimits)

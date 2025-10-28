@@ -1,10 +1,21 @@
 'use client'
 
+import {
+  ChevronDown,
+  Code,
+  FileJson,
+  LogIn,
+  LogOut,
+  Menu,
+  Settings,
+  User,
+  UserCircle,
+  Wrench,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useAuth } from '@/components/auth/auth-context'
 import { UserAvatar } from '@/components/auth/user-avatar'
-
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -14,18 +25,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { ThemeToggle } from './theme-toggle'
-import {
-  Menu,
-  ChevronDown,
-  Code,
-  FileJson,
-  Wrench,
-  Settings,
-  User,
-  LogIn,
-  LogOut,
-  UserCircle,
-} from 'lucide-react'
 
 const tools = [
   {
@@ -50,7 +49,7 @@ const tools = [
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
-  const { user, logout, isAuthenticated, _isLoading } = useAuth()
+  const { user, logout, isAuthenticated } = useAuth()
 
   const handleLogout = async () => {
     try {
@@ -66,11 +65,9 @@ export function Header() {
         <div className="mr-4 hidden md:flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Code className="h-6 w-6" />
-            <span className="hidden font-bold sm:inline-block">
-              Parsify.dev
-            </span>
+            <span className="hidden font-bold sm:inline-block">Parsify.dev</span>
           </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
+          <nav className="flex items-center space-x-6 font-medium text-sm">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center space-x-1">
@@ -81,16 +78,11 @@ export function Header() {
               <DropdownMenuContent align="start" className="w-48">
                 {tools.map(tool => (
                   <DropdownMenuItem key={tool.href} asChild>
-                    <Link
-                      href={tool.href}
-                      className="flex items-center space-x-2"
-                    >
+                    <Link href={tool.href} className="flex items-center space-x-2">
                       <tool.icon className="h-4 w-4" />
                       <div>
                         <div className="font-medium">{tool.title}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {tool.description}
-                        </div>
+                        <div className="text-muted-foreground text-xs">{tool.description}</div>
                       </div>
                     </Link>
                   </DropdownMenuItem>
@@ -99,7 +91,7 @@ export function Header() {
             </DropdownMenu>
             <Link
               href="/docs"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
+              className="text-foreground/60 transition-colors hover:text-foreground/80"
             >
               Documentation
             </Link>
@@ -118,11 +110,7 @@ export function Header() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="pr-0">
-            <Link
-              href="/"
-              className="flex items-center"
-              onClick={() => setIsOpen(false)}
-            >
+            <Link href="/" className="flex items-center" onClick={() => setIsOpen(false)}>
               <Code className="mr-2 h-4 w-4" />
               <span className="font-bold">Parsify.dev</span>
             </Link>
@@ -139,35 +127,21 @@ export function Header() {
                     <tool.icon className="h-4 w-4" />
                     <div>
                       <div className="font-medium">{tool.title}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {tool.description}
-                      </div>
+                      <div className="text-muted-foreground text-xs">{tool.description}</div>
                     </div>
                   </Link>
                 ))}
               </div>
-              <div className="flex flex-col space-y-2 mt-6">
-                <Link
-                  href="/docs"
-                  className="text-sm"
-                  onClick={() => setIsOpen(false)}
-                >
+              <div className="mt-6 flex flex-col space-y-2">
+                <Link href="/docs" className="text-sm" onClick={() => setIsOpen(false)}>
                   Documentation
                 </Link>
                 {isAuthenticated && user ? (
                   <>
-                    <Link
-                      href="/dashboard"
-                      className="text-sm"
-                      onClick={() => setIsOpen(false)}
-                    >
+                    <Link href="/dashboard" className="text-sm" onClick={() => setIsOpen(false)}>
                       Dashboard
                     </Link>
-                    <Link
-                      href="/auth/profile"
-                      className="text-sm"
-                      onClick={() => setIsOpen(false)}
-                    >
+                    <Link href="/auth/profile" className="text-sm" onClick={() => setIsOpen(false)}>
                       Profile
                     </Link>
                     <button
@@ -175,25 +149,17 @@ export function Header() {
                         handleLogout()
                         setIsOpen(false)
                       }}
-                      className="text-sm text-left"
+                      className="text-left text-sm"
                     >
                       Sign Out
                     </button>
                   </>
                 ) : (
                   <>
-                    <Link
-                      href="/auth/login"
-                      className="text-sm"
-                      onClick={() => setIsOpen(false)}
-                    >
+                    <Link href="/auth/login" className="text-sm" onClick={() => setIsOpen(false)}>
                       Sign In
                     </Link>
-                    <Link
-                      href="/auth/signup"
-                      className="text-sm"
-                      onClick={() => setIsOpen(false)}
-                    >
+                    <Link href="/auth/signup" className="text-sm" onClick={() => setIsOpen(false)}>
                       Sign Up
                     </Link>
                   </>
@@ -212,11 +178,7 @@ export function Header() {
             {isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="flex items-center gap-2"
-                  >
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
                     <UserAvatar user={user} size="sm" />
                     <span className="hidden sm:inline-block">{user.name}</span>
                     <ChevronDown className="h-4 w-4" />
@@ -224,36 +186,24 @@ export function Header() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem asChild>
-                    <Link
-                      href="/dashboard"
-                      className="flex items-center space-x-2"
-                    >
+                    <Link href="/dashboard" className="flex items-center space-x-2">
                       <UserCircle className="h-4 w-4" />
                       <span>Dashboard</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link
-                      href="/auth/profile"
-                      className="flex items-center space-x-2"
-                    >
+                    <Link href="/auth/profile" className="flex items-center space-x-2">
                       <User className="h-4 w-4" />
                       <span>Profile</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link
-                      href="/auth/profile"
-                      className="flex items-center space-x-2"
-                    >
+                    <Link href="/auth/profile" className="flex items-center space-x-2">
                       <Settings className="h-4 w-4" />
                       <span>Settings</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleLogout}
-                    className="flex items-center space-x-2"
-                  >
+                  <DropdownMenuItem onClick={handleLogout} className="flex items-center space-x-2">
                     <LogOut className="h-4 w-4" />
                     <span>Sign Out</span>
                   </DropdownMenuItem>
@@ -269,19 +219,13 @@ export function Header() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link
-                      href="/auth/login"
-                      className="flex items-center space-x-2"
-                    >
+                    <Link href="/auth/login" className="flex items-center space-x-2">
                       <LogIn className="h-4 w-4" />
                       <span>Sign In</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link
-                      href="/auth/signup"
-                      className="flex items-center space-x-2"
-                    >
+                    <Link href="/auth/signup" className="flex items-center space-x-2">
                       <UserCircle className="h-4 w-4" />
                       <span>Sign Up</span>
                     </Link>

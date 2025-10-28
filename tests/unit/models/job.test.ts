@@ -1,18 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
+  CreateJobSchema,
+  JOB_QUERIES,
   Job,
   JobSchema,
-  CreateJobSchema,
   UpdateJobSchema,
-  JobStatusSchema,
-  JobPrioritySchema,
-  JOB_QUERIES
 } from '../../../../apps/api/src/models/job'
 import {
-  createTestDatabase,
+  cleanupTestEnvironment,
   createMockJob,
+  createTestDatabase,
   setupTestEnvironment,
-  cleanupTestEnvironment
 } from './database.mock'
 
 describe('Job Model', () => {
@@ -66,7 +64,7 @@ describe('Job Model', () => {
         user_id: 'user-123',
         tool_id: 'tool-123',
         input_data: { test: 'data' },
-        input_ref: 'ref-123'
+        input_ref: 'ref-123',
       }
 
       const result = CreateJobSchema.safeParse(createData)
@@ -77,7 +75,7 @@ describe('Job Model', () => {
       const updateData = {
         status: 'completed' as const,
         output_data: { result: 'success' },
-        progress: 100
+        progress: 100,
       }
 
       const result = UpdateJobSchema.safeParse(updateData)
@@ -101,7 +99,7 @@ describe('Job Model', () => {
       const createData = {
         user_id: 'user-456',
         tool_id: 'tool-456',
-        input_data: { input: 'test' }
+        input_data: { input: 'test' },
       }
 
       const job = Job.create(createData)
@@ -132,7 +130,7 @@ describe('Job Model', () => {
       const outputData = { result: 'output' }
       const rowData = createMockJob({
         input_data: JSON.stringify(inputData),
-        output_data: JSON.stringify(outputData)
+        output_data: JSON.stringify(outputData),
       })
 
       const job = Job.fromRow(rowData)
@@ -143,7 +141,7 @@ describe('Job Model', () => {
     it('should handle null input_data and output_data in fromRow', () => {
       const rowData = createMockJob({
         input_data: null,
-        output_data: null
+        output_data: null,
       })
 
       const job = Job.fromRow(rowData)
@@ -154,12 +152,7 @@ describe('Job Model', () => {
 
   describe('Factory Methods', () => {
     it('should create job for tool', () => {
-      const job = Job.createForTool(
-        'tool-123',
-        'user-123',
-        { input: 'test data' },
-        'input-ref-123'
-      )
+      const job = Job.createForTool('tool-123', 'user-123', { input: 'test data' }, 'input-ref-123')
 
       expect(job.tool_id).toBe('tool-123')
       expect(job.user_id).toBe('user-123')
@@ -169,22 +162,13 @@ describe('Job Model', () => {
     })
 
     it('should create job with priority', () => {
-      const job = Job.createWithPriority(
-        'tool-123',
-        'user-123',
-        { input: 'test data' },
-        'high'
-      )
+      const job = Job.createWithPriority('tool-123', 'user-123', { input: 'test data' }, 'high')
 
-      expect(job.input_data!._priority).toBe('high')
+      expect(job.input_data?._priority).toBe('high')
     })
 
     it('should create anonymous job', () => {
-      const job = Job.createForTool(
-        'tool-123',
-        null,
-        { input: 'test data' }
-      )
+      const job = Job.createForTool('tool-123', null, { input: 'test data' })
 
       expect(job.user_id).toBeNull()
     })
@@ -194,7 +178,10 @@ describe('Job Model', () => {
     it('should convert job to database row format', () => {
       const inputData = { test: 'input' }
       const outputData = { result: 'output' }
-      const jobData = createMockJob({ input_data: inputData, output_data: outputData })
+      const jobData = createMockJob({
+        input_data: inputData,
+        output_data: outputData,
+      })
       const job = new Job(jobData)
 
       const row = job.toRow()
@@ -223,7 +210,7 @@ describe('Job Model', () => {
       setTimeout(() => {
         const updateData = {
           status: 'completed' as const,
-          output_data: { result: 'success' }
+          output_data: { result: 'success' },
         }
 
         const updatedJob = job.update(updateData)
@@ -290,7 +277,7 @@ describe('Job Model', () => {
         status: 'failed',
         error_message: 'Previous error',
         started_at: 12345,
-        completed_at: 12350
+        completed_at: 12350,
       })
       const job = new Job(jobData)
 
@@ -385,18 +372,24 @@ describe('Job Model', () => {
 
     it('should calculate duration correctly', () => {
       const now = Math.floor(Date.now() / 1000)
-      const startedJob = new Job(createMockJob({
-        started_at: now - 100,
-        completed_at: null
-      }))
-      const completedJob = new Job(createMockJob({
-        started_at: now - 200,
-        completed_at: now - 50
-      }))
-      const notStartedJob = new Job(createMockJob({
-        started_at: null,
-        completed_at: null
-      }))
+      const startedJob = new Job(
+        createMockJob({
+          started_at: now - 100,
+          completed_at: null,
+        })
+      )
+      const completedJob = new Job(
+        createMockJob({
+          started_at: now - 200,
+          completed_at: now - 50,
+        })
+      )
+      const notStartedJob = new Job(
+        createMockJob({
+          started_at: null,
+          completed_at: null,
+        })
+      )
 
       expect(startedJob.duration).toBeGreaterThanOrEqual(100)
       expect(completedJob.duration).toBe(150)
@@ -404,22 +397,30 @@ describe('Job Model', () => {
     })
 
     it('should format duration string correctly', () => {
-      const job1 = new Job(createMockJob({
-        started_at: 1000,
-        completed_at: 1065 // 65 seconds
-      }))
-      const job2 = new Job(createMockJob({
-        started_at: 1000,
-        completed_at: 4000 // 50 minutes
-      }))
-      const job3 = new Job(createMockJob({
-        started_at: 1000,
-        completed_at: 10000 // 2.5 hours
-      }))
-      const job4 = new Job(createMockJob({
-        started_at: null,
-        completed_at: null
-      }))
+      const job1 = new Job(
+        createMockJob({
+          started_at: 1000,
+          completed_at: 1065, // 65 seconds
+        })
+      )
+      const job2 = new Job(
+        createMockJob({
+          started_at: 1000,
+          completed_at: 4000, // 50 minutes
+        })
+      )
+      const job3 = new Job(
+        createMockJob({
+          started_at: 1000,
+          completed_at: 10000, // 2.5 hours
+        })
+      )
+      const job4 = new Job(
+        createMockJob({
+          started_at: null,
+          completed_at: null,
+        })
+      )
 
       expect(job1.durationString).toBe('1m 5s')
       expect(job2.durationString).toBe('50m 0s')
@@ -455,7 +456,7 @@ describe('Job Model', () => {
         started_at: null,
         completed_at: null,
         created_at: 1234567890,
-        updated_at: 1234567890
+        updated_at: 1234567890,
       }
 
       const job = new Job(minimalJobData)
@@ -473,7 +474,7 @@ describe('Job Model', () => {
         user_id: 'invalid-uuid',
         tool_id: 'invalid-uuid',
         status: 'invalid',
-        progress: -1
+        progress: -1,
       }
 
       expect(() => Job.fromRow(invalidRow)).toThrow()
@@ -482,7 +483,7 @@ describe('Job Model', () => {
     it('should handle malformed JSON in data fields', () => {
       const rowData = createMockJob({
         input_data: 'invalid json string',
-        output_data: 'also invalid'
+        output_data: 'also invalid',
       })
 
       expect(() => Job.fromRow(rowData)).toThrow()
@@ -491,7 +492,7 @@ describe('Job Model', () => {
     it('should handle empty data objects', () => {
       const jobData = createMockJob({
         input_data: {},
-        output_data: {}
+        output_data: {},
       })
       const job = new Job(jobData)
 
@@ -556,23 +557,25 @@ describe('Job Model', () => {
       const jobData = createMockJob()
 
       // Test INSERT
-      const insertStmt = mockDb.prepare(JOB_QUERIES.INSERT).bind(
-        jobData.id,
-        jobData.user_id,
-        jobData.tool_id,
-        jobData.status,
-        JSON.stringify(jobData.input_data),
-        JSON.stringify(jobData.output_data),
-        jobData.input_ref,
-        jobData.output_ref,
-        jobData.progress,
-        jobData.error_message,
-        jobData.retry_count,
-        jobData.started_at,
-        jobData.completed_at,
-        jobData.created_at,
-        jobData.updated_at
-      )
+      const insertStmt = mockDb
+        .prepare(JOB_QUERIES.INSERT)
+        .bind(
+          jobData.id,
+          jobData.user_id,
+          jobData.tool_id,
+          jobData.status,
+          JSON.stringify(jobData.input_data),
+          JSON.stringify(jobData.output_data),
+          jobData.input_ref,
+          jobData.output_ref,
+          jobData.progress,
+          jobData.error_message,
+          jobData.retry_count,
+          jobData.started_at,
+          jobData.completed_at,
+          jobData.created_at,
+          jobData.updated_at
+        )
 
       const result = await insertStmt.run()
       expect(result.success).toBe(true)
@@ -585,13 +588,16 @@ describe('Job Model', () => {
     })
 
     it('should handle job lookup by user and status', async () => {
-      const jobData = createMockJob({ user_id: 'user-123', status: 'completed' })
+      const jobData = createMockJob({
+        user_id: 'user-123',
+        status: 'completed',
+      })
       mockDb.setTableData('jobs', [jobData])
 
       // Test SELECT by user and status
-      const selectStmt = mockDb.prepare(JOB_QUERIES.SELECT_BY_USER_AND_STATUS).bind(
-        'user-123', 'completed', 10, 0
-      )
+      const selectStmt = mockDb
+        .prepare(JOB_QUERIES.SELECT_BY_USER_AND_STATUS)
+        .bind('user-123', 'completed', 10, 0)
       const result = await selectStmt.all()
 
       expect(result.results).toHaveLength(1)
@@ -618,20 +624,22 @@ describe('Job Model', () => {
       const now = Math.floor(Date.now() / 1000)
 
       // Test UPDATE
-      const updateStmt = mockDb.prepare(JOB_QUERIES.UPDATE).bind(
-        'completed',
-        JSON.stringify(jobData.input_data),
-        JSON.stringify({ result: 'success' }),
-        jobData.input_ref,
-        'output-ref-123',
-        100,
-        null,
-        jobData.retry_count,
-        jobData.started_at,
-        now,
-        now,
-        jobData.id
-      )
+      const updateStmt = mockDb
+        .prepare(JOB_QUERIES.UPDATE)
+        .bind(
+          'completed',
+          JSON.stringify(jobData.input_data),
+          JSON.stringify({ result: 'success' }),
+          jobData.input_ref,
+          'output-ref-123',
+          100,
+          null,
+          jobData.retry_count,
+          jobData.started_at,
+          now,
+          now,
+          jobData.id
+        )
 
       const result = await updateStmt.run()
       expect(result.success).toBe(true)

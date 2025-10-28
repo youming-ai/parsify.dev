@@ -3,11 +3,11 @@
  * Tests system behavior under concurrent authentication scenarios
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { UserSimulator, BehaviorAnalyzer } from '../utils/user-simulator'
-import { CONCURRENT_USER_SCENARIOS, LoadTestReport } from '../config/load-test-config'
-import { SystemResourceMonitor } from '../utils/resource-monitor'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { CONCURRENT_USER_SCENARIOS, type LoadTestReport } from '../config/load-test-config'
 import { LoadTestReporter } from '../utils/load-test-reporter'
+import { SystemResourceMonitor } from '../utils/resource-monitor'
+import { BehaviorAnalyzer, UserSimulator } from '../utils/user-simulator'
 
 describe('Concurrent User Authentication Load Tests', () => {
   const userSimulator = new UserSimulator()
@@ -24,7 +24,9 @@ describe('Concurrent User Authentication Load Tests', () => {
       }
       console.log('✅ API server is running and healthy')
     } catch (error) {
-      console.error('❌ API server is not available. Please start the server before running load tests.')
+      console.error(
+        '❌ API server is not available. Please start the server before running load tests.'
+      )
       throw error
     }
 
@@ -138,7 +140,10 @@ describe('Concurrent User Authentication Load Tests', () => {
 
       // Check for performance degradation over time
       const performanceDegradation = analyzePerformanceDegradation(report)
-      expect(performanceDegradation).toBeLessThan(0.3, 'Performance degradation should be less than 30%')
+      expect(performanceDegradation).toBeLessThan(
+        0.3,
+        'Performance degradation should be less than 30%'
+      )
 
       console.log('✅ Authentication endurance test completed successfully')
     })
@@ -170,8 +175,12 @@ describe('Concurrent User Authentication Load Tests', () => {
 
       console.log('Session Management Results:')
       console.log(`  Total sessions created: ${sessionMetrics.length}`)
-      console.log(`  Average session duration: ${analysis.sessionStats.averageDuration.toFixed(0)}ms`)
-      console.log(`  Session success rate: ${(analysis.sessionStats.successRate * 100).toFixed(1)}%`)
+      console.log(
+        `  Average session duration: ${analysis.sessionStats.averageDuration.toFixed(0)}ms`
+      )
+      console.log(
+        `  Session success rate: ${(analysis.sessionStats.successRate * 100).toFixed(1)}%`
+      )
 
       // Assert session management requirements
       expect(analysis.sessionStats.successRate).toBeGreaterThan(0.95)
@@ -207,8 +216,8 @@ describe('Concurrent User Authentication Load Tests', () => {
           const response = await fetch(`${baseUrl}/auth/validate`, {
             method: 'GET',
             headers: {
-              'Authorization': `Bearer ${user.authToken}`
-            }
+              Authorization: `Bearer ${user.authToken}`,
+            },
           })
           return response.status
         } catch {
@@ -236,7 +245,9 @@ describe('Concurrent User Authentication Load Tests', () => {
     const baseUrl = process.env.API_BASE_URL || 'http://localhost:8787'
     const startTime = Date.now()
 
-    console.log(`Starting ${scenario.name} with ${scenario.userCount} users for ${scenario.duration / 1000}s`)
+    console.log(
+      `Starting ${scenario.name} with ${scenario.userCount} users for ${scenario.duration / 1000}s`
+    )
 
     // Generate users for the scenario
     const users = userSimulator.generateUsers(scenario.userCount, 'moderate')
@@ -271,7 +282,7 @@ describe('Concurrent User Authentication Load Tests', () => {
       userBehavior: calculateBehaviorMetrics(sessionMetrics),
       resources: resourceMetrics,
       bottlenecks: identifyBottlenecks(sessionMetrics, resourceMetrics, scenario.requirements),
-      recommendations: generateRecommendations(sessionMetrics, resourceMetrics, scenario)
+      recommendations: generateRecommendations(sessionMetrics, resourceMetrics, scenario),
     })
 
     console.log(`${scenario.name} completed:`)
@@ -288,7 +299,10 @@ describe('Concurrent User Authentication Load Tests', () => {
    */
   function calculateSummaryMetrics(sessionMetrics: any[]) {
     const totalRequests = sessionMetrics.reduce((sum, metrics) => sum + metrics.totalRequests, 0)
-    const successfulRequests = sessionMetrics.reduce((sum, metrics) => sum + metrics.successfulRequests, 0)
+    const successfulRequests = sessionMetrics.reduce(
+      (sum, metrics) => sum + metrics.successfulRequests,
+      0
+    )
     const failedRequests = sessionMetrics.reduce((sum, metrics) => sum + metrics.failedRequests, 0)
 
     const allResponseTimes = sessionMetrics.flatMap(metrics =>
@@ -302,11 +316,12 @@ describe('Concurrent User Authentication Load Tests', () => {
       totalRequests,
       successfulRequests,
       failedRequests,
-      averageResponseTime: allResponseTimes.reduce((sum, time) => sum + time, 0) / allResponseTimes.length,
+      averageResponseTime:
+        allResponseTimes.reduce((sum, time) => sum + time, 0) / allResponseTimes.length,
       p95ResponseTime: allResponseTimes[Math.floor(allResponseTimes.length * 0.95)] || 0,
       p99ResponseTime: allResponseTimes[Math.floor(allResponseTimes.length * 0.99)] || 0,
       throughput: totalRequests / (totalDuration / 1000),
-      errorRate: failedRequests / totalRequests
+      errorRate: failedRequests / totalRequests,
     }
   }
 
@@ -325,7 +340,7 @@ describe('Concurrent User Authentication Load Tests', () => {
             requests: 0,
             responseTimes: [],
             successes: 0,
-            errors: new Map()
+            errors: new Map(),
           })
         }
 
@@ -348,10 +363,14 @@ describe('Concurrent User Authentication Load Tests', () => {
 
       result[endpoint] = {
         requests: stats.requests,
-        averageResponseTime: responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length,
+        averageResponseTime:
+          responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length,
         p95ResponseTime: responseTimes[Math.floor(responseTimes.length * 0.95)] || 0,
         successRate: stats.successes / stats.requests,
-        errors: Array.from(stats.errors.entries()).map(([type, count]) => ({ type, count }))
+        errors: Array.from(stats.errors.entries()).map(([type, count]) => ({
+          type,
+          count,
+        })),
       }
     }
 
@@ -370,7 +389,7 @@ describe('Concurrent User Authentication Load Tests', () => {
           behaviorStats.set(action.type, {
             count: 0,
             responseTimes: [],
-            successes: 0
+            successes: 0,
           })
         }
 
@@ -384,15 +403,19 @@ describe('Concurrent User Authentication Load Tests', () => {
     }
 
     const result: any = {}
-    const totalActions = Array.from(behaviorStats.values()).reduce((sum, stats) => sum + stats.count, 0)
+    const totalActions = Array.from(behaviorStats.values()).reduce(
+      (sum, stats) => sum + stats.count,
+      0
+    )
 
     for (const [actionType, stats] of behaviorStats.entries()) {
       const responseTimes = stats.responseTimes.sort((a, b) => a - b)
 
       result[actionType] = {
         frequency: stats.count / totalActions,
-        averageResponseTime: responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length,
-        successRate: stats.successes / stats.count
+        averageResponseTime:
+          responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length,
+        successRate: stats.successes / stats.count,
       }
     }
 
@@ -409,7 +432,9 @@ describe('Concurrent User Authentication Load Tests', () => {
     const allResponseTimes = sessionMetrics.flatMap(metrics =>
       metrics.actions.map((action: any) => action.responseTime)
     )
-    const p95ResponseTime = allResponseTimes.sort((a, b) => a - b)[Math.floor(allResponseTimes.length * 0.95)]
+    const p95ResponseTime = allResponseTimes.sort((a, b) => a - b)[
+      Math.floor(allResponseTimes.length * 0.95)
+    ]
 
     if (p95ResponseTime > requirements.maxP95ResponseTime) {
       bottlenecks.push({
@@ -418,7 +443,7 @@ describe('Concurrent User Authentication Load Tests', () => {
         metric: 'p95_response_time',
         value: p95ResponseTime,
         threshold: requirements.maxP95ResponseTime,
-        severity: p95ResponseTime > requirements.maxP95ResponseTime * 2 ? 'critical' : 'high'
+        severity: p95ResponseTime > requirements.maxP95ResponseTime * 2 ? 'critical' : 'high',
       })
     }
 
@@ -431,7 +456,7 @@ describe('Concurrent User Authentication Load Tests', () => {
         metric: 'usage',
         value: maxCpuUsage,
         threshold: 80,
-        severity: maxCpuUsage > 95 ? 'critical' : 'medium'
+        severity: maxCpuUsage > 95 ? 'critical' : 'medium',
       })
     }
 
@@ -443,7 +468,7 @@ describe('Concurrent User Authentication Load Tests', () => {
         metric: 'usage',
         value: maxMemoryUsage,
         threshold: 85,
-        severity: maxMemoryUsage > 95 ? 'critical' : 'high'
+        severity: maxMemoryUsage > 95 ? 'critical' : 'high',
       })
     }
 
@@ -453,16 +478,19 @@ describe('Concurrent User Authentication Load Tests', () => {
   /**
    * Generate performance recommendations
    */
-  function generateRecommendations(sessionMetrics: any[], resourceMetrics: any[], scenario: any) {
+  function generateRecommendations(sessionMetrics: any[], resourceMetrics: any[], _scenario: any) {
     const recommendations = []
 
     const allResponseTimes = sessionMetrics.flatMap(metrics =>
       metrics.actions.map((action: any) => action.responseTime)
     )
-    const avgResponseTime = allResponseTimes.reduce((sum, time) => sum + time, 0) / allResponseTimes.length
+    const avgResponseTime =
+      allResponseTimes.reduce((sum, time) => sum + time, 0) / allResponseTimes.length
 
     if (avgResponseTime > 500) {
-      recommendations.push('Consider implementing response caching for frequently accessed endpoints')
+      recommendations.push(
+        'Consider implementing response caching for frequently accessed endpoints'
+      )
     }
 
     const maxCpuUsage = Math.max(...resourceMetrics.map(m => m.cpu.usage))
@@ -500,16 +528,16 @@ describe('Concurrent User Authentication Load Tests', () => {
    */
   function getEndpointForAction(actionType: string): string {
     const endpointMap: Record<string, string> = {
-      'login': '/auth/login',
-      'profile_view': '/users/profile',
-      'json_format': '/tools/json/format',
-      'json_validate': '/tools/json/validate',
-      'json_convert': '/tools/json/convert',
-      'code_format': '/tools/code/format',
-      'code_execute': '/tools/code/execute',
-      'file_upload': '/upload/sign',
-      'file_download': '/upload/status',
-      'health_check': '/health'
+      login: '/auth/login',
+      profile_view: '/users/profile',
+      json_format: '/tools/json/format',
+      json_validate: '/tools/json/validate',
+      json_convert: '/tools/json/convert',
+      code_format: '/tools/code/format',
+      code_execute: '/tools/code/execute',
+      file_upload: '/upload/sign',
+      file_download: '/upload/status',
+      health_check: '/health',
     }
 
     return endpointMap[actionType] || '/unknown'

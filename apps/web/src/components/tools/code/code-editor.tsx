@@ -1,8 +1,8 @@
-import * as React from 'react'
 import Editor from '@monaco-editor/react'
-import { CodeEditorProps } from './code-types'
-import { getLanguageConfig } from './language-configs'
+import * as React from 'react'
 import { cn } from '@/lib/utils'
+import type { CodeEditorProps } from './code-types'
+import { getLanguageConfig } from './language-configs'
 
 export function CodeEditor({
   value,
@@ -17,7 +17,7 @@ export function CodeEditor({
   wordWrap = true,
   showLineNumbers = true,
   minimap = false,
-  className
+  className,
 }: CodeEditorProps) {
   const [editor, setEditor] = React.useState<any>(null)
   const [monaco, setMonaco] = React.useState<any>(null)
@@ -41,8 +41,8 @@ export function CodeEditor({
       bracketPairColorization: { enabled: true },
       guides: {
         bracketPairs: true,
-        indentation: true
-      }
+        indentation: true,
+      },
     })
 
     // Add keyboard shortcuts
@@ -58,7 +58,7 @@ export function CodeEditor({
 
     // Handle cursor position changes
     editor.onDidChangeCursorPosition((e: any) => {
-      const position = e.position
+      const _position = e.position
       // Could propagate cursor position to parent if needed
     })
 
@@ -79,7 +79,7 @@ export function CodeEditor({
         wordWrap: wordWrap ? 'on' : 'off',
         lineNumbers: showLineNumbers ? 'on' : 'off',
         readOnly,
-        minimap: { enabled: minimap }
+        minimap: { enabled: minimap },
       })
     }
   }, [editor, fontSize, wordWrap, showLineNumbers, readOnly, minimap])
@@ -87,22 +87,24 @@ export function CodeEditor({
   // Update theme
   React.useEffect(() => {
     if (monaco) {
-      monaco.editor.setTheme(theme === 'dark' ? 'vs-dark' : theme === 'high-contrast' ? 'hc-black' : 'vs-light')
+      monaco.editor.setTheme(
+        theme === 'dark' ? 'vs-dark' : theme === 'high-contrast' ? 'hc-black' : 'vs-light'
+      )
     }
   }, [monaco, theme])
 
   const languageConfig = getLanguageConfig(language)
 
   return (
-    <div className={cn('border rounded-lg overflow-hidden', className)}>
-      <div className="bg-gray-50 dark:bg-gray-800 px-3 py-2 border-b">
+    <div className={cn('overflow-hidden rounded-lg border', className)}>
+      <div className="border-b bg-gray-50 px-3 py-2 dark:bg-gray-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="font-medium text-gray-700 text-sm dark:text-gray-300">
               {languageConfig.name}
             </span>
             {languageConfig.version && (
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              <span className="text-gray-500 text-xs dark:text-gray-400">
                 v{languageConfig.version}
               </span>
             )}
@@ -110,28 +112,30 @@ export function CodeEditor({
           {onLanguageChange && (
             <select
               value={language}
-              onChange={(e) => onLanguageChange(e.target.value as any)}
-              className="text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:text-gray-200"
+              onChange={e => onLanguageChange(e.target.value as any)}
+              className="rounded border bg-white px-2 py-1 text-xs dark:bg-gray-700 dark:text-gray-200"
             >
               {Object.entries({
-                'javascript': 'JavaScript',
-                'typescript': 'TypeScript',
-                'python': 'Python',
-                'java': 'Java',
-                'cpp': 'C++',
-                'c': 'C',
-                'csharp': 'C#',
-                'go': 'Go',
-                'rust': 'Rust',
-                'php': 'PHP',
-                'ruby': 'Ruby',
-                'swift': 'Swift',
-                'kotlin': 'Kotlin',
-                'bash': 'Bash',
-                'powershell': 'PowerShell',
-                'sql': 'SQL'
+                javascript: 'JavaScript',
+                typescript: 'TypeScript',
+                python: 'Python',
+                java: 'Java',
+                cpp: 'C++',
+                c: 'C',
+                csharp: 'C#',
+                go: 'Go',
+                rust: 'Rust',
+                php: 'PHP',
+                ruby: 'Ruby',
+                swift: 'Swift',
+                kotlin: 'Kotlin',
+                bash: 'Bash',
+                powershell: 'PowerShell',
+                sql: 'SQL',
               }).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
+                <option key={key} value={key}>
+                  {label}
+                </option>
               ))}
             </select>
           )}
@@ -143,7 +147,7 @@ export function CodeEditor({
         width={width}
         language={languageConfig.monacoLanguage}
         value={value}
-        onChange={(newValue) => {
+        onChange={newValue => {
           if (onChange && newValue !== undefined) {
             onChange(newValue)
           }
@@ -165,22 +169,22 @@ export function CodeEditor({
           bracketPairColorization: { enabled: true },
           guides: {
             bracketPairs: true,
-            indentation: true
+            indentation: true,
           },
           suggest: {
             showKeywords: true,
             showSnippets: true,
-            showFunctions: true
+            showFunctions: true,
           },
           quickSuggestions: {
             other: true,
             comments: true,
-            strings: true
-          }
+            strings: true,
+          },
         }}
         loading={
-          <div className="flex items-center justify-center h-96">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="flex h-96 items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-blue-600 border-b-2"></div>
           </div>
         }
       />
@@ -189,7 +193,7 @@ export function CodeEditor({
 }
 
 // Utility functions for code editor
-export const formatCode = async (code: string, language: string): Promise<string> => {
+export const formatCode = async (code: string, _language: string): Promise<string> => {
   try {
     // This would typically call a formatting service
     // For now, return the code as-is
@@ -200,7 +204,10 @@ export const formatCode = async (code: string, language: string): Promise<string
   }
 }
 
-export const validateCode = async (code: string, language: string): Promise<{
+export const validateCode = async (
+  code: string,
+  language: string
+): Promise<{
   isValid: boolean
   errors: Array<{ line: number; column: number; message: string }>
 }> => {
@@ -228,11 +235,13 @@ export const validateCode = async (code: string, language: string): Promise<{
   } catch (error: any) {
     return {
       isValid: false,
-      errors: [{
-        line: 1,
-        column: 1,
-        message: error.message || 'Syntax error'
-      }]
+      errors: [
+        {
+          line: 1,
+          column: 1,
+          message: error.message || 'Syntax error',
+        },
+      ],
     }
   }
 }
@@ -247,6 +256,6 @@ export const getCodeStats = (code: string) => {
     lines,
     words,
     characters,
-    charactersWithoutSpaces
+    charactersWithoutSpaces,
   }
 }

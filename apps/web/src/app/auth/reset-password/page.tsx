@@ -1,21 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { AlertCircle, ArrowLeft, CheckCircle, Mail } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
+import { useAuth } from '@/components/auth/auth-context'
+import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Alert } from '@/components/ui/alert'
-import { useAuth } from '@/components/auth/auth-context'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
-import { Mail, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react'
 
 function PasswordResetContent() {
   const [email, setEmail] = useState('')
@@ -64,7 +57,7 @@ function PasswordResetContent() {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       setIsSubmitted(true)
-    } catch (error) {
+    } catch (_error) {
       setError('Failed to send reset link. Please try again.')
     } finally {
       setIsLoading(false)
@@ -99,7 +92,7 @@ function PasswordResetContent() {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       setResetSuccess(true)
-    } catch (error) {
+    } catch (_error) {
       setError('Failed to reset password. The link may have expired.')
     } finally {
       setIsResetting(false)
@@ -110,20 +103,15 @@ function PasswordResetContent() {
   if (token) {
     if (resetSuccess) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md w-full space-y-8">
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+          <div className="w-full max-w-md space-y-8">
             <div className="text-center">
-              <CheckCircle className="mx-auto h-12 w-12 text-green-500 mb-4" />
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Password Reset Successful
-              </h1>
-              <p className="text-lg text-gray-600 mb-8">
+              <CheckCircle className="mx-auto mb-4 h-12 w-12 text-green-500" />
+              <h1 className="mb-2 font-bold text-3xl text-gray-900">Password Reset Successful</h1>
+              <p className="mb-8 text-gray-600 text-lg">
                 Your password has been reset successfully.
               </p>
-              <Button
-                onClick={() => router.push('/auth/login')}
-                className="w-full"
-              >
+              <Button onClick={() => router.push('/auth/login')} className="w-full">
                 Sign In with New Password
               </Button>
             </div>
@@ -133,23 +121,15 @@ function PasswordResetContent() {
     }
 
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-8">
           <div className="text-center">
-            <Button
-              variant="ghost"
-              onClick={() => router.push('/auth/login')}
-              className="mb-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
+            <Button variant="ghost" onClick={() => router.push('/auth/login')} className="mb-4">
+              <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Login
             </Button>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Reset Your Password
-            </h1>
-            <p className="text-lg text-gray-600">
-              Enter your new password below
-            </p>
+            <h1 className="mb-2 font-bold text-3xl text-gray-900">Reset Your Password</h1>
+            <p className="text-gray-600 text-lg">Enter your new password below</p>
           </div>
 
           <Card>
@@ -180,9 +160,7 @@ function PasswordResetContent() {
                     minLength={8}
                     disabled={isResetting}
                   />
-                  <p className="text-xs text-gray-500">
-                    Must be at least 8 characters long
-                  </p>
+                  <p className="text-gray-500 text-xs">Must be at least 8 characters long</p>
                 </div>
 
                 <div className="space-y-2">
@@ -213,21 +191,17 @@ function PasswordResetContent() {
   // Show password reset request form
   if (isSubmitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-8">
           <div className="text-center">
-            <Mail className="mx-auto h-12 w-12 text-blue-500 mb-4" />
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Check Your Email
-            </h1>
-            <p className="text-lg text-gray-600 mb-2">
-              We've sent a password reset link to
-            </p>
-            <p className="font-medium text-gray-900 mb-8">{email}</p>
+            <Mail className="mx-auto mb-4 h-12 w-12 text-blue-500" />
+            <h1 className="mb-2 font-bold text-3xl text-gray-900">Check Your Email</h1>
+            <p className="mb-2 text-gray-600 text-lg">We've sent a password reset link to</p>
+            <p className="mb-8 font-medium text-gray-900">{email}</p>
 
-            <div className="text-sm text-gray-600 mb-8">
+            <div className="mb-8 text-gray-600 text-sm">
               <p className="mb-2">Didn't receive the email?</p>
-              <ul className="list-disc list-inside space-y-1">
+              <ul className="list-inside list-disc space-y-1">
                 <li>Check your spam folder</li>
                 <li>Make sure the email address is correct</li>
                 <li>Wait a few minutes for delivery</li>
@@ -235,18 +209,10 @@ function PasswordResetContent() {
             </div>
 
             <div className="space-y-3">
-              <Button
-                onClick={() => setIsSubmitted(false)}
-                variant="outline"
-                className="w-full"
-              >
+              <Button onClick={() => setIsSubmitted(false)} variant="outline" className="w-full">
                 Try a different email
               </Button>
-              <Button
-                onClick={() => router.push('/auth/login')}
-                variant="ghost"
-                className="w-full"
-              >
+              <Button onClick={() => router.push('/auth/login')} variant="ghost" className="w-full">
                 Back to Sign In
               </Button>
             </div>
@@ -257,23 +223,16 @@ function PasswordResetContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => router.push('/auth/login')}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+          <Button variant="ghost" onClick={() => router.push('/auth/login')} className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Login
           </Button>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Reset Your Password
-          </h1>
-          <p className="text-lg text-gray-600">
-            Enter your email address and we'll send you a link to reset your
-            password
+          <h1 className="mb-2 font-bold text-3xl text-gray-900">Reset Your Password</h1>
+          <p className="text-gray-600 text-lg">
+            Enter your email address and we'll send you a link to reset your password
           </p>
         </div>
 
@@ -312,7 +271,7 @@ function PasswordResetContent() {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-gray-600 text-sm">
                 Remember your password?{' '}
                 <button
                   onClick={() => router.push('/auth/login')}
@@ -333,8 +292,8 @@ export default function PasswordResetPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-blue-600 border-b-2"></div>
         </div>
       }
     >

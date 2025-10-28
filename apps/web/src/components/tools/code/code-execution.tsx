@@ -1,24 +1,24 @@
-import * as React from 'react'
-import { CodeExecutionProps, ExecutionStatus, CodeExecutionResult } from './code-types'
-import { getLanguageConfig } from './language-configs'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
-  Play,
-  Square,
-  RotateCcw,
-  Clock,
-  MemoryStick,
-  CheckCircle,
-  XCircle,
   AlertTriangle,
-  Download,
+  CheckCircle,
+  Clock,
   Copy,
-  Terminal
+  Download,
+  MemoryStick,
+  Play,
+  RotateCcw,
+  Square,
+  Terminal,
+  XCircle,
 } from 'lucide-react'
+import * as React from 'react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
+import type { CodeExecutionProps, CodeExecutionResult, ExecutionStatus } from './code-types'
+import { getLanguageConfig } from './language-configs'
 
 interface CodeExecutionComponentProps extends CodeExecutionProps {
   showCompileOutput?: boolean
@@ -43,7 +43,7 @@ export function CodeExecution({
   allowCopy = true,
   onDownloadResult,
   onCopyResult,
-  className
+  className,
 }: CodeExecutionComponentProps) {
   const [status, setStatus] = React.useState<ExecutionStatus>('idle')
   const [result, setResult] = React.useState<CodeExecutionResult | null>(null)
@@ -122,7 +122,7 @@ export function CodeExecution({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(request),
-        signal: abortControllerRef.current.signal
+        signal: abortControllerRef.current.signal,
       })
 
       if (!response.ok) {
@@ -138,7 +138,6 @@ export function CodeExecution({
       if (onExecutionComplete) {
         onExecutionComplete(executionResult)
       }
-
     } catch (err: any) {
       if (err.name === 'AbortError' || err.message === 'Execution cancelled') {
         setStatus('cancelled')
@@ -177,14 +176,17 @@ export function CodeExecution({
       onDownloadResult(result)
     } else if (result) {
       // Default download behavior
-      const blob = new Blob([
-        `Exit Code: ${result.exitCode}\n`,
-        `Execution Time: ${result.executionTime}ms\n`,
-        `Memory Usage: ${result.memoryUsage}KB\n`,
-        `Output:\n${result.output}\n`,
-        result.error ? `Error:\n${result.error}\n` : '',
-        result.compileOutput ? `Compile Output:\n${result.compileOutput}\n` : ''
-      ], { type: 'text/plain' })
+      const blob = new Blob(
+        [
+          `Exit Code: ${result.exitCode}\n`,
+          `Execution Time: ${result.executionTime}ms\n`,
+          `Memory Usage: ${result.memoryUsage}KB\n`,
+          `Output:\n${result.output}\n`,
+          result.error ? `Error:\n${result.error}\n` : '',
+          result.compileOutput ? `Compile Output:\n${result.compileOutput}\n` : '',
+        ],
+        { type: 'text/plain' }
+      )
 
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -209,8 +211,10 @@ export function CodeExecution({
         `Output:`,
         result.output,
         result.error ? `Error:\n${result.error}` : '',
-        result.compileOutput ? `Compile Output:\n${result.compileOutput}` : ''
-      ].filter(Boolean).join('\n')
+        result.compileOutput ? `Compile Output:\n${result.compileOutput}` : '',
+      ]
+        .filter(Boolean)
+        .join('\n')
 
       navigator.clipboard.writeText(text).then(() => {
         // Could show a toast notification here
@@ -277,7 +281,7 @@ export function CodeExecution({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               {getStatusIcon()}
               Code Execution
               <Badge variant={getStatusColor() as any}>
@@ -288,35 +292,38 @@ export function CodeExecution({
             <div className="flex items-center gap-2">
               {status === 'idle' && (
                 <Button onClick={executeCode} size="sm">
-                  <Play className="h-4 w-4 mr-2" />
+                  <Play className="mr-2 h-4 w-4" />
                   Run Code
                 </Button>
               )}
 
               {(status === 'compiling' || status === 'running') && (
                 <Button onClick={cancelExecution} variant="outline" size="sm">
-                  <Square className="h-4 w-4 mr-2" />
+                  <Square className="mr-2 h-4 w-4" />
                   Cancel
                 </Button>
               )}
 
-              {(status === 'completed' || status === 'error' || status === 'cancelled' || status === 'timeout') && (
+              {(status === 'completed' ||
+                status === 'error' ||
+                status === 'cancelled' ||
+                status === 'timeout') && (
                 <>
                   <Button onClick={resetExecution} variant="outline" size="sm">
-                    <RotateCcw className="h-4 w-4 mr-2" />
+                    <RotateCcw className="mr-2 h-4 w-4" />
                     Reset
                   </Button>
 
                   {result && allowCopy && (
                     <Button onClick={handleCopyResult} variant="outline" size="sm">
-                      <Copy className="h-4 w-4 mr-2" />
+                      <Copy className="mr-2 h-4 w-4" />
                       Copy
                     </Button>
                   )}
 
                   {result && allowDownload && (
                     <Button onClick={handleDownloadResult} variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
+                      <Download className="mr-2 h-4 w-4" />
                       Download
                     </Button>
                   )}
@@ -330,13 +337,13 @@ export function CodeExecution({
         {showProgress && (status === 'compiling' || status === 'running') && (
           <CardContent className="pt-0">
             <div className="space-y-2">
-              <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex justify-between text-gray-600 text-sm dark:text-gray-400">
                 <span>{status === 'compiling' ? 'Compiling...' : 'Running...'}</span>
                 <span>{formatExecutionTime(elapsedTime)}</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
                 <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="h-2 rounded-full bg-blue-600 transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -390,9 +397,9 @@ export function CodeExecution({
             {/* Standard Output */}
             {result.output && (
               <div>
-                <h4 className="font-medium mb-2 text-green-700 dark:text-green-400">Output</h4>
+                <h4 className="mb-2 font-medium text-green-700 dark:text-green-400">Output</h4>
                 <div
-                  className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md font-mono text-sm overflow-auto border"
+                  className="overflow-auto rounded-md border bg-gray-50 p-4 font-mono text-sm dark:bg-gray-900"
                   style={{ maxHeight }}
                 >
                   <pre className="whitespace-pre-wrap">{result.output}</pre>
@@ -403,12 +410,14 @@ export function CodeExecution({
             {/* Error Output */}
             {result.error && (
               <div>
-                <h4 className="font-medium mb-2 text-red-700 dark:text-red-400">Error</h4>
+                <h4 className="mb-2 font-medium text-red-700 dark:text-red-400">Error</h4>
                 <div
-                  className="bg-red-50 dark:bg-red-900/20 p-4 rounded-md font-mono text-sm overflow-auto border border-red-200 dark:border-red-800"
+                  className="overflow-auto rounded-md border border-red-200 bg-red-50 p-4 font-mono text-sm dark:border-red-800 dark:bg-red-900/20"
                   style={{ maxHeight }}
                 >
-                  <pre className="whitespace-pre-wrap text-red-800 dark:text-red-300">{result.error}</pre>
+                  <pre className="whitespace-pre-wrap text-red-800 dark:text-red-300">
+                    {result.error}
+                  </pre>
                 </div>
               </div>
             )}
@@ -416,12 +425,16 @@ export function CodeExecution({
             {/* Compile Output */}
             {showCompileOutput && result.compileOutput && (
               <div>
-                <h4 className="font-medium mb-2 text-blue-700 dark:text-blue-400">Compile Output</h4>
+                <h4 className="mb-2 font-medium text-blue-700 dark:text-blue-400">
+                  Compile Output
+                </h4>
                 <div
-                  className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md font-mono text-sm overflow-auto border border-blue-200 dark:border-blue-800"
+                  className="overflow-auto rounded-md border border-blue-200 bg-blue-50 p-4 font-mono text-sm dark:border-blue-800 dark:bg-blue-900/20"
                   style={{ maxHeight }}
                 >
-                  <pre className="whitespace-pre-wrap text-blue-800 dark:text-blue-300">{result.compileOutput}</pre>
+                  <pre className="whitespace-pre-wrap text-blue-800 dark:text-blue-300">
+                    {result.compileOutput}
+                  </pre>
                 </div>
               </div>
             )}

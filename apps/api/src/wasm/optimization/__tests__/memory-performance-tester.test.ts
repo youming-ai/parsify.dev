@@ -1,27 +1,41 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import {
-  MemoryPerformanceTester,
-  BuiltInMemoryTests,
-  MemoryPerformanceTestConfig
-} from '../memory-performance-tester'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import type { IWasmModule } from '../../modules/interfaces/wasm-module.interface'
 import { WasmMemoryManager } from '../memory-manager'
-import { IWasmModule } from '../../modules/interfaces/wasm-module.interface'
+import { BuiltInMemoryTests, MemoryPerformanceTester } from '../memory-performance-tester'
 
 // Mock WASM module for testing
 class MockWasmModule implements IWasmModule {
   constructor(public readonly id: string) {}
 
-  get name(): string { return this.id }
-  get version(): string { return '1.0.0' }
-  get description(): string { return `Mock module ${this.id}` }
-  get category(): string { return 'test' }
-  get authors(): string[] { return ['Test Author'] }
-  get dependencies(): string[] { return [] }
-  get apiVersion(): string { return '1.0.0' }
+  get name(): string {
+    return this.id
+  }
+  get version(): string {
+    return '1.0.0'
+  }
+  get description(): string {
+    return `Mock module ${this.id}`
+  }
+  get category(): string {
+    return 'test'
+  }
+  get authors(): string[] {
+    return ['Test Author']
+  }
+  get dependencies(): string[] {
+    return []
+  }
+  get apiVersion(): string {
+    return '1.0.0'
+  }
 
-  async isCompatible(): Promise<boolean> { return true }
+  async isCompatible(): Promise<boolean> {
+    return true
+  }
   async initialize(): Promise<void> {}
-  isInitialized(): boolean { return true }
+  isInitialized(): boolean {
+    return true
+  }
   getMetadata() {
     return {
       id: this.id,
@@ -39,10 +53,12 @@ class MockWasmModule implements IWasmModule {
       checksum: '',
       supportedFormats: [],
       capabilities: [],
-      limitations: []
+      limitations: [],
     }
   }
-  async execute(): Promise<any> { return { success: true } }
+  async execute(): Promise<any> {
+    return { success: true }
+  }
   async dispose(): Promise<void> {}
   async getHealth() {
     return {
@@ -51,7 +67,7 @@ class MockWasmModule implements IWasmModule {
       responseTime: 0,
       memoryUsage: 0,
       errorRate: 0,
-      uptime: 0
+      uptime: 0,
     }
   }
 }
@@ -73,7 +89,7 @@ describe('MemoryPerformanceTester', () => {
         growthRateLimit: 10 * 1024 * 1024, // 10MB/s
         maxAllocationSize: 10 * 1024 * 1024, // 10MB
         quotaResetInterval: 60000,
-        enableQuotas: false // Disable for simpler testing
+        enableQuotas: false, // Disable for simpler testing
       },
       gc: {
         autoGC: false,
@@ -84,11 +100,11 @@ describe('MemoryPerformanceTester', () => {
         incrementalGC: true,
         strategy: 'balanced',
         enableCompaction: true,
-        compactionThreshold: 70
+        compactionThreshold: 70,
       },
       monitoringInterval: 100,
       enablePressureHandling: false,
-      enableBudgetTracking: false
+      enableBudgetTracking: false,
     })
 
     mockModule = new MockWasmModule('test-module')
@@ -184,14 +200,14 @@ describe('MemoryPerformanceTester', () => {
           scenarios: [],
           timeout: 5000,
           enableDetailedMetrics: true,
-          metricsInterval: 100
+          metricsInterval: 100,
         },
-        execute: async (context) => {
+        execute: async context => {
           context.recordMetric('customValue', 42)
           context.recordMetric('customObject', { test: true })
           context.metrics.operations = 5
         },
-        validate: () => true
+        validate: () => true,
       }
 
       const result = await tester.runTest(mockModule, test, memoryManager)
@@ -222,12 +238,12 @@ describe('MemoryPerformanceTester', () => {
           scenarios: [],
           timeout: 2000,
           enableDetailedMetrics: true,
-          metricsInterval: 100
+          metricsInterval: 100,
         },
         execute: async () => {
           throw new Error('Test execution failed')
         },
-        validate: () => false
+        validate: () => false,
       }
 
       const result = await tester.runTest(mockModule, failingTest, memoryManager)
@@ -259,14 +275,14 @@ describe('MemoryPerformanceTester', () => {
           scenarios: [],
           timeout: 100, // Very short timeout
           enableDetailedMetrics: true,
-          metricsInterval: 100
+          metricsInterval: 100,
         },
-        execute: async (context) => {
+        execute: async context => {
           // Simulate slow operation
           await new Promise(resolve => setTimeout(resolve, 1000))
           context.metrics.operations = 1
         },
-        validate: () => true
+        validate: () => true,
       }
 
       const result = await tester.runTest(mockModule, slowTest, memoryManager)
@@ -278,7 +294,7 @@ describe('MemoryPerformanceTester', () => {
 
   describe('Test Suite Execution', () => {
     it('should run all tests in a suite', async () => {
-      const suite = tester.createTestSuite('test-suite', 'Test description')
+      const _suite = tester.createTestSuite('test-suite', 'Test description')
 
       const test1 = BuiltInMemoryTests.createBasicAllocationTest()
       const test2 = BuiltInMemoryTests.createLeakDetectionTest()
@@ -297,7 +313,7 @@ describe('MemoryPerformanceTester', () => {
     }, 30000)
 
     it('should calculate suite summary correctly', async () => {
-      const suite = tester.createTestSuite('test-suite', 'Test description')
+      const _suite = tester.createTestSuite('test-suite', 'Test description')
 
       const test1 = BuiltInMemoryTests.createBasicAllocationTest()
       const test2 = BuiltInMemoryTests.createLeakDetectionTest()
@@ -342,7 +358,7 @@ describe('MemoryPerformanceTester', () => {
 
   describe('Test Management', () => {
     it('should get test results', () => {
-      const suite = tester.createTestSuite('test-suite', 'Test description')
+      const _suite = tester.createTestSuite('test-suite', 'Test description')
 
       const results = tester.getTestResults('test-suite')
       expect(results).toHaveLength(1)
@@ -350,15 +366,15 @@ describe('MemoryPerformanceTester', () => {
     })
 
     it('should get all test results', () => {
-      const suite1 = tester.createTestSuite('suite1', 'Test 1')
-      const suite2 = tester.createTestSuite('suite2', 'Test 2')
+      const _suite1 = tester.createTestSuite('suite1', 'Test 1')
+      const _suite2 = tester.createTestSuite('suite2', 'Test 2')
 
       const results = tester.getTestResults()
       expect(results).toHaveLength(2)
     })
 
     it('should export results', () => {
-      const suite = tester.createTestSuite('test-suite', 'Test description')
+      const _suite = tester.createTestSuite('test-suite', 'Test description')
 
       const exported = tester.exportResults()
 
@@ -380,9 +396,9 @@ describe('MemoryPerformanceTester', () => {
 
   describe('Error Handling', () => {
     it('should handle non-existent test suite', async () => {
-      await expect(
-        tester.runTestSuite(mockModule, 'non-existent', memoryManager)
-      ).rejects.toThrow("Test suite 'non-existent' not found")
+      await expect(tester.runTestSuite(mockModule, 'non-existent', memoryManager)).rejects.toThrow(
+        "Test suite 'non-existent' not found"
+      )
     })
 
     it('should handle empty test suite', async () => {

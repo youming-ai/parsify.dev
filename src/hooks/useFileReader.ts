@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { JsonFileModel } from '../lib/models/JsonFile'
-import { FileValidationService } from '../lib/services/fileValidationService'
-import { queryKeys, mutationKeys, invalidateQueries } from '../lib/queryClient'
-import type { JsonFile, ValidationError } from '../lib/types'
+import { useCallback, useState } from 'react'
 import { logError, logWarning } from '../lib/errorHandler'
+import { JsonFileModel } from '../lib/models/JsonFile'
+import { invalidateQueries } from '../lib/queryClient'
+import { FileValidationService } from '../lib/services/fileValidationService'
+import type { JsonFile, ValidationError } from '../lib/types'
 
 interface UseFileReaderOptions {
   maxSize?: number
@@ -22,29 +22,32 @@ interface UseFileReaderReturn {
 
 export const useFileReader = (options: UseFileReaderOptions = {}): UseFileReaderReturn => {
   const { maxSize = 1024 * 1024, onSuccess, onError } = options
-  const queryClient = useQueryClient()
+  const _queryClient = useQueryClient()
   const [error, setError] = useState<Error | null>(null)
 
-  const validateFile = useCallback((file: File): { isValid: boolean; errors: ValidationError[] } => {
-    const validationService = new FileValidationService()
-    const result = validationService.validateFile({
-      name: file.name,
-      size: file.size,
-      type: file.name.toLowerCase().endsWith('.md') ? 'markdown' : 'text'
-    })
+  const validateFile = useCallback(
+    (file: File): { isValid: boolean; errors: ValidationError[] } => {
+      const validationService = new FileValidationService()
+      const result = validationService.validateFile({
+        name: file.name,
+        size: file.size,
+        type: file.name.toLowerCase().endsWith('.md') ? 'markdown' : 'text',
+      })
 
-    // Log validation errors for debugging
-    if (result.errors.length > 0) {
-      const criticalErrors = result.errors.filter(e => e.severity === 'error')
-      if (criticalErrors.length > 0) {
-        logError(criticalErrors[0], 'useFileReader.validateFile')
-      } else {
-        logWarning(result.errors[0].message, 'useFileReader.validateFile')
+      // Log validation errors for debugging
+      if (result.errors.length > 0) {
+        const criticalErrors = result.errors.filter(e => e.severity === 'error')
+        if (criticalErrors.length > 0) {
+          logError(criticalErrors[0], 'useFileReader.validateFile')
+        } else {
+          logWarning(result.errors[0].message, 'useFileReader.validateFile')
+        }
       }
-    }
 
-    return result
-  }, [])
+      return result
+    },
+    []
+  )
 
   const fileReadMutation = useMutation({
     mutationFn: async (file: File): Promise<{ file: JsonFile; errors: ValidationError[] }> => {
@@ -83,7 +86,6 @@ export const useFileReader = (options: UseFileReaderOptions = {}): UseFileReader
         invalidateQueries.files()
 
         return { file: jsonFile, errors: allErrors }
-
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
         setError(new Error(errorMessage))
@@ -94,7 +96,7 @@ export const useFileReader = (options: UseFileReaderOptions = {}): UseFileReader
           onError({
             code: 'FILE_READ_ERROR',
             message: errorMessage,
-            severity: 'error'
+            severity: 'error',
           })
         }
 
@@ -105,15 +107,18 @@ export const useFileReader = (options: UseFileReaderOptions = {}): UseFileReader
       // Invalidate file-related queries on successful read
       invalidateQueries.files()
     },
-    onError: (error) => {
+    onError: error => {
       setError(error)
       logError(error, 'useFileReader.mutation')
-    }
+    },
   })
 
-  const readFile = useCallback(async (file: File): Promise<{ file: JsonFile; errors: ValidationError[] }> => {
-    return fileReadMutation.mutateAsync(file)
-  }, [fileReadMutation])
+  const readFile = useCallback(
+    async (file: File): Promise<{ file: JsonFile; errors: ValidationError[] }> => {
+      return fileReadMutation.mutateAsync(file)
+    },
+    [fileReadMutation]
+  )
 
   const reset = useCallback(() => {
     setError(null)

@@ -3,13 +3,11 @@
  * Tests system behavior under concurrent file operations
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { runLoadTest } from '../../performance/utils/performance-utils'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { TestDataGenerator } from '../../performance/utils/endpoint-configs'
-import { CONCURRENT_USER_SCENARIOS } from '../config/load-test-config'
-import { SystemResourceMonitor } from '../utils/resource-monitor'
+import type { LoadTestReport } from '../config/load-test-config'
 import { LoadTestReporter } from '../utils/load-test-reporter'
-import { LoadTestReport } from '../config/load-test-config'
+import { SystemResourceMonitor } from '../utils/resource-monitor'
 
 describe('File Upload/Download Load Tests', () => {
   const resourceMonitor = new SystemResourceMonitor()
@@ -26,7 +24,9 @@ describe('File Upload/Download Load Tests', () => {
       }
       console.log('✅ API server is running and healthy')
     } catch (error) {
-      console.error('❌ API server is not available. Please start the server before running load tests.')
+      console.error(
+        '❌ API server is not available. Please start the server before running load tests.'
+      )
       throw error
     }
 
@@ -65,7 +65,7 @@ describe('File Upload/Download Load Tests', () => {
           url: `${baseUrl}/upload/sign`,
           method: 'POST' as const,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(uploadData)
+          body: JSON.stringify(uploadData),
         })
       }
 
@@ -75,7 +75,7 @@ describe('File Upload/Download Load Tests', () => {
         maxP95ResponseTime: 1000,
         minSuccessRate: 0.95,
         minThroughput: 50,
-        maxErrorRate: 0.05
+        maxErrorRate: 0.05,
       })
 
       testReports.push(report)
@@ -104,7 +104,7 @@ describe('File Upload/Download Load Tests', () => {
           url: `${baseUrl}/upload/sign`,
           method: 'POST' as const,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(uploadData)
+          body: JSON.stringify(uploadData),
         })
       }
 
@@ -112,14 +112,14 @@ describe('File Upload/Download Load Tests', () => {
 
       const report = await generateFileOperationsReport('medium-file-uploads', result, {
         maxP95ResponseTime: 2000,
-        minSuccessRate: 0.90,
+        minSuccessRate: 0.9,
         minThroughput: 30,
-        maxErrorRate: 0.10
+        maxErrorRate: 0.1,
       })
 
       testReports.push(report)
 
-      expect(report.summary.successRate).toBeGreaterThan(0.90)
+      expect(report.summary.successRate).toBeGreaterThan(0.9)
       expect(report.summary.p95ResponseTime).toBeLessThan(2000)
 
       console.log('✅ Medium file uploads test completed successfully')
@@ -143,7 +143,7 @@ describe('File Upload/Download Load Tests', () => {
           url: `${baseUrl}/upload/sign`,
           method: 'POST' as const,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(uploadData)
+          body: JSON.stringify(uploadData),
         })
       }
 
@@ -153,7 +153,7 @@ describe('File Upload/Download Load Tests', () => {
         maxP95ResponseTime: 5000,
         minSuccessRate: 0.85,
         minThroughput: 10,
-        maxErrorRate: 0.15
+        maxErrorRate: 0.15,
       })
 
       testReports.push(report)
@@ -181,12 +181,12 @@ describe('File Upload/Download Load Tests', () => {
           url: `${baseUrl}/upload/sign`,
           method: 'POST' as const,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(uploadData)
+          body: JSON.stringify(uploadData),
         })
       }
 
       // Upload files
-      const uploadResults = await runConcurrentRequests(uploadRequests, 5)
+      const _uploadResults = await runConcurrentRequests(uploadRequests, 5)
 
       // Simulate successful uploads and get file IDs
       for (let i = 0; i < 10; i++) {
@@ -205,7 +205,7 @@ describe('File Upload/Download Load Tests', () => {
         downloadRequests.push({
           url: `${baseUrl}/download/${fileId}`,
           method: 'GET' as const,
-          headers: {}
+          headers: {},
         })
       }
 
@@ -215,7 +215,7 @@ describe('File Upload/Download Load Tests', () => {
         maxP95ResponseTime: 1500,
         minSuccessRate: 0.95,
         minThroughput: 40,
-        maxErrorRate: 0.05
+        maxErrorRate: 0.05,
       })
 
       testReports.push(report)
@@ -240,7 +240,7 @@ describe('File Upload/Download Load Tests', () => {
         requests.push({
           url: `${baseUrl}/upload/status/${fileId}`,
           method: 'GET' as const,
-          headers: {}
+          headers: {},
         })
       }
 
@@ -250,7 +250,7 @@ describe('File Upload/Download Load Tests', () => {
         maxP95ResponseTime: 300,
         minSuccessRate: 0.98,
         minThroughput: 100,
-        maxErrorRate: 0.02
+        maxErrorRate: 0.02,
       })
 
       testReports.push(report)
@@ -275,7 +275,7 @@ describe('File Upload/Download Load Tests', () => {
         { type: 'upload', weight: 0.4 },
         { type: 'download', weight: 0.3 },
         { type: 'status', weight: 0.2 },
-        { type: 'delete', weight: 0.1 }
+        { type: 'delete', weight: 0.1 },
       ]
 
       for (let i = 0; i < totalRequests; i++) {
@@ -283,7 +283,7 @@ describe('File Upload/Download Load Tests', () => {
         let request
 
         switch (operation.type) {
-          case 'upload':
+          case 'upload': {
             const uploadData = TestDataGenerator.generateUploadData(
               `mixed-file-${i}.json`,
               10240 + Math.floor(Math.random() * 51200)
@@ -292,15 +292,16 @@ describe('File Upload/Download Load Tests', () => {
               url: `${baseUrl}/upload/sign`,
               method: 'POST' as const,
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(uploadData)
+              body: JSON.stringify(uploadData),
             }
             break
+          }
 
           case 'download':
             request = {
               url: `${baseUrl}/download/file-${i % 10}`,
               method: 'GET' as const,
-              headers: {}
+              headers: {},
             }
             break
 
@@ -308,7 +309,7 @@ describe('File Upload/Download Load Tests', () => {
             request = {
               url: `${baseUrl}/upload/status/file-${i % 10}`,
               method: 'GET' as const,
-              headers: {}
+              headers: {},
             }
             break
 
@@ -316,7 +317,7 @@ describe('File Upload/Download Load Tests', () => {
             request = {
               url: `${baseUrl}/upload/file-${i % 10}`,
               method: 'DELETE' as const,
-              headers: {}
+              headers: {},
             }
             break
         }
@@ -330,7 +331,7 @@ describe('File Upload/Download Load Tests', () => {
         maxP95ResponseTime: 1200,
         minSuccessRate: 0.92,
         minThroughput: 60,
-        maxErrorRate: 0.08
+        maxErrorRate: 0.08,
       })
 
       testReports.push(report)
@@ -358,7 +359,8 @@ describe('File Upload/Download Load Tests', () => {
           const operationType = Math.random()
           let request
 
-          if (operationType < 0.6) { // 60% uploads
+          if (operationType < 0.6) {
+            // 60% uploads
             const uploadData = TestDataGenerator.generateUploadData(
               `sustained-${Date.now()}-${i}.json`,
               5120
@@ -367,19 +369,21 @@ describe('File Upload/Download Load Tests', () => {
               url: `${baseUrl}/upload/sign`,
               method: 'POST' as const,
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(uploadData)
+              body: JSON.stringify(uploadData),
             }
-          } else if (operationType < 0.9) { // 30% status checks
+          } else if (operationType < 0.9) {
+            // 30% status checks
             request = {
               url: `${baseUrl}/upload/status/sustained-${i}`,
               method: 'GET' as const,
-              headers: {}
+              headers: {},
             }
-          } else { // 10% downloads
+          } else {
+            // 10% downloads
             request = {
               url: `${baseUrl}/download/sustained-${i}`,
               method: 'GET' as const,
-              headers: {}
+              headers: {},
             }
           }
 
@@ -391,7 +395,7 @@ describe('File Upload/Download Load Tests', () => {
           timestamp: Date.now(),
           p95: batchResult.p95,
           successRate: batchResult.successfulRequests / batchResult.totalRequests,
-          throughput: batchResult.requestsPerSecond
+          throughput: batchResult.requestsPerSecond,
         })
 
         // Small delay between batches
@@ -421,19 +425,23 @@ describe('File Upload/Download Load Tests', () => {
       expect(minSuccessRate).toBeGreaterThan(0.85)
 
       // Generate endurance test report
-      const enduranceReport = await generateFileOperationsReport('file-operations-endurance', {
-        totalRequests: results.reduce((sum, r) => sum + concurrentUsers, 0),
-        successfulRequests: results.reduce((sum, r) => sum + (r.successRate * concurrentUsers), 0),
-        failedRequests: 0,
-        averageResponseTime: avgP95,
-        p95: avgP95,
-        requestsPerSecond: avgThroughput
-      }, {
-        maxP95ResponseTime: 1500,
-        minSuccessRate: 0.85,
-        minThroughput: 40,
-        maxErrorRate: 0.15
-      })
+      const enduranceReport = await generateFileOperationsReport(
+        'file-operations-endurance',
+        {
+          totalRequests: results.reduce((sum, _r) => sum + concurrentUsers, 0),
+          successfulRequests: results.reduce((sum, r) => sum + r.successRate * concurrentUsers, 0),
+          failedRequests: 0,
+          averageResponseTime: avgP95,
+          p95: avgP95,
+          requestsPerSecond: avgThroughput,
+        },
+        {
+          maxP95ResponseTime: 1500,
+          minSuccessRate: 0.85,
+          minThroughput: 40,
+          maxErrorRate: 0.15,
+        }
+      )
 
       testReports.push(enduranceReport)
 
@@ -452,7 +460,7 @@ describe('File Upload/Download Load Tests', () => {
     for (let i = 0; i < requests.length; i += concurrency) {
       const batch = requests.slice(i, i + concurrency)
 
-      const batchPromises = batch.map(async (request) => {
+      const batchPromises = batch.map(async request => {
         const startTime = performance.now()
 
         try {
@@ -460,7 +468,7 @@ describe('File Upload/Download Load Tests', () => {
             method: request.method,
             headers: request.headers,
             body: request.body,
-            signal: AbortSignal.timeout(30000)
+            signal: AbortSignal.timeout(30000),
           })
 
           const endTime = performance.now()
@@ -470,7 +478,7 @@ describe('File Upload/Download Load Tests', () => {
             success: response.ok,
             statusCode: response.status,
             responseTime,
-            error: response.ok ? undefined : `HTTP ${response.status}`
+            error: response.ok ? undefined : `HTTP ${response.status}`,
           }
         } catch (error) {
           const endTime = performance.now()
@@ -480,7 +488,7 @@ describe('File Upload/Download Load Tests', () => {
             success: false,
             statusCode: 0,
             responseTime,
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           }
         }
       })
@@ -495,25 +503,34 @@ describe('File Upload/Download Load Tests', () => {
     // Calculate metrics
     const totalTime = Date.now() - startTime
     const successfulRequests = results.filter(r => r.success).length
-    const responseTimes = results.filter(r => r.success).map(r => r.responseTime).sort((a, b) => a - b)
+    const responseTimes = results
+      .filter(r => r.success)
+      .map(r => r.responseTime)
+      .sort((a, b) => a - b)
 
     return {
       totalRequests: results.length,
       successfulRequests,
       failedRequests: results.length - successfulRequests,
-      averageResponseTime: responseTimes.length > 0
-        ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
-        : 0,
+      averageResponseTime:
+        responseTimes.length > 0
+          ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
+          : 0,
       p50: responseTimes[Math.floor(responseTimes.length * 0.5)] || 0,
       p90: responseTimes[Math.floor(responseTimes.length * 0.9)] || 0,
       p95: responseTimes[Math.floor(responseTimes.length * 0.95)] || 0,
       p99: responseTimes[Math.floor(responseTimes.length * 0.99)] || 0,
       requestsPerSecond: results.length / (totalTime / 1000),
-      errors: results.filter(r => !r.success).reduce((acc, r) => {
-        const error = r.error || 'Unknown error'
-        acc[error] = (acc[error] || 0) + 1
-        return acc
-      }, {} as Record<string, number>)
+      errors: results
+        .filter(r => !r.success)
+        .reduce(
+          (acc, r) => {
+            const error = r.error || 'Unknown error'
+            acc[error] = (acc[error] || 0) + 1
+            return acc
+          },
+          {} as Record<string, number>
+        ),
     }
   }
 
@@ -537,7 +554,11 @@ describe('File Upload/Download Load Tests', () => {
   /**
    * Generate file operations report
    */
-  async function generateFileOperationsReport(scenario: string, result: any, requirements: any): Promise<LoadTestReport> {
+  async function generateFileOperationsReport(
+    scenario: string,
+    result: any,
+    requirements: any
+  ): Promise<LoadTestReport> {
     const resourceMetrics = resourceMonitor.getMetrics()
 
     return {
@@ -553,7 +574,7 @@ describe('File Upload/Download Load Tests', () => {
         p95ResponseTime: result.p95,
         p99ResponseTime: result.p99,
         throughput: result.requestsPerSecond,
-        errorRate: result.failedRequests / result.totalRequests
+        errorRate: result.failedRequests / result.totalRequests,
       },
       endpoints: {
         'file-operations': {
@@ -561,13 +582,16 @@ describe('File Upload/Download Load Tests', () => {
           averageResponseTime: result.averageResponseTime,
           p95ResponseTime: result.p95,
           successRate: result.successfulRequests / result.totalRequests,
-          errors: Object.entries(result.errors).map(([type, count]) => ({ type, count: count as number }))
-        }
+          errors: Object.entries(result.errors).map(([type, count]) => ({
+            type,
+            count: count as number,
+          })),
+        },
       },
       userBehavior: {},
       resources: resourceMetrics,
       bottlenecks: identifyFileBottlenecks(result, requirements),
-      recommendations: generateFileRecommendations(result, requirements)
+      recommendations: generateFileRecommendations(result, requirements),
     }
   }
 
@@ -584,7 +608,10 @@ describe('File Upload/Download Load Tests', () => {
         metric: 'p95_response_time',
         value: result.p95,
         threshold: requirements.maxP95ResponseTime,
-        severity: result.p95 > requirements.maxP95ResponseTime * 2 ? 'critical' as const : 'high' as const
+        severity:
+          result.p95 > requirements.maxP95ResponseTime * 2
+            ? ('critical' as const)
+            : ('high' as const),
       })
     }
 
@@ -596,7 +623,10 @@ describe('File Upload/Download Load Tests', () => {
         metric: 'success_rate',
         value: successRate,
         threshold: requirements.minSuccessRate,
-        severity: successRate < requirements.minSuccessRate * 0.8 ? 'critical' as const : 'high' as const
+        severity:
+          successRate < requirements.minSuccessRate * 0.8
+            ? ('critical' as const)
+            : ('high' as const),
       })
     }
 
@@ -610,14 +640,19 @@ describe('File Upload/Download Load Tests', () => {
     const recommendations = []
 
     if (result.p95 > requirements.maxP95ResponseTime) {
-      recommendations.push('Consider optimizing file processing algorithms or implementing file streaming')
+      recommendations.push(
+        'Consider optimizing file processing algorithms or implementing file streaming'
+      )
     }
 
     if (result.averageResponseTime > 1000) {
       recommendations.push('Consider implementing asynchronous file processing for large files')
     }
 
-    const errorCount = Object.values(result.errors).reduce((sum: number, count: any) => sum + count, 0)
+    const errorCount = Object.values(result.errors).reduce(
+      (sum: number, count: any) => sum + count,
+      0
+    )
     if (errorCount > result.totalRequests * 0.05) {
       recommendations.push('Review file validation and error handling mechanisms')
     }

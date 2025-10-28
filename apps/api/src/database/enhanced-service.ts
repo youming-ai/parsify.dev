@@ -1,16 +1,30 @@
-import { D1Database } from '@cloudflare/workers-types'
+import type { D1Database } from '@cloudflare/workers-types'
 import {
-  DatabaseClient,
-  DatabasePool,
-  createDatabaseClient,
-  createDatabasePool,
-  DEFAULT_DATABASE_CLIENT_CONFIG
-} from './client'
-import { EnhancedConnectionPool, createEnhancedConnectionPool, ConnectionPoolConfig } from './pool'
-import { ConnectionPoolMonitor, createConnectionPoolMonitor, PoolMonitoringConfig } from './pool-monitoring'
-import { ConnectionLifecycleManager, createConnectionLifecycleManager, ConnectionLifecycleConfig } from './connection-lifecycle'
-import { PoolHealthChecker, createPoolHealthChecker, HealthCheckConfig } from './pool-health-checker'
-import { AdaptivePoolSizer, createAdaptivePoolSizer, AdaptiveSizingConfig } from './adaptive-pool-sizer'
+  type AdaptivePoolSizer,
+  type AdaptiveSizingConfig,
+  createAdaptivePoolSizer,
+} from './adaptive-pool-sizer'
+import { createDatabasePool, type DatabaseClient, type DatabasePool } from './client'
+import {
+  type ConnectionLifecycleConfig,
+  type ConnectionLifecycleManager,
+  createConnectionLifecycleManager,
+} from './connection-lifecycle'
+import {
+  type ConnectionPoolConfig,
+  createEnhancedConnectionPool,
+  type EnhancedConnectionPool,
+} from './pool'
+import {
+  createPoolHealthChecker,
+  type HealthCheckConfig,
+  type PoolHealthChecker,
+} from './pool-health-checker'
+import {
+  type ConnectionPoolMonitor,
+  createConnectionPoolMonitor,
+  type PoolMonitoringConfig,
+} from './pool-monitoring'
 
 export interface EnhancedDatabaseServiceConfig {
   // Legacy compatibility
@@ -138,7 +152,7 @@ export class EnhancedDatabaseService {
       monitoringConfig: config.monitoringConfig ?? {},
       lifecycleConfig: config.lifecycleConfig ?? {},
       healthCheckConfig: config.healthCheckConfig ?? {},
-      adaptiveSizingConfig: config.adaptiveSizingConfig ?? {}
+      adaptiveSizingConfig: config.adaptiveSizingConfig ?? {},
     }
 
     this.startTime = Date.now()
@@ -154,7 +168,7 @@ export class EnhancedDatabaseService {
         retryAttempts: this.config.retryAttempts,
         retryDelayMs: this.config.retryDelayMs,
         enableMetrics: this.config.enableMetrics,
-        enableTransactions: this.config.enableTransactions
+        enableTransactions: this.config.enableTransactions,
       })
     }
 
@@ -174,7 +188,7 @@ export class EnhancedDatabaseService {
         retryAttempts: this.config.retryAttempts,
         retryDelayMs: this.config.retryDelayMs,
         enableMetrics: this.config.enableMetrics,
-        ...this.config.poolConfig
+        ...this.config.poolConfig,
       })
 
       // Create connection lifecycle manager
@@ -220,7 +234,7 @@ export class EnhancedDatabaseService {
         retryAttempts: this.config.retryAttempts,
         retryDelayMs: this.config.retryDelayMs,
         enableMetrics: this.config.enableMetrics,
-        enableTransactions: this.config.enableTransactions
+        enableTransactions: this.config.enableTransactions,
       })
     }
   }
@@ -234,14 +248,14 @@ export class EnhancedDatabaseService {
         }
         throw new Error('Enhanced pool not available')
       },
-      query: async <T>(sql: string, params?: any[], options?: any) => {
+      query: async <_T>(sql: string, params?: any[], options?: any) => {
         if (this.enhancedPool) {
           const result = await this.enhancedPool.execute(sql, params, options)
           return Array.isArray(result) ? result : []
         }
         throw new Error('Enhanced pool not available')
       },
-      queryFirst: async <T>(sql: string, params?: any[], options?: any) => {
+      queryFirst: async <_T>(sql: string, params?: any[], options?: any) => {
         if (this.enhancedPool) {
           const result = await this.enhancedPool.execute(sql, params, options)
           return Array.isArray(result) && result.length > 0 ? result[0] : null
@@ -250,7 +264,7 @@ export class EnhancedDatabaseService {
       },
       execute: async (sql: string, params?: any[], options?: any) => {
         if (this.enhancedPool) {
-          const result = await this.enhancedPool.execute(sql, params, options)
+          const _result = await this.enhancedPool.execute(sql, params, options)
           return { changes: 1, lastRowId: undefined } // Simplified
         }
         throw new Error('Enhanced pool not available')
@@ -276,7 +290,7 @@ export class EnhancedDatabaseService {
           successfulQueries: 0,
           failedQueries: 0,
           averageQueryTime: 0,
-          connectionPoolSize: 0
+          connectionPoolSize: 0,
         }
       },
       clearCache: () => {
@@ -287,20 +301,20 @@ export class EnhancedDatabaseService {
         if (this.enhancedPool) {
           this.enhancedPool.close()
         }
-      }
+      },
     } as DatabasePool
   }
 
   private createEnhancedClient(): DatabaseClient {
     return {
-      query: async <T>(sql: string, params?: any[], options?: any) => {
+      query: async <_T>(sql: string, params?: any[], options?: any) => {
         if (this.enhancedPool) {
           const result = await this.enhancedPool.execute(sql, params, options)
           return Array.isArray(result) ? result : []
         }
         throw new Error('Enhanced pool not available')
       },
-      queryFirst: async <T>(sql: string, params?: any[], options?: any) => {
+      queryFirst: async <_T>(sql: string, params?: any[], options?: any) => {
         if (this.enhancedPool) {
           const result = await this.enhancedPool.execute(sql, params, options)
           return Array.isArray(result) && result.length > 0 ? result[0] : null
@@ -309,12 +323,12 @@ export class EnhancedDatabaseService {
       },
       execute: async (sql: string, params?: any[], options?: any) => {
         if (this.enhancedPool) {
-          const result = await this.enhancedPool.execute(sql, params, options)
+          const _result = await this.enhancedPool.execute(sql, params, options)
           return { changes: 1, lastRowId: undefined } // Simplified
         }
         throw new Error('Enhanced pool not available')
       },
-      transaction: async <T>(callback: any, options?: any) => {
+      transaction: async <_T>(_callback: any, _options?: any) => {
         // Transaction support would need to be implemented
         throw new Error('Transactions not yet supported in enhanced pool')
       },
@@ -350,7 +364,7 @@ export class EnhancedDatabaseService {
           averageQueryTime: 0,
           connectionPoolSize: 0,
           lastHealthCheck: 0,
-          isHealthy: true
+          isHealthy: true,
         }
       },
       clearCache: () => {
@@ -361,7 +375,7 @@ export class EnhancedDatabaseService {
       },
       getRawConnection: () => {
         throw new Error('Raw connection access not supported in enhanced pool')
-      }
+      },
     } as DatabaseClient
   }
 
@@ -393,7 +407,7 @@ export class EnhancedDatabaseService {
 
       return result
     } catch (error) {
-      const executionTime = Date.now() - startTime
+      const _executionTime = Date.now() - startTime
       this.trackFailedQuery(sql, params, error as Error, 1)
       throw error
     }
@@ -419,7 +433,7 @@ export class EnhancedDatabaseService {
 
       return result
     } catch (error) {
-      const executionTime = Date.now() - startTime
+      const _executionTime = Date.now() - startTime
       this.trackFailedQuery(sql, params, error as Error, 1)
       throw error
     }
@@ -445,7 +459,7 @@ export class EnhancedDatabaseService {
 
       return result
     } catch (error) {
-      const executionTime = Date.now() - startTime
+      const _executionTime = Date.now() - startTime
       this.trackFailedQuery(sql, params, error as Error, 1)
       throw error
     }
@@ -485,7 +499,7 @@ export class EnhancedDatabaseService {
 
       return result
     } catch (error) {
-      const executionTime = Date.now() - startTime
+      const _executionTime = Date.now() - startTime
       this.trackFailedQuery(
         `BATCH: ${queries.map(q => q.sql).join('; ')}`,
         queries.flatMap(q => q.params || []),
@@ -504,7 +518,7 @@ export class EnhancedDatabaseService {
 
     try {
       let healthy = false
-      let enhancedData: EnhancedHealthCheckResult['enhanced'] = undefined
+      let enhancedData: EnhancedHealthCheckResult['enhanced']
 
       if (this.healthChecker) {
         const healthResult = await this.healthChecker.performHealthCheck()
@@ -513,7 +527,7 @@ export class EnhancedDatabaseService {
           healthScore: healthResult.healthScore,
           status: healthResult.status,
           issues: healthResult.issues,
-          recommendations: healthResult.recommendations
+          recommendations: healthResult.recommendations,
         }
       } else {
         healthy = await this.pool.healthCheck()
@@ -528,7 +542,7 @@ export class EnhancedDatabaseService {
         healthy,
         responseTime,
         timestamp: this.lastHealthCheck,
-        enhanced: enhancedData
+        enhanced: enhancedData,
       }
     } catch (error) {
       const responseTime = Date.now() - startTime
@@ -537,7 +551,7 @@ export class EnhancedDatabaseService {
         healthy: false,
         responseTime,
         error: (error as Error).message,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
     }
   }
@@ -555,7 +569,7 @@ export class EnhancedDatabaseService {
         healthCheckCount: this.healthCheckCount,
         healthyConnections: poolMetrics.healthyConnections,
         totalConnections: poolMetrics.totalConnections,
-        enhancedPoolEnabled: !!this.enhancedPool
+        enhancedPoolEnabled: !!this.enhancedPool,
       },
       queries: {
         totalQueries: poolMetrics.totalQueries,
@@ -563,25 +577,32 @@ export class EnhancedDatabaseService {
         failedQueries: poolMetrics.failedQueries,
         averageQueryTime: poolMetrics.averageQueryTime,
         slowQueries: this.slowQueries.length,
-        cachedQueries: 0 // TODO: Implement cache metrics
+        cachedQueries: 0, // TODO: Implement cache metrics
       },
       connections: {
         activeConnections: poolMetrics.activeConnections,
         idleConnections: poolMetrics.totalConnections - poolMetrics.activeConnections,
-        poolUtilization: poolMetrics.totalConnections > 0
-          ? poolMetrics.activeConnections / poolMetrics.totalConnections
-          : 0
-      }
+        poolUtilization:
+          poolMetrics.totalConnections > 0
+            ? poolMetrics.activeConnections / poolMetrics.totalConnections
+            : 0,
+      },
     }
 
     // Add enhanced metrics if available
-    if (this.enhancedPool && this.poolMonitor && this.lifecycleManager && this.healthChecker && this.adaptiveSizer) {
+    if (
+      this.enhancedPool &&
+      this.poolMonitor &&
+      this.lifecycleManager &&
+      this.healthChecker &&
+      this.adaptiveSizer
+    ) {
       baseMetrics.enhanced = {
         pool: this.enhancedPool.getMetrics(),
         monitoring: this.poolMonitor.getRealTimeMetrics(),
         lifecycle: this.lifecycleManager.getMetrics(),
         health: this.healthChecker.getHealthStatus(),
-        adaptive: this.adaptiveSizer.getMetrics()
+        adaptive: this.adaptiveSizer.getMetrics(),
       }
     }
 
@@ -597,9 +618,7 @@ export class EnhancedDatabaseService {
     executionTime: number
     timestamp: number
   }> {
-    return this.slowQueries
-      .sort((a, b) => b.executionTime - a.executionTime)
-      .slice(0, limit)
+    return this.slowQueries.sort((a, b) => b.executionTime - a.executionTime).slice(0, limit)
   }
 
   /**
@@ -612,9 +631,7 @@ export class EnhancedDatabaseService {
     timestamp: number
     attempts: number
   }> {
-    return this.failedQueries
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, limit)
+    return this.failedQueries.sort((a, b) => b.timestamp - a.timestamp).slice(0, limit)
   }
 
   /**
@@ -627,12 +644,12 @@ export class EnhancedDatabaseService {
 
     const [dashboardData, healthReport] = await Promise.all([
       this.poolMonitor.getDashboardData(),
-      this.healthChecker.getHealthStatus()
+      this.healthChecker.getHealthStatus(),
     ])
 
     return {
       ...dashboardData,
-      healthReport
+      healthReport,
     }
   }
 
@@ -645,7 +662,10 @@ export class EnhancedDatabaseService {
     }
 
     try {
-      const decision = await this.adaptiveSizer.manualScaling(targetSize, reason || 'Manual scaling')
+      const decision = await this.adaptiveSizer.manualScaling(
+        targetSize,
+        reason || 'Manual scaling'
+      )
       return decision.action !== 'no_action'
     } catch (error) {
       console.error('Manual scaling failed:', error)
@@ -766,18 +786,14 @@ export class EnhancedDatabaseService {
     }, this.config.healthCheckIntervalMs)
   }
 
-  private trackSlowQuery(
-    sql: string,
-    params: any[] | undefined,
-    executionTime: number
-  ): void {
+  private trackSlowQuery(sql: string, params: any[] | undefined, executionTime: number): void {
     if (!this.config.logSlowQueries) return
 
     const slowQuery = {
       sql,
       params,
       executionTime,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
 
     this.slowQueries.push(slowQuery)
@@ -790,7 +806,7 @@ export class EnhancedDatabaseService {
     console.warn(`Slow query detected (${executionTime}ms):`, {
       sql: sql.substring(0, 200) + (sql.length > 200 ? '...' : ''),
       params,
-      executionTime
+      executionTime,
     })
   }
 
@@ -807,7 +823,7 @@ export class EnhancedDatabaseService {
       params,
       error: error.message,
       timestamp: Date.now(),
-      attempts
+      attempts,
     }
 
     this.failedQueries.push(failedQuery)
@@ -820,7 +836,7 @@ export class EnhancedDatabaseService {
     console.error(`Query failed (${attempts} attempts):`, {
       sql: sql.substring(0, 200) + (sql.length > 200 ? '...' : ''),
       params,
-      error: error.message
+      error: error.message,
     })
   }
 }
@@ -861,7 +877,7 @@ export const DEFAULT_ENHANCED_DATABASE_SERVICE_CONFIG: EnhancedDatabaseServiceCo
   monitoringConfig: {},
   lifecycleConfig: {},
   healthCheckConfig: {},
-  adaptiveSizingConfig: {}
+  adaptiveSizingConfig: {},
 }
 
 /**

@@ -79,20 +79,17 @@ export function getR2Config(environment?: string): R2Config {
   const env = environment || process.env.ENVIRONMENT || 'development'
 
   if (env === 'production' && !R2_ENVIRONMENT_CONFIG.production.bucketName) {
-    throw new Error(
-      'Cloudflare R2 bucket name is required for production environment'
-    )
+    throw new Error('Cloudflare R2 bucket name is required for production environment')
   }
 
   return (
-    R2_ENVIRONMENT_CONFIG[env as keyof R2EnvironmentConfig] ||
-    R2_ENVIRONMENT_CONFIG.development
+    R2_ENVIRONMENT_CONFIG[env as keyof R2EnvironmentConfig] || R2_ENVIRONMENT_CONFIG.development
   )
 }
 
 export interface R2UploadOptions {
   contentType?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   tags?: Record<string, string>
   cacheControl?: string
   contentEncoding?: string
@@ -107,7 +104,7 @@ export interface R2FileMetadata {
   contentType: string
   etag: string
   lastModified: Date
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   tags?: Record<string, string>
   url?: string
   cdnUrl?: string
@@ -294,29 +291,17 @@ export class R2FileService {
     await this.healthMonitor.stopMonitoring()
   }
 
-  private generateKey(
-    userId: string,
-    filename: string,
-    prefix?: string
-  ): string {
+  private generateKey(userId: string, filename: string, prefix?: string): string {
     const timestamp = Date.now()
     const sanitized = filename.replace(/[^a-zA-Z0-9.-]/g, '_')
     const ext = sanitized.includes('.') ? `.${sanitized.split('.').pop()}` : ''
     const name = sanitized.replace(/\.[^/.]+$/, '') || 'file'
 
-    const parts = [
-      prefix || 'uploads',
-      userId,
-      timestamp.toString(),
-      name + ext,
-    ]
+    const parts = [prefix || 'uploads', userId, timestamp.toString(), name + ext]
     return parts.filter(Boolean).join('/')
   }
 
-  private validateFile(
-    size: number,
-    mimeType?: string
-  ): { valid: boolean; error?: string } {
+  private validateFile(size: number, mimeType?: string): { valid: boolean; error?: string } {
     // Check file size
     if (size > (this.config.maxFileSize || 100 * 1024 * 1024)) {
       return {
@@ -348,11 +333,7 @@ export class R2FileService {
 
     try {
       const size =
-        file instanceof ArrayBuffer
-          ? file.byteLength
-          : file instanceof Uint8Array
-            ? file.length
-            : 0
+        file instanceof ArrayBuffer ? file.byteLength : file instanceof Uint8Array ? file.length : 0
 
       const validation = this.validateFile(size, options.contentType)
       if (!validation.valid) {
@@ -361,7 +342,7 @@ export class R2FileService {
 
       const key = this.generateKey(userId, filename)
 
-      const metadata: Record<string, any> = {
+      const metadata: Record<string, unknown> = {
         userId,
         originalName: filename,
         uploadTime: Date.now(),
@@ -373,8 +354,7 @@ export class R2FileService {
           contentType: options.contentType || 'application/octet-stream',
           cacheControl: options.cacheControl || 'public, max-age=31536000',
           contentEncoding: options.contentEncoding,
-          contentDisposition:
-            options.contentDisposition || `inline; filename="${filename}"`,
+          contentDisposition: options.contentDisposition || `inline; filename="${filename}"`,
         },
         customMetadata: {
           ...metadata,
@@ -383,7 +363,9 @@ export class R2FileService {
       }
 
       if (options.expires) {
-        uploadOptions.customMetadata!.expiresAt = options.expires.toISOString()
+        if (uploadOptions.customMetadata) {
+          uploadOptions.customMetadata.expiresAt = options.expires.toISOString()
+        }
       }
 
       const result = await this.bucket.put(key, file, uploadOptions)
@@ -426,8 +408,7 @@ export class R2FileService {
       }
 
       const buffer = await response.arrayBuffer()
-      const contentType =
-        response.headers.get('content-type') || options.contentType
+      const contentType = response.headers.get('content-type') || options.contentType
 
       return this.uploadFile(userId, buffer, filename, {
         ...options,
@@ -438,9 +419,7 @@ export class R2FileService {
     }
   }
 
-  async getFile(
-    key: string
-  ): Promise<{ file: R2ObjectBody; metadata: R2FileMetadata } | null> {
+  async getFile(key: string): Promise<{ file: R2ObjectBody; metadata: R2FileMetadata } | null> {
     const startTime = Date.now()
 
     try {
@@ -454,8 +433,7 @@ export class R2FileService {
       const metadata: R2FileMetadata = {
         key,
         size: object.size,
-        contentType:
-          object.httpMetadata?.contentType || 'application/octet-stream',
+        contentType: object.httpMetadata?.contentType || 'application/octet-stream',
         etag: object.etag,
         lastModified: object.uploaded,
         metadata: object.customMetadata,
@@ -481,15 +459,13 @@ export class R2FileService {
       await this.bucket.delete(key)
       this.healthMonitor.recordDelete(true)
       return true
-    } catch (error) {
+    } catch (_error) {
       this.healthMonitor.recordDelete(false)
       return false
     }
   }
 
-  async deleteFiles(
-    keys: string[]
-  ): Promise<{ deleted: string[]; failed: string[] }> {
+  async deleteFiles(keys: string[]): Promise<{ deleted: string[]; failed: string[] }> {
     const deleted: string[] = []
     const failed: string[] = []
 
@@ -497,7 +473,7 @@ export class R2FileService {
       try {
         await this.deleteFile(key)
         deleted.push(key)
-      } catch (error) {
+      } catch (_error) {
         failed.push(key)
       }
     }
@@ -524,8 +500,7 @@ export class R2FileService {
       const files: R2FileMetadata[] = result.objects.map(obj => ({
         key: obj.key,
         size: obj.size,
-        contentType:
-          obj.httpMetadata?.contentType || 'application/octet-stream',
+        contentType: obj.httpMetadata?.contentType || 'application/octet-stream',
         etag: obj.etag,
         lastModified: obj.uploaded,
         metadata: obj.customMetadata,
@@ -552,7 +527,7 @@ export class R2FileService {
     userId: string,
     options: { limit?: number; cursor?: string; prefix?: string } = {}
   ): Promise<{ files: R2FileMetadata[]; cursor?: string; truncated: boolean }> {
-    const userPrefix = `uploads/${userId}${options.prefix ? '/' + options.prefix : ''}`
+    const userPrefix = `uploads/${userId}${options.prefix ? `/${options.prefix}` : ''}`
     return this.listFiles(userPrefix, options)
   }
 
@@ -580,12 +555,7 @@ export class R2FileService {
       const userId = keyParts.length > 2 ? keyParts[1] : undefined
 
       if (userId) {
-        return this.uploadFile(
-          userId,
-          buffer,
-          keyParts[keyParts.length - 1],
-          uploadOptions
-        )
+        return this.uploadFile(userId, buffer, keyParts[keyParts.length - 1], uploadOptions)
       } else {
         throw new Error('Invalid destination key format')
       }
@@ -605,8 +575,7 @@ export class R2FileService {
       return {
         key,
         size: object.size,
-        contentType:
-          object.httpMetadata?.contentType || 'application/octet-stream',
+        contentType: object.httpMetadata?.contentType || 'application/octet-stream',
         etag: object.etag,
         lastModified: object.uploaded,
         metadata: object.customMetadata,
@@ -618,7 +587,7 @@ export class R2FileService {
         checksum: object.checksums?.md5 || '',
         encrypted: object.customMetadata?.encrypted === 'true',
       }
-    } catch (error) {
+    } catch (_error) {
       return null
     }
   }
@@ -635,8 +604,7 @@ export class R2FileService {
 
   private getFileUrl(key: string): string {
     const baseUrl =
-      this.config.publicUrl ||
-      `https://storage.googleapis.com/${this.config.bucketName}`
+      this.config.publicUrl || `https://storage.googleapis.com/${this.config.bucketName}`
     return `${baseUrl}/${key}`
   }
 
@@ -650,15 +618,13 @@ export class R2FileService {
 
   async cleanupExpiredFiles(): Promise<{ deleted: number; errors: number }> {
     const cutoffTime = new Date()
-    cutoffTime.setDate(
-      cutoffTime.getDate() - (this.config.retentionPeriod || 30)
-    )
+    cutoffTime.setDate(cutoffTime.getDate() - (this.config.retentionPeriod || 30))
 
     try {
       // This would need to be implemented with a list and filter operation
       // For now, return placeholder values
       return { deleted: 0, errors: 0 }
-    } catch (error) {
+    } catch (_error) {
       return { deleted: 0, errors: 1 }
     }
   }

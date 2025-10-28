@@ -1,4 +1,4 @@
-import { IWasmModule, WasmModuleResult, WasmModuleConfig } from './wasm-module.interface'
+import type { IWasmModule, WasmModuleResult } from './wasm-module.interface'
 
 /**
  * Interface for code execution WASM modules
@@ -12,22 +12,39 @@ export interface ICodeWasmModule extends IWasmModule {
   /**
    * Format code according to language-specific rules
    */
-  formatCode(code: string, language: SupportedLanguage, options?: CodeFormatOptions): Promise<WasmModuleResult>
+  formatCode(
+    code: string,
+    language: SupportedLanguage,
+    options?: CodeFormatOptions
+  ): Promise<WasmModuleResult>
 
   /**
    * Lint code to find potential issues
    */
-  lintCode(code: string, language: SupportedLanguage, options?: CodeLintOptions): Promise<WasmModuleResult>
+  lintCode(
+    code: string,
+    language: SupportedLanguage,
+    options?: CodeLintOptions
+  ): Promise<WasmModuleResult>
 
   /**
    * Transpile code from one language to another
    */
-  transpileCode(code: string, from: SupportedLanguage, to: SupportedLanguage, options?: CodeTranspileOptions): Promise<WasmModuleResult>
+  transpileCode(
+    code: string,
+    from: SupportedLanguage,
+    to: SupportedLanguage,
+    options?: CodeTranspileOptions
+  ): Promise<WasmModuleResult>
 
   /**
    * Minify code to reduce size
    */
-  minifyCode(code: string, language: SupportedLanguage, options?: CodeMinifyOptions): Promise<WasmModuleResult>
+  minifyCode(
+    code: string,
+    language: SupportedLanguage,
+    options?: CodeMinifyOptions
+  ): Promise<WasmModuleResult>
 
   /**
    * Validate code syntax
@@ -47,12 +64,20 @@ export interface ICodeWasmModule extends IWasmModule {
   /**
    * Refactor code according to specified patterns
    */
-  refactorCode(code: string, language: SupportedLanguage, refactoring: CodeRefactoring): Promise<WasmModuleResult>
+  refactorCode(
+    code: string,
+    language: SupportedLanguage,
+    refactoring: CodeRefactoring
+  ): Promise<WasmModuleResult>
 
   /**
    * Obfuscate code to protect intellectual property
    */
-  obfuscateCode(code: string, language: SupportedLanguage, options?: CodeObfuscateOptions): Promise<WasmModuleResult>
+  obfuscateCode(
+    code: string,
+    language: SupportedLanguage,
+    options?: CodeObfuscateOptions
+  ): Promise<WasmModuleResult>
 
   /**
    * Deobfuscate previously obfuscated code

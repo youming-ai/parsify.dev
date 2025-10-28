@@ -1,17 +1,17 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
-  User,
-  UserSchema,
   CreateUserSchema,
   UpdateUserSchema,
-  UserPreferencesSchema,
   USER_QUERIES,
+  User,
+  UserPreferencesSchema,
+  UserSchema,
 } from '@/api/src/models'
 import {
-  createTestDatabase,
-  createMockUser,
-  setupTestEnvironment,
   cleanupTestEnvironment,
+  createMockUser,
+  createTestDatabase,
+  setupTestEnvironment,
 } from './database.mock'
 
 describe('User Model', () => {
@@ -235,9 +235,7 @@ describe('User Model', () => {
     it('should correctly identify premium users', () => {
       const freeUser = new User(createMockUser({ subscription_tier: 'free' }))
       const proUser = new User(createMockUser({ subscription_tier: 'pro' }))
-      const enterpriseUser = new User(
-        createMockUser({ subscription_tier: 'enterprise' })
-      )
+      const enterpriseUser = new User(createMockUser({ subscription_tier: 'enterprise' }))
 
       expect(freeUser.isPremium).toBe(false)
       expect(proUser.isPremium).toBe(true)
@@ -247,9 +245,7 @@ describe('User Model', () => {
     it('should correctly identify enterprise users', () => {
       const freeUser = new User(createMockUser({ subscription_tier: 'free' }))
       const proUser = new User(createMockUser({ subscription_tier: 'pro' }))
-      const enterpriseUser = new User(
-        createMockUser({ subscription_tier: 'enterprise' })
-      )
+      const enterpriseUser = new User(createMockUser({ subscription_tier: 'enterprise' }))
 
       expect(freeUser.isEnterprise).toBe(false)
       expect(proUser.isEnterprise).toBe(false)
@@ -267,9 +263,7 @@ describe('User Model', () => {
     it('should return correct daily API limits', () => {
       const freeUser = new User(createMockUser({ subscription_tier: 'free' }))
       const proUser = new User(createMockUser({ subscription_tier: 'pro' }))
-      const enterpriseUser = new User(
-        createMockUser({ subscription_tier: 'enterprise' })
-      )
+      const enterpriseUser = new User(createMockUser({ subscription_tier: 'enterprise' }))
 
       expect(freeUser.dailyApiLimit).toBe(100)
       expect(proUser.dailyApiLimit).toBe(1000)
@@ -279,9 +273,7 @@ describe('User Model', () => {
     it('should return correct max file sizes', () => {
       const freeUser = new User(createMockUser({ subscription_tier: 'free' }))
       const proUser = new User(createMockUser({ subscription_tier: 'pro' }))
-      const enterpriseUser = new User(
-        createMockUser({ subscription_tier: 'enterprise' })
-      )
+      const enterpriseUser = new User(createMockUser({ subscription_tier: 'enterprise' }))
 
       expect(freeUser.maxFileSize).toBe(10 * 1024 * 1024) // 10MB
       expect(proUser.maxFileSize).toBe(50 * 1024 * 1024) // 50MB
@@ -291,9 +283,7 @@ describe('User Model', () => {
     it('should return correct max execution times', () => {
       const freeUser = new User(createMockUser({ subscription_tier: 'free' }))
       const proUser = new User(createMockUser({ subscription_tier: 'pro' }))
-      const enterpriseUser = new User(
-        createMockUser({ subscription_tier: 'enterprise' })
-      )
+      const enterpriseUser = new User(createMockUser({ subscription_tier: 'enterprise' }))
 
       expect(freeUser.maxExecutionTime).toBe(5000) // 5 seconds
       expect(proUser.maxExecutionTime).toBe(15000) // 15 seconds
@@ -303,9 +293,7 @@ describe('User Model', () => {
     it('should return correct file retention hours', () => {
       const freeUser = new User(createMockUser({ subscription_tier: 'free' }))
       const proUser = new User(createMockUser({ subscription_tier: 'pro' }))
-      const enterpriseUser = new User(
-        createMockUser({ subscription_tier: 'enterprise' })
-      )
+      const enterpriseUser = new User(createMockUser({ subscription_tier: 'enterprise' }))
 
       expect(freeUser.getFileRetentionHours()).toBe(72) // 3 days
       expect(proUser.getFileRetentionHours()).toBe(168) // 7 days
@@ -385,9 +373,7 @@ describe('User Model', () => {
     })
 
     it('should have proper table creation query', () => {
-      expect(USER_QUERIES.CREATE_TABLE).toContain(
-        'CREATE TABLE IF NOT EXISTS users'
-      )
+      expect(USER_QUERIES.CREATE_TABLE).toContain('CREATE TABLE IF NOT EXISTS users')
       expect(USER_QUERIES.CREATE_TABLE).toContain('id TEXT PRIMARY KEY')
       expect(USER_QUERIES.CREATE_TABLE).toContain('email TEXT UNIQUE NOT NULL')
     })
@@ -400,9 +386,7 @@ describe('User Model', () => {
     })
 
     it('should have parameterized queries', () => {
-      expect(USER_QUERIES.INSERT).toContain(
-        'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
-      )
+      expect(USER_QUERIES.INSERT).toContain('VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
       expect(USER_QUERIES.SELECT_BY_ID).toContain('WHERE id = ?')
       expect(USER_QUERIES.SELECT_BY_EMAIL).toContain('WHERE email = ?')
       expect(USER_QUERIES.DELETE).toContain('WHERE id = ?')
@@ -415,9 +399,7 @@ describe('User Model', () => {
       mockDb.setTableData('users', [userData])
 
       // Test SELECT by ID
-      const selectStmt = mockDb
-        .prepare(USER_QUERIES.SELECT_BY_ID)
-        .bind(userData.id)
+      const selectStmt = mockDb.prepare(USER_QUERIES.SELECT_BY_ID).bind(userData.id)
       const result = await selectStmt.first()
 
       expect(result).toEqual(userData)

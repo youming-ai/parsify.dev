@@ -1,6 +1,11 @@
-import { Job, JobPriority } from '../models/job'
-import { JobService } from '../services/job_service'
-import { JobQueueSystem, QueueConfig, WasmToolProcessor, QueueProcessor } from './job-queue'
+import type { Job, JobPriority } from '../models/job'
+import type { JobService } from '../services/job_service'
+import {
+  JobQueueSystem,
+  type QueueConfig,
+  type QueueProcessor,
+  WasmToolProcessor,
+} from './job-queue'
 
 /**
  * Queue Manager - orchestrates multiple queue systems and provides high-level job management
@@ -12,11 +17,7 @@ export class QueueManager {
   private db: D1Database
   private env: Record<string, any>
 
-  constructor(
-    jobService: JobService,
-    db: D1Database,
-    env: Record<string, any>
-  ) {
+  constructor(jobService: JobService, db: D1Database, env: Record<string, any>) {
     this.jobService = jobService
     this.db = db
     this.env = env
@@ -43,7 +44,7 @@ export class QueueManager {
     }
 
     // High priority queue for urgent jobs
-    const highPriorityQueueConfig: Partial<QueueConfig> = {
+    const _highPriorityQueueConfig: Partial<QueueConfig> = {
       ...defaultQueueConfig,
       queueName: 'job-processing-urgent',
       deadLetterQueueName: 'job-processing-urgent-dlq',
@@ -52,7 +53,7 @@ export class QueueManager {
     }
 
     // Batch processing queue for bulk operations
-    const batchQueueConfig: Partial<QueueConfig> = {
+    const _batchQueueConfig: Partial<QueueConfig> = {
       ...defaultQueueConfig,
       queueName: 'job-processing-batch',
       deadLetterQueueName: 'job-processing-batch-dlq',
@@ -76,7 +77,7 @@ export class QueueManager {
       const queueSystem = new JobQueueSystem({
         jobService: this.jobService,
         db: this.db,
-        queue: queue || { messages: [] } as MessageBatch,
+        queue: queue || ({ messages: [] } as MessageBatch),
         env: this.env,
         config,
       })
@@ -95,30 +96,30 @@ export class QueueManager {
    */
   private registerDefaultProcessors(queueSystem: JobQueueSystem): void {
     // WASM tool processor for JSON processing
-    queueSystem.registerProcessor('json-formatter', new WasmToolProcessor(
-      this.env.WASM_MODULE_LOADER,
-      this.jobService
-    ))
+    queueSystem.registerProcessor(
+      'json-formatter',
+      new WasmToolProcessor(this.env.WASM_MODULE_LOADER, this.jobService)
+    )
 
-    queueSystem.registerProcessor('json-validator', new WasmToolProcessor(
-      this.env.WASM_MODULE_LOADER,
-      this.jobService
-    ))
+    queueSystem.registerProcessor(
+      'json-validator',
+      new WasmToolProcessor(this.env.WASM_MODULE_LOADER, this.jobService)
+    )
 
-    queueSystem.registerProcessor('json-converter', new WasmToolProcessor(
-      this.env.WASM_MODULE_LOADER,
-      this.jobService
-    ))
+    queueSystem.registerProcessor(
+      'json-converter',
+      new WasmToolProcessor(this.env.WASM_MODULE_LOADER, this.jobService)
+    )
 
-    queueSystem.registerProcessor('code-formatter', new WasmToolProcessor(
-      this.env.WASM_MODULE_LOADER,
-      this.jobService
-    ))
+    queueSystem.registerProcessor(
+      'code-formatter',
+      new WasmToolProcessor(this.env.WASM_MODULE_LOADER, this.jobService)
+    )
 
-    queueSystem.registerProcessor('code-executor', new WasmToolProcessor(
-      this.env.WASM_MODULE_LOADER,
-      this.jobService
-    ))
+    queueSystem.registerProcessor(
+      'code-executor',
+      new WasmToolProcessor(this.env.WASM_MODULE_LOADER, this.jobService)
+    )
 
     // Register custom processors
     for (const [toolId, processor] of this.processors) {
@@ -207,7 +208,7 @@ export class QueueManager {
    * Process messages from all queue systems
    */
   async processQueues(queues: MessageBatch[]): Promise<void> {
-    const promises = queues.map(queue => {
+    const promises = queues.map(_queue => {
       // Determine which queue system this belongs to based on queue name
       // This would need to be adjusted based on actual Cloudflare Queue configuration
       const queueSystem = this.getQueueSystem()
@@ -317,13 +318,11 @@ export class QueueManager {
       totalFailed += metrics.failedJobs
     }
 
-    const successRate = (totalCompleted + totalFailed) > 0
-      ? (totalCompleted / (totalCompleted + totalFailed)) * 100
-      : 0
+    const successRate =
+      totalCompleted + totalFailed > 0 ? (totalCompleted / (totalCompleted + totalFailed)) * 100 : 0
 
-    const averageProcessingTime = this.queueSystems.size > 0
-      ? totalProcessingTime / this.queueSystems.size
-      : 0
+    const averageProcessingTime =
+      this.queueSystems.size > 0 ? totalProcessingTime / this.queueSystems.size : 0
 
     return {
       totalQueues: this.queueSystems.size,
@@ -341,12 +340,15 @@ export class QueueManager {
   async healthCheck(): Promise<{
     healthy: boolean
     issues: string[]
-    queueSystems: Record<string, {
-      healthy: boolean
-      lastProcessedAt: number | null
-      queueSize: number
-      deadLetterQueueSize: number
-    }>
+    queueSystems: Record<
+      string,
+      {
+        healthy: boolean
+        lastProcessedAt: number | null
+        queueSize: number
+        deadLetterQueueSize: number
+      }
+    >
   }> {
     const issues: string[] = []
     const queueSystems: Record<string, any> = {}
@@ -357,10 +359,10 @@ export class QueueManager {
       const queueSize = await queueSystem.getQueueSize()
       const deadLetterSize = await queueSystem.getDeadLetterQueueSize()
 
-      const isHealthy = queueSize < 1000 && // Queue not too backed up
-                       deadLetterSize < 100 && // DLQ not overflowing
-                       (metrics.lastProcessedAt === null ||
-                        Date.now() - metrics.lastProcessedAt < 300000) // Processed recently
+      const isHealthy =
+        queueSize < 1000 && // Queue not too backed up
+        deadLetterSize < 100 && // DLQ not overflowing
+        (metrics.lastProcessedAt === null || Date.now() - metrics.lastProcessedAt < 300000) // Processed recently
 
       if (!isHealthy) {
         allHealthy = false
@@ -373,9 +375,10 @@ export class QueueManager {
           issues.push(`Queue ${queueName} has too many dead letter jobs: ${deadLetterSize}`)
         }
 
-        if (metrics.lastProcessedAt &&
-            Date.now() - metrics.lastProcessedAt > 300000) {
-          issues.push(`Queue ${queueName} hasn't processed jobs recently: last processed ${new Date(metrics.lastProcessedAt).toISOString()}`)
+        if (metrics.lastProcessedAt && Date.now() - metrics.lastProcessedAt > 300000) {
+          issues.push(
+            `Queue ${queueName} hasn't processed jobs recently: last processed ${new Date(metrics.lastProcessedAt).toISOString()}`
+          )
         }
       }
 

@@ -7,9 +7,14 @@
  * to provide a complete file storage solution.
  */
 
-import { R2Config, R2FileMetadata, R2UploadOptions, R2HealthMonitor } from '../../config/cloudflare/r2-config'
+import {
+  type R2Config,
+  type R2FileMetadata,
+  R2HealthMonitor,
+  type R2UploadOptions,
+} from '../../config/cloudflare/r2-config'
+import type { DatabaseClient } from '../../database'
 import { FileUpload } from '../../models/file_upload'
-import { DatabaseClient } from '../../database'
 
 export interface R2StorageOptions {
   bucket: R2Bucket
@@ -283,7 +288,9 @@ export class R2StorageService {
         contentType,
       })
     } catch (error) {
-      throw new Error(`Failed to upload file from URL: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to upload file from URL: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -350,18 +357,14 @@ export class R2StorageService {
       }
 
       // Transform stream with progress tracking
-      const stream = this.createProgressStream(
-        r2Object.body!,
-        r2Object.size,
-        (loaded, total) => {
-          operation.progress = (loaded / total) * 100
-          options.onProgress?.({
-            loaded,
-            total,
-            percentage: (loaded / total) * 100,
-          })
-        }
-      )
+      const stream = this.createProgressStream(r2Object.body!, r2Object.size, (loaded, total) => {
+        operation.progress = (loaded / total) * 100
+        options.onProgress?.({
+          loaded,
+          total,
+          percentage: (loaded / total) * 100,
+        })
+      })
 
       operation.status = 'completed'
       operation.progress = 100
@@ -388,10 +391,7 @@ export class R2StorageService {
   /**
    * Generate CDN URL with optional transformations
    */
-  generateCdnUrl(
-    fileId: string,
-    options: CdnUrlOptions = {}
-  ): string | null {
+  generateCdnUrl(fileId: string, options: CdnUrlOptions = {}): string | null {
     // This would integrate with your CDN provider
     // For now, return the R2 URL with query parameters
     const baseUrl = this.config.cdnUrl || this.config.publicUrl
@@ -551,7 +551,7 @@ export class R2StorageService {
         } else {
           failed.push(fileId)
         }
-      } catch (error) {
+      } catch (_error) {
         failed.push(fileId)
       }
     }
@@ -722,7 +722,9 @@ export class R2StorageService {
   }
 
   // Private helper methods
-  private async normalizeFileInput(file: File | ArrayBuffer | ReadableStream | Uint8Array): Promise<ArrayBuffer | ReadableStream> {
+  private async normalizeFileInput(
+    file: File | ArrayBuffer | ReadableStream | Uint8Array
+  ): Promise<ArrayBuffer | ReadableStream> {
     if (file instanceof File) {
       return file.arrayBuffer()
     }
@@ -791,16 +793,16 @@ export class R2StorageService {
   private getMimeType(filename: string): string {
     const extension = filename.split('.').pop()?.toLowerCase()
     const mimeTypes: Record<string, string> = {
-      'json': 'application/json',
-      'txt': 'text/plain',
-      'csv': 'text/csv',
-      'pdf': 'application/pdf',
-      'jpg': 'image/jpeg',
-      'jpeg': 'image/jpeg',
-      'png': 'image/png',
-      'gif': 'image/gif',
-      'webp': 'image/webp',
-      'zip': 'application/zip',
+      json: 'application/json',
+      txt: 'text/plain',
+      csv: 'text/csv',
+      pdf: 'application/pdf',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      gif: 'image/gif',
+      webp: 'image/webp',
+      zip: 'application/zip',
     }
     return mimeTypes[extension || ''] || 'application/octet-stream'
   }
@@ -818,18 +820,19 @@ export class R2StorageService {
   private getDefaultCacheControl(filename: string): string {
     const category = this.getFileCategory(filename)
     const cacheControl: Record<string, string> = {
-      'image': 'public, max-age=31536000, immutable',
-      'document': 'public, max-age=86400',
-      'text': 'public, max-age=3600',
-      'other': 'public, max-age=3600',
+      image: 'public, max-age=31536000, immutable',
+      document: 'public, max-age=86400',
+      text: 'public, max-age=3600',
+      other: 'public, max-age=3600',
     }
     return cacheControl[category] || 'public, max-age=3600'
   }
 
   private calculateExpirationDate(filename: string): Date {
-    const category = this.getFileCategory(filename)
-    const retentionDays = this.retentionPolicy.perTypeRetention[this.getMimeType(filename)] ||
-                          this.retentionPolicy.defaultRetentionDays
+    const _category = this.getFileCategory(filename)
+    const retentionDays =
+      this.retentionPolicy.perTypeRetention[this.getMimeType(filename)] ||
+      this.retentionPolicy.defaultRetentionDays
 
     const expiration = new Date()
     expiration.setDate(expiration.getDate() + retentionDays)
@@ -880,10 +883,9 @@ export class R2StorageService {
 
   private async getFileUploadById(fileId: string): Promise<FileUpload | null> {
     try {
-      const result = await this.database.queryFirst(
-        'SELECT * FROM file_uploads WHERE id = ?',
-        [fileId]
-      )
+      const result = await this.database.queryFirst('SELECT * FROM file_uploads WHERE id = ?', [
+        fileId,
+      ])
 
       if (!result) return null
       return FileUpload.fromRow(result)
@@ -924,10 +926,10 @@ export class R2StorageService {
 
   private async updateFileAccessTime(fileId: string): Promise<void> {
     try {
-      await this.database.execute(
-        'UPDATE file_uploads SET last_accessed = ? WHERE id = ?',
-        [Math.floor(Date.now() / 1000), fileId]
-      )
+      await this.database.execute('UPDATE file_uploads SET last_accessed = ? WHERE id = ?', [
+        Math.floor(Date.now() / 1000),
+        fileId,
+      ])
     } catch (error) {
       console.error('Failed to update file access time:', error)
     }
@@ -953,8 +955,8 @@ export class R2StorageService {
     options: R2UploadOptions,
     operation: FileOperation,
     onProgress?: (progress: UploadProgress) => void,
-    chunkSize?: number,
-    enableResumable?: boolean
+    _chunkSize?: number,
+    _enableResumable?: boolean
   ): Promise<R2FileMetadata> {
     if (data instanceof ArrayBuffer) {
       // Simple upload for small files
@@ -986,13 +988,7 @@ export class R2StorageService {
       return metadata
     } else {
       // Streaming upload for large files
-      return this.performStreamingUpload(
-        key,
-        data,
-        options,
-        operation,
-        onProgress
-      )
+      return this.performStreamingUpload(key, data, options, operation, onProgress)
     }
   }
 
@@ -1047,7 +1043,7 @@ export class R2StorageService {
     const reader = stream.getReader()
     const chunks: Uint8Array[] = []
     let loaded = 0
-    let total = 0
+    const total = 0
 
     try {
       while (true) {
@@ -1078,11 +1074,7 @@ export class R2StorageService {
         offset += chunk.length
       }
 
-      const result = await this.performUploadWithRetry(
-        key,
-        combined.buffer,
-        options
-      )
+      const result = await this.performUploadWithRetry(key, combined.buffer, options)
 
       return {
         key,
@@ -1136,7 +1128,8 @@ export class R2StorageService {
   }
 
   private getFileUrl(key: string): string {
-    const baseUrl = this.config.publicUrl || `https://storage.googleapis.com/${this.config.bucketName}`
+    const baseUrl =
+      this.config.publicUrl || `https://storage.googleapis.com/${this.config.bucketName}`
     return `${baseUrl}/${key}`
   }
 

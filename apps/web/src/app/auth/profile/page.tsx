@@ -1,23 +1,17 @@
 'use client'
 
+import { Key, Settings, Shield, Trash2, User } from 'lucide-react'
 import { useState } from 'react'
-import { UserProfile } from '@/components/auth/user-profile'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Alert } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/components/auth/auth-context'
 import { ProtectedRoute } from '@/components/auth/auth-guard'
+import { UserProfile } from '@/components/auth/user-profile'
 import { MainLayout } from '@/components/layout/main-layout'
-import { User, Settings, Shield, Key, Trash2 } from 'lucide-react'
+import { Alert } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export default function ProfilePage() {
   const { user } = useAuth()
@@ -48,7 +42,7 @@ export default function ProfilePage() {
 
       setMessage({ type: 'success', text: 'Profile updated successfully!' })
       setIsEditing(false)
-    } catch (error) {
+    } catch (_error) {
       setMessage({
         type: 'error',
         text: 'Failed to update profile. Please try again.',
@@ -75,7 +69,7 @@ export default function ProfilePage() {
         type: 'success',
         text: 'Password reset link sent to your email!',
       })
-    } catch (error) {
+    } catch (_error) {
       setMessage({
         type: 'error',
         text: 'Failed to send password reset link. Please try again.',
@@ -86,11 +80,7 @@ export default function ProfilePage() {
   }
 
   const handleDeleteAccount = async () => {
-    if (
-      !confirm(
-        'Are you sure you want to delete your account? This action cannot be undone.'
-      )
-    ) {
+    if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       return
     }
 
@@ -108,7 +98,7 @@ export default function ProfilePage() {
 
       // Redirect to login after account deletion
       window.location.href = '/auth/login'
-    } catch (error) {
+    } catch (_error) {
       setMessage({
         type: 'error',
         text: 'Failed to delete account. Please try again.',
@@ -120,26 +110,19 @@ export default function ProfilePage() {
   return (
     <ProtectedRoute>
       <MainLayout>
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              My Profile
-            </h1>
-            <p className="text-gray-600">
-              Manage your account settings and preferences
-            </p>
+            <h1 className="mb-2 font-bold text-3xl text-gray-900">My Profile</h1>
+            <p className="text-gray-600">Manage your account settings and preferences</p>
           </div>
 
           {message && (
-            <Alert
-              variant={message.type === 'error' ? 'destructive' : 'default'}
-              className="mb-6"
-            >
+            <Alert variant={message.type === 'error' ? 'destructive' : 'default'} className="mb-6">
               {message.text}
             </Alert>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Profile Information */}
             <div className="lg:col-span-2">
               <Card>
@@ -148,51 +131,10 @@ export default function ProfilePage() {
                     <User className="h-5 w-5" />
                     <CardTitle>Profile Information</CardTitle>
                   </div>
-                  <CardDescription>
-                    Update your personal information
-                  </CardDescription>
+                  <CardDescription>Update your personal information</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {!isEditing ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            Name
-                          </p>
-                          <p className="text-sm text-gray-600">{user?.name}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            Email
-                          </p>
-                          <p className="text-sm text-gray-600">{user?.email}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            Account Provider
-                          </p>
-                          <Badge className="mt-1">
-                            {user?.provider
-                              ? user.provider.charAt(0).toUpperCase() +
-                                user.provider.slice(1)
-                              : 'Unknown'}
-                          </Badge>
-                        </div>
-                      </div>
-                      <Button
-                        onClick={() => setIsEditing(true)}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        Edit Profile
-                      </Button>
-                    </div>
-                  ) : (
+                  {isEditing ? (
                     <form onSubmit={handleUpdateProfile} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="name">Name</Label>
@@ -215,11 +157,7 @@ export default function ProfilePage() {
                         />
                       </div>
                       <div className="flex gap-2">
-                        <Button
-                          type="submit"
-                          disabled={isLoading}
-                          className="flex-1"
-                        >
+                        <Button type="submit" disabled={isLoading} className="flex-1">
                           {isLoading ? 'Saving...' : 'Save Changes'}
                         </Button>
                         <Button
@@ -232,6 +170,38 @@ export default function ProfilePage() {
                         </Button>
                       </div>
                     </form>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">Name</p>
+                          <p className="text-gray-600 text-sm">{user?.name}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">Email</p>
+                          <p className="text-gray-600 text-sm">{user?.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">Account Provider</p>
+                          <Badge className="mt-1">
+                            {user?.provider
+                              ? user.provider.charAt(0).toUpperCase() + user.provider.slice(1)
+                              : 'Unknown'}
+                          </Badge>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => setIsEditing(true)}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Edit Profile
+                      </Button>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -243,19 +213,15 @@ export default function ProfilePage() {
                     <Shield className="h-5 w-5" />
                     <CardTitle>Security Settings</CardTitle>
                   </div>
-                  <CardDescription>
-                    Manage your account security
-                  </CardDescription>
+                  <CardDescription>Manage your account security</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center justify-between rounded-lg border p-4">
                     <div className="flex items-center gap-3">
                       <Key className="h-5 w-5 text-gray-400" />
                       <div>
                         <p className="font-medium">Password</p>
-                        <p className="text-sm text-gray-600">
-                          Change your account password
-                        </p>
+                        <p className="text-gray-600 text-sm">Change your account password</p>
                       </div>
                     </div>
                     <Button
@@ -286,11 +252,11 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Button variant="outline" className="w-full justify-start">
-                    <Settings className="h-4 w-4 mr-2" />
+                    <Settings className="mr-2 h-4 w-4" />
                     Account Settings
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
-                    <Shield className="h-4 w-4 mr-2" />
+                    <Shield className="mr-2 h-4 w-4" />
                     Privacy Settings
                   </Button>
                 </CardContent>
@@ -305,7 +271,7 @@ export default function ProfilePage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-600 mb-4">
+                  <p className="mb-4 text-gray-600 text-sm">
                     Permanently delete your account and all associated data
                   </p>
                   <Button

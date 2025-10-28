@@ -3,12 +3,8 @@
  * Simulates realistic user behavior patterns
  */
 
-import {
-  LoadTestUser,
-  UserBehavior,
-  USER_BEHAVIOR_PATTERNS,
-} from '../config/load-test-config'
 import { TestDataGenerator } from '../../performance/utils/endpoint-configs'
+import { type LoadTestUser, USER_BEHAVIOR_PATTERNS } from '../config/load-test-config'
 
 export class UserSimulator {
   private users: Map<string, LoadTestUser> = new Map()
@@ -42,16 +38,11 @@ export class UserSimulator {
           toolsUsage: Object.fromEntries(
             Object.entries(behavior.toolsUsage).map(([tool, frequency]) => [
               tool,
-              Math.max(
-                0.1,
-                Math.min(1.0, frequency + (Math.random() - 0.5) * 0.2)
-              ),
+              Math.max(0.1, Math.min(1.0, frequency + (Math.random() - 0.5) * 0.2)),
             ])
           ),
-          sessionDuration:
-            behavior.sessionDuration * (0.8 + Math.random() * 0.4), // ±20% variation
-          requestInterval:
-            behavior.requestInterval * (0.7 + Math.random() * 0.6), // ±30% variation
+          sessionDuration: behavior.sessionDuration * (0.8 + Math.random() * 0.4), // ±20% variation
+          requestInterval: behavior.requestInterval * (0.7 + Math.random() * 0.6), // ±30% variation
         },
       }
 
@@ -75,9 +66,7 @@ export class UserSimulator {
    * Get all active user sessions
    */
   getActiveSessions(): UserSession[] {
-    return Array.from(this.userSessions.values()).filter(session =>
-      session.isActive()
-    )
+    return Array.from(this.userSessions.values()).filter(session => session.isActive())
   }
 
   /**
@@ -98,8 +87,6 @@ export class UserSession {
   private user: LoadTestUser
   private isActiveSession = false
   private sessionStartTime = 0
-  private lastActionTime = 0
-  private actionQueue: Promise<any>[] = []
   private sessionMetrics: UserSessionMetrics = {
     actions: [],
     errors: [],
@@ -121,9 +108,7 @@ export class UserSession {
     this.sessionStartTime = Date.now()
     this.lastActionTime = this.sessionStartTime
 
-    console.log(
-      `Starting user session for ${this.user.id} (${this.user.profile.name})`
-    )
+    console.log(`Starting user session for ${this.user.id} (${this.user.profile.name})`)
 
     // Simulate user login
     await this.simulateAuthentication(baseUrl)
@@ -245,7 +230,7 @@ export class UserSession {
         { type: 'code_execute', weight: behavior.toolsUsage.codeExecute },
       ]
 
-      const totalWeight = tools.reduce((sum, tool) => sum + tool.weight, 0)
+      const _totalWeight = tools.reduce((sum, tool) => sum + tool.weight, 0)
       let currentWeight = 0
 
       for (const tool of tools) {
@@ -293,17 +278,14 @@ export class UserSession {
   /**
    * Execute a specific user action
    */
-  private async executeAction(
-    action: UserAction,
-    baseUrl: string
-  ): Promise<void> {
+  private async executeAction(action: UserAction, baseUrl: string): Promise<void> {
     const url = `${baseUrl}${action.endpoint}`
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     }
 
     if (this.user.authToken) {
-      headers['Authorization'] = `Bearer ${this.user.authToken}`
+      headers.Authorization = `Bearer ${this.user.authToken}`
     }
 
     let body: any
@@ -365,9 +347,7 @@ export class UserSession {
 
     if (!response.ok && response.status !== 401) {
       // 401 might be expected for some endpoints
-      throw new Error(
-        `Action failed: ${response.status} ${response.statusText}`
-      )
+      throw new Error(`Action failed: ${response.status} ${response.statusText}`)
     }
 
     // Process response if needed
@@ -412,11 +392,7 @@ export class UserSession {
   /**
    * Record a user action
    */
-  private recordAction(
-    type: string,
-    responseTime: number,
-    success: boolean
-  ): void {
+  private recordAction(type: string, responseTime: number, success: boolean): void {
     this.sessionMetrics.actions.push({
       type,
       responseTime,
@@ -484,7 +460,7 @@ export class BehaviorAnalyzer {
       if (!actionResponseTimes.has(action.type)) {
         actionResponseTimes.set(action.type, [])
       }
-      actionResponseTimes.get(action.type)!.push(action.responseTime)
+      actionResponseTimes.get(action.type)?.push(action.responseTime)
     }
 
     // Calculate statistics
@@ -497,13 +473,9 @@ export class BehaviorAnalyzer {
         count,
         frequency: count / allActions.length,
         averageResponseTime:
-          responseTimes.reduce((sum, time) => sum + time, 0) /
-          responseTimes.length,
-        p95ResponseTime:
-          responseTimes[Math.floor(responseTimes.length * 0.95)] || 0,
-        successRate:
-          allActions.filter(a => a.type === actionType && a.success).length /
-          count,
+          responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length,
+        p95ResponseTime: responseTimes[Math.floor(responseTimes.length * 0.95)] || 0,
+        successRate: allActions.filter(a => a.type === actionType && a.success).length / count,
       }
     }
 
@@ -520,21 +492,15 @@ export class BehaviorAnalyzer {
       errorStats: Object.fromEntries(errorCounts),
       sessionStats: {
         averageDuration:
-          sessions.reduce(
-            (sum, session) => sum + session.getMetrics().sessionDuration,
-            0
-          ) / sessions.length,
+          sessions.reduce((sum, session) => sum + session.getMetrics().sessionDuration, 0) /
+          sessions.length,
         averageRequests:
-          sessions.reduce(
-            (sum, session) => sum + session.getMetrics().totalRequests,
-            0
-          ) / sessions.length,
+          sessions.reduce((sum, session) => sum + session.getMetrics().totalRequests, 0) /
+          sessions.length,
         successRate:
           sessions.reduce(
             (sum, session) =>
-              sum +
-              session.getMetrics().successfulRequests /
-                session.getMetrics().totalRequests,
+              sum + session.getMetrics().successfulRequests / session.getMetrics().totalRequests,
             0
           ) / sessions.length,
       },

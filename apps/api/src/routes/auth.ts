@@ -1,10 +1,10 @@
 import { Hono } from 'hono'
 import {
   authMiddleware,
-  optionalAuth,
   authRateLimit,
   getCurrentUser,
   isAuthenticated,
+  optionalAuth,
 } from '../middleware/auth'
 
 const app = new Hono()

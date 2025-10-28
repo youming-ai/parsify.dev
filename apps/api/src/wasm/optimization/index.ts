@@ -9,114 +9,111 @@
  * - Memory performance testing
  */
 
-// Core monitoring and profiling
-export {
-  WasmMemoryMonitor,
-  MemoryMonitor,
-  type MemoryStats,
-  type MemoryProfile,
-  type MemoryWarning,
-  type MemoryWarningLevel,
-  type MemoryMonitorConfig,
-  wasmMemoryMonitor,
-  createMemoryMonitor,
-  startMonitoring,
-  stopMonitoring,
-  getMemoryStats,
-  getMemoryProfile
-} from './memory-monitor'
-
 // Memory leak detection
 export {
-  MemoryLeakDetector,
-  type MemoryLeakResult,
-  type LeakPattern,
-  type MemoryLeakDetectorConfig,
-  type PreventionAction,
-  type MemorySnapshot,
+  detectMemoryLeaks,
+  getLeakHistory,
   type HeapAnalysis,
-  type ResourceTracking,
+  type LeakPattern,
+  MemoryLeakDetector,
+  type MemoryLeakDetectorConfig,
+  type MemoryLeakResult,
+  type MemorySnapshot,
   memoryLeakDetector,
+  type PreventionAction,
+  type ResourceTracking,
   startLeakMonitoring,
   stopLeakMonitoring,
-  detectMemoryLeaks,
-  getLeakHistory
 } from './memory-leak-detector'
-
-// Optimized data structures
-export {
-  CompactString,
-  CompactArray,
-  CompactObject,
-  CompactMap,
-  CompactSet,
-  MemoryPool,
-  BufferPool,
-  MemoryEfficientCache,
-  CompactJsonParser,
-  StringBuilder,
-  MemoryTracker,
-  createCompactArray,
-  createCompactObject,
-  createCompactMap,
-  createMemoryPool,
-  createBufferPool,
-  createCache,
-  createStringBuilder,
-  createMemoryTracker
-} from './memory-optimized-structures'
-
 // Memory management and garbage collection
 export {
-  WasmMemoryManager,
-  ManagedModule,
-  GCScheduler,
-  MemoryBudgetTracker,
-  type MemoryManagerConfig,
-  type MemoryLimitConfig,
-  type GarbageCollectionConfig,
-  type MemoryUsage,
   type AggregateMemoryStats,
-  type GCResult,
-  type MemoryPressureLevel,
-  type PressureHandler,
-  type MemoryPressureContext,
-  type MemoryQuota,
-  type GCStats,
-  wasmMemoryManager,
-  createMemoryManager,
-  registerModule,
-  unregisterModule,
   canAllocate,
+  createMemoryManager,
+  type GarbageCollectionConfig,
+  type GCResult,
+  GCScheduler,
+  type GCStats,
+  getAggregateStats,
+  getMemoryUsage,
+  ManagedModule,
+  MemoryBudgetTracker,
+  type MemoryLimitConfig,
+  type MemoryManagerConfig,
+  type MemoryPressureContext,
+  type MemoryPressureLevel,
+  type MemoryQuota,
+  type MemoryUsage,
+  type PressureHandler,
   recordAllocation,
   recordDeallocation,
+  registerModule,
   triggerGC,
-  getMemoryUsage,
-  getAggregateStats
+  unregisterModule,
+  WasmMemoryManager,
+  wasmMemoryManager,
 } from './memory-manager'
+// Core monitoring and profiling
+export {
+  createMemoryMonitor,
+  getMemoryProfile,
+  getMemoryStats,
+  MemoryMonitor,
+  type MemoryMonitorConfig,
+  type MemoryProfile,
+  type MemoryStats,
+  type MemoryWarning,
+  type MemoryWarningLevel,
+  startMonitoring,
+  stopMonitoring,
+  WasmMemoryMonitor,
+  wasmMemoryMonitor,
+} from './memory-monitor'
+// Optimized data structures
+export {
+  BufferPool,
+  CompactArray,
+  CompactJsonParser,
+  CompactMap,
+  CompactObject,
+  CompactSet,
+  CompactString,
+  createBufferPool,
+  createCache,
+  createCompactArray,
+  createCompactMap,
+  createCompactObject,
+  createMemoryPool,
+  createMemoryTracker,
+  createStringBuilder,
+  MemoryEfficientCache,
+  MemoryPool,
+  MemoryTracker,
+  StringBuilder,
+} from './memory-optimized-structures'
 
 // Memory performance testing
 export {
-  MemoryPerformanceTester,
+  addTestToSuite,
   BuiltInMemoryTests,
-  type MemoryPerformanceTestConfig,
-  type TestScenario,
-  type MemoryPerformanceMetrics,
-  type MemoryPerformanceTestSuite,
-  type TestSuiteSummary,
-  type MemoryPerformanceTest,
-  type TestExecutionContext,
-  memoryPerformanceTester,
   createMemoryPerformanceTester,
   createTestSuite,
-  addTestToSuite,
+  getBuiltInTests,
+  type MemoryPerformanceMetrics,
+  type MemoryPerformanceTest,
+  type MemoryPerformanceTestConfig,
+  MemoryPerformanceTester,
+  type MemoryPerformanceTestSuite,
+  memoryPerformanceTester,
   runMemoryPerformanceTest,
   runMemoryPerformanceTestSuite,
-  getBuiltInTests
+  type TestExecutionContext,
+  type TestScenario,
+  type TestSuiteSummary,
 } from './memory-performance-tester'
 
 // Re-export for convenience
-import { IWasmModule } from '../modules/interfaces/wasm-module.interface'
+import type { IWasmModule } from '../modules/interfaces/wasm-module.interface'
 
 /**
  * Initialize memory optimization for a WASM module
@@ -136,7 +133,7 @@ export function initializeMemoryOptimization(
     enableLeakDetection = true,
     enableMemoryManagement = true,
     memoryLimit = 64 * 1024 * 1024, // 64MB default
-    customConfig = {}
+    customConfig = {},
   } = options || {}
 
   // Initialize memory monitoring
@@ -158,7 +155,7 @@ export function initializeMemoryOptimization(
       hardLimit: memoryLimit,
       softLimit: Math.floor(memoryLimit * 0.75),
       criticalLimit: Math.floor(memoryLimit * 0.9),
-      ...customConfig
+      ...customConfig,
     })
   }
 }
@@ -205,14 +202,14 @@ export function getMemoryReport(moduleId: string): {
     const recommendations = generateRecommendations({
       monitoring,
       leakDetection,
-      management
+      management,
     })
 
     return {
       monitoring,
       leakDetection,
       management,
-      recommendations
+      recommendations,
     }
   } catch (error) {
     console.error('Error generating memory report:', error)
@@ -260,7 +257,9 @@ function generateRecommendations(data: {
   if (data.management) {
     const usageRatio = data.management.used / data.management.limit
     if (usageRatio > 0.9) {
-      recommendations.push('Memory usage is near limit. Consider increasing limits or optimizing usage.')
+      recommendations.push(
+        'Memory usage is near limit. Consider increasing limits or optimizing usage.'
+      )
     }
 
     if (data.management.gcStats && data.management.gcStats.averageGCTime > 50) {
@@ -285,14 +284,14 @@ export const DEFAULT_CONFIG = {
       low: 60,
       medium: 75,
       high: 85,
-      critical: 95
+      critical: 95,
     },
     maxHistorySize: 1000,
     leakDetection: true,
     autoGC: true,
     gcThreshold: 80,
     profiling: true,
-    maxProfilingDuration: 60000
+    maxProfilingDuration: 60000,
   },
   leakDetection: {
     minSamples: 10,
@@ -304,7 +303,7 @@ export const DEFAULT_CONFIG = {
     monitoringIntervalMs: 5000,
     autoPrevention: true,
     preventionActions: ['garbage_collection', 'memory_compaction', 'cache_clearing'],
-    maxSnapshots: 100
+    maxSnapshots: 100,
   },
   memoryManagement: {
     limits: {
@@ -314,7 +313,7 @@ export const DEFAULT_CONFIG = {
       growthRateLimit: 1024 * 1024,
       maxAllocationSize: 10 * 1024 * 1024,
       quotaResetInterval: 60000,
-      enableQuotas: true
+      enableQuotas: true,
     },
     gc: {
       autoGC: true,
@@ -325,13 +324,13 @@ export const DEFAULT_CONFIG = {
       incrementalGC: true,
       strategy: 'balanced',
       enableCompaction: true,
-      compactionThreshold: 70
+      compactionThreshold: 70,
     },
     monitoringInterval: 1000,
     enablePressureHandling: true,
     enableBudgetTracking: true,
     memoryBudget: 100 * 1024 * 1024,
-    budgetWindow: 60000
+    budgetWindow: 60000,
   },
   performanceTesting: {
     testDuration: 10000,
@@ -351,8 +350,8 @@ export const DEFAULT_CONFIG = {
     scenarios: [],
     timeout: 30000,
     enableDetailedMetrics: true,
-    metricsInterval: 100
-  }
+    metricsInterval: 100,
+  },
 }
 
 /**
@@ -384,7 +383,7 @@ export const MemoryOptimizationUtils = {
     const utilizationRatio = used / allocated
     const leakRatio = leaked / allocated
 
-    return Math.max(0, Math.min(100, (utilizationRatio * 100) - (leakRatio * 50)))
+    return Math.max(0, Math.min(100, utilizationRatio * 100 - leakRatio * 50))
   },
 
   /**
@@ -404,5 +403,5 @@ export const MemoryOptimizationUtils = {
   estimateOverhead: (objectCount: number, averageSize: number): number => {
     // Rough estimation: 50% overhead for object metadata, alignment, etc.
     return objectCount * averageSize * 0.5
-  }
+  },
 }

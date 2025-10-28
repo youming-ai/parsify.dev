@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react'
+import type React from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { JsonNodeModel } from '../../lib/models/JsonNode'
 import type { JsonNode } from '../../lib/types'
 
@@ -26,7 +27,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
   className = '',
   showPath = true,
   maxResults = 50,
-  debounceMs = 300
+  debounceMs = 300,
 }) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
@@ -39,35 +40,38 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
   const debounceTimeoutRef = useRef<NodeJS.Timeout>()
 
   // Debounced search function
-  const performSearch = useCallback((term: string) => {
-    if (!term.trim()) {
-      setResults([])
-      setShowResults(false)
-      setSelectedIndex(-1)
-      return
-    }
+  const performSearch = useCallback(
+    (term: string) => {
+      if (!term.trim()) {
+        setResults([])
+        setShowResults(false)
+        setSelectedIndex(-1)
+        return
+      }
 
-    setIsSearching(true)
+      setIsSearching(true)
 
-    try {
-      const searchResults = JsonNodeModel.search(data, term.toLowerCase())
+      try {
+        const searchResults = JsonNodeModel.search(data, term.toLowerCase())
 
-      // Highlight matches in values
-      const highlightedResults = searchResults.slice(0, maxResults).map(result => ({
-        ...result,
-        highlightedValue: highlightMatch(result.node, term.toLowerCase())
-      }))
+        // Highlight matches in values
+        const highlightedResults = searchResults.slice(0, maxResults).map(result => ({
+          ...result,
+          highlightedValue: highlightMatch(result.node, term.toLowerCase()),
+        }))
 
-      setResults(highlightedResults)
-      setShowResults(true)
-      setSelectedIndex(-1)
-    } catch (error) {
-      console.error('Search error:', error)
-      setResults([])
-    } finally {
-      setIsSearching(false)
-    }
-  }, [data, maxResults])
+        setResults(highlightedResults)
+        setShowResults(true)
+        setSelectedIndex(-1)
+      } catch (error) {
+        console.error('Search error:', error)
+        setResults([])
+      } finally {
+        setIsSearching(false)
+      }
+    },
+    [data, maxResults, highlightMatch]
+  )
 
   // Highlight matching text
   const highlightMatch = (node: JsonNode, searchTerm: string): string => {
@@ -84,57 +88,64 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
   }
 
   // Handle search input change with debouncing
-  const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const term = event.target.value
-    setSearchTerm(term)
+  const handleSearchChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const term = event.target.value
+      setSearchTerm(term)
 
-    // Clear existing timeout
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current)
-    }
+      // Clear existing timeout
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current)
+      }
 
-    // Set new timeout
-    debounceTimeoutRef.current = setTimeout(() => {
-      performSearch(term)
-    }, debounceMs)
-  }, [performSearch, debounceMs])
+      // Set new timeout
+      debounceTimeoutRef.current = setTimeout(() => {
+        performSearch(term)
+      }, debounceMs)
+    },
+    [performSearch, debounceMs]
+  )
 
   // Handle keyboard navigation
-  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
-    if (!showResults || results.length === 0) return
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (!showResults || results.length === 0) return
 
-    switch (event.key) {
-      case 'ArrowDown':
-        event.preventDefault()
-        setSelectedIndex(prev =>
-          prev < results.length - 1 ? prev + 1 : prev
-        )
-        break
-      case 'ArrowUp':
-        event.preventDefault()
-        setSelectedIndex(prev => prev > 0 ? prev - 1 : -1)
-        break
-      case 'Enter':
-        event.preventDefault()
-        if (selectedIndex >= 0 && selectedIndex < results.length) {
-          handleResultSelect(results[selectedIndex])
-        }
-        break
-      case 'Escape':
-        setShowResults(false)
-        setSelectedIndex(-1)
-        searchInputRef.current?.blur()
-        break
-    }
-  }, [showResults, results, selectedIndex])
+      switch (event.key) {
+        case 'ArrowDown':
+          event.preventDefault()
+          setSelectedIndex(prev => (prev < results.length - 1 ? prev + 1 : prev))
+          break
+        case 'ArrowUp':
+          event.preventDefault()
+          setSelectedIndex(prev => (prev > 0 ? prev - 1 : -1))
+          break
+        case 'Enter':
+          event.preventDefault()
+          if (selectedIndex >= 0 && selectedIndex < results.length) {
+            handleResultSelect(results[selectedIndex])
+          }
+          break
+        case 'Escape':
+          setShowResults(false)
+          setSelectedIndex(-1)
+          searchInputRef.current?.blur()
+          break
+      }
+    },
+    [showResults, results, selectedIndex, handleResultSelect]
+  )
 
   // Handle result selection
-  const handleResultSelect = useCallback((result: SearchResult) => {
-    setSearchTerm(result.match)
-    setShowResults(false)
-    setSelectedIndex(-1)
-    onResultSelect?.(result.path, result.node)
-  }, [onResultSelect])
+  const handleResultSelect = useCallback(
+    (result: SearchResult) => {
+      setSearchTerm(result.match)
+      setShowResults(false)
+      setSelectedIndex(-1)
+      onResultSelect?.(result.path, result.node)
+    },
+    [onResultSelect]
+  )
 
   // Clear search
   const handleClearSearch = useCallback(() => {
@@ -162,7 +173,9 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
   // Scroll selected result into view
   useEffect(() => {
     if (selectedIndex >= 0 && resultsRef.current) {
-      const selectedElement = resultsRef.current.querySelector(`[data-result-index="${selectedIndex}"]`)
+      const selectedElement = resultsRef.current.querySelector(
+        `[data-result-index="${selectedIndex}"]`
+      )
       if (selectedElement) {
         selectedElement.scrollIntoView({ block: 'nearest' })
       }
@@ -207,7 +220,9 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
             aria-label="Search JSON content"
             aria-expanded={showResults}
             aria-autocomplete="list"
-            aria-activedescendant={selectedIndex >= 0 ? `search-result-${selectedIndex}` : undefined}
+            aria-activedescendant={
+              selectedIndex >= 0 ? `search-result-${selectedIndex}` : undefined
+            }
           />
 
           {searchTerm && (
@@ -247,21 +262,16 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                   key={`${result.path}-${index}`}
                   data-result-index={index}
                   id={`search-result-${index}`}
-                  role="option"
                   aria-selected={selectedIndex === index}
                   className={`search-result-item ${selectedIndex === index ? 'selected' : ''}`}
                   onClick={() => handleResultSelect(result)}
                 >
                   <div className="result-content">
-                    {showPath && (
-                      <div className="result-path">
-                        {formatPath(result.path)}
-                      </div>
-                    )}
+                    {showPath && <div className="result-path">{formatPath(result.path)}</div>}
                     <div
                       className="result-value"
                       dangerouslySetInnerHTML={{
-                        __html: result.highlightedValue || getValuePreview(result.node)
+                        __html: result.highlightedValue || getValuePreview(result.node),
                       }}
                     />
                   </div>
@@ -271,9 +281,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
 
             {results.length >= maxResults && (
               <div className="search-results-footer">
-                <span className="results-limit">
-                  Showing first {maxResults} results
-                </span>
+                <span className="results-limit">Showing first {maxResults} results</span>
               </div>
             )}
           </div>
@@ -281,15 +289,14 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
 
         {showResults && searchTerm && results.length === 0 && !isSearching && (
           <div className="search-no-results">
-            <div className="no-results-icon" aria-hidden="true">🔍</div>
+            <div className="no-results-icon" aria-hidden="true">
+              🔍
+            </div>
             <p>No results found for "{searchTerm}"</p>
-            <p className="no-results-hint">
-              Try different keywords or check your spelling
-            </p>
+            <p className="no-results-hint">Try different keywords or check your spelling</p>
           </div>
         )}
       </div>
-
     </div>
   )
 }

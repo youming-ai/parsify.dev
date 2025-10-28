@@ -7,11 +7,11 @@
  * data recovery, and disaster recovery procedures for the Parsify platform.
  */
 
-const { execSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
-const crypto = require('crypto')
-const readline = require('readline')
+const { execSync } = require('node:child_process')
+const fs = require('node:fs')
+const path = require('node:path')
+const crypto = require('node:crypto')
+const readline = require('node:readline')
 
 // Configuration
 const PROJECT_ROOT = path.resolve(__dirname, '..')
@@ -27,7 +27,7 @@ const colors = {
   warning: '\x1b[33m',
   info: '\x1b[34m',
   dim: '\x1b[2m',
-  reset: '\x1b[0m'
+  reset: '\x1b[0m',
 }
 
 function log(level, message) {
@@ -42,7 +42,7 @@ function exec(command, options = {}) {
     const result = execSync(command, {
       cwd,
       stdio: silent ? 'pipe' : 'inherit',
-      encoding: 'utf8'
+      encoding: 'utf8',
     })
     return result
   } catch (error) {
@@ -58,13 +58,13 @@ function exec(command, options = {}) {
 function createInterface() {
   return readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   })
 }
 
 function askQuestion(rl, question) {
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
+  return new Promise(resolve => {
+    rl.question(question, answer => {
       resolve(answer.trim())
     })
   })
@@ -91,7 +91,7 @@ function getDeploymentHistory() {
   try {
     const content = fs.readFileSync(deploymentsFile, 'utf8')
     return JSON.parse(content)
-  } catch (error) {
+  } catch (_error) {
     log('error', 'Failed to read deployment history')
     return []
   }
@@ -107,7 +107,7 @@ function saveDeploymentRecord(deployment) {
   history.unshift({
     ...deployment,
     timestamp: new Date().toISOString(),
-    id: crypto.randomUUID()
+    id: crypto.randomUUID(),
   })
 
   // Keep only last 50 deployments
@@ -138,7 +138,9 @@ function listDeployments() {
     const timestamp = new Date(deployment.timestamp).toLocaleString()
     const url = deployment.api?.url || deployment.web?.url || 'N/A'
 
-    console.log(`${i + 1}\t${deployment.environment}\t${deployment.status || 'unknown'}\t${timestamp}\t${url}`)
+    console.log(
+      `${i + 1}\t${deployment.environment}\t${deployment.status || 'unknown'}\t${timestamp}\t${url}`
+    )
   }
 
   return history
@@ -167,7 +169,7 @@ function createPreDeploymentBackup(env) {
   try {
     exec(`node ${dbBackupScript} backup ${env} ${backupId}-database`)
     log('success', 'Database backed up')
-  } catch (error) {
+  } catch (_error) {
     log('warning', 'Database backup failed')
   }
 
@@ -190,8 +192,8 @@ function createPreDeploymentBackup(env) {
     components: {
       build: fs.existsSync(path.join(backupDir, 'build')),
       database: fs.existsSync(path.join(BACKUPS_DIR, `${backupId}-database.sql`)),
-      env: fs.existsSync(path.join(backupDir, 'env'))
-    }
+      env: fs.existsSync(path.join(backupDir, 'env')),
+    },
   }
 
   fs.writeFileSync(path.join(backupDir, 'metadata.json'), JSON.stringify(metadata, null, 2))
@@ -203,7 +205,7 @@ function createPreDeploymentBackup(env) {
 function getCurrentGitCommit() {
   try {
     return exec('git rev-parse --short HEAD', { silent: true }).trim()
-  } catch (error) {
+  } catch (_error) {
     return 'unknown'
   }
 }
@@ -211,7 +213,7 @@ function getCurrentGitCommit() {
 function getCurrentGitBranch() {
   try {
     return exec('git rev-parse --abbrev-ref HEAD', { silent: true }).trim()
-  } catch (error) {
+  } catch (_error) {
     return 'unknown'
   }
 }
@@ -224,8 +226,8 @@ async function rollbackDeployment(env, targetDeployment = null) {
   try {
     // Get deployment history
     const history = getDeploymentHistory()
-    const successfulDeployments = history.filter(d =>
-      d.environment === env && d.status === 'success'
+    const successfulDeployments = history.filter(
+      d => d.environment === env && d.status === 'success'
     )
 
     if (successfulDeployments.length === 0) {
@@ -249,7 +251,7 @@ async function rollbackDeployment(env, targetDeployment = null) {
         'Select deployment to rollback (1-10) or press Enter for most recent: '
       )
 
-      const index = selection ? parseInt(selection) - 1 : 0
+      const index = selection ? parseInt(selection, 10) - 1 : 0
       if (index >= 0 && index < successfulDeployments.length) {
         deploymentToRollback = successfulDeployments[index]
       } else {
@@ -309,7 +311,7 @@ async function rollbackDeployment(env, targetDeployment = null) {
       from: deploymentToRollback,
       backupId,
       status: 'success',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
 
     saveDeploymentRecord(rollbackRecord)
@@ -318,7 +320,6 @@ async function rollbackDeployment(env, targetDeployment = null) {
     log('info', `Backup created before rollback: ${backupId}`)
 
     return true
-
   } catch (error) {
     log('error', `Rollback failed: ${error.message}`)
 
@@ -329,7 +330,7 @@ async function rollbackDeployment(env, targetDeployment = null) {
       from: targetDeployment,
       status: 'failed',
       error: error.message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
 
     saveDeploymentRecord(rollbackRecord)
@@ -394,7 +395,6 @@ function restoreFromBackup(backupId, env) {
 
     log('success', 'Backup restoration completed')
     return true
-
   } catch (error) {
     log('error', `Backup restoration failed: ${error.message}`)
     return false
@@ -409,7 +409,8 @@ function listBackups() {
     return []
   }
 
-  const backups = fs.readdirSync(BACKUPS_DIR)
+  const backups = fs
+    .readdirSync(BACKUPS_DIR)
     .filter(name => fs.statSync(path.join(BACKUPS_DIR, name)).isDirectory())
     .map(name => {
       const backupDir = path.join(BACKUPS_DIR, name)
@@ -419,7 +420,7 @@ function listBackups() {
       if (fs.existsSync(metadataPath)) {
         try {
           metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'))
-        } catch (error) {
+        } catch (_error) {
           // Ignore metadata read errors
         }
       }
@@ -427,7 +428,7 @@ function listBackups() {
       return {
         id: name,
         metadata,
-        size: getDirectorySize(backupDir)
+        size: getDirectorySize(backupDir),
       }
     })
     .sort((a, b) => {
@@ -445,7 +446,9 @@ function listBackups() {
     const timestamp = metadata.timestamp ? new Date(metadata.timestamp).toLocaleString() : 'Unknown'
     const size = `${(backup.size / 1024 / 1024).toFixed(2)} MB`
 
-    console.log(`${backup.id.substring(0, 20)}...\t${metadata.type || 'unknown'}\t\t${metadata.environment || 'unknown'}\t${timestamp}\t${size}`)
+    console.log(
+      `${backup.id.substring(0, 20)}...\t${metadata.type || 'unknown'}\t\t${metadata.environment || 'unknown'}\t${timestamp}\t${size}`
+    )
   }
 
   return backups
@@ -529,10 +532,10 @@ function createDisasterRecoveryPlan() {
           '4. Restore from latest backup',
           '5. Redeploy all services',
           '6. Verify system functionality',
-          '7. Monitor for issues'
+          '7. Monitor for issues',
         ],
         estimatedTime: '2-4 hours',
-        contactPerson: 'DevOps Team'
+        contactPerson: 'DevOps Team',
       },
       {
         name: 'Database Corruption',
@@ -545,10 +548,10 @@ function createDisasterRecoveryPlan() {
           '4. Run database consistency checks',
           '5. Restart application services',
           '6. Verify data integrity',
-          '7. Monitor database performance'
+          '7. Monitor database performance',
         ],
         estimatedTime: '1-2 hours',
-        contactPerson: 'Database Administrator'
+        contactPerson: 'Database Administrator',
       },
       {
         name: 'Deployment Failure',
@@ -560,36 +563,36 @@ function createDisasterRecoveryPlan() {
           '3. Verify system functionality',
           '4. Investigate deployment issues',
           '5. Fix and retest deployment',
-          '6. Redeploy with fixes'
+          '6. Redeploy with fixes',
         ],
         estimatedTime: '30-60 minutes',
-        contactPerson: 'Development Team'
-      }
+        contactPerson: 'Development Team',
+      },
     ],
 
     contacts: [
       {
         role: 'DevOps Team',
         contact: 'devops@parsify.dev',
-        phone: '+1-555-DEVOPS'
+        phone: '+1-555-DEVOPS',
       },
       {
         role: 'Database Administrator',
         contact: 'dba@parsify.dev',
-        phone: '+1-555-DBA'
+        phone: '+1-555-DBA',
       },
       {
         role: 'Development Team',
         contact: 'dev@parsify.dev',
-        phone: '+1-555-DEV'
-      }
+        phone: '+1-555-DEV',
+      },
     ],
 
     resources: {
       backups: BACKUPS_DIR,
       scripts: path.join(__dirname),
-      documentation: 'https://docs.parsify.dev/disaster-recovery'
-    }
+      documentation: 'https://docs.parsify.dev/disaster-recovery',
+    },
   }
 
   const planPath = path.join(ROLLBACKS_DIR, 'disaster-recovery-plan.json')
@@ -610,12 +613,13 @@ async function main() {
       createPreDeploymentBackup(env)
       break
 
-    case 'rollback':
+    case 'rollback': {
       const deploymentId = args[2]
       await rollbackDeployment(env, deploymentId)
       break
+    }
 
-    case 'restore':
+    case 'restore': {
       const backupId = args[2]
       if (!backupId) {
         log('error', 'Backup ID is required')
@@ -624,6 +628,7 @@ async function main() {
       }
       restoreFromBackup(backupId, env)
       break
+    }
 
     case 'list':
       listDeployments()
@@ -633,10 +638,11 @@ async function main() {
       listBackups()
       break
 
-    case 'cleanup':
-      const days = parseInt(args[2]) || 30
+    case 'cleanup': {
+      const days = parseInt(args[2], 10) || 30
       cleanupOldBackups(days)
       break
+    }
 
     case 'disaster-plan':
       createDisasterRecoveryPlan()
@@ -702,7 +708,7 @@ module.exports = {
   listBackups,
   cleanupOldBackups,
   createDisasterRecoveryPlan,
-  saveDeploymentRecord
+  saveDeploymentRecord,
 }
 
 // Run the script if called directly

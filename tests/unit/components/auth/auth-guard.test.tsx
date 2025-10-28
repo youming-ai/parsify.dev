@@ -1,8 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen } from '@testing-library/react'
-import { render } from '../test-utils'
-import { AuthGuard, ProtectedRoute, GuestOnlyRoute, withAuth } from '@/web/components/auth/auth-guard'
-import { createMockUser } from '../test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  AuthGuard,
+  GuestOnlyRoute,
+  ProtectedRoute,
+  withAuth,
+} from '@/web/components/auth/auth-guard'
+import { createMockUser, render } from '../test-utils'
 
 // Mock window.location
 const mockLocation = { href: '' }
@@ -27,15 +31,11 @@ describe('AuthGuard Component', () => {
         useAuth: () => ({
           user: null,
           isLoading: false,
-          isAuthenticated: false
-        })
+          isAuthenticated: false,
+        }),
       }))
 
-      render(
-        <AuthGuard>
-          {mockChildren}
-        </AuthGuard>
-      )
+      render(<AuthGuard>{mockChildren}</AuthGuard>)
 
       expect(screen.getByTestId('protected-content')).toBeInTheDocument()
     })
@@ -45,15 +45,11 @@ describe('AuthGuard Component', () => {
         useAuth: () => ({
           user: null,
           isLoading: true,
-          isAuthenticated: false
-        })
+          isAuthenticated: false,
+        }),
       }))
 
-      render(
-        <AuthGuard requireAuth>
-          {mockChildren}
-        </AuthGuard>
-      )
+      render(<AuthGuard requireAuth>{mockChildren}</AuthGuard>)
 
       expect(screen.getByText('Loading...')).toBeInTheDocument()
       expect(screen.queryByTestId('protected-content')).not.toBeInTheDocument()
@@ -64,8 +60,8 @@ describe('AuthGuard Component', () => {
         useAuth: () => ({
           user: null,
           isLoading: true,
-          isAuthenticated: false
-        })
+          isAuthenticated: false,
+        }),
       }))
 
       const customLoading = <div data-testid="custom-loading">Custom Loading</div>
@@ -86,15 +82,11 @@ describe('AuthGuard Component', () => {
         useAuth: () => ({
           user: createMockUser(),
           isLoading: false,
-          isAuthenticated: true
-        })
+          isAuthenticated: true,
+        }),
       }))
 
-      render(
-        <AuthGuard requireAuth>
-          {mockChildren}
-        </AuthGuard>
-      )
+      render(<AuthGuard requireAuth>{mockChildren}</AuthGuard>)
 
       expect(screen.getByTestId('protected-content')).toBeInTheDocument()
     })
@@ -104,8 +96,8 @@ describe('AuthGuard Component', () => {
         useAuth: () => ({
           user: null,
           isLoading: false,
-          isAuthenticated: false
-        })
+          isAuthenticated: false,
+        }),
       }))
 
       render(
@@ -122,21 +114,20 @@ describe('AuthGuard Component', () => {
         useAuth: () => ({
           user: null,
           isLoading: false,
-          isAuthenticated: false
-        })
+          isAuthenticated: false,
+        }),
       }))
 
       // Mock current path
       Object.defineProperty(window, 'location', {
-        value: { href: 'http://localhost:3000/dashboard', pathname: '/dashboard' },
+        value: {
+          href: 'http://localhost:3000/dashboard',
+          pathname: '/dashboard',
+        },
         writable: true,
       })
 
-      render(
-        <AuthGuard requireAuth>
-          {mockChildren}
-        </AuthGuard>
-      )
+      render(<AuthGuard requireAuth>{mockChildren}</AuthGuard>)
 
       expect(mockLocation.href).toContain('/login?redirect=%2Fdashboard')
     })
@@ -146,8 +137,8 @@ describe('AuthGuard Component', () => {
         useAuth: () => ({
           user: null,
           isLoading: false,
-          isAuthenticated: false
-        })
+          isAuthenticated: false,
+        }),
       }))
 
       render(
@@ -167,15 +158,11 @@ describe('AuthGuard Component', () => {
         useAuth: () => ({
           user: null,
           isLoading: false,
-          isAuthenticated: false
-        })
+          isAuthenticated: false,
+        }),
       }))
 
-      render(
-        <AuthGuard requireGuest>
-          {mockChildren}
-        </AuthGuard>
-      )
+      render(<AuthGuard requireGuest>{mockChildren}</AuthGuard>)
 
       expect(screen.getByTestId('protected-content')).toBeInTheDocument()
     })
@@ -185,8 +172,8 @@ describe('AuthGuard Component', () => {
         useAuth: () => ({
           user: createMockUser(),
           isLoading: false,
-          isAuthenticated: true
-        })
+          isAuthenticated: true,
+        }),
       }))
 
       render(
@@ -203,8 +190,8 @@ describe('AuthGuard Component', () => {
         useAuth: () => ({
           user: createMockUser(),
           isLoading: false,
-          isAuthenticated: true
-        })
+          isAuthenticated: true,
+        }),
       }))
 
       render(
@@ -224,8 +211,8 @@ describe('AuthGuard Component', () => {
         useAuth: () => ({
           user: createMockUser(),
           isLoading: false,
-          isAuthenticated: true
-        })
+          isAuthenticated: true,
+        }),
       }))
 
       render(
@@ -243,8 +230,8 @@ describe('AuthGuard Component', () => {
         useAuth: () => ({
           user: null,
           isLoading: false,
-          isAuthenticated: false
-        })
+          isAuthenticated: false,
+        }),
       }))
 
       render(
@@ -270,8 +257,8 @@ describe('ProtectedRoute Component', () => {
       useAuth: () => ({
         user: createMockUser(),
         isLoading: false,
-        isAuthenticated: true
-      })
+        isAuthenticated: true,
+      }),
     }))
 
     render(
@@ -288,8 +275,8 @@ describe('ProtectedRoute Component', () => {
       useAuth: () => ({
         user: null,
         isLoading: false,
-        isAuthenticated: false
-      })
+        isAuthenticated: false,
+      }),
     }))
 
     render(
@@ -313,8 +300,8 @@ describe('GuestOnlyRoute Component', () => {
       useAuth: () => ({
         user: null,
         isLoading: false,
-        isAuthenticated: false
-      })
+        isAuthenticated: false,
+      }),
     }))
 
     render(
@@ -331,8 +318,8 @@ describe('GuestOnlyRoute Component', () => {
       useAuth: () => ({
         user: createMockUser(),
         isLoading: false,
-        isAuthenticated: true
-      })
+        isAuthenticated: true,
+      }),
     }))
 
     render(
@@ -358,8 +345,8 @@ describe('withAuth HOC', () => {
       useAuth: () => ({
         user: createMockUser(),
         isLoading: false,
-        isAuthenticated: true
-      })
+        isAuthenticated: true,
+      }),
     }))
 
     const ProtectedComponent = withAuth(MockComponent, { redirectTo: '/login' })
@@ -376,8 +363,8 @@ describe('withAuth HOC', () => {
       useAuth: () => ({
         user: null,
         isLoading: false,
-        isAuthenticated: false
-      })
+        isAuthenticated: false,
+      }),
     }))
 
     const ProtectedComponent = withAuth(MockComponent, { redirectTo: '/login' })
@@ -401,8 +388,8 @@ describe('withAuth HOC', () => {
       useAuth: () => ({
         user: createMockUser(),
         isLoading: false,
-        isAuthenticated: true
-      })
+        isAuthenticated: true,
+      }),
     }))
 
     const ProtectedComponent = withAuth(MockComponent)
@@ -419,8 +406,8 @@ describe('useRouteAuth hook', () => {
       useAuth: () => ({
         user: createMockUser(),
         isLoading: false,
-        isAuthenticated: true
-      })
+        isAuthenticated: true,
+      }),
     }))
 
     const { result } = renderHook(() => useRouteAuth(true, false))
@@ -436,8 +423,8 @@ describe('useRouteAuth hook', () => {
       useAuth: () => ({
         user: null,
         isLoading: false,
-        isAuthenticated: false
-      })
+        isAuthenticated: false,
+      }),
     }))
 
     const { result } = renderHook(() => useRouteAuth(true, false))
@@ -453,8 +440,8 @@ describe('useRouteAuth hook', () => {
       useAuth: () => ({
         user: null,
         isLoading: true,
-        isAuthenticated: false
-      })
+        isAuthenticated: false,
+      }),
     }))
 
     const { result } = renderHook(() => useRouteAuth(true, false))

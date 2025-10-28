@@ -52,10 +52,20 @@ export interface CodeEditorState {
   language: CodeLanguage
   isDirty: boolean
   cursorPosition: { line: number; column: number }
-  selection?: { start: { line: number; column: number }; end: { line: number; column: number } }
+  selection?: {
+    start: { line: number; column: number }
+    end: { line: number; column: number }
+  }
 }
 
-export type ExecutionStatus = 'idle' | 'compiling' | 'running' | 'completed' | 'error' | 'timeout' | 'cancelled'
+export type ExecutionStatus =
+  | 'idle'
+  | 'compiling'
+  | 'running'
+  | 'completed'
+  | 'error'
+  | 'timeout'
+  | 'cancelled'
 
 export interface CodeExecutionState {
   status: ExecutionStatus

@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../../apps/api/src/index'
 
 describe('Authentication Flow Integration Tests', () => {
   let testEnv: any
   let sessionId: string
-  let authToken: string
+  let _authToken: string
 
   beforeAll(() => {
     testEnv = {
@@ -18,7 +18,7 @@ describe('Authentication Flow Integration Tests', () => {
               userId: 'test-user-123',
               createdAt: new Date().toISOString(),
               lastAccess: new Date().toISOString(),
-              role: 'anonymous'
+              role: 'anonymous',
             })
           }
           return null
@@ -34,30 +34,34 @@ describe('Authentication Flow Integration Tests', () => {
         delete: async (key: string) => {
           // Mock KV delete for session cleanup
           return { deleted: key }
-        }
+        },
       },
       RATE_LIMIT: {
-        checkLimit: async (identifier: string, limit: number, window: number) => {
+        checkLimit: async (_identifier: string, limit: number, window: number) => {
           // Mock rate limit check
           return {
             allowed: true,
             remaining: limit - 1,
-            resetTime: Date.now() + window
+            resetTime: Date.now() + window,
           }
-        }
-      }
+        },
+      },
     }
   })
 
   describe('Anonymous Session Creation', () => {
     it('should create anonymous session on first request', async () => {
-      const res = await app.request('/api/v1/auth/session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'test-agent/1.0'
-        }
-      }, testEnv)
+      const res = await app.request(
+        '/api/v1/auth/session',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'test-agent/1.0',
+          },
+        },
+        testEnv
+      )
 
       expect(res.status).toBe(201)
 
@@ -73,24 +77,32 @@ describe('Authentication Flow Integration Tests', () => {
 
     it('should return existing session if valid session provided', async () => {
       // First, create a session
-      const createRes = await app.request('/api/v1/auth/session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }, testEnv)
+      const createRes = await app.request(
+        '/api/v1/auth/session',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        testEnv
+      )
 
       const createData = await createRes.json()
       const existingSessionId = createData.session_id
 
       // Use the session in a subsequent request
-      const res = await app.request('/api/v1/auth/session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${existingSessionId}`
-        }
-      }, testEnv)
+      const res = await app.request(
+        '/api/v1/auth/session',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${existingSessionId}`,
+          },
+        },
+        testEnv
+      )
 
       expect(res.status).toBe(200)
 
@@ -102,13 +114,17 @@ describe('Authentication Flow Integration Tests', () => {
     it('should create new session if expired session provided', async () => {
       const expiredSession = 'expired-session-123'
 
-      const res = await app.request('/api/v1/auth/session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${expiredSession}`
-        }
-      }, testEnv)
+      const res = await app.request(
+        '/api/v1/auth/session',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${expiredSession}`,
+          },
+        },
+        testEnv
+      )
 
       expect(res.status).toBe(201)
 
@@ -121,22 +137,30 @@ describe('Authentication Flow Integration Tests', () => {
   describe('Session Validation', () => {
     it('should validate session and return user info', async () => {
       // Create a session first
-      const createRes = await app.request('/api/v1/auth/session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }, testEnv)
+      const createRes = await app.request(
+        '/api/v1/auth/session',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        testEnv
+      )
 
       const { session_id } = await createRes.json()
 
       // Validate the session
-      const res = await app.request('/api/v1/auth/validate', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${session_id}`
-        }
-      }, testEnv)
+      const res = await app.request(
+        '/api/v1/auth/validate',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${session_id}`,
+          },
+        },
+        testEnv
+      )
 
       expect(res.status).toBe(200)
 
@@ -149,12 +173,16 @@ describe('Authentication Flow Integration Tests', () => {
     })
 
     it('should reject invalid session token', async () => {
-      const res = await app.request('/api/v1/auth/validate', {
-        method: 'GET',
-        headers: {
-          'Authorization': 'Bearer invalid-session-token'
-        }
-      }, testEnv)
+      const res = await app.request(
+        '/api/v1/auth/validate',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: 'Bearer invalid-session-token',
+          },
+        },
+        testEnv
+      )
 
       expect(res.status).toBe(401)
 
@@ -165,13 +193,17 @@ describe('Authentication Flow Integration Tests', () => {
     })
 
     it('should reject requests without session token', async () => {
-      const res = await app.request('/api/v1/auth/validate', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-          // No Authorization header
-        }
-      }, testEnv)
+      const res = await app.request(
+        '/api/v1/auth/validate',
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // No Authorization header
+          },
+        },
+        testEnv
+      )
 
       expect(res.status).toBe(401)
 
@@ -185,22 +217,30 @@ describe('Authentication Flow Integration Tests', () => {
   describe('Session Refresh', () => {
     it('should refresh existing session', async () => {
       // Create a session
-      const createRes = await app.request('/api/v1/auth/session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }, testEnv)
+      const createRes = await app.request(
+        '/api/v1/auth/session',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        testEnv
+      )
 
       const { session_id } = await createRes.json()
 
       // Refresh the session
-      const res = await app.request('/api/v1/auth/refresh', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session_id}`
-        }
-      }, testEnv)
+      const res = await app.request(
+        '/api/v1/auth/refresh',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session_id}`,
+          },
+        },
+        testEnv
+      )
 
       expect(res.status).toBe(200)
 
@@ -212,36 +252,48 @@ describe('Authentication Flow Integration Tests', () => {
 
     it('should extend session expiration on activity', async () => {
       // Create a session
-      const createRes = await app.request('/api/v1/auth/session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }, testEnv)
+      const createRes = await app.request(
+        '/api/v1/auth/session',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        testEnv
+      )
 
       const { session_id } = await createRes.json()
 
       // Simulate activity by making an authenticated request
-      const activityRes = await app.request('/api/v1/tools/json/format', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session_id}`
+      const activityRes = await app.request(
+        '/api/v1/tools/json/format',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session_id}`,
+          },
+          body: JSON.stringify({
+            json: '{"test": true}',
+          }),
         },
-        body: JSON.stringify({
-          json: '{"test": true}'
-        })
-      }, testEnv)
+        testEnv
+      )
 
       expect(activityRes.status).toBe(200)
 
       // Check that session was refreshed
-      const validateRes = await app.request('/api/v1/auth/validate', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${session_id}`
-        }
-      }, testEnv)
+      const validateRes = await app.request(
+        '/api/v1/auth/validate',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${session_id}`,
+          },
+        },
+        testEnv
+      )
 
       expect(validateRes.status).toBe(200)
     })
@@ -250,22 +302,30 @@ describe('Authentication Flow Integration Tests', () => {
   describe('Session Termination', () => {
     it('should terminate session on logout', async () => {
       // Create a session
-      const createRes = await app.request('/api/v1/auth/session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }, testEnv)
+      const createRes = await app.request(
+        '/api/v1/auth/session',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        testEnv
+      )
 
       const { session_id } = await createRes.json()
 
       // Logout/terminate session
-      const res = await app.request('/api/v1/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session_id}`
-        }
-      }, testEnv)
+      const res = await app.request(
+        '/api/v1/auth/logout',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session_id}`,
+          },
+        },
+        testEnv
+      )
 
       expect(res.status).toBe(200)
 
@@ -274,23 +334,31 @@ describe('Authentication Flow Integration Tests', () => {
       expect(data.message).toContain('logged out')
 
       // Try to validate the terminated session
-      const validateRes = await app.request('/api/v1/auth/validate', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${session_id}`
-        }
-      }, testEnv)
+      const validateRes = await app.request(
+        '/api/v1/auth/validate',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${session_id}`,
+          },
+        },
+        testEnv
+      )
 
       expect(validateRes.status).toBe(401)
     })
 
     it('should handle logout requests with invalid sessions gracefully', async () => {
-      const res = await app.request('/api/v1/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer invalid-session'
-        }
-      }, testEnv)
+      const res = await app.request(
+        '/api/v1/auth/logout',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer invalid-session',
+          },
+        },
+        testEnv
+      )
 
       expect(res.status).toBe(401)
 
@@ -303,39 +371,55 @@ describe('Authentication Flow Integration Tests', () => {
   describe('Cross-Request Session Consistency', () => {
     it('should maintain session across multiple API calls', async () => {
       // Create session
-      const createRes = await app.request('/api/v1/auth/session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }, testEnv)
+      const createRes = await app.request(
+        '/api/v1/auth/session',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        testEnv
+      )
 
       const { session_id } = await createRes.json()
 
       // Make multiple authenticated requests
       const requests = [
-        app.request('/api/v1/tools/json/format', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session_id}`
+        app.request(
+          '/api/v1/tools/json/format',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session_id}`,
+            },
+            body: JSON.stringify({ json: '{"test": true}' }),
           },
-          body: JSON.stringify({ json: '{"test": true}' })
-        }, testEnv),
-        app.request('/api/v1/tools/json/validate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session_id}`
+          testEnv
+        ),
+        app.request(
+          '/api/v1/tools/json/validate',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session_id}`,
+            },
+            body: JSON.stringify({ json: '{"valid": true}' }),
           },
-          body: JSON.stringify({ json: '{"valid": true}' })
-        }, testEnv),
-        app.request('/api/v1/auth/validate', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${session_id}`
-          }
-        }, testEnv)
+          testEnv
+        ),
+        app.request(
+          '/api/v1/auth/validate',
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${session_id}`,
+            },
+          },
+          testEnv
+        ),
       ]
 
       const results = await Promise.all(requests)
@@ -348,14 +432,20 @@ describe('Authentication Flow Integration Tests', () => {
 
     it('should handle concurrent session creation', async () => {
       // Create multiple sessions concurrently
-      const concurrentRequests = Array(5).fill(null).map(() =>
-        app.request('/api/v1/auth/session', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }, testEnv)
-      )
+      const concurrentRequests = Array(5)
+        .fill(null)
+        .map(() =>
+          app.request(
+            '/api/v1/auth/session',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            },
+            testEnv
+          )
+        )
 
       const results = await Promise.all(concurrentRequests)
 
@@ -374,12 +464,16 @@ describe('Authentication Flow Integration Tests', () => {
 
   describe('Error Handling', () => {
     it('should handle malformed authorization headers', async () => {
-      const res = await app.request('/api/v1/auth/validate', {
-        method: 'GET',
-        headers: {
-          'Authorization': 'InvalidFormat token123'
-        }
-      }, testEnv)
+      const res = await app.request(
+        '/api/v1/auth/validate',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: 'InvalidFormat token123',
+          },
+        },
+        testEnv
+      )
 
       expect(res.status).toBe(401)
 
@@ -389,12 +483,16 @@ describe('Authentication Flow Integration Tests', () => {
     })
 
     it('should handle empty authorization headers', async () => {
-      const res = await app.request('/api/v1/auth/validate', {
-        method: 'GET',
-        headers: {
-          'Authorization': ''
-        }
-      }, testEnv)
+      const res = await app.request(
+        '/api/v1/auth/validate',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: '',
+          },
+        },
+        testEnv
+      )
 
       expect(res.status).toBe(401)
 
@@ -411,16 +509,20 @@ describe('Authentication Flow Integration Tests', () => {
           ...testEnv.KV,
           get: async () => {
             throw new Error('KV connection failed')
-          }
-        }
+          },
+        },
       }
 
-      const res = await app.request('/api/v1/auth/validate', {
-        method: 'GET',
-        headers: {
-          'Authorization': 'Bearer test-session-123'
-        }
-      }, failureTestEnv)
+      const res = await app.request(
+        '/api/v1/auth/validate',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: 'Bearer test-session-123',
+          },
+        },
+        failureTestEnv
+      )
 
       expect(res.status).toBe(500)
 
@@ -432,12 +534,16 @@ describe('Authentication Flow Integration Tests', () => {
 
   describe('Security Headers', () => {
     it('should include security headers in auth responses', async () => {
-      const res = await app.request('/api/v1/auth/session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }, testEnv)
+      const res = await app.request(
+        '/api/v1/auth/session',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        testEnv
+      )
 
       expect(res.status).toBe(201)
 
@@ -448,12 +554,16 @@ describe('Authentication Flow Integration Tests', () => {
     })
 
     it('should not expose sensitive session information', async () => {
-      const res = await app.request('/api/v1/auth/session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }, testEnv)
+      const res = await app.request(
+        '/api/v1/auth/session',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        testEnv
+      )
 
       expect(res.status).toBe(201)
 

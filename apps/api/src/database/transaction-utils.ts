@@ -1,12 +1,11 @@
+import type { DatabaseConnection } from './connection'
 import {
-  EnhancedTransaction,
-  TransactionManager,
+  type EnhancedTransaction,
   globalTransactionManager,
-  TransactionUtils,
-  TransactionConfig,
   IsolationLevel,
+  type TransactionConfig,
+  TransactionUtils,
 } from './transaction'
-import { DatabaseConnection } from './connection'
 import { globalTransactionMonitor } from './transaction-monitoring'
 
 export interface BatchOperation<T = any> {
@@ -30,11 +29,7 @@ export interface TransactionWorkflow {
   steps: Array<{
     name: string
     execute: (tx: EnhancedTransaction, context: any) => Promise<any>
-    rollback?: (
-      tx: EnhancedTransaction,
-      context: any,
-      result: any
-    ) => Promise<void>
+    rollback?: (tx: EnhancedTransaction, context: any, result: any) => Promise<void>
     retries?: number
     timeout?: number
   }>
@@ -80,8 +75,6 @@ export class TransactionHelper {
             case 'changes':
               result = await tx.execute(operation.sql, operation.params)
               break
-            case 'result':
-            case 'any':
             default:
               result = await tx.query(operation.sql, operation.params)
               break
@@ -106,7 +99,7 @@ export class TransactionHelper {
   static async executeTemplate<T = any>(
     connection: DatabaseConnection,
     template: TransactionTemplate,
-    context?: Record<string, any>
+    _context?: Record<string, any>
   ): Promise<T[]> {
     const enhancedConfig = {
       ...template.config,
@@ -118,7 +111,7 @@ export class TransactionHelper {
       connection,
       async tx => {
         try {
-          const results = await this.executeBatch<T>(
+          const results = await TransactionHelper.executeBatch<T>(
             tx.connection,
             template.operations,
             enhancedConfig
@@ -126,9 +119,7 @@ export class TransactionHelper {
 
           // Validate results if validator is provided
           if (template.validate && !template.validate(results)) {
-            throw new Error(
-              `Transaction template '${template.name}' validation failed`
-            )
+            throw new Error(`Transaction template '${template.name}' validation failed`)
           }
 
           // Call success callback
@@ -157,10 +148,7 @@ export class TransactionHelper {
     workflow: TransactionWorkflow,
     initialContext?: Record<string, any>
   ): Promise<T[]> {
-    const transaction = globalTransactionManager.createTransaction(
-      connection,
-      workflow.config
-    )
+    const transaction = globalTransactionManager.createTransaction(connection, workflow.config)
     const context: TransactionContext = {
       transactionId: transaction.id,
       startTime: Date.now(),
@@ -178,7 +166,7 @@ export class TransactionHelper {
 
         try {
           // Execute step with timeout if specified
-          const result = await this.executeStepWithTimeout(
+          const result = await TransactionHelper.executeStepWithTimeout(
             transaction,
             step,
             context,
@@ -200,11 +188,7 @@ export class TransactionHelper {
           }
 
           // Attempt rollback of completed steps
-          await this.rollbackCompletedSteps(
-            transaction,
-            completedSteps,
-            context
-          )
+          await TransactionHelper.rollbackCompletedSteps(transaction, completedSteps, context)
 
           throw error
         }
@@ -251,15 +235,13 @@ export class TransactionHelper {
       connection,
       async tx => {
         const conditionResult = await condition(tx)
-        const operations = conditionResult
-          ? trueOperations
-          : falseOperations || []
+        const operations = conditionResult ? trueOperations : falseOperations || []
 
         if (operations.length === 0) {
           return [] as T[]
         }
 
-        return this.executeBatch<T>(tx.connection, operations, config)
+        return TransactionHelper.executeBatch<T>(tx.connection, operations, config)
       },
       config
     )
@@ -301,11 +283,7 @@ export class TransactionHelper {
       }
 
       try {
-        const result = await this.executeBatch<T>(
-          connection,
-          operations,
-          config
-        )
+        const result = await TransactionHelper.executeBatch<T>(connection, operations, config)
 
         // Reset failure count on success
         consecutiveFailures = 0
@@ -319,9 +297,7 @@ export class TransactionHelper {
         }
 
         // Wait before retry with exponential backoff
-        await new Promise(resolve =>
-          setTimeout(resolve, retryDelay * Math.pow(2, attempt))
-        )
+        await new Promise(resolve => setTimeout(resolve, retryDelay * 2 ** attempt))
       }
     }
 
@@ -368,9 +344,7 @@ export class TransactionHelper {
       config.timeout &&
       config.timeout > 60000
     ) {
-      errors.push(
-        'Serializable transactions should have shorter timeouts to prevent deadlocks'
-      )
+      errors.push('Serializable transactions should have shorter timeouts to prevent deadlocks')
     }
 
     return {
@@ -416,10 +390,7 @@ export class TransactionHelper {
         try {
           await step.rollback(tx, context, result)
         } catch (rollbackError) {
-          console.error(
-            `Failed to rollback step '${step.name}':`,
-            rollbackError
-          )
+          console.error(`Failed to rollback step '${step.name}':`, rollbackError)
         }
       }
     }
@@ -433,11 +404,7 @@ export class TransactionTemplates {
   /**
    * Template for user creation with audit logging
    */
-  static createUser(
-    userId: string,
-    email: string,
-    name?: string
-  ): TransactionTemplate {
+  static createUser(userId: string, email: string, name?: string): TransactionTemplate {
     return {
       name: 'create_user',
       description: 'Create a new user with audit logging',
@@ -542,10 +509,7 @@ export class TransactionTemplates {
         return currentUsage + size <= storageLimit && uploadResult?.changes > 0
       },
       onError: error => {
-        if (
-          error.message.includes('constraint') ||
-          error.message.includes('quota')
-        ) {
+        if (error.message.includes('constraint') || error.message.includes('quota')) {
           throw new Error('Storage quota exceeded')
         }
         throw error
@@ -595,13 +559,8 @@ export class TransactionTemplates {
 export class DistributedTransactionCoordinator {
   private participants: Map<string, DatabaseConnection> = new Map()
   private transactionId: string
-  private status:
-    | 'preparing'
-    | 'prepared'
-    | 'committing'
-    | 'committed'
-    | 'aborting'
-    | 'aborted' = 'preparing'
+  private status: 'preparing' | 'prepared' | 'committing' | 'committed' | 'aborting' | 'aborted' =
+    'preparing'
 
   constructor() {
     this.transactionId = TransactionHelper.generateTransactionId('dtx')
@@ -625,9 +584,7 @@ export class DistributedTransactionCoordinator {
       await this.preparePhase()
 
       // Phase 2: Execute operations on all participants
-      for (const [participantName, participantOperations] of Object.entries(
-        operations
-      )) {
+      for (const [participantName, participantOperations] of Object.entries(operations)) {
         const connection = this.participants.get(participantName)
         if (!connection) {
           throw new Error(`Participant '${participantName}' not found`)
@@ -723,12 +680,12 @@ export class TransactionOptimizer {
     }
 
     // Optimize SELECT groups by combining similar queries
-    for (const [table, selectOps] of Object.entries(selectGroups)) {
+    for (const [_table, selectOps] of Object.entries(selectGroups)) {
       if (selectOps.length === 1) {
         optimized.push(selectOps[0])
       } else {
         // Try to combine SELECT operations
-        const combined = this.tryCombineSelects(selectOps)
+        const combined = TransactionOptimizer.tryCombineSelects(selectOps)
         if (combined) {
           optimized.push(combined)
         } else {
@@ -744,12 +701,8 @@ export class TransactionOptimizer {
    * Suggest optimal isolation level based on operations
    */
   static suggestIsolationLevel(operations: BatchOperation[]): IsolationLevel {
-    const hasWrites = operations.some(
-      op => !op.sql.trim().toUpperCase().startsWith('SELECT')
-    )
-    const hasJoins = operations.some(op =>
-      op.sql.toUpperCase().includes(' JOIN ')
-    )
+    const hasWrites = operations.some(op => !op.sql.trim().toUpperCase().startsWith('SELECT'))
+    const hasJoins = operations.some(op => op.sql.toUpperCase().includes(' JOIN '))
     const hasAggregates = operations.some(
       op =>
         op.sql.toUpperCase().includes('GROUP BY') ||
@@ -791,9 +744,7 @@ export class TransactionOptimizer {
     return totalTime
   }
 
-  private static tryCombineSelects(
-    operations: BatchOperation[]
-  ): BatchOperation | null {
+  private static tryCombineSelects(operations: BatchOperation[]): BatchOperation | null {
     // Simple implementation - would need more sophisticated query analysis
     if (operations.length !== 2) return null
 

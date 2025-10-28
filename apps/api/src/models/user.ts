@@ -10,7 +10,7 @@ export const UserSchema = z.object({
   preferences: z.record(z.any()).nullable(),
   created_at: z.number(),
   updated_at: z.number(),
-  last_login_at: z.number().nullable()
+  last_login_at: z.number().nullable(),
 })
 
 export type User = z.infer<typeof UserSchema>
@@ -20,7 +20,7 @@ export const CreateUserSchema = UserSchema.partial({
   id: true,
   created_at: true,
   updated_at: true,
-  last_login_at: true
+  last_login_at: true,
 })
 
 export type CreateUser = z.infer<typeof CreateUserSchema>
@@ -29,7 +29,7 @@ export type CreateUser = z.infer<typeof CreateUserSchema>
 export const UpdateUserSchema = UserSchema.partial({
   id: true,
   email: true,
-  created_at: true
+  created_at: true,
 })
 
 export type UpdateUser = z.infer<typeof UpdateUserSchema>
@@ -39,7 +39,7 @@ export const UserPreferencesSchema = z.object({
   theme: z.enum(['light', 'dark', 'system']).default('system'),
   defaultLanguage: z.string().default('javascript'),
   autoSave: z.boolean().default(true),
-  showAdvancedOptions: z.boolean().default(false)
+  showAdvancedOptions: z.boolean().default(false),
 })
 
 export type UserPreferences = z.infer<typeof UserPreferencesSchema>
@@ -78,7 +78,7 @@ export class User {
       last_login_at: null,
       subscription_tier: 'free',
       preferences: null,
-      ...data
+      ...data,
     })
   }
 
@@ -96,7 +96,7 @@ export class User {
       preferences: this.preferences ? JSON.stringify(this.preferences) : null,
       created_at: this.created_at,
       updated_at: this.updated_at,
-      last_login_at: this.last_login_at
+      last_login_at: this.last_login_at,
     }
   }
 
@@ -104,7 +104,7 @@ export class User {
     const updatedUser = new User({
       ...this,
       ...data,
-      updated_at: Math.floor(Date.now() / 1000)
+      updated_at: Math.floor(Date.now() / 1000),
     })
     return updatedUser
   }
@@ -113,7 +113,7 @@ export class User {
     return new User({
       ...this,
       last_login_at: Math.floor(Date.now() / 1000),
-      updated_at: Math.floor(Date.now() / 1000)
+      updated_at: Math.floor(Date.now() / 1000),
     })
   }
 
@@ -202,7 +202,7 @@ export const USER_QUERIES = {
   CREATE_INDEXES: [
     'CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);',
     'CREATE INDEX IF NOT EXISTS idx_users_subscription ON users(subscription_tier);',
-    'CREATE INDEX IF NOT EXISTS idx_users_last_login ON users(last_login_at);'
+    'CREATE INDEX IF NOT EXISTS idx_users_last_login ON users(last_login_at);',
   ],
 
   INSERT: `
@@ -241,5 +241,5 @@ export const USER_QUERIES = {
 
   COUNT: `
     SELECT COUNT(*) as count FROM users WHERE subscription_tier = ?;
-  `
+  `,
 } as const

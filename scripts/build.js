@@ -7,9 +7,9 @@
  * including optimization, bundling, and preparation for deployment.
  */
 
-const { execSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
+const { execSync } = require('node:child_process')
+const fs = require('node:fs')
+const path = require('node:path')
 const chalk = require('chalk')
 
 // Configuration
@@ -25,7 +25,7 @@ const colors = {
   error: chalk.red,
   warning: chalk.yellow,
   info: chalk.blue,
-  dim: chalk.dim
+  dim: chalk.dim,
 }
 
 // Helper functions
@@ -41,7 +41,7 @@ function exec(command, options = {}) {
     const result = execSync(command, {
       cwd,
       stdio: silent ? 'pipe' : 'inherit',
-      encoding: 'utf8'
+      encoding: 'utf8',
     })
     return result
   } catch (error) {
@@ -62,7 +62,10 @@ function checkPrerequisites() {
   const requiredNodeVersion = '18.0.0'
 
   if (nodeVersion < `v${requiredNodeVersion}`) {
-    log('error', `Node.js version ${requiredNodeVersion} or higher is required. Current: ${nodeVersion}`)
+    log(
+      'error',
+      `Node.js version ${requiredNodeVersion} or higher is required. Current: ${nodeVersion}`
+    )
     process.exit(1)
   }
 
@@ -70,7 +73,7 @@ function checkPrerequisites() {
   try {
     exec('pnpm --version', { silent: true })
     log('success', 'pnpm is available')
-  } catch (error) {
+  } catch (_error) {
     log('error', 'pnpm is required but not found. Please install pnpm.')
     process.exit(1)
   }
@@ -196,12 +199,12 @@ function buildWeb() {
   const buildEnv = {
     ...process.env,
     NODE_ENV: 'production',
-    NEXT_TELEMETRY_DISABLED: '1'
+    NEXT_TELEMETRY_DISABLED: '1',
   }
 
   exec('pnpm run build', {
     cwd: webPath,
-    env: buildEnv
+    env: buildEnv,
   })
 
   // Copy web build to dist directory
@@ -253,8 +256,8 @@ function optimizeBuilds() {
     commit: getGitCommit(),
     builds: {
       api: fs.existsSync(path.join(BUILD_DIR, 'api')),
-      web: fs.existsSync(path.join(BUILD_DIR, 'web'))
-    }
+      web: fs.existsSync(path.join(BUILD_DIR, 'web')),
+    },
   }
 
   fs.writeFileSync(
@@ -269,9 +272,9 @@ function getGitCommit() {
   try {
     return execSync('git rev-parse --short HEAD', {
       silent: true,
-      encoding: 'utf8'
+      encoding: 'utf8',
     }).trim()
-  } catch (error) {
+  } catch (_error) {
     return 'unknown'
   }
 }
@@ -291,12 +294,12 @@ function runTests() {
     // Run integration tests if available
     try {
       exec('pnpm run test:e2e', { cwd: PROJECT_ROOT })
-    } catch (error) {
+    } catch (_error) {
       log('warning', 'E2E tests failed or not available')
     }
 
     log('success', 'All tests passed')
-  } catch (error) {
+  } catch (_error) {
     log('error', 'Tests failed')
     process.exit(1)
   }
@@ -314,8 +317,8 @@ function generateBuildReport() {
     packages: {},
     summary: {
       totalSize: 0,
-      fileCount: 0
-    }
+      fileCount: 0,
+    },
   }
 
   // Analyze API build
@@ -327,7 +330,7 @@ function generateBuildReport() {
       exists: true,
       size: apiStats.size,
       fileCount: apiStats.fileCount,
-      files: apiStats.files.slice(0, 10) // First 10 files
+      files: apiStats.files.slice(0, 10), // First 10 files
     }
     report.summary.totalSize += apiStats.size
     report.summary.fileCount += apiStats.fileCount
@@ -342,7 +345,7 @@ function generateBuildReport() {
       exists: true,
       size: webStats.size,
       fileCount: webStats.fileCount,
-      files: webStats.files.slice(0, 10) // First 10 files
+      files: webStats.files.slice(0, 10), // First 10 files
     }
     report.summary.totalSize += webStats.size
     report.summary.fileCount += webStats.fileCount
@@ -360,7 +363,7 @@ function generateBuildReport() {
         report.packages[pkg] = {
           path: pkgPath,
           size: pkgStats.size,
-          fileCount: pkgStats.fileCount
+          fileCount: pkgStats.fileCount,
         }
       }
     }
@@ -400,7 +403,7 @@ function analyzeDirectory(dirPath) {
           files.push({
             name: item,
             size: stats.size,
-            path: path.relative(dirPath, itemPath)
+            path: path.relative(dirPath, itemPath),
           })
         }
       }
@@ -505,7 +508,7 @@ module.exports = {
   buildPackages,
   checkPrerequisites,
   cleanBuildDirectory,
-  generateBuildReport
+  generateBuildReport,
 }
 
 // Run the script if called directly

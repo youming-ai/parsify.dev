@@ -8,19 +8,12 @@ export const QuotaTypeSchema = z.enum([
   'bandwidth',
   'storage',
   'jobs_per_hour',
-  'file_size'
+  'file_size',
 ])
 export type QuotaType = z.infer<typeof QuotaTypeSchema>
 
 // Quota period types
-export const QuotaPeriodSchema = z.enum([
-  'minute',
-  'hour',
-  'day',
-  'week',
-  'month',
-  'year'
-])
+export const QuotaPeriodSchema = z.enum(['minute', 'hour', 'day', 'week', 'month', 'year'])
 export type QuotaPeriod = z.infer<typeof QuotaPeriodSchema>
 
 // Quota counter schema for validation
@@ -34,7 +27,7 @@ export const QuotaCounterSchema = z.object({
   limit_count: z.number(),
   ip_address: z.string().ip().nullable(),
   created_at: z.number(),
-  updated_at: z.number()
+  updated_at: z.number(),
 })
 
 export type QuotaCounter = z.infer<typeof QuotaCounterSchema>
@@ -44,7 +37,7 @@ export const CreateQuotaCounterSchema = QuotaCounterSchema.partial({
   id: true,
   used_count: true,
   created_at: true,
-  updated_at: true
+  updated_at: true,
 })
 
 export type CreateQuotaCounter = z.infer<typeof CreateQuotaCounterSchema>
@@ -58,7 +51,7 @@ export const UpdateQuotaCounterSchema = QuotaCounterSchema.partial({
   period_end: true,
   limit_count: true,
   ip_address: true,
-  created_at: true
+  created_at: true,
 })
 
 export type UpdateQuotaCounter = z.infer<typeof UpdateQuotaCounterSchema>
@@ -74,8 +67,8 @@ export const QuotaLimitSchema = z.object({
   user_tier_multipliers: z.record(z.number()).default({
     free: 1,
     pro: 10,
-    enterprise: 100
-  })
+    enterprise: 100,
+  }),
 })
 
 export type QuotaLimit = z.infer<typeof QuotaLimitSchema>
@@ -88,7 +81,7 @@ export const QuotaUsageSchema = z.object({
   remaining: z.number(),
   reset_time: z.number(),
   period_seconds: z.number(),
-  is_anonymous: z.boolean()
+  is_anonymous: z.boolean(),
 })
 
 export type QuotaUsage = z.infer<typeof QuotaUsageSchema>
@@ -127,7 +120,7 @@ export class QuotaCounter {
       used_count: 0,
       created_at: now,
       updated_at: now,
-      ...data
+      ...data,
     })
   }
 
@@ -146,7 +139,7 @@ export class QuotaCounter {
       limit_count: this.limit_count,
       ip_address: this.ip_address,
       created_at: this.created_at,
-      updated_at: this.updated_at
+      updated_at: this.updated_at,
     }
   }
 
@@ -154,32 +147,32 @@ export class QuotaCounter {
     return new QuotaCounter({
       ...this,
       ...data,
-      updated_at: Math.floor(Date.now() / 1000)
+      updated_at: Math.floor(Date.now() / 1000),
     })
   }
 
   // Quota management methods
   increment(amount: number = 1): QuotaCounter {
     return this.update({
-      used_count: this.used_count + amount
+      used_count: this.used_count + amount,
     })
   }
 
   decrement(amount: number = 1): QuotaCounter {
     return this.update({
-      used_count: Math.max(0, this.used_count - amount)
+      used_count: Math.max(0, this.used_count - amount),
     })
   }
 
   reset(): QuotaCounter {
     return this.update({
-      used_count: 0
+      used_count: 0,
     })
   }
 
   setLimit(newLimit: number): QuotaCounter {
     return this.update({
-      limit_count: newLimit
+      limit_count: newLimit,
     })
   }
 
@@ -233,7 +226,7 @@ export class QuotaCounter {
 
   // Period utilities
   static createPeriod(
-    quotaType: QuotaType,
+    _quotaType: QuotaType,
     period: QuotaPeriod,
     startTime?: number
   ): { period_start: number; period_end: number } {
@@ -245,22 +238,47 @@ export class QuotaCounter {
 
     switch (period) {
       case 'minute':
-        periodStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), 0, 0)
+        periodStart = new Date(
+          date.getFullYear(),
+          date.getMonth(),
+          date.getDate(),
+          date.getHours(),
+          date.getMinutes(),
+          0,
+          0
+        )
         periodEnd = new Date(periodStart.getTime() + 60 * 1000)
         break
       case 'hour':
-        periodStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), 0, 0, 0)
+        periodStart = new Date(
+          date.getFullYear(),
+          date.getMonth(),
+          date.getDate(),
+          date.getHours(),
+          0,
+          0,
+          0
+        )
         periodEnd = new Date(periodStart.getTime() + 60 * 60 * 1000)
         break
       case 'day':
         periodStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)
         periodEnd = new Date(periodStart.getTime() + 24 * 60 * 60 * 1000)
         break
-      case 'week':
+      case 'week': {
         const dayOfWeek = date.getDay()
-        periodStart = new Date(date.getFullYear(), date.getMonth(), date.getDate() - dayOfWeek, 0, 0, 0, 0)
+        periodStart = new Date(
+          date.getFullYear(),
+          date.getMonth(),
+          date.getDate() - dayOfWeek,
+          0,
+          0,
+          0,
+          0
+        )
         periodEnd = new Date(periodStart.getTime() + 7 * 24 * 60 * 60 * 1000)
         break
+      }
       case 'month':
         periodStart = new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0)
         periodEnd = new Date(date.getFullYear(), date.getMonth() + 1, 1, 0, 0, 0, 0)
@@ -273,7 +291,7 @@ export class QuotaCounter {
 
     return {
       period_start: Math.floor(periodStart.getTime() / 1000),
-      period_end: Math.floor(periodEnd.getTime() / 1000)
+      period_end: Math.floor(periodEnd.getTime() / 1000),
     }
   }
 
@@ -293,7 +311,7 @@ export class QuotaCounter {
       period_start: periodInfo.period_start,
       period_end: periodInfo.period_end,
       limit_count: limit,
-      ip_address: null
+      ip_address: null,
     })
   }
 
@@ -312,7 +330,7 @@ export class QuotaCounter {
       period_start: periodInfo.period_start,
       period_end: periodInfo.period_end,
       limit_count: limit,
-      ip_address: ipAddress
+      ip_address: ipAddress,
     })
   }
 
@@ -326,7 +344,7 @@ export class QuotaCounter {
         window_minutes: 60,
         applies_to_anonymous: true,
         applies_to_authenticated: true,
-        user_tier_multipliers: { free: 1, pro: 5, enterprise: 20 }
+        user_tier_multipliers: { free: 1, pro: 5, enterprise: 20 },
       },
       {
         type: 'api_requests',
@@ -335,7 +353,7 @@ export class QuotaCounter {
         window_minutes: 1440,
         applies_to_anonymous: true,
         applies_to_authenticated: true,
-        user_tier_multipliers: { free: 1, pro: 10, enterprise: 50 }
+        user_tier_multipliers: { free: 1, pro: 10, enterprise: 50 },
       },
       {
         type: 'file_uploads',
@@ -344,7 +362,7 @@ export class QuotaCounter {
         window_minutes: 60,
         applies_to_anonymous: true,
         applies_to_authenticated: true,
-        user_tier_multipliers: { free: 1, pro: 5, enterprise: 20 }
+        user_tier_multipliers: { free: 1, pro: 5, enterprise: 20 },
       },
       {
         type: 'file_uploads',
@@ -353,7 +371,7 @@ export class QuotaCounter {
         window_minutes: 1440,
         applies_to_anonymous: true,
         applies_to_authenticated: true,
-        user_tier_multipliers: { free: 1, pro: 10, enterprise: 100 }
+        user_tier_multipliers: { free: 1, pro: 10, enterprise: 100 },
       },
       {
         type: 'execution_time',
@@ -362,7 +380,7 @@ export class QuotaCounter {
         window_minutes: 60,
         applies_to_anonymous: true,
         applies_to_authenticated: true,
-        user_tier_multipliers: { free: 1, pro: 10, enterprise: 100 }
+        user_tier_multipliers: { free: 1, pro: 10, enterprise: 100 },
       },
       {
         type: 'execution_time',
@@ -371,7 +389,7 @@ export class QuotaCounter {
         window_minutes: 1440,
         applies_to_anonymous: true,
         applies_to_authenticated: true,
-        user_tier_multipliers: { free: 1, pro: 20, enterprise: 200 }
+        user_tier_multipliers: { free: 1, pro: 20, enterprise: 200 },
       },
       {
         type: 'bandwidth',
@@ -380,7 +398,7 @@ export class QuotaCounter {
         window_minutes: 1440,
         applies_to_anonymous: true,
         applies_to_authenticated: true,
-        user_tier_multipliers: { free: 1, pro: 10, enterprise: 100 }
+        user_tier_multipliers: { free: 1, pro: 10, enterprise: 100 },
       },
       {
         type: 'storage',
@@ -389,7 +407,7 @@ export class QuotaCounter {
         window_minutes: 1440,
         applies_to_anonymous: true,
         applies_to_authenticated: true,
-        user_tier_multipliers: { free: 1, pro: 20, enterprise: 200 }
+        user_tier_multipliers: { free: 1, pro: 20, enterprise: 200 },
       },
       {
         type: 'jobs_per_hour',
@@ -398,7 +416,7 @@ export class QuotaCounter {
         window_minutes: 60,
         applies_to_anonymous: true,
         applies_to_authenticated: true,
-        user_tier_multipliers: { free: 1, pro: 5, enterprise: 20 }
+        user_tier_multipliers: { free: 1, pro: 5, enterprise: 20 },
       },
       {
         type: 'file_size',
@@ -407,8 +425,8 @@ export class QuotaCounter {
         window_minutes: 1,
         applies_to_anonymous: true,
         applies_to_authenticated: true,
-        user_tier_multipliers: { free: 1, pro: 5, enterprise: 50 }
-      }
+        user_tier_multipliers: { free: 1, pro: 5, enterprise: 50 },
+      },
     ]
   }
 
@@ -433,18 +451,24 @@ export class QuotaCounter {
       remaining: Math.max(0, limitCount - usedCount),
       reset_time: periodEnd,
       period_seconds: QuotaCounter.getPeriodSeconds(period),
-      is_anonymous: isAnonymous
+      is_anonymous: isAnonymous,
     }
   }
 
   private static getPeriodSeconds(period: QuotaPeriod): number {
     switch (period) {
-      case 'minute': return 60
-      case 'hour': return 60 * 60
-      case 'day': return 24 * 60 * 60
-      case 'week': return 7 * 24 * 60 * 60
-      case 'month': return 30 * 24 * 60 * 60
-      case 'year': return 365 * 24 * 60 * 60
+      case 'minute':
+        return 60
+      case 'hour':
+        return 60 * 60
+      case 'day':
+        return 24 * 60 * 60
+      case 'week':
+        return 7 * 24 * 60 * 60
+      case 'month':
+        return 30 * 24 * 60 * 60
+      case 'year':
+        return 365 * 24 * 60 * 60
     }
   }
 }
@@ -473,7 +497,7 @@ export const QUOTA_COUNTER_QUERIES = {
     'CREATE INDEX IF NOT EXISTS idx_quota_counters_period ON quota_counters(period_start, period_end);',
     'CREATE INDEX IF NOT EXISTS idx_quota_counters_type ON quota_counters(quota_type);',
     'CREATE INDEX IF NOT EXISTS idx_quota_counters_ip_address ON quota_counters(ip_address);',
-    'CREATE INDEX IF NOT EXISTS idx_quota_counters_expires ON quota_counters(period_end);'
+    'CREATE INDEX IF NOT EXISTS idx_quota_counters_expires ON quota_counters(period_end);',
   ],
 
   INSERT: `
@@ -578,5 +602,5 @@ export const QUOTA_COUNTER_QUERIES = {
     WHERE used_count >= limit_count AND created_at >= ?
     GROUP BY quota_type, user_id IS NOT NULL, DATE(created_at, 'unixepoch')
     ORDER BY violation_date DESC, violation_count DESC;
-  `
+  `,
 } as const

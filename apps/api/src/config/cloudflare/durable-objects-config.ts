@@ -6,6 +6,8 @@
  * and stateful WebSocket connections.
  */
 
+import { WebSocketPair } from 'cloudflare:workers'
+
 export interface DurableObjectConfig {
   className: string
   scriptName?: string
@@ -41,80 +43,74 @@ export const DEFAULT_DURABLE_OBJECT_CONFIG: Partial<DurableObjectConfig> = {
   maxConnections: 1000,
 }
 
-export const DURABLE_OBJECT_ENVIRONMENT_CONFIG: DurableObjectEnvironmentConfig =
-  {
-    development: {
-      sessionManager: {
-        className: 'SessionManagerDurableObject',
-        binding: 'SESSION_MANAGER',
-        maxInstances: 10,
-        maxMemoryPerInstance: 64,
-        maxConnections: 100,
-        idleTimeout: 60000, // 1 minute for development
-        ...DEFAULT_DURABLE_OBJECT_CONFIG,
-      },
-      collaborationRoom: {
-        className: 'CollaborationRoomDurableObject',
-        binding: 'COLLABORATION_ROOM',
-        maxInstances: 20,
-        maxMemoryPerInstance: 32,
-        maxConnections: 50,
-        ...DEFAULT_DURABLE_OBJECT_CONFIG,
-      },
-      realtimeSync: {
-        className: 'RealtimeSyncDurableObject',
-        binding: 'REALTIME_SYNC',
-        maxInstances: 15,
-        maxMemoryPerInstance: 64,
-        maxConnections: 200,
-        ...DEFAULT_DURABLE_OBJECT_CONFIG,
-      },
+export const DURABLE_OBJECT_ENVIRONMENT_CONFIG: DurableObjectEnvironmentConfig = {
+  development: {
+    sessionManager: {
+      className: 'SessionManagerDurableObject',
+      binding: 'SESSION_MANAGER',
+      maxInstances: 10,
+      maxMemoryPerInstance: 64,
+      maxConnections: 100,
+      idleTimeout: 60000, // 1 minute for development
+      ...DEFAULT_DURABLE_OBJECT_CONFIG,
     },
-    production: {
-      sessionManager: {
-        className: 'SessionManagerDurableObject',
-        binding: 'SESSION_MANAGER',
-        maxInstances: 1000,
-        maxMemoryPerInstance: 256,
-        maxConnections: 10000,
-        enableAutoScaling: true,
-        ...DEFAULT_DURABLE_OBJECT_CONFIG,
-      },
-      collaborationRoom: {
-        className: 'CollaborationRoomDurableObject',
-        binding: 'COLLABORATION_ROOM',
-        maxInstances: 5000,
-        maxMemoryPerInstance: 128,
-        maxConnections: 50000,
-        enableAutoScaling: true,
-        ...DEFAULT_DURABLE_OBJECT_CONFIG,
-      },
-      realtimeSync: {
-        className: 'RealtimeSyncDurableObject',
-        binding: 'REALTIME_SYNC',
-        maxInstances: 2000,
-        maxMemoryPerInstance: 192,
-        maxConnections: 20000,
-        enableAutoScaling: true,
-        ...DEFAULT_DURABLE_OBJECT_CONFIG,
-      },
+    collaborationRoom: {
+      className: 'CollaborationRoomDurableObject',
+      binding: 'COLLABORATION_ROOM',
+      maxInstances: 20,
+      maxMemoryPerInstance: 32,
+      maxConnections: 50,
+      ...DEFAULT_DURABLE_OBJECT_CONFIG,
     },
-  }
+    realtimeSync: {
+      className: 'RealtimeSyncDurableObject',
+      binding: 'REALTIME_SYNC',
+      maxInstances: 15,
+      maxMemoryPerInstance: 64,
+      maxConnections: 200,
+      ...DEFAULT_DURABLE_OBJECT_CONFIG,
+    },
+  },
+  production: {
+    sessionManager: {
+      className: 'SessionManagerDurableObject',
+      binding: 'SESSION_MANAGER',
+      maxInstances: 1000,
+      maxMemoryPerInstance: 256,
+      maxConnections: 10000,
+      enableAutoScaling: true,
+      ...DEFAULT_DURABLE_OBJECT_CONFIG,
+    },
+    collaborationRoom: {
+      className: 'CollaborationRoomDurableObject',
+      binding: 'COLLABORATION_ROOM',
+      maxInstances: 5000,
+      maxMemoryPerInstance: 128,
+      maxConnections: 50000,
+      enableAutoScaling: true,
+      ...DEFAULT_DURABLE_OBJECT_CONFIG,
+    },
+    realtimeSync: {
+      className: 'RealtimeSyncDurableObject',
+      binding: 'REALTIME_SYNC',
+      maxInstances: 2000,
+      maxMemoryPerInstance: 192,
+      maxConnections: 20000,
+      enableAutoScaling: true,
+      ...DEFAULT_DURABLE_OBJECT_CONFIG,
+    },
+  },
+}
 
 export function getDurableObjectConfig(
   objectName: string,
   environment?: string
 ): DurableObjectConfig {
   const env = environment || process.env.ENVIRONMENT || 'development'
-  const config =
-    DURABLE_OBJECT_ENVIRONMENT_CONFIG[
-      env as keyof DurableObjectEnvironmentConfig
-    ]
+  const config = DURABLE_OBJECT_ENVIRONMENT_CONFIG[env as keyof DurableObjectEnvironmentConfig]
 
   if (!config || !config[objectName]) {
-    throw new Error(
-      `Durable Object configuration not found for ${objectName} in ${env}`
-    )
+    throw new Error(`Durable Object configuration not found for ${objectName} in ${env}`)
   }
 
   return config[objectName]
@@ -126,24 +122,24 @@ export interface SessionData {
   userId?: string
   ipAddress?: string
   userAgent?: string
-  data: Record<string, any>
+  data: Record<string, unknown>
   connections: Array<{
     connectionId: string
     connectedAt: number
     lastActivity: number
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   }>
   createdAt: number
   lastAccessed: number
   expiresAt: number
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface SessionMessage {
   type: 'data' | 'heartbeat' | 'disconnect' | 'error'
   sessionId?: string
   connectionId?: string
-  data?: any
+  data?: unknown
   timestamp: number
 }
 
@@ -170,7 +166,7 @@ export class SessionManagerDurableObject {
   private config: DurableObjectConfig
   private healthCheckData: DurableObjectHealthCheck | null = null
 
-  constructor(state: DurableObjectState, env: any) {
+  constructor(state: DurableObjectState, env: Record<string, unknown>) {
     this.storage = state.storage
     this.sessions = new Map()
     this.connections = new Map()
@@ -218,10 +214,7 @@ export class SessionManagerDurableObject {
     }
   }
 
-  private async handleSessionRequest(
-    request: Request,
-    sessionId?: string
-  ): Promise<Response> {
+  private async handleSessionRequest(request: Request, sessionId?: string): Promise<Response> {
     if (!sessionId) {
       return new Response('Session ID required', { status: 400 })
     }
@@ -345,9 +338,7 @@ export class SessionManagerDurableObject {
 
     // Update last activity
     session.lastAccessed = Date.now()
-    const connection = session.connections.find(
-      c => c.connectionId === connectionId
-    )
+    const connection = session.connections.find(c => c.connectionId === connectionId)
     if (connection) {
       connection.lastActivity = Date.now()
     }
@@ -379,10 +370,7 @@ export class SessionManagerDurableObject {
     }
   }
 
-  private async broadcastToSession(
-    sessionId: string,
-    message: SessionMessage
-  ): Promise<void> {
+  private async broadcastToSession(sessionId: string, message: SessionMessage): Promise<void> {
     const session = await this.getSession(sessionId)
     if (!session) return
 
@@ -402,7 +390,7 @@ export class SessionManagerDurableObject {
 
   private async createSession(
     sessionId: string,
-    data: any
+    data: Record<string, unknown>
   ): Promise<SessionData> {
     const session: SessionData = {
       sessionId,
@@ -446,7 +434,7 @@ export class SessionManagerDurableObject {
 
   private async updateSession(
     sessionId: string,
-    updates: any
+    updates: Partial<SessionData>
   ): Promise<SessionData | null> {
     const session = await this.getSession(sessionId)
     if (!session) return null
@@ -525,9 +513,7 @@ export class SessionManagerDurableObject {
     const session = await this.getSession(sessionId)
     if (!session) return
 
-    session.connections = session.connections.filter(
-      c => c.connectionId !== connectionId
-    )
+    session.connections = session.connections.filter(c => c.connectionId !== connectionId)
     session.lastAccessed = Date.now()
 
     // Delete session if no connections left
@@ -640,7 +626,7 @@ export class SessionManagerDurableObject {
 // Factory for creating Durable Object instances
 export function createSessionManagerDurableObject(
   state: DurableObjectState,
-  env: any
+  env: Record<string, unknown>
 ): SessionManagerDurableObject {
   return new SessionManagerDurableObject(state, env)
 }

@@ -1,23 +1,15 @@
+import { CheckCircle, Copy, Download, RotateCcw, Settings, Wand, XCircle } from 'lucide-react'
 import * as React from 'react'
-import { CodeFormatterProps, CodeFormatOptions } from './code-types'
-import { getLanguageConfig } from './language-configs'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import {
-  MagicWand,
-  Copy,
-  Download,
-  Settings,
-  RotateCcw,
-  CheckCircle,
-  XCircle
-} from 'lucide-react'
+import { cn } from '@/lib/utils'
+import type { CodeFormatOptions, CodeFormatterProps } from './code-types'
+import { getLanguageConfig } from './language-configs'
 
 interface FormatOption {
   key: keyof CodeFormatOptions
@@ -35,7 +27,7 @@ const DEFAULT_FORMAT_OPTIONS: CodeFormatOptions = {
   maxLineLength: 80,
   semicolons: true,
   quotes: 'double',
-  trailingComma: false
+  trailingComma: false,
 }
 
 const FORMAT_OPTIONS: FormatOption[] = [
@@ -45,14 +37,14 @@ const FORMAT_OPTIONS: FormatOption[] = [
     description: 'Number of spaces or tabs for indentation',
     type: 'number',
     min: 1,
-    max: 8
+    max: 8,
   },
   {
     key: 'indentType',
     label: 'Indent Type',
     description: 'Use spaces or tabs for indentation',
     type: 'select',
-    options: ['spaces', 'tabs']
+    options: ['spaces', 'tabs'],
   },
   {
     key: 'maxLineLength',
@@ -60,27 +52,27 @@ const FORMAT_OPTIONS: FormatOption[] = [
     description: 'Maximum characters per line',
     type: 'number',
     min: 40,
-    max: 200
+    max: 200,
   },
   {
     key: 'semicolons',
     label: 'Semicolons',
     description: 'Add semicolons where appropriate',
-    type: 'boolean'
+    type: 'boolean',
   },
   {
     key: 'quotes',
     label: 'Quote Style',
     description: 'Prefer single or double quotes',
     type: 'select',
-    options: ['single', 'double']
+    options: ['single', 'double'],
   },
   {
     key: 'trailingComma',
     label: 'Trailing Comma',
     description: 'Add trailing commas in objects and arrays',
-    type: 'boolean'
-  }
+    type: 'boolean',
+  },
 ]
 
 export function CodeFormatter({
@@ -89,7 +81,7 @@ export function CodeFormatter({
   options,
   onFormat,
   onError,
-  className
+  className,
 }: CodeFormatterProps) {
   const [isFormatting, setIsFormatting] = React.useState(false)
   const [showOptions, setShowOptions] = React.useState(false)
@@ -125,8 +117,8 @@ export function CodeFormatter({
         body: JSON.stringify({
           code,
           language,
-          options: localOptions
-        })
+          options: localOptions,
+        }),
       })
 
       if (!response.ok) {
@@ -149,7 +141,6 @@ export function CodeFormatter({
 
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(false), 3000)
-
     } catch (err: any) {
       const errorMessage = err.message || 'An error occurred during formatting'
       setError(errorMessage)
@@ -178,7 +169,7 @@ export function CodeFormatter({
     if (formattedCode) {
       const extension = languageConfig.extensions[0] || '.txt'
       const blob = new Blob([formattedCode], {
-        type: 'text/plain'
+        type: 'text/plain',
       })
 
       const url = URL.createObjectURL(blob)
@@ -207,7 +198,7 @@ export function CodeFormatter({
             <Switch
               id={option.key}
               checked={value as boolean}
-              onCheckedChange={(checked) => updateOption(option.key, checked)}
+              onCheckedChange={checked => updateOption(option.key, checked)}
             />
             <Label htmlFor={option.key} className="text-sm">
               {option.label}
@@ -227,7 +218,7 @@ export function CodeFormatter({
               min={option.min}
               max={option.max}
               value={value as number}
-              onChange={(e) => updateOption(option.key, parseInt(e.target.value))}
+              onChange={e => updateOption(option.key, parseInt(e.target.value, 10))}
               className="w-20"
             />
           </div>
@@ -242,10 +233,10 @@ export function CodeFormatter({
             <select
               id={option.key}
               value={value as string}
-              onChange={(e) => updateOption(option.key, e.target.value)}
-              className="w-full px-3 py-2 border rounded-md text-sm"
+              onChange={e => updateOption(option.key, e.target.value)}
+              className="w-full rounded-md border px-3 py-2 text-sm"
             >
-              {option.options?.map((opt) => (
+              {option.options?.map(opt => (
                 <option key={opt} value={opt}>
                   {opt.charAt(0).toUpperCase() + opt.slice(1)}
                 </option>
@@ -264,28 +255,20 @@ export function CodeFormatter({
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <MagicWand className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Wand className="h-5 w-5" />
               Code Formatter
               <Badge variant="secondary">{languageConfig.name}</Badge>
             </CardTitle>
 
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowOptions(!showOptions)}
-              >
-                <Settings className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" onClick={() => setShowOptions(!showOptions)}>
+                <Settings className="mr-2 h-4 w-4" />
                 Options
               </Button>
 
-              <Button
-                onClick={formatCode}
-                disabled={isFormatting || !code.trim()}
-                size="sm"
-              >
-                <MagicWand className={cn('h-4 w-4 mr-2', isFormatting && 'animate-spin')} />
+              <Button onClick={formatCode} disabled={isFormatting || !code.trim()} size="sm">
+                <Wand className={cn('mr-2 h-4 w-4', isFormatting && 'animate-spin')} />
                 {isFormatting ? 'Formatting...' : 'Format Code'}
               </Button>
             </div>
@@ -298,23 +281,17 @@ export function CodeFormatter({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-medium">Formatting Options</h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={resetToDefaults}
-                >
-                  <RotateCcw className="h-4 w-4 mr-2" />
+                <Button variant="outline" size="sm" onClick={resetToDefaults}>
+                  <RotateCcw className="mr-2 h-4 w-4" />
                   Reset to Defaults
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {FORMAT_OPTIONS.map((option) => (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {FORMAT_OPTIONS.map(option => (
                   <div key={option.key} className="space-y-1">
                     {formatOptionComponent(option)}
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {option.description}
-                    </p>
+                    <p className="text-gray-500 text-xs dark:text-gray-400">{option.description}</p>
                   </div>
                 ))}
               </div>
@@ -327,9 +304,7 @@ export function CodeFormatter({
       {success && (
         <Alert>
           <CheckCircle className="h-4 w-4" />
-          <AlertDescription>
-            Code formatted successfully!
-          </AlertDescription>
+          <AlertDescription>Code formatted successfully!</AlertDescription>
         </Alert>
       )}
 
@@ -349,21 +324,13 @@ export function CodeFormatter({
               <CardTitle className="text-lg">Formatted Code</CardTitle>
 
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={copyFormattedCode}
-                >
-                  <Copy className="h-4 w-4 mr-2" />
+                <Button variant="outline" size="sm" onClick={copyFormattedCode}>
+                  <Copy className="mr-2 h-4 w-4" />
                   Copy
                 </Button>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={downloadFormattedCode}
-                >
-                  <Download className="h-4 w-4 mr-2" />
+                <Button variant="outline" size="sm" onClick={downloadFormattedCode}>
+                  <Download className="mr-2 h-4 w-4" />
                   Download
                 </Button>
               </div>
@@ -371,14 +338,14 @@ export function CodeFormatter({
           </CardHeader>
 
           <CardContent>
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md overflow-auto border">
-              <pre className="text-sm font-mono whitespace-pre-wrap">
+            <div className="overflow-auto rounded-md border bg-gray-50 p-4 dark:bg-gray-900">
+              <pre className="whitespace-pre-wrap font-mono text-sm">
                 <code>{formattedCode}</code>
               </pre>
             </div>
 
             {/* Format Stats */}
-            <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+            <div className="mt-4 flex flex-wrap gap-4 text-gray-600 text-sm dark:text-gray-400">
               <div>Original: {code.split('\n').length} lines</div>
               <div>Formatted: {formattedCode.split('\n').length} lines</div>
               <div>Size: {formattedCode.length} characters</div>
@@ -398,7 +365,7 @@ export const FORMAT_PRESETS = {
     maxLineLength: 80,
     semicolons: true,
     quotes: 'double' as const,
-    trailingComma: true
+    trailingComma: true,
   },
   standardjs: {
     indentSize: 2,
@@ -406,7 +373,7 @@ export const FORMAT_PRESETS = {
     maxLineLength: 100,
     semicolons: true,
     quotes: 'single' as const,
-    trailingComma: false
+    trailingComma: false,
   },
   google: {
     indentSize: 2,
@@ -414,7 +381,7 @@ export const FORMAT_PRESETS = {
     maxLineLength: 100,
     semicolons: true,
     quotes: 'single' as const,
-    trailingComma: false
+    trailingComma: false,
   },
   tabs: {
     indentSize: 4,
@@ -422,14 +389,14 @@ export const FORMAT_PRESETS = {
     maxLineLength: 120,
     semicolons: true,
     quotes: 'double' as const,
-    trailingComma: false
-  }
+    trailingComma: false,
+  },
 }
 
 export function FormatPresetSelector({
   selectedPreset,
   onPresetChange,
-  className
+  className,
 }: {
   selectedPreset: keyof typeof FORMAT_PRESETS
   onPresetChange: (preset: keyof typeof FORMAT_PRESETS, options: CodeFormatOptions) => void

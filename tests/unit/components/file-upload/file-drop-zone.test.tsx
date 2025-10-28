@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen, fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { render } from '../test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FileDropZone } from '@/web/components/file-upload/file-drop-zone'
+import { render } from '../test-utils'
 
 describe('FileDropZone Component', () => {
   const mockOnDrop = vi.fn()
@@ -10,9 +10,15 @@ describe('FileDropZone Component', () => {
   const mockOnDragOver = vi.fn()
   const mockOnDragLeave = vi.fn()
 
-  const mockFile = new File(['test content'], 'test.txt', { type: 'text/plain' })
-  const mockJsonFile = new File(['{"key": "value"}'], 'test.json', { type: 'application/json' })
-  const mockLargeFile = new File(['x'.repeat(11 * 1024 * 1024)], 'large.txt', { type: 'text/plain' }) // 11MB
+  const mockFile = new File(['test content'], 'test.txt', {
+    type: 'text/plain',
+  })
+  const mockJsonFile = new File(['{"key": "value"}'], 'test.json', {
+    type: 'application/json',
+  })
+  const mockLargeFile = new File(['x'.repeat(11 * 1024 * 1024)], 'large.txt', {
+    type: 'text/plain',
+  }) // 11MB
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -42,7 +48,9 @@ describe('FileDropZone Component', () => {
     const user = userEvent.setup()
     render(<FileDropZone onFilesSelected={mockOnFilesSelected} />)
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
     await user.click(dropZone)
 
     // Should trigger file input click
@@ -54,7 +62,9 @@ describe('FileDropZone Component', () => {
     const user = userEvent.setup()
     render(<FileDropZone />)
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
     dropZone.focus()
 
     await user.keyboard('{Enter}')
@@ -67,12 +77,14 @@ describe('FileDropZone Component', () => {
   it('handles drag over events', () => {
     render(<FileDropZone onDragOver={mockOnDragOver} />)
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
 
     fireEvent.dragOver(dropZone, {
       dataTransfer: {
-        files: [mockFile]
-      }
+        files: [mockFile],
+      },
     })
 
     expect(mockOnDragOver).toHaveBeenCalled()
@@ -83,12 +95,14 @@ describe('FileDropZone Component', () => {
   it('handles drag enter events', () => {
     render(<FileDropZone />)
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
 
     fireEvent.dragEnter(dropZone, {
       dataTransfer: {
-        files: [mockFile]
-      }
+        files: [mockFile],
+      },
     })
 
     expect(dropZone).toHaveClass('border-blue-500')
@@ -97,7 +111,9 @@ describe('FileDropZone Component', () => {
   it('handles drag leave events', () => {
     render(<FileDropZone onDragLeave={mockOnDragLeave} />)
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
 
     // First trigger drag over to activate state
     fireEvent.dragOver(dropZone)
@@ -113,12 +129,14 @@ describe('FileDropZone Component', () => {
   it('handles file drop events', () => {
     render(<FileDropZone onDrop={mockOnDrop} onFilesSelected={mockOnFilesSelected} />)
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
 
     fireEvent.drop(dropZone, {
       dataTransfer: {
-        files: [mockFile]
-      }
+        files: [mockFile],
+      },
     })
 
     expect(mockOnDrop).toHaveBeenCalledWith([mockFile])
@@ -134,12 +152,14 @@ describe('FileDropZone Component', () => {
       />
     )
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
 
     fireEvent.drop(dropZone, {
       dataTransfer: {
-        files: [mockFile, mockJsonFile] // Only JSON file should be accepted
-      }
+        files: [mockFile, mockJsonFile], // Only JSON file should be accepted
+      },
     })
 
     expect(mockOnDrop).toHaveBeenCalledWith([mockJsonFile])
@@ -155,12 +175,14 @@ describe('FileDropZone Component', () => {
       />
     )
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
 
     fireEvent.drop(dropZone, {
       dataTransfer: {
-        files: [mockFile, mockLargeFile] // Large file should be filtered out
-      }
+        files: [mockFile, mockLargeFile], // Large file should be filtered out
+      },
     })
 
     expect(mockOnDrop).toHaveBeenCalledWith([mockFile])
@@ -169,19 +191,17 @@ describe('FileDropZone Component', () => {
 
   it('handles multiple files when multiple is true', () => {
     render(
-      <FileDropZone
-        multiple={true}
-        onDrop={mockOnDrop}
-        onFilesSelected={mockOnFilesSelected}
-      />
+      <FileDropZone multiple={true} onDrop={mockOnDrop} onFilesSelected={mockOnFilesSelected} />
     )
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
 
     fireEvent.drop(dropZone, {
       dataTransfer: {
-        files: [mockFile, mockJsonFile]
-      }
+        files: [mockFile, mockJsonFile],
+      },
     })
 
     expect(mockOnDrop).toHaveBeenCalledWith([mockFile, mockJsonFile])
@@ -190,19 +210,17 @@ describe('FileDropZone Component', () => {
 
   it('handles single file when multiple is false', () => {
     render(
-      <FileDropZone
-        multiple={false}
-        onDrop={mockOnDrop}
-        onFilesSelected={mockOnFilesSelected}
-      />
+      <FileDropZone multiple={false} onDrop={mockOnDrop} onFilesSelected={mockOnFilesSelected} />
     )
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
 
     fireEvent.drop(dropZone, {
       dataTransfer: {
-        files: [mockFile, mockJsonFile]
-      }
+        files: [mockFile, mockJsonFile],
+      },
     })
 
     expect(mockOnDrop).toHaveBeenCalledWith([mockFile]) // Only first file
@@ -210,26 +228,26 @@ describe('FileDropZone Component', () => {
   })
 
   it('handles file input selection', async () => {
-    const user = userEvent.setup()
+    const _user = userEvent.setup()
     render(<FileDropZone onFilesSelected={mockOnFilesSelected} />)
 
     const fileInput = screen.getByRole('button', { name: 'File input' })
 
     fireEvent.change(fileInput, {
-      target: { files: [mockFile] }
+      target: { files: [mockFile] },
     })
 
     expect(mockOnFilesSelected).toHaveBeenCalledWith([mockFile])
   })
 
   it('resets file input value after selection', async () => {
-    const user = userEvent.setup()
+    const _user = userEvent.setup()
     render(<FileDropZone />)
 
     const fileInput = screen.getByRole('button', { name: 'File input' })
 
     fireEvent.change(fileInput, {
-      target: { files: [mockFile] }
+      target: { files: [mockFile] },
     })
 
     expect(fileInput).toHaveValue('')
@@ -250,7 +268,9 @@ describe('FileDropZone Component', () => {
   it('applies custom className', () => {
     render(<FileDropZone className="custom-drop-zone" />)
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
     expect(dropZone).toHaveClass('custom-drop-zone')
   })
 
@@ -258,14 +278,18 @@ describe('FileDropZone Component', () => {
     const customStyle = { backgroundColor: 'red' }
     render(<FileDropZone style={customStyle} />)
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
     expect(dropZone).toHaveStyle('background-color: red')
   })
 
   it('disables drop zone when disabled prop is true', () => {
     render(<FileDropZone disabled />)
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
     expect(dropZone).toHaveAttribute('aria-disabled', 'true')
     expect(dropZone).toHaveAttribute('tabIndex', '-1')
     expect(dropZone).toHaveClass('opacity-50', 'cursor-not-allowed')
@@ -277,12 +301,14 @@ describe('FileDropZone Component', () => {
   it('prevents drop when disabled', () => {
     render(<FileDropZone disabled onDrop={mockOnDrop} />)
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
 
     fireEvent.drop(dropZone, {
       dataTransfer: {
-        files: [mockFile]
-      }
+        files: [mockFile],
+      },
     })
 
     expect(mockOnDrop).not.toHaveBeenCalled()
@@ -291,12 +317,14 @@ describe('FileDropZone Component', () => {
   it('prevents drag events when disabled', () => {
     render(<FileDropZone disabled onDragOver={mockOnDragOver} />)
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
 
     fireEvent.dragOver(dropZone, {
       dataTransfer: {
-        files: [mockFile]
-      }
+        files: [mockFile],
+      },
     })
 
     expect(dropZone).not.toHaveClass('border-blue-500')
@@ -307,7 +335,9 @@ describe('FileDropZone Component', () => {
     const user = userEvent.setup()
     render(<FileDropZone disabled />)
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
     await user.click(dropZone)
 
     // Should not trigger file input
@@ -317,18 +347,20 @@ describe('FileDropZone Component', () => {
   it('handles empty drop', () => {
     render(<FileDropZone onDrop={mockOnDrop} />)
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
 
     fireEvent.drop(dropZone, {
       dataTransfer: {
-        files: []
-      }
+        files: [],
+      },
     })
 
     expect(mockOnDrop).not.toHaveBeenCalled()
   })
 
-  it('handles files that don\'t pass validation', () => {
+  it("handles files that don't pass validation", () => {
     render(
       <FileDropZone
         accept={['.json']}
@@ -338,15 +370,19 @@ describe('FileDropZone Component', () => {
       />
     )
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
 
     // File that doesn't match accept criteria and is too large
-    const invalidFile = new File(['x'.repeat(2048)], 'test.txt', { type: 'text/plain' })
+    const invalidFile = new File(['x'.repeat(2048)], 'test.txt', {
+      type: 'text/plain',
+    })
 
     fireEvent.drop(dropZone, {
       dataTransfer: {
-        files: [invalidFile]
-      }
+        files: [invalidFile],
+      },
     })
 
     expect(mockOnDrop).not.toHaveBeenCalled()
@@ -356,7 +392,9 @@ describe('FileDropZone Component', () => {
   it('has proper accessibility attributes', () => {
     render(<FileDropZone disabled={false} />)
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
     expect(dropZone).toHaveAttribute('tabIndex', '0')
     expect(dropZone).toHaveAttribute('aria-label', 'File upload drop zone')
     expect(dropZone).toHaveAttribute('aria-disabled', 'false')
@@ -365,14 +403,16 @@ describe('FileDropZone Component', () => {
   it('stops event propagation', () => {
     render(<FileDropZone />)
 
-    const dropZone = screen.getByRole('button', { name: 'File upload drop zone' })
+    const dropZone = screen.getByRole('button', {
+      name: 'File upload drop zone',
+    })
 
     const dragOverEvent = fireEvent.dragOver(dropZone, {
-      dataTransfer: { files: [mockFile] }
+      dataTransfer: { files: [mockFile] },
     })
 
     const dropEvent = fireEvent.drop(dropZone, {
-      dataTransfer: { files: [mockFile] }
+      dataTransfer: { files: [mockFile] },
     })
 
     // Events should have been prevented from default behavior

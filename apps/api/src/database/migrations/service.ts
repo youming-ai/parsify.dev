@@ -1,30 +1,27 @@
-import { D1Database } from '@cloudflare/workers-types'
+import type { D1Database } from '@cloudflare/workers-types'
+import { createMigrationMonitor, type MigrationMonitor } from './monitoring'
+import { createMigrationRunner, type MigrationRunner } from './runner'
+import { createMigrationStorage, type MigrationStorage } from './storage'
 import {
-  Migration,
+  type Migration,
+  type MigrationHealthCheck,
+  type MigrationHook,
+  type MigrationLogger,
+  type MigrationOptions,
+  type MigrationPlan,
+  type MigrationResult,
+  type MigrationRunnerConfig,
+  type MigrationStats,
   MigrationStatus,
-  MigrationOptions,
-  MigrationResult,
-  RollbackResult,
-  MigrationPlan,
-  MigrationValidationError,
-  MigrationHealthCheck,
-  MigrationStats,
-  MigrationRunnerConfig,
-  MigrationHook,
-  MigrationContext,
-  MigrationLogger,
-  DEFAULT_DATABASE_CLIENT_CONFIG
+  type MigrationValidationError,
+  type RollbackResult,
 } from './types'
-import { createMigrationRunner, MigrationRunner } from './runner'
-import { createMigrationValidator, MigrationValidator } from './validator'
-import { createMigrationMonitor, MigrationMonitor } from './monitoring'
-import { createMigrationStorage, MigrationStorage } from './storage'
+import { createMigrationValidator, type MigrationValidator } from './validator'
 
 /**
  * Main migration service that orchestrates all migration operations
  */
 export class MigrationService {
-  private db: D1Database
   private config: Required<MigrationRunnerConfig>
   private runner: MigrationRunner
   private validator: MigrationValidator
@@ -33,10 +30,7 @@ export class MigrationService {
   private logger: MigrationLogger
   private isInitialized: boolean = false
 
-  constructor(
-    db: D1Database,
-    config: MigrationRunnerConfig = {}
-  ) {
+  constructor(db: D1Database, config: MigrationRunnerConfig = {}) {
     this.db = db
     this.config = {
       migrationsPath: config.migrationsPath || './migrations',
@@ -51,21 +45,21 @@ export class MigrationService {
       enableBatchMode: config.enableBatchMode ?? false,
       maxConcurrentMigrations: config.maxConcurrentMigrations ?? 1,
       enableHealthChecks: config.enableHealthChecks ?? true,
-      healthCheckInterval: config.healthCheckInterval ?? 60000
+      healthCheckInterval: config.healthCheckInterval ?? 60000,
     }
 
     this.logger = this.createLogger()
     this.storage = createMigrationStorage(db, {
       tableName: this.config.tableName,
-      logger: this.logger
+      logger: this.logger,
     })
     this.monitor = createMigrationMonitor(db, {
       logger: this.logger,
-      enablePersistence: this.config.enableLogging
+      enablePersistence: this.config.enableLogging,
     })
     this.validator = createMigrationValidator(db, {
       logger: this.logger,
-      enableSafetyChecks: true
+      enableSafetyChecks: true,
     })
     this.runner = createMigrationRunner(db, {
       storage: this.storage,
@@ -73,7 +67,7 @@ export class MigrationService {
       timeout: this.config.timeout,
       retries: this.config.retries,
       validateChecksums: this.config.validateChecksums,
-      batch: this.config.enableBatchMode
+      batch: this.config.enableBatchMode,
     })
   }
 
@@ -100,14 +94,13 @@ export class MigrationService {
         const healthCheck = await this.healthCheck()
         if (!healthCheck.isHealthy) {
           this.logger.warn('Migration service initialized with health issues', {
-            issues: healthCheck.issues
+            issues: healthCheck.issues,
           })
         }
       }
 
       this.isInitialized = true
       this.logger.info('Migration service initialized successfully')
-
     } catch (error) {
       this.logger.error('Failed to initialize migration service', error)
       throw new Error(`Migration service initialization failed: ${(error as Error).message}`)
@@ -119,7 +112,7 @@ export class MigrationService {
    */
   async loadMigrations(): Promise<Migration[]> {
     this.logger.info('Loading migrations', {
-      path: this.config.migrationsPath
+      path: this.config.migrationsPath,
     })
 
     try {
@@ -129,7 +122,6 @@ export class MigrationService {
 
       this.logger.info(`Loaded ${migrations.length} migrations`)
       return migrations
-
     } catch (error) {
       this.logger.error('Failed to load migrations', error)
       throw new Error(`Failed to load migrations: ${(error as Error).message}`)
@@ -151,11 +143,10 @@ export class MigrationService {
       this.logger.info('Migration plan generated', {
         pendingMigrations: plan.migrations.length,
         warnings: plan.warnings.length,
-        errors: plan.errors.length
+        errors: plan.errors.length,
       })
 
       return plan
-
     } catch (error) {
       this.logger.error('Failed to generate migration plan', error)
       throw error
@@ -183,7 +174,7 @@ export class MigrationService {
     this.logger.info('Starting migration run', {
       versions,
       force,
-      dryRun: runnerOptions.dryRun
+      dryRun: runnerOptions.dryRun,
     })
 
     try {
@@ -229,11 +220,10 @@ export class MigrationService {
         successful,
         failed,
         executionTime,
-        dryRun: runnerOptions.dryRun
+        dryRun: runnerOptions.dryRun,
       })
 
       return { results, plan, stats }
-
     } catch (error) {
       const executionTime = Date.now() - startTime
       this.logger.error('Migration run failed', { error, executionTime })
@@ -267,7 +257,7 @@ export class MigrationService {
       versions,
       steps,
       force,
-      dryRun: runnerOptions.dryRun
+      dryRun: runnerOptions.dryRun,
     })
 
     try {
@@ -297,7 +287,7 @@ export class MigrationService {
         status: MigrationStatus.COMPLETED,
         createdAt: record.applied_at,
         appliedAt: record.applied_at,
-        dependencies: record.dependencies ? JSON.parse(record.dependencies) : undefined
+        dependencies: record.dependencies ? JSON.parse(record.dependencies) : undefined,
       }))
 
       // Run rollbacks
@@ -315,11 +305,10 @@ export class MigrationService {
         successful,
         failed,
         executionTime,
-        dryRun: runnerOptions.dryRun
+        dryRun: runnerOptions.dryRun,
       })
 
       return { results, stats }
-
     } catch (error) {
       const executionTime = Date.now() - startTime
       this.logger.error('Migration rollback failed', { error, executionTime })
@@ -330,12 +319,7 @@ export class MigrationService {
   /**
    * Validate migrations
    */
-  async validateMigrations(
-    options: {
-      versions?: string[]
-      dryRun?: boolean
-    } = {}
-  ): Promise<{
+  async validateMigrations(options: { versions?: string[]; dryRun?: boolean } = {}): Promise<{
     errors: MigrationValidationError[]
     validMigrations: Migration[]
     invalidMigrations: Migration[]
@@ -367,7 +351,7 @@ export class MigrationService {
         total: migrationsToValidate.length,
         valid: validation.validMigrations.length,
         invalid: validation.invalidMigrations.length,
-        errors: validation.errors.length
+        errors: validation.errors.length,
       }
 
       this.logger.info('Migration validation completed', summary)
@@ -376,9 +360,8 @@ export class MigrationService {
         errors: validation.errors,
         validMigrations: validation.validMigrations,
         invalidMigrations: validation.invalidMigrations,
-        summary
+        summary,
       }
-
     } catch (error) {
       this.logger.error('Migration validation failed', error)
       throw error
@@ -395,11 +378,10 @@ export class MigrationService {
       this.logger.debug('Migration health check completed', {
         healthy: healthCheck.isHealthy,
         issues: healthCheck.issues.length,
-        recommendations: healthCheck.recommendations.length
+        recommendations: healthCheck.recommendations.length,
       })
 
       return healthCheck
-
     } catch (error) {
       this.logger.error('Migration health check failed', error)
 
@@ -410,7 +392,7 @@ export class MigrationService {
         recommendations: ['Check migration service configuration and database connectivity'],
         pendingMigrations: 0,
         failedMigrations: 0,
-        totalMigrations: 0
+        totalMigrations: 0,
       }
     }
   }
@@ -468,11 +450,10 @@ export class MigrationService {
         appliedAt: record.applied_at,
         executionTime: record.execution_time,
         errorMessage: record.error_message,
-        dependencies: record.dependencies ? JSON.parse(record.dependencies) : undefined
+        dependencies: record.dependencies ? JSON.parse(record.dependencies) : undefined,
       }))
 
       return { migrations, logs: recentLogs }
-
     } catch (error) {
       this.logger.error('Failed to get migration history', error)
       throw error
@@ -482,7 +463,7 @@ export class MigrationService {
   /**
    * Set migration hooks
    */
-  setHooks(hooks: {
+  setHooks(_hooks: {
     beforeMigration?: MigrationHook
     afterMigration?: MigrationHook
     beforeRollback?: MigrationHook
@@ -503,11 +484,10 @@ export class MigrationService {
     try {
       // Clear old logs if needed
       await this.monitor.clearLogs({
-        olderThan: Date.now() - (30 * 24 * 60 * 60 * 1000) // 30 days
+        olderThan: Date.now() - 30 * 24 * 60 * 60 * 1000, // 30 days
       })
 
       this.logger.info('Migration service cleanup completed')
-
     } catch (error) {
       this.logger.error('Migration service cleanup failed', error)
     }
@@ -563,7 +543,7 @@ export class MigrationService {
         if (this.config.enableLogging) {
           console[level](`[MigrationService] ${message}`, ...args)
         }
-      }
+      },
     }
   }
 }

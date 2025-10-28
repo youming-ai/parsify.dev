@@ -7,12 +7,12 @@
  * and uploading source maps for better error tracking and debugging.
  */
 
-const { execSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
+const { execSync } = require('node:child_process')
+const fs = require('node:fs')
+const _path = require('node:path')
 
 // Configuration
-const SENTRY_DSN = process.env.SENTRY_DSN
+const _SENTRY_DSN = process.env.SENTRY_DSN
 const SENTRY_AUTH_TOKEN = process.env.SENTRY_AUTH_TOKEN
 const SENTRY_ORG = process.env.SENTRY_ORG || 'your-org'
 const SENTRY_PROJECT = process.env.SENTRY_PROJECT || 'parsify-api'
@@ -22,7 +22,7 @@ function getVersion() {
   try {
     const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'))
     return packageJson.version
-  } catch (error) {
+  } catch (_error) {
     console.warn('Could not read version from package.json, using git commit')
     return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim()
   }
@@ -32,7 +32,7 @@ function getVersion() {
 function getCommitSha() {
   try {
     return execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim()
-  } catch (error) {
+  } catch (_error) {
     console.warn('Could not get git commit SHA')
     return 'unknown'
   }
@@ -41,8 +41,10 @@ function getCommitSha() {
 // Get git branch name
 function getBranch() {
   try {
-    return execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim()
-  } catch (error) {
+    return execSync('git rev-parse --abbrev-ref HEAD', {
+      encoding: 'utf8',
+    }).trim()
+  } catch (_error) {
     console.warn('Could not get git branch name')
     return 'unknown'
   }
@@ -58,7 +60,7 @@ function checkSentryCli() {
   try {
     execSync('npx @sentry/cli --version', { stdio: 'pipe' })
     return true
-  } catch (error) {
+  } catch (_error) {
     console.error('Sentry CLI not found. Installing...')
     execSync('npm install -g @sentry/cli', { stdio: 'inherit' })
     return true
@@ -76,7 +78,7 @@ function createRelease(version, commitSha) {
       `--project=${SENTRY_PROJECT}`,
       `new ${version}`,
       `--finalize`,
-      `--log-level=info`
+      `--log-level=info`,
     ].join(' ')
 
     if (commitSha && commitSha !== 'unknown') {
@@ -110,7 +112,7 @@ function uploadSourceMaps(version, buildDir = './dist') {
       `upload-sourcemaps ${buildDir}`,
       '--url-prefix ~/',
       '--validate',
-      '--log-level=info'
+      '--log-level=info',
     ].join(' ')
 
     execSync(command, { stdio: 'inherit' })
@@ -132,7 +134,7 @@ function setDeployment(version, environment) {
       `--project=${SENTRY_PROJECT}`,
       `deploys ${version} new`,
       `--env=${environment}`,
-      '--log-level=info'
+      '--log-level=info',
     ].join(' ')
 
     execSync(command, { stdio: 'inherit' })
@@ -148,8 +150,12 @@ function generateReleaseNotes(version, commitSha) {
   try {
     console.log('Generating release notes...')
 
-    const previousTag = execSync('git describe --tags --abbrev=0 HEAD^', { encoding: 'utf8' }).trim()
-    const commitMessages = execSync(`git log ${previousTag}..HEAD --oneline`, { encoding: 'utf8' })
+    const previousTag = execSync('git describe --tags --abbrev=0 HEAD^', {
+      encoding: 'utf8',
+    }).trim()
+    const commitMessages = execSync(`git log ${previousTag}..HEAD --oneline`, {
+      encoding: 'utf8',
+    })
       .split('\n')
       .filter(line => line.trim())
       .slice(0, 10) // Limit to 10 commits
@@ -244,7 +250,6 @@ async function main() {
     }
 
     console.log('\n✅ Sentry release management completed successfully!')
-
   } catch (error) {
     console.error('❌ Sentry release management failed:', error.message)
     process.exit(1)

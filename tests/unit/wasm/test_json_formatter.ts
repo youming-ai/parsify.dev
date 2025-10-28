@@ -1,17 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
+  formatJson,
   JsonFormatter,
   JsonFormattingError,
-  JsonValidationError,
   JsonSizeError,
-  JsonDepthError,
+  JsonValidationError,
   jsonFormatter,
-  formatJson,
-  validateJson,
   minifyJson,
   prettifyJson,
-  JsonFormattingOptions,
-  JsonFormattingResult
+  validateJson,
 } from '../../../apps/api/src/wasm/json_formatter'
 
 describe('JsonFormatter', () => {
@@ -74,12 +71,12 @@ describe('JsonFormatter', () => {
 
     it('should handle different data types', async () => {
       const input = JSON.stringify({
-        string: "test",
+        string: 'test',
         number: 42,
         boolean: true,
         null: null,
         array: [1, 2, 3],
-        object: { nested: true }
+        object: { nested: true },
       })
 
       const result = await formatter.format(input)
@@ -125,7 +122,10 @@ describe('JsonFormatter', () => {
 
     it('should preserve key order when requested', async () => {
       const input = '{"z":1,"a":2,"m":3}'
-      const result = await formatter.format(input, { sortKeys: true, preserveOrder: true })
+      const result = await formatter.format(input, {
+        sortKeys: true,
+        preserveOrder: true,
+      })
 
       expect(result.success).toBe(true)
       // Should preserve original order when preserveOrder is true
@@ -166,7 +166,9 @@ describe('JsonFormatter', () => {
       // Note: JSON.stringify naturally removes undefined, so we test with the transformation
       const parsed = JSON.parse(input)
       const modified = { ...parsed, age: undefined, city: undefined }
-      const result = await formatter.format(JSON.stringify(modified), { removeUndefined: true })
+      const result = await formatter.format(JSON.stringify(modified), {
+        removeUndefined: true,
+      })
 
       expect(result.success).toBe(true)
       expect(result.formatted).toContain('"name"')
@@ -179,7 +181,7 @@ describe('JsonFormatter', () => {
       const input = JSON.stringify({ text: longString })
       const result = await formatter.format(input, {
         truncateLongStrings: true,
-        maxStringLength: 50
+        maxStringLength: 50,
       })
 
       expect(result.success).toBe(true)
@@ -236,11 +238,11 @@ describe('JsonFormatter', () => {
     it('should provide accurate statistics', async () => {
       const input = JSON.stringify({
         users: [
-          { name: "John", age: 30, active: true },
-          { name: "Jane", age: 25, active: false }
+          { name: 'John', age: 30, active: true },
+          { name: 'Jane', age: 25, active: false },
         ],
         total: 2,
-        meta: null
+        meta: null,
       })
 
       const result = await formatter.format(input)
@@ -286,7 +288,7 @@ describe('JsonFormatter', () => {
     })
 
     it('should reject excessive repetition', async () => {
-      const repetitiveInput = '{"data":"' + 'a'.repeat(1001) + '"}'
+      const repetitiveInput = `{"data":"${'a'.repeat(1001)}"}`
 
       await expect(formatter.format(repetitiveInput)).rejects.toThrow(JsonValidationError)
     })
@@ -337,7 +339,7 @@ describe('Utility functions', () => {
     const invalidResult = await validateJson(invalidJson)
     expect(invalidResult.valid).toBe(false)
     expect(invalidResult.errors).toBeDefined()
-    expect(invalidResult.errors!.length).toBeGreaterThan(0)
+    expect(invalidResult.errors?.length).toBeGreaterThan(0)
   })
 
   it('minifyJson should minify JSON correctly', async () => {
@@ -398,7 +400,7 @@ describe('Edge cases', () => {
       newline: 'line1\\nline2',
       tab: 'col1\\tcol2',
       quote: 'say \\"hello\\"',
-      backslash: 'path\\\\to\\\\file'
+      backslash: 'path\\\\to\\\\file',
     })
 
     const result = await formatJson(input)
@@ -408,7 +410,7 @@ describe('Edge cases', () => {
   it('should handle very long numbers', async () => {
     const input = JSON.stringify({
       bigInt: 9007199254740991n, // BigInt max safe integer
-      scientific: 1.23e+10
+      scientific: 1.23e10,
     })
 
     const result = await formatJson(input)
@@ -440,8 +442,8 @@ describe('Performance benchmarks', () => {
         tags: [`tag${i}`, `category${i % 10}`],
         metadata: {
           created: new Date().toISOString(),
-          active: i % 2 === 0
-        }
+          active: i % 2 === 0,
+        },
       }
     }
 
@@ -462,7 +464,7 @@ describe('Performance benchmarks', () => {
     const smallObjects = Array.from({ length: 100 }, (_, i) => ({
       id: i,
       name: `Item ${i}`,
-      value: Math.random()
+      value: Math.random(),
     }))
 
     const input = JSON.stringify(smallObjects)

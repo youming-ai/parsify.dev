@@ -2,9 +2,8 @@
  * Memory performance testing for WASM modules
  */
 
-import { IWasmModule } from '../modules/interfaces/wasm-module.interface'
-import { MemoryStats } from './memory-monitor'
-import { WasmMemoryManager, MemoryUsage } from './memory-manager'
+import type { IWasmModule } from '../modules/interfaces/wasm-module.interface'
+import type { WasmMemoryManager } from './memory-manager'
 
 /**
  * Memory performance test configuration
@@ -305,8 +304,8 @@ export class MemoryPerformanceTester {
         averageScore: 0,
         worstPerformingTest: '',
         bestPerformingTest: '',
-        recommendations: []
-      }
+        recommendations: [],
+      },
     }
 
     this.testSuites.set(name, suite)
@@ -394,7 +393,7 @@ export class MemoryPerformanceTester {
             totalGCs: 0,
             totalGCTime: 0,
             averageGCTime: 0,
-            memoryReclaimed: 0
+            memoryReclaimed: 0,
           },
           pressureEvents: 0,
           allocationPatterns: [],
@@ -402,7 +401,7 @@ export class MemoryPerformanceTester {
           customMetrics: {},
           success: false,
           error: error instanceof Error ? error.message : 'Unknown error',
-          score: 0
+          score: 0,
         }
         suite.results.push(errorMetrics)
         suite.summary.failedTests++
@@ -442,14 +441,14 @@ export class MemoryPerformanceTester {
         totalGCs: 0,
         totalGCTime: 0,
         averageGCTime: 0,
-        memoryReclaimed: 0
+        memoryReclaimed: 0,
       },
       pressureEvents: 0,
       allocationPatterns: [],
       timeline: [],
       customMetrics: {},
       success: false,
-      score: 0
+      score: 0,
     }
 
     const context: TestExecutionContext = {
@@ -460,7 +459,7 @@ export class MemoryPerformanceTester {
       shouldStop: () => shouldStop,
       recordMetric: (name: string, value: any) => {
         metrics.customMetrics[name] = value
-      }
+      },
     }
 
     try {
@@ -485,8 +484,8 @@ export class MemoryPerformanceTester {
 
       // Calculate final metrics
       metrics.duration = Date.now() - startTime
-      metrics.operationsPerSecond = metrics.duration > 0 ?
-        (metrics.operations / metrics.duration) * 1000 : 0
+      metrics.operationsPerSecond =
+        metrics.duration > 0 ? (metrics.operations / metrics.duration) * 1000 : 0
 
       // Validate test results
       metrics.success = test.validate(metrics)
@@ -559,7 +558,8 @@ export class MemoryPerformanceTester {
     // Leak prevention weight: 10%
     if (metrics.memoryLeaked === 0) {
       score += 10
-    } else if (metrics.memoryLeaked < 1024) { // Less than 1KB
+    } else if (metrics.memoryLeaked < 1024) {
+      // Less than 1KB
       score += 5
     }
 
@@ -683,7 +683,7 @@ export class MemoryPerformanceTester {
   } {
     return {
       exportedAt: new Date().toISOString(),
-      suites: Array.from(this.testSuites.values())
+      suites: Array.from(this.testSuites.values()),
     }
   }
 }
@@ -717,17 +717,16 @@ export class BuiltInMemoryTests {
         scenarios: [],
         timeout: 30000,
         enableDetailedMetrics: true,
-        metricsInterval: 100
+        metricsInterval: 100,
       },
-      execute: async (context) => {
+      execute: async context => {
         const { config, metrics, memoryManager, module } = context
         const startTime = Date.now()
 
         while (Date.now() - startTime < config.testDuration && !context.shouldStop()) {
           // Allocate memory
-          const size = config.allocationSizes[
-            Math.floor(Math.random() * config.allocationSizes.length)
-          ]
+          const size =
+            config.allocationSizes[Math.floor(Math.random() * config.allocationSizes.length)]
 
           if (memoryManager.canAllocate(module.id, size)) {
             memoryManager.recordAllocation(module.id, size)
@@ -748,27 +747,32 @@ export class BuiltInMemoryTests {
               metrics.timeline.push({
                 timestamp: Date.now() - startTime,
                 memory: usage.used,
-                operation: 'allocation'
+                operation: 'allocation',
               })
             }
           }
 
           // Wait based on allocation interval
-          const interval = config.allocationIntervals[
-            Math.floor(Math.random() * config.allocationIntervals.length)
-          ]
+          const interval =
+            config.allocationIntervals[
+              Math.floor(Math.random() * config.allocationIntervals.length)
+            ]
           await new Promise(resolve => setTimeout(resolve, interval))
         }
 
         metrics.memoryLeaked = metrics.totalMemoryAllocated - metrics.totalMemoryDeallocated
-        metrics.averageMemoryUsage = metrics.timeline.length > 0 ?
-          metrics.timeline.reduce((sum, t) => sum + t.memory, 0) / metrics.timeline.length : 0
+        metrics.averageMemoryUsage =
+          metrics.timeline.length > 0
+            ? metrics.timeline.reduce((sum, t) => sum + t.memory, 0) / metrics.timeline.length
+            : 0
       },
-      validate: (metrics) => {
-        return metrics.success &&
-               metrics.memoryLeaked < metrics.totalMemoryAllocated * 0.1 && // Less than 10% leaked
-               metrics.memoryEfficiency > 70 // At least 70% efficient
-      }
+      validate: metrics => {
+        return (
+          metrics.success &&
+          metrics.memoryLeaked < metrics.totalMemoryAllocated * 0.1 && // Less than 10% leaked
+          metrics.memoryEfficiency > 70
+        ) // At least 70% efficient
+      },
     }
   }
 
@@ -797,22 +801,22 @@ export class BuiltInMemoryTests {
         scenarios: [],
         timeout: 60000,
         enableDetailedMetrics: true,
-        metricsInterval: 50
+        metricsInterval: 50,
       },
-      execute: async (context) => {
+      execute: async context => {
         const { config, metrics, memoryManager, module } = context
         const startTime = Date.now()
         const concurrentOperations: Promise<void>[] = []
 
-        const runOperation = async (workerId: number) => {
+        const runOperation = async (_workerId: number) => {
           while (Date.now() - startTime < config.testDuration && !context.shouldStop()) {
             // Burst pattern: allocate many small chunks quickly
             const burstSize = 10 + Math.floor(Math.random() * 20)
 
             for (let i = 0; i < burstSize; i++) {
-              const size = config.allocationSizes[
-                Math.floor(Math.random() * config.allocationSizes.length)
-              ] * config.stressMultiplier
+              const size =
+                config.allocationSizes[Math.floor(Math.random() * config.allocationSizes.length)] *
+                config.stressMultiplier
 
               if (memoryManager.canAllocate(module.id, size)) {
                 memoryManager.recordAllocation(module.id, size)
@@ -851,11 +855,13 @@ export class BuiltInMemoryTests {
 
         metrics.memoryLeaked = metrics.totalMemoryAllocated - metrics.totalMemoryDeallocated
       },
-      validate: (metrics) => {
-        return metrics.success &&
-               metrics.peakMemoryUsage < 100 * 1024 * 1024 && // Less than 100MB peak
-               metrics.operations > 1000 // At least 1000 operations
-      }
+      validate: metrics => {
+        return (
+          metrics.success &&
+          metrics.peakMemoryUsage < 100 * 1024 * 1024 && // Less than 100MB peak
+          metrics.operations > 1000
+        ) // At least 1000 operations
+      },
     }
   }
 
@@ -884,18 +890,17 @@ export class BuiltInMemoryTests {
         scenarios: [],
         timeout: 45000,
         enableDetailedMetrics: true,
-        metricsInterval: 200
+        metricsInterval: 200,
       },
-      execute: async (context) => {
+      execute: async context => {
         const { config, metrics, memoryManager, module } = context
         const startTime = Date.now()
         const allocations: Array<{ size: number; timestamp: number }> = []
 
         while (Date.now() - startTime < config.testDuration && !context.shouldStop()) {
           // Realistic allocation pattern
-          const size = config.allocationSizes[
-            Math.floor(Math.random() * config.allocationSizes.length)
-          ]
+          const size =
+            config.allocationSizes[Math.floor(Math.random() * config.allocationSizes.length)]
 
           if (memoryManager.canAllocate(module.id, size)) {
             memoryManager.recordAllocation(module.id, size)
@@ -904,14 +909,14 @@ export class BuiltInMemoryTests {
 
             const allocation = {
               size,
-              timestamp: Date.now()
+              timestamp: Date.now(),
             }
             allocations.push(allocation)
 
             // Deallocation based on age
             const now = Date.now()
-            const toDeallocate = allocations.filter(a =>
-              now - a.timestamp > 1000 + Math.random() * 4000 // 1-5 seconds lifetime
+            const toDeallocate = allocations.filter(
+              a => now - a.timestamp > 1000 + Math.random() * 4000 // 1-5 seconds lifetime
             )
 
             for (const alloc of toDeallocate) {
@@ -933,15 +938,20 @@ export class BuiltInMemoryTests {
               metrics.timeline.push({
                 timestamp: Date.now() - startTime,
                 memory: usage.used,
-                operation: 'realistic_allocation'
+                operation: 'realistic_allocation',
               })
             }
           }
 
           // Wait
-          await new Promise(resolve => setTimeout(resolve,
-            config.allocationIntervals[Math.floor(Math.random() * config.allocationIntervals.length)]
-          ))
+          await new Promise(resolve =>
+            setTimeout(
+              resolve,
+              config.allocationIntervals[
+                Math.floor(Math.random() * config.allocationIntervals.length)
+              ]
+            )
+          )
         }
 
         // Clean up remaining allocations
@@ -952,11 +962,13 @@ export class BuiltInMemoryTests {
 
         metrics.memoryLeaked = metrics.totalMemoryAllocated - metrics.totalMemoryDeallocated
       },
-      validate: (metrics) => {
-        return metrics.success &&
-               metrics.memoryLeaked < metrics.totalMemoryAllocated * 0.02 && // Less than 2% leaked
-               metrics.peakMemoryUsage < config.maxMemoryLoad * 1.5 // Within 150% of limit
-      }
+      validate: metrics => {
+        return (
+          metrics.success &&
+          metrics.memoryLeaked < metrics.totalMemoryAllocated * 0.02 && // Less than 2% leaked
+          metrics.peakMemoryUsage < config.maxMemoryLoad * 1.5
+        ) // Within 150% of limit
+      },
     }
   }
 }
@@ -1001,6 +1013,6 @@ export function getBuiltInTests(): {
   return {
     basicAllocation: BuiltInMemoryTests.createBasicAllocationTest(),
     stress: BuiltInMemoryTests.createStressTest(),
-    leakDetection: BuiltInMemoryTests.createLeakDetectionTest()
+    leakDetection: BuiltInMemoryTests.createLeakDetectionTest(),
   }
 }

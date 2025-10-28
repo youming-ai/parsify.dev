@@ -69,7 +69,7 @@ export class MetricsCollector {
   addMetrics(metrics: Omit<PerformanceMetrics, 'timestamp'>): void {
     this.metrics.push({
       ...metrics,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
@@ -112,7 +112,7 @@ export class MetricsCollector {
         totalFailed: 0,
         averageP95: 0,
         averageRPS: 0,
-        totalDuration: 0
+        totalDuration: 0,
       }
     }
 
@@ -120,7 +120,8 @@ export class MetricsCollector {
     const totalSuccessful = this.metrics.reduce((sum, m) => sum + m.successfulRequests, 0)
     const totalFailed = this.metrics.reduce((sum, m) => sum + m.failedRequests, 0)
     const averageP95 = this.metrics.reduce((sum, m) => sum + m.p95, 0) / this.metrics.length
-    const averageRPS = this.metrics.reduce((sum, m) => sum + m.requestsPerSecond, 0) / this.metrics.length
+    const averageRPS =
+      this.metrics.reduce((sum, m) => sum + m.requestsPerSecond, 0) / this.metrics.length
     const totalDuration = Date.now() - this.startTime
 
     return {
@@ -129,7 +130,7 @@ export class MetricsCollector {
       totalFailed,
       averageP95,
       averageRPS,
-      totalDuration
+      totalDuration,
     }
   }
 
@@ -149,15 +150,16 @@ export class MetricsCollector {
     const regressions = []
 
     for (const current of this.metrics) {
-      const baselineMetric = baseline.find(b =>
-        b.testType === current.testType && b.endpoint === current.endpoint
+      const baselineMetric = baseline.find(
+        b => b.testType === current.testType && b.endpoint === current.endpoint
       )
 
       if (baselineMetric) {
         const p95Increase = ((current.p95 - baselineMetric.p95) / baselineMetric.p95) * 100
         const currentSuccessRate = current.successfulRequests / current.totalRequests
         const baselineSuccessRate = baselineMetric.successfulRequests / baselineMetric.totalRequests
-        const successRateDecrease = ((baselineSuccessRate - currentSuccessRate) / baselineSuccessRate) * 100
+        const successRateDecrease =
+          ((baselineSuccessRate - currentSuccessRate) / baselineSuccessRate) * 100
 
         let significance: 'minor' | 'moderate' | 'major' = 'minor'
 
@@ -175,8 +177,8 @@ export class MetricsCollector {
             regression: {
               p95Increase,
               successRateDecrease,
-              significance
-            }
+              significance,
+            },
           })
         }
       }
@@ -439,7 +441,9 @@ export function generateHTMLReport(benchmarkResult: BenchmarkResult): string {
                     </tr>
                 </thead>
                 <tbody>
-                    ${results.map(result => `
+                    ${results
+                      .map(
+                        result => `
                         <tr>
                             <td>${result.testType}</td>
                             <td>${result.endpoint || '-'}</td>
@@ -448,8 +452,11 @@ export function generateHTMLReport(benchmarkResult: BenchmarkResult): string {
                                 <div>${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}%</div>
                                 <div class="progress-bar">
                                     <div class="progress-fill ${
-                                      (result.successfulRequests / result.totalRequests) >= 0.95 ? 'progress-success' :
-                                      (result.successfulRequests / result.totalRequests) >= 0.90 ? 'progress-warning' : 'progress-error'
+                                      (result.successfulRequests / result.totalRequests) >= 0.95
+                                        ? 'progress-success'
+                                        : result.successfulRequests / result.totalRequests >= 0.9
+                                          ? 'progress-warning'
+                                          : 'progress-error'
                                     }" style="width: ${(result.successfulRequests / result.totalRequests) * 100}%"></div>
                                 </div>
                             </td>
@@ -458,26 +465,46 @@ export function generateHTMLReport(benchmarkResult: BenchmarkResult): string {
                             <td>${result.requestsPerSecond.toFixed(1)}</td>
                             <td>
                                 <span class="${
-                                  result.p95 < 200 && (result.successfulRequests / result.totalRequests) >= 0.95 ? 'status-success' :
-                                  result.p95 < 500 && (result.successfulRequests / result.totalRequests) >= 0.90 ? 'status-warning' : 'status-error'
+                                  result.p95 < 200 &&
+                                  result.successfulRequests / result.totalRequests >= 0.95
+                                    ? 'status-success'
+                                    : result.p95 < 500 &&
+                                        result.successfulRequests / result.totalRequests >= 0.9
+                                      ? 'status-warning'
+                                      : 'status-error'
                                 }">
-                                    ${result.p95 < 200 && (result.successfulRequests / result.totalRequests) >= 0.95 ? 'PASS' :
-                                      result.p95 < 500 && (result.successfulRequests / result.totalRequests) >= 0.90 ? 'WARN' : 'FAIL'}
+                                    ${
+                                      result.p95 < 200 &&
+                                      result.successfulRequests / result.totalRequests >= 0.95
+                                        ? 'PASS'
+                                        : result.p95 < 500 &&
+                                            result.successfulRequests / result.totalRequests >= 0.9
+                                          ? 'WARN'
+                                          : 'FAIL'
+                                    }
                                 </span>
                             </td>
                         </tr>
-                    `).join('')}
+                    `
+                      )
+                      .join('')}
                 </tbody>
             </table>
         </div>
     </div>
 
-    ${Object.keys(benchmarks).length > 0 ? `
+    ${
+      Object.keys(benchmarks).length > 0
+        ? `
     <div class="section">
         <div class="section-header">Performance Benchmarks & Regressions</div>
         <div class="section-content">
-            ${Object.entries(benchmarks).map(([testName, benchmark]) => `
-                ${benchmark.regression ? `
+            ${Object.entries(benchmarks)
+              .map(
+                ([testName, benchmark]) => `
+                ${
+                  benchmark.regression
+                    ? `
                 <div class="regression-${benchmark.regression.significance}">
                     <h4>${testName}</h4>
                     <p><strong>Regression Detected:</strong></p>
@@ -511,11 +538,17 @@ export function generateHTMLReport(benchmarkResult: BenchmarkResult): string {
                         </tbody>
                     </table>
                 </div>
-                ` : ''}
-            `).join('')}
+                `
+                    : ''
+                }
+            `
+              )
+              .join('')}
         </div>
     </div>
-    ` : ''}
+    `
+        : ''
+    }
 
     <div class="section">
         <div class="section-header">Performance Charts</div>
@@ -560,18 +593,23 @@ export function generateJUnitXML(benchmarkResult: BenchmarkResult): string {
   <testsuite name="${testSuite}" tests="${summary.totalTests}" failures="${summary.failedTests}" time="${(summary.totalDuration / 1000).toFixed(3)}" timestamp="${new Date(timestamp).toISOString()}">
 `
 
-  results.forEach((result, index) => {
+  results.forEach((result, _index) => {
     const testName = `${result.testType}${result.endpoint ? `_${result.endpoint.replace(/[^a-zA-Z0-9]/g, '_')}` : ''}`
-    const passed = result.p95 < 200 && (result.successfulRequests / result.totalRequests) >= 0.95
+    const passed = result.p95 < 200 && result.successfulRequests / result.totalRequests >= 0.95
     const time = result.totalRequests / result.requestsPerSecond
 
-    if (!passed) {
+    if (passed) {
+      xml += `    <testcase name="${testName}" classname="performance" time="${time.toFixed(3)}" />
+`
+    } else {
       const failures = []
       if (result.p95 >= 200) {
         failures.push(`P95 response time ${result.p95.toFixed(0)}ms exceeds 200ms threshold`)
       }
-      if ((result.successfulRequests / result.totalRequests) < 0.95) {
-        failures.push(`Success rate ${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}% below 95% threshold`)
+      if (result.successfulRequests / result.totalRequests < 0.95) {
+        failures.push(
+          `Success rate ${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}% below 95% threshold`
+        )
       }
 
       xml += `    <testcase name="${testName}" classname="performance" time="${time.toFixed(3)}">
@@ -579,9 +617,6 @@ export function generateJUnitXML(benchmarkResult: BenchmarkResult): string {
         ${failures.join('; ')}
       </failure>
     </testcase>
-`
-    } else {
-      xml += `    <testcase name="${testName}" classname="performance" time="${time.toFixed(3)}" />
 `
     }
   })
@@ -653,8 +688,12 @@ Test Details:
 `
 
   results.forEach((result, index) => {
-    const status = result.p95 < 200 && (result.successfulRequests / result.totalRequests) >= 0.95 ? '✅ PASS' :
-                   result.p95 < 500 && (result.successfulRequests / result.totalRequests) >= 0.90 ? '⚠️  WARN' : '❌ FAIL'
+    const status =
+      result.p95 < 200 && result.successfulRequests / result.totalRequests >= 0.95
+        ? '✅ PASS'
+        : result.p95 < 500 && result.successfulRequests / result.totalRequests >= 0.9
+          ? '⚠️  WARN'
+          : '❌ FAIL'
 
     summaryText += `  ${index + 1}. ${result.testType}${result.endpoint ? ` - ${result.endpoint}` : ''}
        ${status} | P95: ${result.p95.toFixed(0)}ms | Success: ${((result.successfulRequests / result.totalRequests) * 100).toFixed(1)}% | RPS: ${result.requestsPerSecond.toFixed(1)}
@@ -664,7 +703,7 @@ Test Details:
   summaryText += `
 Performance Targets:
   ✅ P95 < 200ms: ${results.filter(r => r.p95 < 200).length}/${results.length} tests
-  ✅ Success Rate ≥ 95%: ${results.filter(r => (r.successfulRequests / r.totalRequests) >= 0.95).length}/${results.length} tests
+  ✅ Success Rate ≥ 95%: ${results.filter(r => r.successfulRequests / r.totalRequests >= 0.95).length}/${results.length} tests
 `
 
   return summaryText

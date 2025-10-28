@@ -21,8 +21,8 @@ export const stagingConfig = {
     corsOrigins: [
       'https://staging.parsify.dev',
       'https://parsify-dev.pages.dev',
-      'http://localhost:3000'
-    ]
+      'http://localhost:3000',
+    ],
   },
 
   // Web Application Configuration
@@ -32,7 +32,7 @@ export const stagingConfig = {
     description: 'Online Developer Tools Platform - Staging Environment',
     enableAnalytics: true,
     enableSentry: true,
-    enableFeatureFlags: true
+    enableFeatureFlags: true,
   },
 
   // Database Configuration (Cloudflare D1)
@@ -42,7 +42,7 @@ export const stagingConfig = {
     connectionTimeout: 10000,
     queryTimeout: 30000,
     enableQueryLogging: true,
-    maxConnections: 100
+    maxConnections: 100,
   },
 
   // Storage Configuration
@@ -53,12 +53,17 @@ export const stagingConfig = {
         bucketName: 'parsify-files-staging',
         bucketId: process.env.STAGING_R2_FILES_BUCKET_ID || 'your-staging-files-bucket-id',
         maxFileSize: '100MB',
-        allowedFileTypes: ['text/*', 'application/json', 'application/xml', 'application/javascript']
+        allowedFileTypes: [
+          'text/*',
+          'application/json',
+          'application/xml',
+          'application/javascript',
+        ],
       },
       backups: {
         bucketName: 'parsify-backups-staging',
-        bucketId: process.env.STAGING_R2_BACKUPS_BUCKET_ID || 'your-staging-backups-bucket-id'
-      }
+        bucketId: process.env.STAGING_R2_BACKUPS_BUCKET_ID || 'your-staging-backups-bucket-id',
+      },
     },
 
     // KV Namespaces
@@ -66,21 +71,21 @@ export const stagingConfig = {
       cache: {
         namespaceId: process.env.STAGING_KV_CACHE_ID || 'your-staging-cache-kv-id',
         ttl: 3600, // 1 hour
-        maxTtl: 86400 // 24 hours
+        maxTtl: 86400, // 24 hours
       },
       sessions: {
         namespaceId: process.env.STAGING_KV_SESSIONS_ID || 'your-staging-sessions-kv-id',
-        ttl: 7200 // 2 hours
+        ttl: 7200, // 2 hours
       },
       uploads: {
         namespaceId: process.env.STAGING_KV_UPLOADS_ID || 'your-staging-uploads-kv-id',
-        ttl: 14400 // 4 hours
+        ttl: 14400, // 4 hours
       },
       analytics: {
         namespaceId: process.env.STAGING_KV_ANALYTICS_ID || 'your-staging-analytics-kv-id',
-        ttl: 604800 // 7 days
-      }
-    }
+        ttl: 604800, // 7 days
+      },
+    },
   },
 
   // Durable Objects Configuration
@@ -89,20 +94,20 @@ export const stagingConfig = {
       className: 'SessionManagerDurableObject',
       scriptName: 'parsify-api-staging',
       maxConcurrentSessions: 1000,
-      sessionTimeout: 7200000 // 2 hours
+      sessionTimeout: 7200000, // 2 hours
     },
     collaborationRoom: {
       className: 'CollaborationRoomDurableObject',
       scriptName: 'parsify-api-staging',
       maxRoomSize: 50,
-      roomTimeout: 3600000 // 1 hour
+      roomTimeout: 3600000, // 1 hour
     },
     realtimeSync: {
       className: 'RealtimeSyncDurableObject',
       scriptName: 'parsify-api-staging',
       maxConnections: 500,
-      syncInterval: 1000 // 1 second
-    }
+      syncInterval: 1000, // 1 second
+    },
   },
 
   // Queue Configuration
@@ -111,20 +116,20 @@ export const stagingConfig = {
       name: 'analytics-events-staging',
       batchSize: 100,
       maxRetries: 3,
-      retryDelay: 5000
+      retryDelay: 5000,
     },
     uploads: {
       name: 'file-uploads-staging',
       batchSize: 50,
       maxRetries: 5,
-      retryDelay: 10000
+      retryDelay: 10000,
     },
     notifications: {
       name: 'notifications-staging',
       batchSize: 200,
       maxRetries: 3,
-      retryDelay: 3000
-    }
+      retryDelay: 3000,
+    },
   },
 
   // Security Configuration
@@ -133,18 +138,18 @@ export const stagingConfig = {
       secret: process.env.STAGING_JWT_SECRET || 'your-staging-jwt-secret',
       expiresIn: '24h',
       issuer: 'parsify-staging',
-      audience: 'parsify-users'
+      audience: 'parsify-users',
     },
     encryption: {
       algorithm: 'AES-256-GCM',
-      key: process.env.STAGING_ENCRYPTION_KEY || 'your-staging-encryption-key'
+      key: process.env.STAGING_ENCRYPTION_KEY || 'your-staging-encryption-key',
     },
     rateLimit: {
       enabled: true,
       windowMs: 900000, // 15 minutes
       maxRequests: 1000,
-      skipSuccessfulRequests: false
-    }
+      skipSuccessfulRequests: false,
+    },
   },
 
   // Monitoring and Analytics
@@ -158,14 +163,14 @@ export const stagingConfig = {
       enablePerformance: true,
       enableReplay: true,
       replaySessionSampleRate: 0.1,
-      replayErrorSampleRate: 1.0
+      replayErrorSampleRate: 1.0,
     },
     analytics: {
       enabled: true,
       sampleRate: 1.0, // 100% for staging
       anonymizeIp: false,
-      debugMode: true
-    }
+      debugMode: true,
+    },
   },
 
   // Feature Flags
@@ -177,7 +182,7 @@ export const stagingConfig = {
     enableAnalytics: true,
     enableNotifications: true,
     enableBetaFeatures: true,
-    enableDebugMode: true
+    enableDebugMode: true,
   },
 
   // Performance Configuration
@@ -187,7 +192,7 @@ export const stagingConfig = {
     enableCompression: true,
     compressionLevel: 6,
     enableMinification: true,
-    enableBundleAnalysis: true
+    enableBundleAnalysis: true,
   },
 
   // Development Tools
@@ -196,7 +201,7 @@ export const stagingConfig = {
     enableSourceMaps: true,
     enableDebugEndpoints: true,
     enableTestData: true,
-    enableMockServices: false
+    enableMockServices: false,
   },
 
   // External Services
@@ -204,17 +209,17 @@ export const stagingConfig = {
     email: {
       provider: 'resend',
       apiKey: process.env.STAGING_EMAIL_API_KEY || 'your-staging-email-api-key',
-      fromAddress: 'staging@parsify.dev'
+      fromAddress: 'staging@parsify.dev',
     },
     analytics: {
       provider: 'plausible',
       domain: 'staging.parsify.dev',
-      apiKey: process.env.STAGING_ANALYTICS_API_KEY || 'your-staging-analytics-api-key'
+      apiKey: process.env.STAGING_ANALYTICS_API_KEY || 'your-staging-analytics-api-key',
     },
     cdn: {
       provider: 'cloudflare',
-      zoneId: process.env.STAGING_CLOUDFLARE_ZONE_ID || 'your-staging-zone-id'
-    }
+      zoneId: process.env.STAGING_CLOUDFLARE_ZONE_ID || 'your-staging-zone-id',
+    },
   },
 
   // Scheduled Tasks
@@ -222,22 +227,22 @@ export const stagingConfig = {
     cleanup: {
       enabled: true,
       schedule: '0 */6 * * *', // Every 6 hours
-      retentionDays: 7
+      retentionDays: 7,
     },
     backup: {
       enabled: true,
       schedule: '0 2 * * *', // Daily at 2 AM
-      retentionDays: 30
+      retentionDays: 30,
     },
     analytics: {
       enabled: true,
       schedule: '0 * * * *', // Every hour
-      aggregationWindow: 3600 // 1 hour
-    }
-  }
-} as const;
+      aggregationWindow: 3600, // 1 hour
+    },
+  },
+} as const
 
-export type StagingConfig = typeof stagingConfig;
+export type StagingConfig = typeof stagingConfig
 
 // Environment validation
 export function validateStagingConfig(): boolean {
@@ -245,30 +250,26 @@ export function validateStagingConfig(): boolean {
     'STAGING_DATABASE_ID',
     'STAGING_JWT_SECRET',
     'STAGING_ENCRYPTION_KEY',
-    'STAGING_SENTRY_DSN'
-  ];
+    'STAGING_SENTRY_DSN',
+  ]
 
-  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+  const missingVars = requiredEnvVars.filter(varName => !process.env[varName])
 
   if (missingVars.length > 0) {
-    console.error('Missing required environment variables for staging:', missingVars);
-    return false;
+    console.error('Missing required environment variables for staging:', missingVars)
+    return false
   }
 
-  return true;
+  return true
 }
 
 // Health check configuration
 export const stagingHealthCheck = {
-  endpoints: [
-    '/health',
-    '/api/v1/health',
-    '/api/v1/status'
-  ],
+  endpoints: ['/health', '/api/v1/health', '/api/v1/status'],
   timeout: 10000,
   retries: 3,
-  expectedStatusCodes: [200, 201, 204]
-};
+  expectedStatusCodes: [200, 201, 204],
+}
 
 // Deployment configuration
 export const stagingDeployment = {
@@ -279,5 +280,5 @@ export const stagingDeployment = {
   cpuThreshold: 80,
   memoryThreshold: 80,
   enableRollback: true,
-  rollbackTimeout: 300000 // 5 minutes
-};
+  rollbackTimeout: 300000, // 5 minutes
+}

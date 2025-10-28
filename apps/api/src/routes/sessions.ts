@@ -5,22 +5,11 @@
  * and real-time collaboration features.
  */
 
-import { Hono } from 'hono'
-import { Context, Next } from 'hono'
+import { type Context, Hono, type Next } from 'hono'
 import { z } from 'zod'
-import {
-  authMiddleware,
-  getCurrentUser,
-  isAuthenticated,
-  AuthContext
-} from '../middleware/auth'
-import {
-  rateLimitMiddleware,
-  RateLimitPresets,
-  RateLimitStrategy
-} from '../middleware/rate_limit'
-import { SessionService, CreateSessionOptions } from '../services/session_service'
-import { createError } from '../middleware/error'
+import { type AuthContext, authMiddleware } from '../middleware/auth'
+import { RateLimitPresets, RateLimitStrategy, rateLimitMiddleware } from '../middleware/rate_limit'
+import { type CreateSessionOptions, SessionService } from '../services/session_service'
 
 // Extend Hono context type for session routes
 type SessionContext = Context<{
@@ -37,30 +26,32 @@ const CreateSessionSchema = z.object({
   persistent: z.boolean().optional(),
   metadata: z.record(z.any()).optional(),
   customLimits: z.record(z.number()).optional(),
-  enableCollaboration: z.boolean().optional()
+  enableCollaboration: z.boolean().optional(),
 })
 
 const UpdateSessionSchema = z.object({
   metadata: z.record(z.any()).optional(),
   data: z.record(z.any()).optional(),
-  ttl: z.number().optional()
+  ttl: z.number().optional(),
 })
 
 const CreateRoomSchema = z.object({
   name: z.string().min(1).max(100),
   type: z.enum(['document', 'chat', 'whiteboard', 'code', 'presentation']),
-  settings: z.object({
-    isPublic: z.boolean().optional(),
-    requireApproval: z.boolean().optional(),
-    maxParticipants: z.number().min(1).max(100).optional(),
-    enableComments: z.boolean().optional(),
-    enableVersionHistory: z.boolean().optional(),
-    autoSave: z.boolean().optional(),
-    autoSaveInterval: z.number().optional(),
-    allowAnonymous: z.boolean().optional(),
-    description: z.string().optional(),
-    tags: z.array(z.string()).optional()
-  }).optional()
+  settings: z
+    .object({
+      isPublic: z.boolean().optional(),
+      requireApproval: z.boolean().optional(),
+      maxParticipants: z.number().min(1).max(100).optional(),
+      enableComments: z.boolean().optional(),
+      enableVersionHistory: z.boolean().optional(),
+      autoSave: z.boolean().optional(),
+      autoSaveInterval: z.number().optional(),
+      allowAnonymous: z.boolean().optional(),
+      description: z.string().optional(),
+      tags: z.array(z.string()).optional(),
+    })
+    .optional(),
 })
 
 // Initialize session service middleware
@@ -68,7 +59,7 @@ const sessionServiceMiddleware = async (c: SessionContext, next: Next) => {
   const sessionService = new SessionService(c.env, {
     enableMetrics: true,
     enableAuditLog: true,
-    collaborationEnabled: true
+    collaborationEnabled: true,
   })
   c.set('sessionService', sessionService)
   await next()
@@ -80,11 +71,14 @@ const sessionsRouter = new Hono<{ Bindings: Env }>()
 // Apply global middleware
 sessionsRouter.use('*', sessionServiceMiddleware)
 sessionsRouter.use('*', authMiddleware({ required: false }))
-sessionsRouter.use('*', rateLimitMiddleware({
-  ...RateLimitPresets.API_DEFAULT,
-  strategy: RateLimitStrategy.SLIDING_WINDOW,
-  quotaType: 'session_management'
-}))
+sessionsRouter.use(
+  '*',
+  rateLimitMiddleware({
+    ...RateLimitPresets.API_DEFAULT,
+    strategy: RateLimitStrategy.SLIDING_WINDOW,
+    quotaType: 'session_management',
+  })
+)
 
 /**
  * GET /sessions
@@ -102,14 +96,14 @@ sessionsRouter.get('/', async (c: SessionContext) => {
     const { limit, offset, activeOnly } = c.req.query()
     const sessions = await sessionService.getUserSessions(auth.user.id, {
       activeOnly: activeOnly === 'true',
-      limit: limit ? parseInt(limit) : undefined,
-      offset: offset ? parseInt(offset) : undefined
+      limit: limit ? parseInt(limit, 10) : undefined,
+      offset: offset ? parseInt(offset, 10) : undefined,
     })
 
     return c.json({
       sessions,
       total: sessions.length,
-      userId: auth.user.id
+      userId: auth.user.id,
     })
   } catch (error) {
     console.error('Failed to list sessions:', error)
@@ -133,28 +127,37 @@ sessionsRouter.post('/', async (c: SessionContext) => {
       userId: auth?.user?.id,
       ipAddress: c.req.header('CF-Connecting-IP') || 'unknown',
       userAgent: c.req.header('User-Agent') || 'unknown',
-      ...validatedData
+      ...validatedData,
     }
 
     const session = await sessionService.createSession(createOptions)
 
-    return c.json({
-      session,
-      websocketUrl: `wss://${c.env.WEBSOCKET_HOST}/session/${session.sessionId}/websocket`,
-      message: 'Session created successfully'
-    }, 201)
+    return c.json(
+      {
+        session,
+        websocketUrl: `wss://${c.env.WEBSOCKET_HOST}/session/${session.sessionId}/websocket`,
+        message: 'Session created successfully',
+      },
+      201
+    )
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return c.json({
-        error: 'Invalid request data',
-        details: error.errors
-      }, 400)
+      return c.json(
+        {
+          error: 'Invalid request data',
+          details: error.errors,
+        },
+        400
+      )
     }
 
     console.error('Failed to create session:', error)
-    return c.json({
-      error: error instanceof Error ? error.message : 'Failed to create session'
-    }, 500)
+    return c.json(
+      {
+        error: error instanceof Error ? error.message : 'Failed to create session',
+      },
+      500
+    )
   }
 })
 
@@ -180,7 +183,7 @@ sessionsRouter.get('/:sessionId', async (c: SessionContext) => {
       const filteredSession = {
         ...session,
         securityData: undefined,
-        rateLimitData: undefined
+        rateLimitData: undefined,
       }
       return c.json({ session: filteredSession })
     }
@@ -227,14 +230,17 @@ sessionsRouter.put('/:sessionId', async (c: SessionContext) => {
 
     return c.json({
       session: updatedSession,
-      message: 'Session updated successfully'
+      message: 'Session updated successfully',
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return c.json({
-        error: 'Invalid request data',
-        details: error.errors
-      }, 400)
+      return c.json(
+        {
+          error: 'Invalid request data',
+          details: error.errors,
+        },
+        400
+      )
     }
 
     console.error('Failed to update session:', error)
@@ -301,11 +307,7 @@ sessionsRouter.post('/:sessionId/extend', async (c: SessionContext) => {
       return c.json({ error: 'Insufficient permissions' }, 403)
     }
 
-    const success = await sessionService.extendSession(
-      sessionId,
-      additionalTTL,
-      auth.user.id
-    )
+    const success = await sessionService.extendSession(sessionId, additionalTTL, auth.user.id)
 
     if (!success) {
       return c.json({ error: 'Failed to extend session' }, 500)
@@ -345,7 +347,7 @@ sessionsRouter.get('/:sessionId/websocket', async (c: SessionContext) => {
     return c.json({
       websocketUrl,
       sessionId,
-      message: 'WebSocket URL generated successfully'
+      message: 'WebSocket URL generated successfully',
     })
   } catch (error) {
     console.error('Failed to generate WebSocket URL:', error)
@@ -382,23 +384,32 @@ sessionsRouter.post('/:sessionId/rooms', async (c: SessionContext) => {
       auth.user.id
     )
 
-    return c.json({
-      room,
-      websocketUrl: `wss://${c.env.WEBSOCKET_HOST}/room/${room.roomId}/websocket`,
-      message: 'Collaboration room created successfully'
-    }, 201)
+    return c.json(
+      {
+        room,
+        websocketUrl: `wss://${c.env.WEBSOCKET_HOST}/room/${room.roomId}/websocket`,
+        message: 'Collaboration room created successfully',
+      },
+      201
+    )
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return c.json({
-        error: 'Invalid request data',
-        details: error.errors
-      }, 400)
+      return c.json(
+        {
+          error: 'Invalid request data',
+          details: error.errors,
+        },
+        400
+      )
     }
 
     console.error('Failed to create collaboration room:', error)
-    return c.json({
-      error: error instanceof Error ? error.message : 'Failed to create collaboration room'
-    }, 500)
+    return c.json(
+      {
+        error: error instanceof Error ? error.message : 'Failed to create collaboration room',
+      },
+      500
+    )
   }
 })
 
@@ -479,13 +490,16 @@ sessionsRouter.post('/:sessionId/rooms/:roomId/join', async (c: SessionContext) 
       websocketUrl,
       roomId,
       sessionId,
-      message: 'Joined collaboration room successfully'
+      message: 'Joined collaboration room successfully',
     })
   } catch (error) {
     console.error('Failed to join collaboration room:', error)
-    return c.json({
-      error: error instanceof Error ? error.message : 'Failed to join collaboration room'
-    }, 500)
+    return c.json(
+      {
+        error: error instanceof Error ? error.message : 'Failed to join collaboration room',
+      },
+      500
+    )
   }
 })
 
@@ -507,7 +521,7 @@ sessionsRouter.get('/stats', async (c: SessionContext) => {
 
     return c.json({
       stats,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   } catch (error) {
     console.error('Failed to get session statistics:', error)
@@ -534,7 +548,7 @@ sessionsRouter.post('/cleanup', async (c: SessionContext) => {
     return c.json({
       message: 'Cleanup completed successfully',
       cleanedCount,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   } catch (error) {
     console.error('Failed to cleanup expired sessions:', error)
@@ -554,17 +568,22 @@ sessionsRouter.get('/health', async (c: SessionContext) => {
 
     return c.json({
       health,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   } catch (error) {
     console.error('Failed to get health status:', error)
-    return c.json({
-      health: {
-        status: 'unhealthy',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' }
+    return c.json(
+      {
+        health: {
+          status: 'unhealthy',
+          details: {
+            error: error instanceof Error ? error.message : 'Unknown error',
+          },
+        },
+        timestamp: Date.now(),
       },
-      timestamp: Date.now()
-    }, 500)
+      500
+    )
   }
 })
 
@@ -603,8 +622,8 @@ sessionsRouter.get('/:sessionId/export', async (c: SessionContext) => {
             data: session.data,
             createdAt: session.createdAt,
             lastAccessed: session.lastAccessed,
-            expiresAt: session.expiresAt
-          }
+            expiresAt: session.expiresAt,
+          },
         }
         contentType = 'application/json'
         filename = `session-${session.sessionId}.json`
@@ -624,8 +643,8 @@ sessionsRouter.get('/:sessionId/export', async (c: SessionContext) => {
     return new Response(JSON.stringify(exportData), {
       headers: {
         'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${filename}"`
-      }
+        'Content-Disposition': `attachment; filename="${filename}"`,
+      },
     })
   } catch (error) {
     console.error('Failed to export session:', error)

@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { CodeFormatter, formatCode, detectLanguage } from '../wasm/code_formatter'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { CodeFormatter, detectLanguage, formatCode } from '../wasm/code_formatter'
 
 describe('CodeFormatter', () => {
   let formatter: CodeFormatter
@@ -92,7 +92,9 @@ describe('CodeFormatter', () => {
 
     it('should handle unsupported language', async () => {
       const code = 'some code'
-      await expect(formatter.format(code, 'unsupported' as any)).rejects.toThrow('Language \'unsupported\' is not supported')
+      await expect(formatter.format(code, 'unsupported' as any)).rejects.toThrow(
+        "Language 'unsupported' is not supported"
+      )
     })
   })
 

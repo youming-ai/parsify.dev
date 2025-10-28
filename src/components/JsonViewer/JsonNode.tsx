@@ -1,6 +1,5 @@
-import React from 'react'
-import "./JsonNode.css"
-import { JsonNodeModel } from '../../lib/models/JsonNode'
+import type React from 'react'
+import './JsonNode.css'
 import type { JsonNode } from '../../lib/types'
 
 interface JsonNodeProps {
@@ -21,7 +20,7 @@ export const JsonNodeComponent: React.FC<JsonNodeProps> = ({
   expanded,
   onToggle,
   theme = 'auto',
-  copyable = false
+  copyable = false,
 }) => {
   const handleToggle = () => {
     if (typeof data === 'object' && data !== null) {
@@ -70,44 +69,39 @@ export const JsonNodeComponent: React.FC<JsonNodeProps> = ({
         </button>
       )}
 
-      {!hasChildren && (
-        <span className="node-icon-simple">{getNodeIcon()}</span>
-      )}
+      {!hasChildren && <span className="node-icon-simple">{getNodeIcon()}</span>}
 
       <span className="node-value-simple">{formatValue()}</span>
 
       {hasChildren && expanded && depth < 10 && (
         <div className="node-children-simple">
-          {Array.isArray(data) ? (
-            data.map((item, index) => (
-              <JsonNodeComponent
-                key={`${path}[${index}]`}
-                data={item}
-                path={`${path}[${index}]`}
-                depth={depth + 1}
-                expanded={false}
-                onToggle={onToggle}
-                theme={theme}
-                copyable={copyable}
-              />
-            ))
-          ) : (
-            Object.entries(data).map(([key, value]) => (
-              <JsonNodeComponent
-                key={`${path}.${key}`}
-                data={value}
-                path={`${path}.${key}`}
-                depth={depth + 1}
-                expanded={false}
-                onToggle={onToggle}
-                theme={theme}
-                copyable={copyable}
-              />
-            ))
-          )}
+          {Array.isArray(data)
+            ? data.map((item, index) => (
+                <JsonNodeComponent
+                  key={`${path}[${index}]`}
+                  data={item}
+                  path={`${path}[${index}]`}
+                  depth={depth + 1}
+                  expanded={false}
+                  onToggle={onToggle}
+                  theme={theme}
+                  copyable={copyable}
+                />
+              ))
+            : Object.entries(data).map(([key, value]) => (
+                <JsonNodeComponent
+                  key={`${path}.${key}`}
+                  data={value}
+                  path={`${path}.${key}`}
+                  depth={depth + 1}
+                  expanded={false}
+                  onToggle={onToggle}
+                  theme={theme}
+                  copyable={copyable}
+                />
+              ))}
         </div>
       )}
-
     </div>
   )
 }

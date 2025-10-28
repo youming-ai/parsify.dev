@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen, fireEvent, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { render } from '../test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { LoginForm } from '@/web/components/auth/login-form'
+import { render } from '../test-utils'
 
 // Mock the auth context
 const mockLogin = vi.fn()
@@ -15,8 +15,8 @@ vi.mock('@/web/components/auth/auth-context', () => ({
     clearError: mockClearError,
     user: null,
     isLoading: false,
-    logout: vi.fn()
-  })
+    logout: vi.fn(),
+  }),
 }))
 
 describe('LoginForm Component', () => {
@@ -40,7 +40,9 @@ describe('LoginForm Component', () => {
     const user = userEvent.setup()
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
-    const emailButton = screen.getByRole('button', { name: /continue with email/i })
+    const emailButton = screen.getByRole('button', {
+      name: /continue with email/i,
+    })
     await user.click(emailButton)
 
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
@@ -55,7 +57,9 @@ describe('LoginForm Component', () => {
 
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
-    const googleButton = screen.getByRole('button', { name: /continue with google/i })
+    const googleButton = screen.getByRole('button', {
+      name: /continue with google/i,
+    })
     await user.click(googleButton)
 
     expect(mockLogin).toHaveBeenCalledWith('google')
@@ -71,7 +75,9 @@ describe('LoginForm Component', () => {
 
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
-    const githubButton = screen.getByRole('button', { name: /continue with github/i })
+    const githubButton = screen.getByRole('button', {
+      name: /continue with github/i,
+    })
     await user.click(githubButton)
 
     expect(mockLogin).toHaveBeenCalledWith('github')
@@ -88,7 +94,9 @@ describe('LoginForm Component', () => {
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
     // Click to show email form
-    const emailButton = screen.getByRole('button', { name: /continue with email/i })
+    const emailButton = screen.getByRole('button', {
+      name: /continue with email/i,
+    })
     await user.click(emailButton)
 
     // Fill in email and password
@@ -104,7 +112,7 @@ describe('LoginForm Component', () => {
 
     expect(mockLogin).toHaveBeenCalledWith('email', {
       email: 'test@example.com',
-      password: 'password123'
+      password: 'password123',
     })
     expect(mockClearError).toHaveBeenCalled()
     await waitFor(() => {
@@ -117,7 +125,9 @@ describe('LoginForm Component', () => {
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
     // Click to show email form
-    const emailButton = screen.getByRole('button', { name: /continue with email/i })
+    const emailButton = screen.getByRole('button', {
+      name: /continue with email/i,
+    })
     await user.click(emailButton)
 
     // Try to submit with empty email
@@ -133,7 +143,9 @@ describe('LoginForm Component', () => {
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
     // Click to show email form
-    const emailButton = screen.getByRole('button', { name: /continue with email/i })
+    const emailButton = screen.getByRole('button', {
+      name: /continue with email/i,
+    })
     await user.click(emailButton)
 
     // Fill in email but not password
@@ -153,7 +165,9 @@ describe('LoginForm Component', () => {
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
     // Click to show email form
-    const emailButton = screen.getByRole('button', { name: /continue with email/i })
+    const emailButton = screen.getByRole('button', {
+      name: /continue with email/i,
+    })
     await user.click(emailButton)
 
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
@@ -176,8 +190,8 @@ describe('LoginForm Component', () => {
         clearError: mockClearError,
         user: null,
         isLoading: false,
-        logout: vi.fn()
-      })
+        logout: vi.fn(),
+      }),
     }))
 
     render(<LoginForm onSuccess={mockOnSuccess} />)
@@ -191,7 +205,9 @@ describe('LoginForm Component', () => {
 
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
-    const googleButton = screen.getByRole('button', { name: /continue with google/i })
+    const googleButton = screen.getByRole('button', {
+      name: /continue with google/i,
+    })
     await user.click(googleButton)
 
     // Button should be disabled during loading
@@ -206,7 +222,9 @@ describe('LoginForm Component', () => {
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
     // Click to show email form
-    const emailButton = screen.getByRole('button', { name: /continue with email/i })
+    const emailButton = screen.getByRole('button', {
+      name: /continue with email/i,
+    })
     await user.click(emailButton)
 
     // Start login
@@ -224,7 +242,9 @@ describe('LoginForm Component', () => {
 
     render(<LoginForm onSuccess={mockOnSuccess} redirectTo="/dashboard" />)
 
-    const googleButton = screen.getByRole('button', { name: /continue with google/i })
+    const googleButton = screen.getByRole('button', {
+      name: /continue with google/i,
+    })
     await user.click(googleButton)
 
     // Should still work with redirectTo parameter
@@ -251,10 +271,19 @@ describe('LoginForm Component', () => {
   it('applies correct styling to OAuth buttons', () => {
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
-    const googleButton = screen.getByRole('button', { name: /continue with google/i })
-    const githubButton = screen.getByRole('button', { name: /continue with github/i })
+    const googleButton = screen.getByRole('button', {
+      name: /continue with google/i,
+    })
+    const githubButton = screen.getByRole('button', {
+      name: /continue with github/i,
+    })
 
-    expect(googleButton).toHaveClass('bg-white', 'hover:bg-gray-50', 'border-gray-300', 'text-gray-700')
+    expect(googleButton).toHaveClass(
+      'bg-white',
+      'hover:bg-gray-50',
+      'border-gray-300',
+      'text-gray-700'
+    )
     expect(githubButton).toHaveClass('bg-gray-900', 'hover:bg-gray-800', 'text-white')
   })
 
@@ -262,7 +291,9 @@ describe('LoginForm Component', () => {
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
     // Email input should have proper type and attributes
-    const emailButton = screen.getByRole('button', { name: /continue with email/i })
+    const emailButton = screen.getByRole('button', {
+      name: /continue with email/i,
+    })
     expect(emailButton).toBeInTheDocument()
 
     // Form should have proper structure
@@ -292,7 +323,9 @@ describe('LoginForm Component', () => {
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
     // Show email form
-    const emailButton = screen.getByRole('button', { name: /continue with email/i })
+    const emailButton = screen.getByRole('button', {
+      name: /continue with email/i,
+    })
     await user.click(emailButton)
 
     // Fill form
@@ -307,7 +340,7 @@ describe('LoginForm Component', () => {
 
     expect(mockLogin).toHaveBeenCalledWith('email', {
       email: 'test@example.com',
-      password: 'password123'
+      password: 'password123',
     })
   })
 
@@ -317,7 +350,9 @@ describe('LoginForm Component', () => {
 
     render(<LoginForm onSuccess={mockOnSuccess} />)
 
-    const googleButton = screen.getByRole('button', { name: /continue with google/i })
+    const googleButton = screen.getByRole('button', {
+      name: /continue with google/i,
+    })
     await user.click(googleButton)
 
     // Should not throw unhandled errors

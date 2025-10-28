@@ -17,7 +17,7 @@ global.WebAssembly = {
   Instance: vi.fn(),
   Memory: vi.fn(),
   Table: vi.fn(),
-  Global: vi.fn()
+  Global: vi.fn(),
 } as any
 
 // Mock Performance API for testing
@@ -28,18 +28,18 @@ global.performance = {
   getEntriesByName: vi.fn(() => []),
   getEntriesByType: vi.fn(() => []),
   clearMarks: vi.fn(),
-  clearMeasures: vi.fn()
+  clearMeasures: vi.fn(),
 } as any
 
 // Mock crypto for UUID generation
 global.crypto = {
-  randomUUID: vi.fn(() => 'test-uuid-' + Math.random().toString(36).substr(2, 9)),
+  randomUUID: vi.fn(() => `test-uuid-${Math.random().toString(36).substr(2, 9)}`),
   getRandomValues: vi.fn((arr: Uint8Array) => {
     for (let i = 0; i < arr.length; i++) {
       arr[i] = Math.floor(Math.random() * 256)
     }
     return arr
-  })
+  }),
 } as any
 
 // Mock fetch for WASM module loading
@@ -54,7 +54,7 @@ export const mockConsole = {
   error: vi.fn(),
   warn: vi.fn(),
   info: vi.fn(),
-  debug: vi.fn()
+  debug: vi.fn(),
 }
 
 // Override console for testing
@@ -75,7 +75,7 @@ export const testDataGenerators = {
       id: Math.floor(Math.random() * 1000),
       name: `Test Item ${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date().toISOString(),
-      active: Math.random() > 0.5
+      active: Math.random() > 0.5,
     }
 
     if (size === 'small') {
@@ -88,13 +88,13 @@ export const testDataGenerators = {
         created: new Date().toISOString(),
         updated: new Date().toISOString(),
         version: Math.floor(Math.random() * 10),
-        tags: [`tag${Math.floor(Math.random() * 10)}`, `category${Math.floor(Math.random() * 5)}`]
+        tags: [`tag${Math.floor(Math.random() * 10)}`, `category${Math.floor(Math.random() * 5)}`],
       },
       data: Array.from({ length: 10 }, (_, i) => ({
         id: i,
         value: Math.random() * 100,
-        label: `Item ${i}`
-      }))
+        label: `Item ${i}`,
+      })),
     }
 
     if (size === 'medium') {
@@ -111,15 +111,15 @@ export const testDataGenerators = {
         profile: {
           age: Math.floor(Math.random() * 50) + 18,
           location: `Location ${i}`,
-          interests: Array.from({ length: 5 }, (_, j) => `Interest ${i}-${j}`)
-        }
+          interests: Array.from({ length: 5 }, (_, j) => `Interest ${i}-${j}`),
+        },
       })),
       analytics: {
         views: Math.floor(Math.random() * 10000),
         clicks: Math.floor(Math.random() * 1000),
         conversions: Math.floor(Math.random() * 100),
-        revenue: Math.random() * 10000
-      }
+        revenue: Math.random() * 10000,
+      },
     }
   },
 
@@ -163,7 +163,7 @@ export const testDataGenerators = {
 
           const processor = new DataProcessor([1, 2, 3, 4, 5]);
           processor.process().then(console.log);
-        `
+        `,
       },
       python: {
         simple: 'print("Hello, World!")',
@@ -202,7 +202,7 @@ export const testDataGenerators = {
               print(result)
 
           asyncio.run(main())
-        `
+        `,
       },
       typescript: {
         simple: 'const message: string = "Hello, TypeScript!"; console.log(message);',
@@ -264,8 +264,8 @@ export const testDataGenerators = {
           client.get<User>('/users/1').then(result => {
             console.log('User:', result.data);
           });
-        `
-      }
+        `,
+      },
     }
 
     return baseCode[language as keyof typeof baseCode]?.[complexity] || ''
@@ -317,7 +317,7 @@ export const testDataGenerators = {
         </categories>
       </catalog>
     `
-  }
+  },
 }
 
 // Test utilities
@@ -345,7 +345,7 @@ export const testUtils = {
       version,
       executionCount: 0,
       memoryUsage: 0,
-      loadTime: 0
+      loadTime: 0,
     }),
     getHealth: vi.fn().mockResolvedValue({
       status: 'healthy' as const,
@@ -353,8 +353,8 @@ export const testUtils = {
       responseTime: 10,
       memoryUsage: 1024,
       errorRate: 0,
-      uptime: 1000
-    })
+      uptime: 1000,
+    }),
   }),
 
   /**
@@ -366,8 +366,8 @@ export const testUtils = {
     metadata: {
       executionTime: Math.random() * 100,
       memoryUsage: Math.random() * 1024 * 1024,
-      outputSize: JSON.stringify(data).length
-    }
+      outputSize: JSON.stringify(data).length,
+    },
   }),
 
   /**
@@ -379,8 +379,8 @@ export const testUtils = {
       code,
       message,
       recoverable: false,
-      suggestions: ['Check input data', 'Try again later']
-    }
+      suggestions: ['Check input data', 'Try again later'],
+    },
   }),
 
   /**
@@ -388,7 +388,10 @@ export const testUtils = {
    */
   expectToResolve: async <T>(promise: Promise<T>, timeoutMs: number = 5000): Promise<T> => {
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error(`Promise did not resolve within ${timeoutMs}ms`)), timeoutMs)
+      setTimeout(
+        () => reject(new Error(`Promise did not resolve within ${timeoutMs}ms`)),
+        timeoutMs
+      )
     })
 
     return Promise.race([promise, timeoutPromise])
@@ -425,7 +428,7 @@ export const testUtils = {
     const result = await fn()
     const end = performance.now()
     return { result, timeMs: end - start }
-  }
+  },
 }
 
 // Test constants
@@ -434,7 +437,7 @@ export const TEST_CONSTANTS = {
     SHORT: 100,
     MEDIUM: 1000,
     LONG: 5000,
-    EXTENDED: 10000
+    EXTENDED: 10000,
   },
   LIMITS: {
     SMALL_INPUT: 1024,
@@ -442,15 +445,15 @@ export const TEST_CONSTANTS = {
     LARGE_INPUT: 102400,
     SMALL_MEMORY: 16 * 1024 * 1024,
     MEDIUM_MEMORY: 64 * 1024 * 1024,
-    LARGE_MEMORY: 256 * 1024 * 1024
+    LARGE_MEMORY: 256 * 1024 * 1024,
   },
   SAMPLE_DATA: {
     JSON_STRING: '{"name":"test","value":42,"active":true}',
     XML_STRING: '<root><name>test</name><value>42</value></root>',
     YAML_STRING: 'name: test\nvalue: 42\nactive: true',
     CSV_STRING: 'name,value,active\ntest,42,true',
-    TOML_STRING: 'name = "test"\nvalue = 42\nactive = true'
-  }
+    TOML_STRING: 'name = "test"\nvalue = 42\nactive = true',
+  },
 }
 
 // Setup and teardown utilities
@@ -483,15 +486,15 @@ export const setupUtils = {
         memory: new WebAssembly.Memory({ initial: 1 }),
         format: vi.fn(),
         validate: vi.fn(),
-        execute: vi.fn()
-      }
+        execute: vi.fn(),
+      },
     })
 
     // Mock fetch for WASM files
     ;(global.fetch as any).mockResolvedValue({
-      arrayBuffer: () => Promise.resolve(new ArrayBuffer(1024))
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(1024)),
     })
-  }
+  },
 }
 
 // Export default configuration
@@ -505,21 +508,14 @@ export const testConfig = {
   coverage: {
     provider: 'v8',
     reporter: ['text', 'json', 'html'],
-    exclude: [
-      'node_modules/',
-      'tests/',
-      '**/*.d.ts',
-      '**/*.config.*',
-      'dist/',
-      'build/'
-    ],
+    exclude: ['node_modules/', 'tests/', '**/*.d.ts', '**/*.config.*', 'dist/', 'build/'],
     thresholds: {
       global: {
         branches: 80,
         functions: 80,
         lines: 80,
-        statements: 80
-      }
-    }
-  }
+        statements: 80,
+      },
+    },
+  },
 }
