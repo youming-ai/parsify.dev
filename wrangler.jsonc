@@ -3,10 +3,11 @@
 	"name": "parsify-dev",
 	"compatibility_date": "2024-01-01",
 	"compatibility_flags": ["nodejs_compat"],
+	"pages_build_output_dir": ".vercel/output/static",
 	"main": ".open-next/worker.js",
 	"assets": {
 		"directory": ".open-next/assets",
-		"binding": "ASSETS"
+		"binding": "STATIC_FILES"
 	},
 	"vars": {
 		"NEXT_PUBLIC_MICROSOFT_CLARITY_ID": "tx90x0sxzq"

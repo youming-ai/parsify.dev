@@ -1,11 +1,11 @@
 import { MainLayout } from '@/components/layout/main-layout';
 import { CodeExecution } from '@/components/tools/code/code-execution';
+import type { CodeExecutionRequest, CodeExecutionResult, CodeLanguage } from '@/components/tools/code/code-types';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Terminal } from 'lucide-react';
 import Link from 'next/link';
 import * as React from 'react';
-import type { CodeExecutionRequest, CodeExecutionResult, CodeLanguage } from '@/components/tools/code/code-types';
 
 // Code Executor Wrapper Component
 function CodeExecutorWrapper() {

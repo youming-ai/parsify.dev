@@ -1,11 +1,11 @@
 import { MainLayout } from '@/components/layout/main-layout';
 import { JsonConverter } from '@/components/tools/json/json-converter';
+import type { JsonConversionOptions, JsonConverterProps } from '@/components/tools/json/json-types';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileJson } from 'lucide-react';
 import Link from 'next/link';
 import * as React from 'react';
-import type { JsonConverterProps, JsonConversionOptions } from '@/components/tools/json/json-types';
 
 // JSON Converter Wrapper Component
 function JsonConverterWrapper() {

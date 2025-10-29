@@ -1,11 +1,11 @@
 import { MainLayout } from '@/components/layout/main-layout';
 import { CodeFormatter } from '@/components/tools/code/code-formatter';
+import type { CodeFormatOptions, CodeLanguage } from '@/components/tools/code/code-types';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Code } from 'lucide-react';
 import Link from 'next/link';
 import * as React from 'react';
-import type { CodeFormatOptions, CodeLanguage } from '@/components/tools/code/code-types';
 
 // Code Formatter Wrapper Component
 function CodeFormatterWrapper() {
