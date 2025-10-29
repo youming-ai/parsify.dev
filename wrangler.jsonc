@@ -1,14 +1,14 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "parsify-dev",
-  "compatibility_date": "2024-01-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "main": ".open-next/worker.js",
-  "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS"
-  },
-  "vars": {
-    "NEXT_PUBLIC_MICROSOFT_CLARITY_ID": "tx90x0sxzq"
-  }
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "parsify-dev",
+	"compatibility_date": "2024-01-01",
+	"compatibility_flags": ["nodejs_compat"],
+	"main": ".open-next/worker.js",
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"vars": {
+		"NEXT_PUBLIC_MICROSOFT_CLARITY_ID": "tx90x0sxzq"
+	}
 }

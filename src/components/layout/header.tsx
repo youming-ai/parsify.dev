@@ -1,7 +1,5 @@
 'use client';
 
-import { useAuth } from '@/components/auth/auth-context';
-import { UserAvatar } from '@/components/auth/user-avatar';
 import { Button } from '@/components/ui/button';
 import {
 	DropdownMenu,
@@ -10,7 +8,7 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { ChevronDown, Code, FileJson, LogIn, LogOut, Menu, Settings, User, UserCircle, Wrench } from 'lucide-react';
+import { ChevronDown, Code, FileJson, Menu, Settings, Wrench } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { ThemeToggle } from './theme-toggle';
@@ -19,205 +17,104 @@ const tools = [
 	{
 		title: 'JSON Tools',
 		href: '/tools/json',
-		icon: FileJson,
-		description: 'Format, validate, and convert JSON data',
+		description: 'Format, validate, and transform JSON data',
 	},
 	{
-		title: 'Code Tools',
+		title: 'Code Execution',
 		href: '/tools/code',
-		icon: Code,
-		description: 'Format and execute code securely',
+		description: 'Execute and debug code in browser',
 	},
 	{
-		title: 'All Tools',
-		href: '/tools',
-		icon: Wrench,
-		description: 'Browse all available tools',
+		title: 'File Processing',
+		href: '/tools/file',
+		description: 'Process and convert files',
 	},
 ];
 
 export function Header() {
-	const [isOpen, setIsOpen] = useState(false);
-	const { user, logout, isAuthenticated } = useAuth();
-
-	const handleLogout = async () => {
-		try {
-			await logout();
-		} catch (error) {
-			console.error('Logout failed:', error);
-		}
-	};
+	const [isSheetOpen, setIsSheetOpen] = useState(false);
 
 	return (
-		<header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-			<div className="container flex h-14 items-center">
-				<div className="mr-4 hidden md:flex">
-					<Link href="/" className="mr-6 flex items-center space-x-2">
-						<Code className="h-6 w-6" />
-						<span className="hidden font-bold sm:inline-block">Parsify.dev</span>
-					</Link>
-					<nav className="flex items-center space-x-6 font-medium text-sm">
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="ghost" className="flex items-center space-x-1">
-									<span>Tools</span>
-									<ChevronDown className="h-4 w-4" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="start" className="w-48">
-								{tools.map((tool) => (
-									<DropdownMenuItem key={tool.href} asChild>
-										<Link href={tool.href} className="flex items-center space-x-2">
-											<tool.icon className="h-4 w-4" />
-											<div>
-												<div className="font-medium">{tool.title}</div>
-												<div className="text-muted-foreground text-xs">{tool.description}</div>
-											</div>
-										</Link>
-									</DropdownMenuItem>
-								))}
-							</DropdownMenuContent>
-						</DropdownMenu>
-						<Link href="/docs" className="text-foreground/60 transition-colors hover:text-foreground/80">
-							Documentation
-						</Link>
-					</nav>
-				</div>
+		<header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter:bg-white/60] dark:border-gray-800 dark:bg-gray-900/95">
+			<div className="container mx-auto flex h-16 items-center justify-between px-4">
+				{/* Logo */}
+				<Link href="/" className="flex items-center space-x-2 text-xl font-bold text-gray-900 dark:text-white">
+					<FileJson className="h-8 w-8 text-blue-600" />
+					<span>Parsify.dev</span>
+				</Link>
 
-				{/* Mobile navigation */}
-				<Sheet open={isOpen} onOpenChange={setIsOpen}>
-					<SheetTrigger asChild>
-						<Button
-							variant="ghost"
-							className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
-						>
-							<Menu className="h-5 w-5" />
-							<span className="sr-only">Toggle Menu</span>
-						</Button>
-					</SheetTrigger>
-					<SheetContent side="left" className="pr-0">
-						<Link href="/" className="flex items-center" onClick={() => setIsOpen(false)}>
-							<Code className="mr-2 h-4 w-4" />
-							<span className="font-bold">Parsify.dev</span>
-						</Link>
-						<div className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">
-							<div className="flex flex-col space-y-3">
-								<h4 className="font-medium">Tools</h4>
-								{tools.map((tool) => (
-									<Link
-										key={tool.href}
-										href={tool.href}
-										className="flex items-center space-x-2 text-sm"
-										onClick={() => setIsOpen(false)}
-									>
-										<tool.icon className="h-4 w-4" />
+				{/* Desktop Navigation */}
+				<nav className="hidden md:flex items-center space-x-6">
+					<Link href="/tools" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
+						Tools
+					</Link>
+
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="ghost" className="flex items-center space-x-1">
+								<Code className="h-4 w-4" />
+								<span className="hidden sm:inline">Tools</span>
+								<ChevronDown className="h-4 w-4" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							{tools.map((tool) => (
+								<DropdownMenuItem key={tool.href} asChild>
+									<Link href={tool.href} className="w-full">
 										<div>
 											<div className="font-medium">{tool.title}</div>
-											<div className="text-muted-foreground text-xs">{tool.description}</div>
+											<div className="text-sm text-gray-500">{tool.description}</div>
 										</div>
 									</Link>
-								))}
-							</div>
-							<div className="mt-6 flex flex-col space-y-2">
-								<Link href="/docs" className="text-sm" onClick={() => setIsOpen(false)}>
-									Documentation
-								</Link>
-								{isAuthenticated && user ? (
-									<>
-										<Link href="/dashboard" className="text-sm" onClick={() => setIsOpen(false)}>
-											Dashboard
-										</Link>
-										<Link href="/auth/profile" className="text-sm" onClick={() => setIsOpen(false)}>
-											Profile
-										</Link>
-										<button
-											onClick={() => {
-												handleLogout();
-												setIsOpen(false);
-											}}
-											className="text-left text-sm"
-										>
-											Sign Out
-										</button>
-									</>
-								) : (
-									<>
-										<Link href="/auth/login" className="text-sm" onClick={() => setIsOpen(false)}>
-											Sign In
-										</Link>
-										<Link href="/auth/signup" className="text-sm" onClick={() => setIsOpen(false)}>
-											Sign Up
-										</Link>
-									</>
-								)}
-							</div>
-						</div>
-					</SheetContent>
-				</Sheet>
+								</DropdownMenuItem>
+							))}
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</nav>
 
-				<div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-					<div className="w-full flex-1 md:w-auto md:flex-none">{/* Search bar could go here in the future */}</div>
-					<nav className="flex items-center space-x-2">
-						<ThemeToggle />
-						{isAuthenticated && user ? (
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button variant="ghost" size="sm" className="flex items-center gap-2">
-										<UserAvatar user={user} size="sm" />
-										<span className="hidden sm:inline-block">{user.name}</span>
-										<ChevronDown className="h-4 w-4" />
+				{/* Desktop Actions */}
+				<div className="hidden md:flex items-center space-x-4">
+					<ThemeToggle />
+					<Button variant="outline" size="sm">
+						<Wrench className="mr-2 h-4 w-4" />
+						Quick Actions
+					</Button>
+				</div>
+
+				{/* Mobile Navigation */}
+				<div className="md:hidden flex items-center space-x-2">
+					<ThemeToggle />
+					<Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+						<SheetTrigger asChild>
+							<Button variant="ghost" size="icon">
+								<Menu className="h-6 w-6" />
+							</Button>
+						</SheetTrigger>
+						<SheetContent side="left" className="w-64">
+							<div className="flex flex-col gap-4 p-6">
+								<div className="flex items-center space-x-2 text-xl font-bold text-gray-900 dark:text-white">
+									<FileJson className="h-8 w-8 text-blue-600" />
+									<span>Parsify.dev</span>
+								</div>
+								<nav className="flex flex-col space-y-2">
+									<Link
+										href="/tools"
+										className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+										onClick={() => setIsSheetOpen(false)}
+									>
+										Tools
+									</Link>
+								</nav>
+								<div className="flex items-center justify-between">
+									<ThemeToggle />
+									<Button variant="outline" size="sm">
+										<Wrench className="mr-2 h-4 w-4" />
+										Quick Actions
 									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end" className="w-56">
-									<DropdownMenuItem asChild>
-										<Link href="/dashboard" className="flex items-center space-x-2">
-											<UserCircle className="h-4 w-4" />
-											<span>Dashboard</span>
-										</Link>
-									</DropdownMenuItem>
-									<DropdownMenuItem asChild>
-										<Link href="/auth/profile" className="flex items-center space-x-2">
-											<User className="h-4 w-4" />
-											<span>Profile</span>
-										</Link>
-									</DropdownMenuItem>
-									<DropdownMenuItem asChild>
-										<Link href="/auth/profile" className="flex items-center space-x-2">
-											<Settings className="h-4 w-4" />
-											<span>Settings</span>
-										</Link>
-									</DropdownMenuItem>
-									<DropdownMenuItem onClick={handleLogout} className="flex items-center space-x-2">
-										<LogOut className="h-4 w-4" />
-										<span>Sign Out</span>
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						) : (
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button variant="ghost" size="sm">
-										<User className="h-4 w-4" />
-										<span className="sr-only">User menu</span>
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end">
-									<DropdownMenuItem asChild>
-										<Link href="/auth/login" className="flex items-center space-x-2">
-											<LogIn className="h-4 w-4" />
-											<span>Sign In</span>
-										</Link>
-									</DropdownMenuItem>
-									<DropdownMenuItem asChild>
-										<Link href="/auth/signup" className="flex items-center space-x-2">
-											<UserCircle className="h-4 w-4" />
-											<span>Sign Up</span>
-										</Link>
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						)}
-					</nav>
+								</div>
+							</div>
+						</SheetContent>
+					</Sheet>
 				</div>
 			</div>
 		</header>

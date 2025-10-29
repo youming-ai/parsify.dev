@@ -292,9 +292,6 @@ export const COMMON_IMPORTS = {
 	CODE_FORMATTER: () => import('@/components/tools/code/code-formatter'),
 	CODE_EXECUTOR: () => import('@/components/tools/code/code-execution'),
 	FILE_UPLOAD: () => import('@/components/file-upload/file-upload-component'),
-	USER_PROFILE: () => import('@/components/auth/user-profile'),
-	AUTH_LOGIN: () => import('@/app/auth/login/page'),
-	AUTH_SIGNUP: () => import('@/app/auth/signup/page'),
 } as const;
 
 // 启动智能预加载

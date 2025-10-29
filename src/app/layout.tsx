@@ -1,49 +1,79 @@
+import type { Metadata } from 'next';
+
 import './globals.css';
-import { MicrosoftClarityProvider } from '@/components/analytics/microsoft-clarity-provider';
-import { AuthProvider } from '@/components/auth/auth-context';
-import type { Metadata, Viewport } from 'next';
-import type React from 'react';
 
 export const metadata: Metadata = {
-	title: 'Parsify.dev - Online Developer Tools',
+	title: 'Parsify.dev - Professional Developer Tools',
 	description:
-		'A comprehensive online platform for developers with JSON processing, code formatting, and execution tools.',
+		'Professional online developer tools for JSON processing, code execution, file transformation, and more. Run securely in your browser with no data sent to servers.',
 	keywords: [
-		'JSON formatter',
-		'code executor',
 		'developer tools',
+		'json formatter',
+		'json validator',
+		'code executor',
+		'code formatter',
+		'file processor',
 		'online utilities',
-		'WASM sandbox',
-		'TypeScript tools',
+		'browser tools',
+		'wasm sandbox',
+		'next.js tools',
+		'typescript formatter',
+		'css minifier',
+		'base64 encoder',
+		'url encoder',
 	],
 	authors: [{ name: 'Parsify.dev Team' }],
+	creator: 'Parsify.dev',
+	publisher: 'Parsify.dev',
+	formatDetection: {
+		email: false,
+		address: false,
+		telephone: false,
+	},
 	openGraph: {
-		title: 'Parsify.dev - Online Developer Tools Platform',
-		description: 'Professional online tools for JSON processing, code execution, and file transformation',
+		title: 'Parsify.dev - Professional Developer Tools',
+		description:
+			'Professional online developer tools for JSON processing, code execution, file transformation, and more. Run securely in your browser with no data sent to servers.',
 		type: 'website',
-		locale: 'en_US',
+		url: 'https://parsify.dev',
+		siteName: 'Parsify.dev',
+		images: [
+			{
+				url: 'https://parsify.dev/og-image.png',
+				width: 1200,
+				height: 630,
+				alt: 'Parsify.dev - Professional Developer Tools',
+			},
+		],
 	},
 	twitter: {
 		card: 'summary_large_image',
-		title: 'Parsify.dev - Online Developer Tools Platform',
-		description: 'Professional online tools for JSON processing, code execution, and file transformation',
+		title: 'Parsify.dev - Professional Developer Tools',
+		description:
+			'Professional online developer tools for JSON processing, code execution, file transformation, and more.',
+		images: ['https://parsify.dev/og-image.png'],
+	},
+	robots: {
+		index: true,
+		follow: true,
+		googleBot: {
+			index: true,
+			follow: true,
+			'max-video-preview': '-1',
+			'max-image-preview': 'large',
+			'max-snippet': -1,
+		},
 	},
 };
 
-export const viewport: Viewport = {
-	width: 'device-width',
-	initialScale: 1,
-	maximumScale: 1,
-};
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+	children,
+}: {
+	children: React.ReactNode;
+}) {
 	return (
-		<html lang="en">
-			<body className="min-h-screen bg-background font-sans antialiased">
-				<AuthProvider>
-					<MicrosoftClarityProvider>{children}</MicrosoftClarityProvider>
-				</AuthProvider>
-			</body>
+		<html lang="en" suppressHydrationWarning>
+			<body className="min-h-screen bg-background font-sans antialiased">{children}</body>
 		</html>
 	);
 }

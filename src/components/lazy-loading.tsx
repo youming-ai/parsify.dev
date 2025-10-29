@@ -200,17 +200,6 @@ export const LazyFileUpload = () => (
 	/>
 );
 
-export const LazyUserProfile = () => (
-	<LazyWrapper
-		loader={() =>
-			import('@/components/auth/user-profile').then((mod) => ({
-				default: mod.UserProfile,
-			}))
-		}
-		loadingMessage="加载用户资料..."
-	/>
-);
-
 // 创建懒加载工具函数
 export function createLazyComponent<T extends ComponentType<any>>(
 	importFunc: () => Promise<{ default: T }>,
@@ -244,12 +233,4 @@ export const LazyToolsPage = createLazyComponent(() => import('@/app/tools/page'
 
 export const LazyDashboardPage = createLazyComponent(() => import('@/app/dashboard/page'), {
 	loadingMessage: '加载仪表板...',
-});
-
-export const LazyAuthLoginPage = createLazyComponent(() => import('@/app/auth/login/page'), {
-	loadingMessage: '加载登录页面...',
-});
-
-export const LazyAuthSignupPage = createLazyComponent(() => import('@/app/auth/signup/page'), {
-	loadingMessage: '加载注册页面...',
 });

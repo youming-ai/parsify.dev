@@ -14,9 +14,7 @@ export function ToolsLayout({ children, showSidebar = false }: ToolsLayoutProps)
 						{/* Sidebar content would go here if needed */}
 					</aside>
 				)}
-				<main className={cn('flex-1', showSidebar ? 'ml-64' : '')}>
-					{children}
-				</main>
+				<main className={cn('flex-1', showSidebar ? 'ml-64' : '')}>{children}</main>
 			</div>
 		</div>
 	);
