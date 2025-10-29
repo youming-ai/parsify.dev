@@ -50,7 +50,8 @@ import {
 export default function Home() {
 	const tools = [
 		{
-			title: 'JSON Tools',
+			id: 'json-tools',
+			name: 'JSON Tools',
 			description:
 				'Format, validate, and transform JSON data with advanced parsing capabilities',
 			href: '/tools/json',
@@ -206,9 +207,9 @@ export default function Home() {
 					</div>
 
 					<div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-						{tools.map((tool, index) => (
+						{tools.map((tool) => (
 							<Card
-								key={index}
+								key={tool.id || tool.name}
 								className="group border-gray-200 transition-all duration-300 hover:border-blue-300 hover:shadow-lg dark:border-gray-700 dark:hover:border-blue-600"
 							>
 								<CardHeader>
@@ -226,9 +227,9 @@ export default function Home() {
 								</CardHeader>
 								<CardContent>
 									<ul className="mb-6 space-y-2">
-										{tool.features.map((feature, featureIndex) => (
+										{tool.features.map((feature) => (
 											<li
-												key={featureIndex}
+												key={feature}
 												className="flex items-center text-gray-600 text-sm dark:text-gray-300"
 											>
 												<CheckCircle className="mr-2 h-4 w-4 flex-shrink-0 text-green-500" />
@@ -262,8 +263,8 @@ export default function Home() {
 					</div>
 
 					<div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-						{features.map((feature, index) => (
-							<div key={index} className="text-center">
+						{features.map((feature) => (
+							<div key={feature.title} className="text-center">
 								<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
 									<feature.icon className="h-8 w-8 text-blue-600 dark:text-blue-300" />
 								</div>

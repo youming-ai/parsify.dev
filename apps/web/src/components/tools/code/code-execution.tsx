@@ -214,7 +214,7 @@ export function CodeExecution({
 				`Exit Code: ${result.exitCode}`,
 				`Execution Time: ${result.executionTime}ms`,
 				`Memory Usage: ${result.memoryUsage}KB`,
-				`Output:`,
+				'Output:',
 				result.output,
 				result.error ? `Error:\n${result.error}` : '',
 				result.compileOutput ? `Compile Output:\n${result.compileOutput}` : '',

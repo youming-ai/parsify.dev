@@ -127,7 +127,9 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 						fill="none"
 						viewBox="0 0 24 24"
 						stroke="currentColor"
+						aria-label="Loading icon"
 					>
+						<title>Loading</title>
 						<path
 							strokeLinecap="round"
 							strokeLinejoin="round"
@@ -143,7 +145,9 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 						fill="none"
 						viewBox="0 0 24 24"
 						stroke="currentColor"
+						aria-label="Uploading icon"
 					>
+						<title>Uploading</title>
 						<path
 							strokeLinecap="round"
 							strokeLinejoin="round"

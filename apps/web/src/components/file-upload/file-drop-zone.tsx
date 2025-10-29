@@ -206,7 +206,9 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
 								fill="none"
 								viewBox="0 0 24 24"
 								stroke="currentColor"
+								aria-label="Upload icon"
 							>
+								<title>Upload</title>
 								<path
 									strokeLinecap="round"
 									strokeLinejoin="round"

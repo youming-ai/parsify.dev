@@ -120,7 +120,9 @@ export class ErrorBoundary extends Component<
 									fill="none"
 									viewBox="0 0 24 24"
 									stroke="currentColor"
+									aria-label="Warning icon"
 								>
+									<title>Warning</title>
 									<path
 										strokeLinecap="round"
 										strokeLinejoin="round"
@@ -174,7 +176,10 @@ export class ErrorBoundary extends Component<
 
 						<div className="mt-4 text-center">
 							<button
-								onClick={() => (window.location.href = '/')}
+								type="button"
+								onClick={() => {
+									window.location.href = '/';
+								}}
 								className="text-blue-600 text-sm hover:text-blue-500"
 							>
 								返回首页

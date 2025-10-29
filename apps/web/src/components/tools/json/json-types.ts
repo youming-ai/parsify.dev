@@ -46,6 +46,37 @@ export interface JsonEditorState {
 	formatOptions: JsonFormatOptions;
 }
 
+export interface FileParseRequest {
+	file: File;
+	options?: Record<string, unknown>;
+}
+
+export interface FileParseResponse {
+	success: boolean;
+	data?: unknown;
+	error?: string;
+	metadata?: Record<string, unknown>;
+}
+
+export interface FileValidationRequest {
+	file: File;
+	options?: Record<string, unknown>;
+}
+
+export interface FileValidationResponse {
+	isValid: boolean;
+	errors?: ValidationError[];
+	metadata?: Record<string, unknown>;
+}
+
+export interface ValidationError {
+	code: string;
+	message: string;
+	line?: number;
+	column?: number;
+	severity?: 'error' | 'warning';
+}
+
 export interface JsonViewerProps {
 	data: unknown;
 	expandLevel?: number;

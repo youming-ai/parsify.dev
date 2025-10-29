@@ -3,9 +3,10 @@ import type {
 	FileParseResponse,
 	FileValidationRequest,
 	FileValidationResponse,
+	JsonValidationError,
+	JsonValidationResult,
 	ValidationError,
-} from '@/contracts/index';
-import type { JsonValidationError, JsonValidationResult } from './json-types';
+} from './json-types';
 
 export class JsonApiService {
 	private baseUrl: string;

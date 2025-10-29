@@ -16,7 +16,7 @@ export interface AuthState {
 export interface AuthError {
 	code: string;
 	message: string;
-	details?: any;
+	details?: Record<string, unknown>;
 }
 
 export interface OAuthProvider {

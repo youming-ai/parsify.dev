@@ -12,7 +12,7 @@ import type { AuthState, User } from './auth-types';
 interface AuthContextType extends AuthState {
 	login: (
 		provider: 'google' | 'github' | 'email',
-		credentials?: any
+		credentials?: Record<string, unknown>
 	) => Promise<void>;
 	logout: () => Promise<void>;
 	refreshToken: () => Promise<void>;
@@ -123,12 +123,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	const login = async (
 		provider: 'google' | 'github' | 'email',
-		credentials?: any
+		credentials?: Record<string, unknown>
 	) => {
 		try {
 			dispatch({ type: 'AUTH_START' });
 
-			let response;
+			let response: Response;
 
 			if (provider === 'email' && credentials) {
 				// Email/password login

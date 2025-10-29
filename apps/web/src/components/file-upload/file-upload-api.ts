@@ -123,23 +123,22 @@ export class FileUploadApiService {
 			return results.map((result) => {
 				if (result.status === 'fulfilled') {
 					return result.value;
-				} else {
-					// Create error file object for failed uploads
-					const file = files[results.indexOf(result)];
-					return {
-						id: this.generateFileId(file),
-						name: file.name,
-						size: file.size,
-						type: file.type,
-						lastModified: file.lastModified,
-						status: 'error' as const,
-						progress: 0,
-						error:
-							result.reason instanceof Error
-								? result.reason.message
-								: 'Upload failed',
-					};
 				}
+				// Create error file object for failed uploads
+				const file = files[results.indexOf(result)];
+				return {
+					id: this.generateFileId(file),
+					name: file.name,
+					size: file.size,
+					type: file.type,
+					lastModified: file.lastModified,
+					status: 'error' as const,
+					progress: 0,
+					error:
+						result.reason instanceof Error
+							? result.reason.message
+							: 'Upload failed',
+				};
 			});
 		});
 	}
@@ -299,9 +298,8 @@ export class FileUploadApiService {
 				onProgress,
 				controller
 			);
-		} else {
-			return this.uploadSingle(file, endpoint, headers, onProgress, controller);
 		}
+		return this.uploadSingle(file, endpoint, headers, onProgress, controller);
 	}
 
 	private async uploadSingle(
@@ -317,7 +315,7 @@ export class FileUploadApiService {
 		// Add additional metadata
 		if (headers['X-File-Metadata']) {
 			formData.append('metadata', headers['X-File-Metadata']);
-			delete headers['X-File-Metadata'];
+			headers['X-File-Metadata'] = undefined;
 		}
 
 		let attempt = 0;

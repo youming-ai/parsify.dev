@@ -99,7 +99,9 @@ export default function DashboardPage() {
 							<div className="flex gap-3">
 								<Button
 									variant="outline"
-									onClick={() => (window.location.href = '/auth/profile')}
+									onClick={() => {
+										window.location.href = '/auth/profile';
+									}}
 								>
 									<Settings className="mr-2 h-4 w-4" />
 									Settings
@@ -202,7 +204,7 @@ export default function DashboardPage() {
 												className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-gray-50"
 											>
 												<div className="flex items-center gap-3">
-													<div className="h-2 w-2 rounded-full bg-blue-500"></div>
+													<div className="h-2 w-2 rounded-full bg-blue-500" />
 													<div>
 														<p className="font-medium text-sm">
 															{activity.action}
@@ -242,7 +244,9 @@ export default function DashboardPage() {
 										<Button
 											variant="outline"
 											className="h-auto justify-start p-4"
-											onClick={() => (window.location.href = '/tools/json')}
+											onClick={() => {
+												window.location.href = '/tools/json';
+											}}
 										>
 											<div className="flex items-center gap-3">
 												<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
@@ -260,7 +264,9 @@ export default function DashboardPage() {
 										<Button
 											variant="outline"
 											className="h-auto justify-start p-4"
-											onClick={() => (window.location.href = '/tools/code')}
+											onClick={() => {
+												window.location.href = '/tools/code';
+											}}
 										>
 											<div className="flex items-center gap-3">
 												<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100">
@@ -276,9 +282,9 @@ export default function DashboardPage() {
 										<Button
 											variant="outline"
 											className="h-auto justify-start p-4"
-											onClick={() =>
-												(window.location.href = '/tools/converter')
-											}
+											onClick={() => {
+												window.location.href = '/tools/converter';
+											}}
 										>
 											<div className="flex items-center gap-3">
 												<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
@@ -296,7 +302,9 @@ export default function DashboardPage() {
 										<Button
 											variant="outline"
 											className="h-auto justify-start p-4"
-											onClick={() => (window.location.href = '/auth/profile')}
+											onClick={() => {
+												window.location.href = '/auth/profile';
+											}}
 										>
 											<div className="flex items-center gap-3">
 												<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100">
@@ -356,15 +364,15 @@ export default function DashboardPage() {
 								<CardContent>
 									<ul className="mb-4 space-y-2 text-gray-600 text-sm">
 										<li className="flex items-center gap-2">
-											<div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+											<div className="h-1.5 w-1.5 rounded-full bg-green-500" />
 											Unlimited tool usage
 										</li>
 										<li className="flex items-center gap-2">
-											<div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+											<div className="h-1.5 w-1.5 rounded-full bg-green-500" />
 											Priority support
 										</li>
 										<li className="flex items-center gap-2">
-											<div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+											<div className="h-1.5 w-1.5 rounded-full bg-green-500" />
 											Advanced features
 										</li>
 									</ul>

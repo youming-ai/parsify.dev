@@ -15,7 +15,7 @@ interface StoreConfig<T> {
 }
 
 // 创建简单的 store
-export function createOptimizedStore<T extends Record<string, any>>(
+export function createOptimizedStore<T extends Record<string, unknown>>(
 	initialState: T,
 	config: StoreConfig<T>
 ) {
@@ -43,18 +43,19 @@ export function createOptimizedStore<T extends Record<string, any>>(
 				}
 			)
 		);
-
-		return create<T>()((set, get) => ({
-			...initialState,
-			setState: (updates: Partial<T> | ((state: T) => T)) => {
-				if (typeof updates === 'function') {
-					set((state) => ({ ...state, ...updates(state) }));
-				} else {
-					set((state) => ({ ...state, ...updates }));
-				}
-			},
-		}));
 	}
+
+	// Non-persistent store
+	return create<T>()((set, get) => ({
+		...initialState,
+		setState: (updates: Partial<T> | ((state: T) => T)) => {
+			if (typeof updates === 'function') {
+				set((state) => ({ ...state, ...updates(state) }));
+			} else {
+				set((state) => ({ ...state, ...updates }));
+			}
+		},
+	}));
 }
 
 // 预定义的 Store 配置

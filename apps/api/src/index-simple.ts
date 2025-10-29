@@ -36,38 +36,58 @@ app.use('*', async (c, next) => {
 			allowMethods: ['GET', 'POST', 'OPTIONS'],
 			allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 			credentials: false,
-			maxAge: 3600
+			maxAge: 3600,
 		};
 		const corsMiddleware = cors(corsConfig);
 		return corsMiddleware(c, next);
-	} else if (c.req.path.startsWith('/api/v1/admin/')) {
+	}
+	if (c.req.path.startsWith('/api/v1/admin/')) {
 		const corsConfig = {
 			origin: ['https://admin.parsify.dev'],
 			allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
 			allowHeaders: ['Content-Type', 'Authorization', 'X-Admin-Token'],
 			credentials: true,
-			maxAge: 86400
-		};
-		const corsMiddleware = cors(corsConfig);
-		return corsMiddleware(c, next);
-	} else {
-		const allowedOrigins = {
-			production: ['https://parsify.dev', 'https://www.parsify.dev', 'https://app.parsify.dev'],
-			staging: ['https://parsify.dev', 'https://staging.parsify.dev', 'https://preview.parsify.dev'],
-			development: ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000']
-		};
-
-		const origins = allowedOrigins[environment as keyof typeof allowedOrigins] || allowedOrigins.development;
-		const corsConfig = {
-			origin: origins,
-			allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-			allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-			credentials: true,
-			maxAge: 86400
+			maxAge: 86400,
 		};
 		const corsMiddleware = cors(corsConfig);
 		return corsMiddleware(c, next);
 	}
+	const allowedOrigins = {
+		production: [
+			'https://parsify.dev',
+			'https://www.parsify.dev',
+			'https://app.parsify.dev',
+		],
+		staging: [
+			'https://parsify.dev',
+			'https://staging.parsify.dev',
+			'https://preview.parsify.dev',
+		],
+		development: [
+			'http://localhost:3000',
+			'http://localhost:5173',
+			'http://127.0.0.1:3000',
+		],
+	};
+
+	const origins =
+		allowedOrigins[environment as keyof typeof allowedOrigins] ||
+		allowedOrigins.development;
+	const corsConfig = {
+		origin: origins,
+		allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+		allowHeaders: [
+			'Content-Type',
+			'Authorization',
+			'X-Requested-With',
+			'Accept',
+			'Origin',
+		],
+		credentials: true,
+		maxAge: 86400,
+	};
+	const corsMiddleware = cors(corsConfig);
+	return corsMiddleware(c, next);
 });
 
 // Request ID middleware
@@ -115,16 +135,19 @@ app.post('/api/v1/json/format', async (c) => {
 				formatted: JSON.stringify(formatted, null, indent),
 				size: {
 					original: json.length,
-					formatted: JSON.stringify(formatted, null, indent).length
-				}
-			}
+					formatted: JSON.stringify(formatted, null, indent).length,
+				},
+			},
 		});
 	} catch (error) {
-		return c.json({
-			success: false,
-			error: 'Invalid JSON format',
-			message: error instanceof Error ? error.message : 'Unknown error'
-		}, 400);
+		return c.json(
+			{
+				success: false,
+				error: 'Invalid JSON format',
+				message: error instanceof Error ? error.message : 'Unknown error',
+			},
+			400
+		);
 	}
 });
 
@@ -148,21 +171,26 @@ app.post('/api/v1/code/execute', async (c) => {
 				data: {
 					output: result,
 					language,
-					executionTime: 0 // Mock execution time
-				}
+					executionTime: 0, // Mock execution time
+				},
 			});
-		} else {
-			return c.json({
-				error: `Language ${language} not yet supported`,
-				supportedLanguages: ['javascript']
-			}, 400);
 		}
+		return c.json(
+			{
+				error: `Language ${language} not yet supported`,
+				supportedLanguages: ['javascript'],
+			},
+			400
+		);
 	} catch (error) {
-		return c.json({
-			success: false,
-			error: 'Code execution failed',
-			message: error instanceof Error ? error.message : 'Unknown error'
-		}, 500);
+		return c.json(
+			{
+				success: false,
+				error: 'Code execution failed',
+				message: error instanceof Error ? error.message : 'Unknown error',
+			},
+			500
+		);
 	}
 });
 
@@ -192,15 +220,18 @@ app.post('/api/v1/utils/encode', async (c) => {
 			data: {
 				original: text,
 				encoded,
-				encoding
-			}
+				encoding,
+			},
 		});
 	} catch (error) {
-		return c.json({
-			success: false,
-			error: 'Encoding failed',
-			message: error instanceof Error ? error.message : 'Unknown error'
-		}, 500);
+		return c.json(
+			{
+				success: false,
+				error: 'Encoding failed',
+				message: error instanceof Error ? error.message : 'Unknown error',
+			},
+			500
+		);
 	}
 });
 
@@ -212,8 +243,8 @@ app.get('/api/v1/utils/uuid', (c) => {
 		success: true,
 		data: {
 			uuid,
-			version
-		}
+			version,
+		},
 	});
 });
 
@@ -233,20 +264,23 @@ app.get('/', (c) => {
 				code: '/api/v1/code/execute',
 				utils: {
 					encode: '/api/v1/utils/encode',
-					uuid: '/api/v1/utils/uuid'
-				}
-			}
-		}
+					uuid: '/api/v1/utils/uuid',
+				},
+			},
+		},
 	});
 });
 
 // 404 handler
 app.notFound((c) => {
-	return c.json({
-		error: 'Not Found',
-		message: `The requested endpoint ${c.req.path} was not found`,
-		availableEndpoints: ['/health', '/api/v1', '/'],
-	}, 404);
+	return c.json(
+		{
+			error: 'Not Found',
+			message: `The requested endpoint ${c.req.path} was not found`,
+			availableEndpoints: ['/health', '/api/v1', '/'],
+		},
+		404
+	);
 });
 
 // Error handler
@@ -254,16 +288,19 @@ app.onError((err, c) => {
 	const environment = c.env.ENVIRONMENT || 'development';
 	const isDevelopment = environment === 'development';
 
-	return c.json({
-		error: 'Internal Server Error',
-		message: isDevelopment ? err.message : 'An unexpected error occurred',
-		timestamp: new Date().toISOString(),
-		...(isDevelopment && { stack: err.stack }),
-	}, 500);
+	return c.json(
+		{
+			error: 'Internal Server Error',
+			message: isDevelopment ? err.message : 'An unexpected error occurred',
+			timestamp: new Date().toISOString(),
+			...(isDevelopment && { stack: err.stack }),
+		},
+		500
+	);
 });
 
 // Helper functions
-function sortObjectKeys(obj: any): any {
+function sortObjectKeys(obj: Record<string, unknown>): Record<string, unknown> {
 	if (typeof obj !== 'object' || obj === null) {
 		return obj;
 	}
@@ -272,11 +309,11 @@ function sortObjectKeys(obj: any): any {
 		return obj.map(sortObjectKeys);
 	}
 
-	const sorted: any = {};
+	const sorted: Record<string, unknown> = {};
 	const keys = Object.keys(obj).sort();
 
 	for (const key of keys) {
-		sorted[key] = sortObjectKeys(obj[key]);
+		sorted[key] = sortObjectKeys(obj[key] as Record<string, unknown>);
 	}
 
 	return sorted;
@@ -286,7 +323,11 @@ function evaluateJavaScript(code: string, timeout: number): string {
 	// This is a simplified version - in production, use a proper sandbox
 	try {
 		// Basic safety check
-		if (code.includes('require') || code.includes('import') || code.includes('fetch')) {
+		if (
+			code.includes('require') ||
+			code.includes('import') ||
+			code.includes('fetch')
+		) {
 			throw new Error(' potentially unsafe code detected');
 		}
 
@@ -294,7 +335,9 @@ function evaluateJavaScript(code: string, timeout: number): string {
 		const result = func();
 		return String(result || 'undefined');
 	} catch (error) {
-		throw new Error(`Execution error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+		throw new Error(
+			`Execution error: ${error instanceof Error ? error.message : 'Unknown error'}`
+		);
 	}
 }
 

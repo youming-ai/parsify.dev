@@ -26,7 +26,7 @@ export function AuthStatusIndicator({
 	if (isLoading) {
 		return (
 			<div className={`flex items-center gap-2 ${className}`}>
-				<div className="h-4 w-4 animate-spin rounded-full border-blue-600 border-b-2"></div>
+				<div className="h-4 w-4 animate-spin rounded-full border-blue-600 border-b-2" />
 				{variant === 'text' && (
 					<span className="text-gray-500 text-sm">Loading...</span>
 				)}

@@ -26,7 +26,7 @@ export interface UploadedFile {
 	status: FileUploadStatus;
 	progress: number;
 	error?: string;
-	metadata?: Record<string, any>;
+	metadata?: Record<string, string | number | boolean>;
 }
 
 export type FileUploadStatus =
@@ -58,7 +58,7 @@ export interface FileUploadResponse {
 		size: number;
 		type: string;
 		url: string;
-		metadata?: Record<string, any>;
+		metadata?: Record<string, string | number | boolean>;
 	};
 	error?: string;
 }

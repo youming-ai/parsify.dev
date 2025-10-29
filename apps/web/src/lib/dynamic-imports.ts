@@ -18,8 +18,8 @@ interface LoadedModule<T> {
 }
 
 class DynamicImportManager {
-	private loadedModules = new Map<string, LoadedModule<any>>();
-	private loadingPromises = new Map<string, Promise<any>>();
+	private loadedModules = new Map<string, LoadedModule<unknown>>();
+	private loadingPromises = new Map<string, Promise<unknown>>();
 	private preloadedModules = new Set<string>();
 
 	/**
@@ -41,13 +41,13 @@ class DynamicImportManager {
 		// 检查缓存
 		if (this.loadedModules.has(key)) {
 			console.debug('Module loaded from cache', { moduleKey: key });
-			return this.loadedModules.get(key)?.module;
+			return this.loadedModules.get(key)?.module as T;
 		}
 
 		// 检查是否正在加载
 		if (this.loadingPromises.has(key)) {
 			console.debug('Module loading in progress', { moduleKey: key });
-			return this.loadingPromises.get(key)!;
+			return this.loadingPromises.get(key) as Promise<T>;
 		}
 
 		// 开始加载
@@ -231,7 +231,7 @@ class DynamicImportManager {
 	 * 获取已加载的模块
 	 */
 	getLoadedModule<T>(cacheKey: string): T | undefined {
-		return this.loadedModules.get(cacheKey)?.module;
+		return this.loadedModules.get(cacheKey)?.module as T | undefined;
 	}
 
 	/**

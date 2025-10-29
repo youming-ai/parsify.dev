@@ -57,7 +57,7 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
 			onDownloadStart?.(file);
 
 			const downloadUrl =
-				file instanceof File ? URL.createObjectURL(file) : file.url!;
+				file instanceof File ? URL.createObjectURL(file) : file.url || '';
 			const finalFilename = filename || file.name;
 
 			if (openInNewTab) {

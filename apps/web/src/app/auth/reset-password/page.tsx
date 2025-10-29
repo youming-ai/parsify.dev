@@ -314,6 +314,7 @@ function PasswordResetContent() {
 							<p className="text-gray-600 text-sm">
 								Remember your password?{' '}
 								<button
+									type="button"
 									onClick={() => router.push('/auth/login')}
 									className="font-medium text-blue-600 hover:text-blue-500"
 								>
@@ -333,7 +334,7 @@ export default function PasswordResetPage() {
 		<Suspense
 			fallback={
 				<div className="flex min-h-screen items-center justify-center">
-					<div className="h-8 w-8 animate-spin rounded-full border-blue-600 border-b-2"></div>
+					<div className="h-8 w-8 animate-spin rounded-full border-blue-600 border-b-2" />
 				</div>
 			}
 		>

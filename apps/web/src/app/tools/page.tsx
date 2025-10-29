@@ -290,7 +290,7 @@ export default function ToolsPage() {
 													{tool.status}
 												</Badge>
 												<div className="flex items-center text-gray-500 text-xs dark:text-gray-400">
-													{getStatusIcon(tool.processingType!)}
+													{getStatusIcon(tool.processingType || 'unknown')}
 													<span className="ml-1">
 														{tool.processingType?.replace('-', ' ')}
 													</span>
@@ -318,8 +318,12 @@ export default function ToolsPage() {
 										Features
 									</h4>
 									<div className="flex flex-wrap gap-1">
-										{tool.features.slice(0, 3).map((feature, index) => (
-											<Badge key={index} variant="outline" className="text-xs">
+										{tool.features.slice(0, 3).map((feature) => (
+											<Badge
+												key={feature}
+												variant="outline"
+												className="text-xs"
+											>
 												{feature}
 											</Badge>
 										))}
@@ -334,9 +338,9 @@ export default function ToolsPage() {
 								{/* Tags */}
 								<div className="mb-4">
 									<div className="flex flex-wrap gap-1">
-										{tool.tags.slice(0, 4).map((tag, index) => (
+										{tool.tags.slice(0, 4).map((tag) => (
 											<span
-												key={index}
+												key={tag}
 												className="rounded bg-gray-100 px-2 py-1 text-gray-500 text-xs dark:bg-gray-700 dark:text-gray-400"
 											>
 												{tag}

@@ -215,7 +215,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 		if (isLoading) {
 			return (
 				<div className="flex h-32 items-center justify-center">
-					<div className="h-8 w-8 animate-spin rounded-full border-blue-500 border-b-2"></div>
+					<div className="h-8 w-8 animate-spin rounded-full border-blue-500 border-b-2" />
 				</div>
 			);
 		}
@@ -229,7 +229,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 							fill="none"
 							viewBox="0 0 24 24"
 							stroke="currentColor"
+							aria-label="Error icon"
 						>
+							<title>Error</title>
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -253,7 +255,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 							fill="none"
 							viewBox="0 0 24 24"
 							stroke="currentColor"
+							aria-label="File icon"
 						>
+							<title>File</title>
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -329,7 +333,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 										)}
 									>
 										{lines.map((_, index) => (
-											<div key={index} className="leading-6">
+											<div key={`line-number-${index + 1}`} className="leading-6">
 												{index + 1}
 											</div>
 										))}

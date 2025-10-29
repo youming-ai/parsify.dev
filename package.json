@@ -15,9 +15,7 @@
 		"setup": "pnpm install",
 		"postinstall": "chmod +x scripts/*.sh",
 		"lint": "biome check .",
-		"lint:fix": "biome check . --write",
-		"format": "biome format .",
-		"format:write": "biome format . --write"
+		"format": "biome format . --write"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
