@@ -1,6 +1,5 @@
-import { defineCloudflareConfig, r2IncrementalCache } from '@opennextjs/cloudflare';
+import { defineCloudflareConfig } from "@opennextjs/cloudflare";
 
 export default defineCloudflareConfig({
-	// Enable R2 for incremental cache
-	incrementalCache: r2IncrementalCache,
+  // Configuration can be added here as needed
 });
