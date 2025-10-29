@@ -4,7 +4,13 @@
 	"private": true,
 	"main": "src/index.ts",
 	"scripts": {
-		"build": "tsc"
+		"dev": "wrangler dev",
+		"deploy:production": "wrangler deploy --env production",
+		"deploy:staging": "wrangler deploy --env staging",
+		"build": "tsc",
+		"type-check": "tsc --noEmit",
+		"tail": "wrangler tail",
+		"local": "wrangler local"
 	},
 	"dependencies": {
 		"@cloudflare/workers-types": "^4.20251011.0",

@@ -3,45 +3,10 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
-# Environment variables
+# Environment variables for Frontend (Pages)
 [vars]
 ENVIRONMENT = "production"
-API_VERSION = "v1"
-ENABLE_METRICS = "true"
-LOG_LEVEL = "info"
-ENABLE_HEALTH_CHECKS = "true"
-ENABLE_CORS = "true"
-MAX_REQUEST_SIZE = "10485760"
-REQUEST_TIMEOUT = "30000"
-DOMAIN = "parsify.dev"
-JWT_SECRET = "production-jwt-secret-change-me-in-production"
-SENTRY_DSN = "https://placeholder@o0.ingest.sentry.io/0"
 NEXT_PUBLIC_MICROSOFT_CLARITY_ID = "tx90x0sxzq"
-
-# D1 Database bindings
-[[d1_databases]]
-binding = "DB"
-database_name = "parsify-prod"
-database_id = "6378621c-903a-4ea7-911e-77195dcef14f"
-
-# KV Namespace bindings
-[[kv_namespaces]]
-binding = "CACHE"
-id = "31fb4cb2bd494a7789fecafd399912da"
-
-[[kv_namespaces]]
-binding = "SESSIONS"
-id = "389e3a35ea3c431f89932c97ff8ada55"
-
-[[kv_namespaces]]
-binding = "UPLOADS"
-id = "40f1ea2258a54d79948a44a186d89a01"
-
-[[kv_namespaces]]
-binding = "ANALYTICS"
-id = "cf647eb2df824294aafb24daf084072e"
-
-# R2 Bucket bindings
-[[r2_buckets]]
-binding = "FILES"
-bucket_name = "parsify-prod-files"
+NEXT_PUBLIC_API_BASE_URL = "https://api.parsify.dev"
+NEXT_PUBLIC_ENABLE_ANALYTICS = "true"
+NEXT_PUBLIC_ENABLE_ERROR_REPORTING = "true"
