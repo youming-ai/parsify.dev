@@ -315,7 +315,7 @@ export class FileUploadApiService {
 		// Add additional metadata
 		if (headers['X-File-Metadata']) {
 			formData.append('metadata', headers['X-File-Metadata']);
-			headers['X-File-Metadata'] = undefined;
+			delete headers['X-File-Metadata'];
 		}
 
 		let attempt = 0;

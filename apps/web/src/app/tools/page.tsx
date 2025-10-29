@@ -124,7 +124,7 @@ export default function ToolsPage() {
 		}
 	};
 
-	const getStatusIcon = (processingType: Tool['processingType']) => {
+	const getStatusIcon = (processingType?: Tool['processingType']) => {
 		switch (processingType) {
 			case 'client-side':
 				return <Clock className="h-3 w-3" />;
@@ -132,6 +132,8 @@ export default function ToolsPage() {
 				return <Zap className="h-3 w-3" />;
 			case 'hybrid':
 				return <Settings className="h-3 w-3" />;
+			default:
+				return <Clock className="h-3 w-3" />;
 		}
 	};
 
@@ -290,7 +292,7 @@ export default function ToolsPage() {
 													{tool.status}
 												</Badge>
 												<div className="flex items-center text-gray-500 text-xs dark:text-gray-400">
-													{getStatusIcon(tool.processingType || 'unknown')}
+													{getStatusIcon(tool.processingType)}
 													<span className="ml-1">
 														{tool.processingType?.replace('-', ' ')}
 													</span>

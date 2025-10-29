@@ -2,7 +2,7 @@
 
 import { getMicrosoftClarityService } from '@/lib/analytics/clarity';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 
 interface MicrosoftClarityProviderProps {
 	children: React.ReactNode;
@@ -11,16 +11,21 @@ interface MicrosoftClarityProviderProps {
 	debug?: boolean;
 }
 
+interface MicrosoftClarityProviderInnerProps {
+	projectId?: string;
+	enabled?: boolean;
+	debug?: boolean;
+}
+
 /**
- * Microsoft Clarity Analytics Provider
+ * Microsoft Clarity Analytics Provider Inner Component
  * Handles Microsoft Clarity initialization and page view tracking
  */
-export function MicrosoftClarityProvider({
-	children,
+function MicrosoftClarityProviderInner({
 	projectId,
 	enabled,
 	debug,
-}: MicrosoftClarityProviderProps) {
+}: MicrosoftClarityProviderInnerProps) {
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
 
@@ -81,5 +86,29 @@ export function MicrosoftClarityProvider({
 		return () => clearTimeout(timeoutId);
 	}, [pathname, searchParams]);
 
-	return <>{children}</>;
+	return null;
+}
+
+/**
+ * Microsoft Clarity Analytics Provider
+ * Wraps the provider in Suspense boundary for Next.js 16 compatibility
+ */
+export function MicrosoftClarityProvider({
+	children,
+	projectId,
+	enabled,
+	debug,
+}: MicrosoftClarityProviderProps) {
+	return (
+		<>
+			<Suspense fallback={null}>
+				<MicrosoftClarityProviderInner
+					projectId={projectId}
+					enabled={enabled}
+					debug={debug}
+				/>
+			</Suspense>
+			{children}
+		</>
+	);
 }

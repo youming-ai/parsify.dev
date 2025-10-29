@@ -8,19 +8,21 @@ export class ApiClient {
 	constructor() {
 		// Determine API base URL based on environment
 		if (typeof window !== 'undefined') {
-			// Client-side
+			// Client-side - use relative URLs for same-origin requests
 			const hostname = window.location.hostname;
 			if (hostname === 'parsify.dev' || hostname.endsWith('.parsify.dev')) {
-				this.baseUrl = 'https://api.parsify.dev';
+				// Production: use same-origin requests (Next.js API routes)
+				this.baseUrl = '';
 			} else if (hostname.includes('staging')) {
-				this.baseUrl = 'https://api-staging.parsify.dev';
+				// Staging: use same-origin requests
+				this.baseUrl = '';
 			} else {
-				this.baseUrl = 'http://localhost:8787';
+				// Development: use local Next.js API routes
+				this.baseUrl = 'http://localhost:3000';
 			}
 		} else {
 			// Server-side or build time
-			this.baseUrl =
-				process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8787';
+			this.baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 		}
 	}
 

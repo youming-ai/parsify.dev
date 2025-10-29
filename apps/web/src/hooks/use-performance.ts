@@ -30,8 +30,8 @@ export function usePerformance(options: UsePerformanceOptions = {}) {
 
 	const [metrics, setMetrics] = useState<PerformanceMetrics>({});
 	const startTimeRef = useRef<number>(Date.now());
-	const renderStartTimeRef = useRef<number>();
-	const visibilityObserverRef = useRef<IntersectionObserver>();
+	const renderStartTimeRef = useRef<number>(0);
+	const visibilityObserverRef = useRef<IntersectionObserver | null>(null);
 
 	// 记录组件加载时间
 	useEffect(() => {

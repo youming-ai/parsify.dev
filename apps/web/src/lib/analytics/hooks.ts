@@ -186,7 +186,7 @@ export function usePageViewTracking(path?: string, title?: string) {
  */
 export function useToolUsageTracking(toolId: string, toolName: string) {
 	const { trackToolUsage } = useAnalytics();
-	const startTime = useRef<number>();
+	const startTime = useRef<number>(0);
 
 	const startTracking = useCallback(() => {
 		startTime.current = Date.now();
