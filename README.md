@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-14.0-black.svg)](https://nextjs.org/)
-[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-orange.svg)](https://workers.cloudflare.com/)
+[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-orange.svg)](https://pages.cloudflare.com/)
 
 A comprehensive online developer tools platform focused on JSON processing, code formatting, and secure code execution. Built with modern web technologies and deployed on Cloudflare's edge platform for global performance.
 
@@ -47,17 +47,16 @@ A comprehensive online developer tools platform focused on JSON processing, code
 - **State Management**: TanStack Query + React Router
 - **Language**: TypeScript 5.0+
 
-**Backend (API)**
-- **Runtime**: Cloudflare Workers (V8 isolates)
-- **Framework**: Hono.js for fast API development
-- **Database**: Cloudflare D1 (SQLite)
-- **Storage**: Cloudflare R2 (object storage)
-- **Cache**: Cloudflare KV (global edge cache)
-- **Real-time**: Durable Objects for sessions and collaboration
+**Technology Stack**
+- **Deployment**: Cloudflare Pages with Git integration
+- **Runtime**: Edge Runtime for optimal performance
+- **Analytics**: Microsoft Clarity for user insights
+- **Language**: TypeScript 5.0+ for type safety
 
 **Infrastructure**
-- **Deployment**: Cloudflare Pages (frontend) + Workers (backend)
+- **Deployment**: Cloudflare Pages (static site)
 - **CDN**: Cloudflare global network
+- **Performance**: Edge caching for fast global access
 - **Monitoring**: Sentry for error tracking and performance
 - **Security**: Cloudflare WAF, Turnstile (CAPTCHA), rate limiting
 
@@ -77,19 +76,14 @@ A comprehensive online developer tools platform focused on JSON processing, code
                                  │
                     ┌─────────────▼─────────────┐
                     │   Cloudflare Pages        │
-                    │   (Next.js Frontend)      │
-                    └─────────────┬─────────────┘
-                                 │
-                    ┌─────────────▼─────────────┐
-                    │   Cloudflare Workers      │
-                    │   (Hono.js API)           │
-                    └─────────────┬─────────────┘
-                                 │
-          ┌──────────────────────┼──────────────────────┐
-          │                      │                      │
-┌─────────▼───────┐    ┌─────────▼───────┐    ┌─────────▼───────┐
-│  D1 Database    │    │  KV Storage     │    │  R2 Storage     │
-│  (SQLite)       │    │  (Cache/Sessions)│    │  (Files)        │
+                    │   (Static Next.js Site)   │
+                    └───────────────────────────┘
+
+**Data Processing:**
+- Client-side JavaScript/TypeScript execution
+- Browser-based tools (JSON, code formatting, etc.)
+- Local storage for user preferences
+- No server-side processing required
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
@@ -182,29 +176,35 @@ pnpm --filter @parsify/api build
 
 ## 🌐 Deployment
 
-### Cloudflare Workers Deployment
+### Cloudflare Pages Git Integration
 
-1. **Install Wrangler CLI**
-   ```bash
-   npm install -g wrangler
-   ```
+The project uses Cloudflare's Git integration for automatic deployment. When you push changes to your repository, Cloudflare automatically builds and deploys your site.
 
-2. **Authenticate with Cloudflare**
-   ```bash
-   wrangler auth login
-   ```
+**Setup Steps:**
 
-3. **Deploy API**
-   ```bash
-   cd apps/api
-   wrangler deploy
-   ```
+1. **Connect Repository**
+   - Go to Cloudflare Dashboard → Pages → Create a project
+   - Connect your Git repository (GitHub, GitLab, etc.)
+   - Select the repository
 
-4. **Deploy Web App**
-   ```bash
-   cd apps/web
-   wrangler pages deploy .next --project-name parsify-web
-   ```
+2. **Configure Build Settings**
+   - **Build command**: `pnpm run build`
+   - **Build output directory**: `out`
+   - **Node.js version**: `20+`
+
+3. **Environment Variables**
+   - Set any required environment variables in Cloudflare Pages dashboard
+   - Examples: `NEXT_PUBLIC_MICROSOFT_CLARITY_ID`, etc.
+
+4. **Automatic Deployment**
+   - Push to `main` branch → Production deployment
+   - Push to other branches → Preview deployments
+
+**Manual Build (for testing):**
+```bash
+pnpm run build
+# Static files are generated in 'out/' directory
+```
 
 ### Environment Configuration
 
@@ -221,14 +221,8 @@ NODE_ENV="development"
 SENTRY_DSN="your-dev-sentry-dsn"
 ```
 
-**Production (Cloudflare Workers)**
-Update `apps/api/wrangler.toml` with production values:
-```toml
-[env.production.vars]
-ENVIRONMENT = "production"
-LOG_LEVEL = "info"
-SENTRY_DSN = "your-prod-sentry-dsn"
-```
+**Production (Cloudflare Pages)**
+Environment variables are set through Cloudflare Pages dashboard or Git integration.
 
 ### Custom Domain Setup
 
@@ -465,12 +459,12 @@ test('JSON formatting tool', async ({ page }) => {
 
 **Sentry Integration**:
 ```typescript
-// apps/api/src/monitoring/sentry.ts
-import * as Sentry from '@sentry/cloudflare'
+// Add Sentry to your Next.js app if needed
+import * as Sentry from '@sentry/nextjs'
 
 Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  environment: process.env.ENVIRONMENT,
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  environment: process.env.NODE_ENV,
   tracesSampleRate: 0.1,
 })
 ```

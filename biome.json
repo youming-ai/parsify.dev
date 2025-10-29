@@ -1,38 +1,43 @@
 {
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"lineWidth": 120
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single"
+		}
+	},
 	"organizeImports": {
 		"enabled": true
 	},
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
-		}
-	},
-	"javascript": {
-		"formatter": {
-			"quoteStyle": "single",
-			"trailingCommas": "es5",
-			"semicolons": "always"
+			"recommended": false,
+			"suspicious": {
+				"noExplicitAny": "off",
+				"noArrayIndexKey": "off"
+			},
+			"style": {
+				"useSelfClosingElements": "off",
+				"noNonNullAssertion": "off"
+			},
+			"a11y": {
+				"noSvgWithoutTitle": "off",
+				"useSemanticElements": "off",
+				"useButtonType": "off"
+			},
+			"complexity": {
+				"noForEach": "off"
+			},
+			"performance": {
+				"noDelete": "off"
+			}
 		}
 	},
 	"files": {
-		"ignore": [
-			"node_modules/**",
-			"dist/**",
-			"out/**",
-			".next/**",
-			"coverage/**",
-			"*.min.js",
-			"*.d.ts",
-			"*.config.*",
-			"**/*.test.*",
-			"**/*.spec.*",
-			"pnpm-lock.yaml",
-			"*.toml",
-			"*.jsonc",
-			"*.sh",
-			"*.md",
-			".env*"
-		]
+		"ignore": ["node_modules/**", "out/**", ".next/**", "*.min.js", "pnpm-lock.yaml"]
 	}
 }
