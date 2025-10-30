@@ -118,10 +118,6 @@ declare global {
 		startTime: number;
 	}
 
-	interface PerformanceEventTiming extends PerformanceEntry {
-		processingStart: number;
-	}
-
 	interface LayoutShift extends PerformanceEntry {
 		value: number;
 		hadRecentInput: boolean;

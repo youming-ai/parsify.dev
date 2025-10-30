@@ -3,6 +3,8 @@
  * 提供前端错误捕获和优雅降级
  */
 
+'use client';
+
 import { Button } from '@/components/ui/button';
 import React, { Component, type ReactNode } from 'react';
 

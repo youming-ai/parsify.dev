@@ -77,15 +77,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body className="min-h-screen bg-background font-sans antialiased">
-				<ErrorBoundary
-					onError={(error, errorInfo) => {
-						// Log errors to analytics in production
-						if (process.env.NODE_ENV === 'production') {
-							console.error('Production error:', error, errorInfo);
-						}
-					}}
-					maxRetries={3}
-				>
+				<ErrorBoundary maxRetries={3}>
 					<PerformanceMonitor>
 						<AnalyticsInitializer>{children}</AnalyticsInitializer>
 					</PerformanceMonitor>

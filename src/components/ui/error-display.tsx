@@ -138,14 +138,7 @@ export function ToolError({
 			variant="card"
 			showDetails={process.env.NODE_ENV === 'development'}
 			action={showHelp && docLink ? () => window.open(docLink, '_blank') : undefined}
-			actionLabel={
-				showHelp && docLink ? (
-					<>
-						<ExternalLink className="h-3 w-3 mr-1" />
-						Help
-					</>
-				) : undefined
-			}
+			actionLabel={showHelp && docLink ? 'Get Help' : undefined}
 		/>
 	);
 }

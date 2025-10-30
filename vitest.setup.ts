@@ -2,12 +2,18 @@ import '@testing-library/jest-dom';
 import { beforeAll, afterEach, afterAll } from 'vitest';
 
 // Mock IntersectionObserver for component tests
-global.IntersectionObserver = class IntersectionObserver {
+global.IntersectionObserver = class IntersectionObserver implements IntersectionObserver {
 	constructor() {}
 	disconnect() {}
 	observe() {}
 	unobserve() {}
-};
+	root = null;
+	rootMargin = '';
+	thresholds = [];
+	takeRecords() {
+		return [];
+	}
+} as any;
 
 // Mock ResizeObserver for component tests
 global.ResizeObserver = class ResizeObserver {

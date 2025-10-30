@@ -229,7 +229,7 @@ export function getSimplifiedAnalytics(config?: Partial<AnalyticsConfig>): Simpl
 
 export function useSimplifiedAnalytics(config?: Partial<AnalyticsConfig>) {
 	const [isReady, setIsReady] = useState(false);
-	const analyticsRef = useRef<SimplifiedAnalytics>();
+	const analyticsRef = useRef<SimplifiedAnalytics | null>(null);
 
 	useEffect(() => {
 		const analytics = getSimplifiedAnalytics(config);
@@ -275,49 +275,49 @@ export function useSimplifiedAnalytics(config?: Partial<AnalyticsConfig>) {
 }
 
 export function useToolTracking(toolId: string) {
-	const { trackToolUsage, trackError } = useSimplifiedAnalytics();
+	const { trackToolUsage, trackError: trackErrorBase } = useSimplifiedAnalytics();
 
 	const trackExecute = useCallback(
 		(processingTime?: number, inputSize?: number, outputSize?: number) => {
-			trackToolUsage('execute', {
+			trackToolUsage(toolId, 'execute', {
 				processingTime,
 				inputSize,
 				outputSize,
 			});
 		},
-		[trackToolUsage],
+		[trackToolUsage, toolId],
 	);
 
 	const trackFormat = useCallback(
 		(processingTime?: number, inputSize?: number, outputSize?: number) => {
-			trackToolUsage('format', {
+			trackToolUsage(toolId, 'format', {
 				processingTime,
 				inputSize,
 				outputSize,
 			});
 		},
-		[trackToolUsage],
+		[trackToolUsage, toolId],
 	);
 
 	const trackValidate = useCallback(
 		(isValid: boolean, processingTime?: number, inputSize?: number) => {
-			trackToolUsage('validate', {
+			trackToolUsage(toolId, 'validate', {
 				isValid,
 				processingTime,
 				inputSize,
 			});
 		},
-		[trackToolUsage],
+		[trackToolUsage, toolId],
 	);
 
 	const trackError = useCallback(
 		(error: Error | string, processingTime?: number) => {
-			trackToolUsage('error', {
+			trackToolUsage(toolId, 'error', {
 				processingTime,
 			});
-			trackError(error, { toolId });
+			trackErrorBase(error, { toolId });
 		},
-		[trackToolUsage, trackError],
+		[trackToolUsage, trackErrorBase, toolId],
 	);
 
 	return {
