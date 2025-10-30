@@ -1,32 +1,19 @@
 name = "parsify-dev"
 compatibility_date = "2025-01-01"
-pages_build_output_dir = ".open-next/worker"
+pages_build_output_dir = ".open-next"
 
-# Account ID (optional, can be set via CLI or environment variable)
-# account_id = "your-account-id"
+# Cloudflare Pages Configuration
+# Note: For Pages projects, most configuration is done via the Cloudflare Dashboard
+# Custom domains, build commands, and environment variables are set there
 
-# Environment configuration
-[env.production]
-name = "parsify-dev"
-routes = [
-  { pattern = "parsify.dev", custom_domain = true },
-  { pattern = "www.parsify.dev", custom_domain = true }
-]
+# Environment variables (these can be overridden in Cloudflare Pages dashboard)
+[vars]
+NODE_ENV = "production"
 
-[env.preview]
-name = "parsify-dev-preview"
+# Production environment specific variables
+[env.production.vars]
+NODE_ENV = "production"
 
-# Build configuration
-[build]
-command = "pnpm run build"
-
-# Compatibility flags
-compatibility_flags = ["nodejs_compat"]
-
-# Observability
-[observability]
-enabled = true
-
-# Limits (adjust as needed)
-[limits]
-cpu_ms = 50
+# Preview environment specific variables
+[env.preview.vars]
+NODE_ENV = "preview"
