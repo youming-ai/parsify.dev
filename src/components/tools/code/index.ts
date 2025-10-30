@@ -1,8 +1,5 @@
 // Export all types
 
-// Export API service
-export { codeApiService } from './api-service';
-
 // Export main components
 export { CodeEditor } from './code-editor';
 export { CodeExecution } from './code-execution';
@@ -33,10 +30,7 @@ export type {
 	TerminalLine,
 	TerminalProps,
 } from './code-types';
-export {
-	ExecutionProgress,
-	QuickStatus,
-} from './execution-status';
+export { ExecutionProgress, QuickStatus } from './execution-status';
 // Export configurations
 export {
 	CODE_TEMPLATES,

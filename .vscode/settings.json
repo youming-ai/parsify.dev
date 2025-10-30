@@ -1,0 +1,28 @@
+{
+	"typescript.preferences.importModuleSpecifier": "relative",
+	"typescript.updateImportsOnFileMove.enabled": "always",
+	"editor.formatOnSave": true,
+	"editor.defaultFormatter": "biomejs.biome",
+	"editor.codeActionsOnSave": {
+		"quickfix.biome": "explicit",
+		"source.organizeImports.biome": "explicit"
+	},
+	"files.associations": {
+		"*.css": "tailwindcss"
+	},
+	"emmet.includeLanguages": {
+		"typescript": "html",
+		"typescriptreact": "html"
+	},
+	"tailwindCSS.includeLanguages": {
+		"typescript": "html",
+		"typescriptreact": "html"
+	},
+	"tailwindCSS.experimental.classRegex": [
+		["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
+		["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+	],
+	"testing.automaticallyOpenPeekView": "never",
+	"vitest.enable": true,
+	"vitest.experimental.enable": true
+}

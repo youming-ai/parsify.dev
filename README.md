@@ -91,17 +91,16 @@ A comprehensive online developer tools platform focused on JSON processing, code
 
 ### Prerequisites
 
-- **Node.js** >= 18.0.0
-- **pnpm** >= 8.0.0
-- **Cloudflare Account** (for deployment)
+- **Node.js** >= 20.0.0
+- **pnpm** >= 9.0.0
 - **Git** for version control
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/parsify.dev.git
-   cd parsify.dev
+   git clone https://github.com/yourusername/parsify-dev.git
+   cd parsify-dev
    ```
 
 2. **Install dependencies**
@@ -111,44 +110,23 @@ A comprehensive online developer tools platform focused on JSON processing, code
 
 3. **Set up environment variables**
    ```bash
-   # Copy environment template (if available)
-   cp .env.example .env.local
+   # Copy environment template
+   cp .env.local.example .env.local
    
-   # Edit the file with your configuration
-   # Add your Cloudflare credentials, API keys, etc.
-   ```
-
-4. **Initialize databases**
-   ```bash
-   # Run database migrations
-   pnpm db:migrate
-   
-   # Seed initial data (optional)
-   pnpm db:seed
+   # Edit .env.local with your configuration
+   # See docs/DEPLOYMENT.md for details
    ```
 
 ### Development
 
-1. **Start development servers**
+1. **Start development server**
    ```bash
-   # Start all services in parallel
    pnpm dev
    ```
    
-   This will start:
-   - Web app at http://localhost:3000
-   - API server at http://localhost:8787
+   This will start the web app at http://localhost:3000
 
-2. **Individual services**
-   ```bash
-   # Start web app only
-   pnpm --filter @parsify/web dev
-   
-   # Start API only
-   pnpm --filter @parsify/api dev
-   ```
-
-3. **Run tests**
+2. **Run tests**
    ```bash
    # Run all tests
    pnpm test
@@ -163,16 +141,72 @@ A comprehensive online developer tools platform focused on JSON processing, code
    pnpm test:e2e
    ```
 
+3. **Code quality checks**
+   ```bash
+   # Lint code
+   pnpm lint
+   
+   # Auto-fix linting issues
+   pnpm lint:fix
+   
+   # Format code (auto-runs on commit via Husky)
+   pnpm format
+   
+   # Type checking
+   pnpm type-check
+   ```
+
+4. **Performance monitoring**
+   ```bash
+   # Analyze bundle size
+   pnpm analyze
+   
+   # Open bundle analyzer report
+   pnpm analyze:open
+   
+   # Check bundle size against budgets
+   pnpm size-check
+   ```
+
 ### Building for Production
 
 ```bash
-# Build all packages
+# Build the project
 pnpm build
 
-# Build specific package
-pnpm --filter @parsify/web build
-pnpm --filter @parsify/api build
+# Preview production build locally
+pnpm preview
+
+# Clean build artifacts
+pnpm clean:build
 ```
+
+## 🎯 Performance Features
+
+### Optimized Bundle Architecture
+- **Monaco Editor**: Lazy-loaded with language-specific imports
+- **Component Splitting**: Route-based code splitting with loading states
+- **Tree Shaking**: Eliminates unused code and dependencies
+- **Bundle Analysis**: Real-time monitoring with webpack-bundle-analyzer
+
+### Performance Monitoring
+- **Core Web Vitals**: Automatic tracking of FCP, LCP, FID, CLS
+- **Error Boundaries**: Comprehensive error catching and reporting
+- **Memory Monitoring**: JavaScript heap size tracking
+- **Performance Budgets**: Automated bundle size enforcement
+
+### Optimized User Experience
+- **Loading Skeletons**: Context-aware loading states
+- **Progressive Enhancement**: Content loads with JavaScript enhancement
+- **Error Recovery**: Graceful error handling with retry mechanisms
+- **Responsive Design**: Mobile-first approach with Tailwind CSS
+
+## 📚 Documentation
+
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - Complete deployment instructions
+- **[Analytics Guide](docs/ANALYTICS.md)** - Analytics setup and usage
+- **[JSON Tools](src/components/tools/json/README.md)** - JSON tools documentation
+- **[Code Tools](src/components/tools/code/README.md)** - Code tools documentation
 
 ## 🌐 Deployment
 
@@ -189,7 +223,7 @@ The project uses Cloudflare's Git integration for automatic deployment. When you
 
 2. **Configure Build Settings**
    - **Build command**: `pnpm run build`
-   - **Build output directory**: `out`
+   - **Build output directory**: `.open-next`
    - **Node.js version**: `20+`
 
 3. **Environment Variables**
@@ -203,7 +237,7 @@ The project uses Cloudflare's Git integration for automatic deployment. When you
 **Manual Build (for testing):**
 ```bash
 pnpm run build
-# Static files are generated in 'out/' directory
+# Static files are generated in '.open-next/' directory
 ```
 
 ### Environment Configuration

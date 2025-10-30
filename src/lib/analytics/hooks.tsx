@@ -39,25 +39,19 @@ export function useAnalytics(config?: Partial<AnalyticsConfig>) {
 	}, [config]);
 
 	// Track page views on route changes
+	// Note: Next.js App Router doesn't have router.events
+	// Page view tracking should be done manually or via pathname change detection
 	useEffect(() => {
 		if (!client || !isInitialized) return;
 
-		const handleRouteChange = () => {
-			client.trackPageView();
-		};
-
-		// Subscribe to Next.js route changes
-		router.events?.on('routeChangeComplete', handleRouteChange);
-
-		return () => {
-			router.events?.off('routeChangeComplete', handleRouteChange);
-		};
-	}, [client, isInitialized, router]);
+		// Track initial page view
+		client.trackPageView();
+	}, [client, isInitialized]);
 
 	return {
 		client,
 		isInitialized,
-		trackPageView: useCallback(() => client?.trackPageView(), [client]),
+		trackPageView: useCallback((path?: string, title?: string) => client?.trackPageView(path, title), [client]),
 		trackToolUsage: useCallback(
 			(params: Parameters<CloudflareAnalyticsClient['trackToolUsage']>[0]) => client?.trackToolUsage(params),
 			[client],
@@ -202,8 +196,8 @@ export function usePerformanceTracking() {
 				trackPerformance({
 					fcp: navigation.responseStart - navigation.requestStart,
 					ttfb: navigation.responseStart - navigation.requestStart,
-					domContentLoaded: navigation.domContentLoadedEventEnd - navigation.navigationStart,
-					load: navigation.loadEventEnd - navigation.navigationStart,
+					domContentLoaded: navigation.domContentLoadedEventEnd - navigation.fetchStart,
+					load: navigation.loadEventEnd - navigation.fetchStart,
 				});
 			}
 		};
@@ -320,7 +314,9 @@ export function useAnalyticsConsent() {
 
 	useEffect(() => {
 		const currentConsent = getConsent();
-		setConsent(currentConsent);
+		if (currentConsent !== undefined) {
+			setConsent(currentConsent);
+		}
 	}, [getConsent]);
 
 	const grantConsent = useCallback(
@@ -379,7 +375,9 @@ export function useAnalyticsSession() {
 
 	useEffect(() => {
 		const currentSession = getSession();
-		setSession(currentSession);
+		if (currentSession !== undefined) {
+			setSession(currentSession);
+		}
 	}, [getSession]);
 
 	return {
@@ -825,7 +823,7 @@ export function useDualAnalytics() {
 		(params: {
 			toolId: string;
 			toolName: string;
-			action: string;
+			action: 'execute' | 'format' | 'validate' | 'convert' | 'error';
 			processingTime?: number;
 			inputSize?: number;
 			outputSize?: number;
@@ -859,7 +857,11 @@ export function useDualAnalytics() {
 	);
 
 	const trackUserInteraction = useCallback(
-		(interactionType: string, elementId?: string, metadata?: Record<string, any>) => {
+		(
+			interactionType: 'click' | 'scroll' | 'focus' | 'blur' | 'submit' | 'navigation',
+			elementId?: string,
+			metadata?: Record<string, any>,
+		) => {
 			cloudflareAnalytics.trackInteraction({
 				interactionType,
 				elementId,

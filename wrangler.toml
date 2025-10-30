@@ -1,0 +1,32 @@
+name = "parsify-dev"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = ".open-next/worker"
+
+# Account ID (optional, can be set via CLI or environment variable)
+# account_id = "your-account-id"
+
+# Environment configuration
+[env.production]
+name = "parsify-dev"
+routes = [
+  { pattern = "parsify.dev", custom_domain = true },
+  { pattern = "www.parsify.dev", custom_domain = true }
+]
+
+[env.preview]
+name = "parsify-dev-preview"
+
+# Build configuration
+[build]
+command = "pnpm run build"
+
+# Compatibility flags
+compatibility_flags = ["nodejs_compat"]
+
+# Observability
+[observability]
+enabled = true
+
+# Limits (adjust as needed)
+[limits]
+cpu_ms = 50

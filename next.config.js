@@ -7,6 +7,7 @@ const nextConfig = {
 	trailingSlash: true,
 	images: {
 		unoptimized: true,
+		domains: ['parsify.dev', 'www.parsify.dev'],
 	},
 	distDir: '.next',
 
@@ -16,6 +17,12 @@ const nextConfig = {
 	// Experimental features
 	experimental: {
 		optimizeCss: true,
+		// Enable turbotrace for faster builds in production
+		turbotrace: {
+			enabled: process.env.NODE_ENV === 'production',
+		},
+		// Optimize package imports
+		optimizePackageImports: ['lucide-react', 'clsx', 'tailwind-merge'],
 	},
 
 	// Environment variables
@@ -31,6 +38,46 @@ const nextConfig = {
 
 	// Performance optimization
 	compress: true,
+
+	// Bundle analyzer configuration
+	webpack: (config, { isServer, dev, webpack }) => {
+		// Enable bundle analyzer in analyze mode
+		if (process.env.ANALYZE === 'true') {
+			const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+			config.plugins.push(
+				new BundleAnalyzerPlugin({
+					analyzerMode: 'static',
+					openAnalyzer: false,
+					reportFilename: isServer ? 'bundle-analyzer-server.html' : 'bundle-analyzer-client.html',
+				}),
+			);
+		}
+
+		// Optimize Monaco Editor
+		if (!isServer) {
+			config.resolve.alias = {
+				...config.resolve.alias,
+				'monaco-editor': 'monaco-editor/esm/vs/editor/editor.api',
+			};
+
+			// Reduce bundle size by excluding unnecessary Monaco locales
+			config.plugins.push(
+				new webpack.IgnorePlugin({
+					resourceRegExp: /^\.\/locale\/.*$/,
+					contextRegExp: /moment$/,
+				}),
+			);
+		}
+
+		// Performance budgets
+		config.performance = {
+			hints: process.env.NODE_ENV === 'production' ? 'warning' : false,
+			maxEntrypointSize: 512000, // 512KB
+			maxAssetSize: 256000, // 256KB
+		};
+
+		return config;
+	},
 
 	// Logging
 	logging: {

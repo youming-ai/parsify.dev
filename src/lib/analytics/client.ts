@@ -17,6 +17,9 @@ import type {
 	UserInteractionEvent,
 } from './types';
 
+// Re-export types for convenience
+export type { AnalyticsConfig, AnalyticsConsent, AnalyticsSession, AnalyticsEvent };
+
 export class CloudflareAnalyticsClient {
 	private config: AnalyticsConfig;
 	private session: AnalyticsSession | null = null;

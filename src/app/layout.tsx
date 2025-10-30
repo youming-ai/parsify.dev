@@ -1,4 +1,7 @@
 import type { Metadata } from 'next';
+import { ErrorBoundary } from '@/components/error-boundary';
+import { AnalyticsInitializer } from '@/components/analytics-initializer';
+import { PerformanceMonitor } from '@/components/performance-monitor';
 
 import './globals.css';
 
@@ -73,7 +76,21 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en" suppressHydrationWarning>
-			<body className="min-h-screen bg-background font-sans antialiased">{children}</body>
+			<body className="min-h-screen bg-background font-sans antialiased">
+				<ErrorBoundary
+					onError={(error, errorInfo) => {
+						// Log errors to analytics in production
+						if (process.env.NODE_ENV === 'production') {
+							console.error('Production error:', error, errorInfo);
+						}
+					}}
+					maxRetries={3}
+				>
+					<PerformanceMonitor>
+						<AnalyticsInitializer>{children}</AnalyticsInitializer>
+					</PerformanceMonitor>
+				</ErrorBoundary>
+			</body>
 		</html>
 	);
 }
