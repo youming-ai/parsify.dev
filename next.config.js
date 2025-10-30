@@ -7,7 +7,20 @@ const nextConfig = {
 	trailingSlash: true,
 	images: {
 		unoptimized: true,
-		domains: ['parsify.dev', 'www.parsify.dev'],
+		remotePatterns: [
+			{
+				protocol: 'https',
+				hostname: 'parsify.dev',
+				port: '',
+				pathname: '/**',
+			},
+			{
+				protocol: 'https',
+				hostname: 'www.parsify.dev',
+				port: '',
+				pathname: '/**',
+			},
+		],
 	},
 	distDir: '.next',
 
@@ -17,12 +30,14 @@ const nextConfig = {
 	// Experimental features
 	experimental: {
 		optimizeCss: true,
-		// Enable turbotrace for faster builds in production
-		turbotrace: {
-			enabled: process.env.NODE_ENV === 'production',
-		},
 		// Optimize package imports
 		optimizePackageImports: ['lucide-react', 'clsx', 'tailwind-merge'],
+	},
+
+	// Turbopack configuration
+	turbopack: {
+		// Set root directory to fix workspace root warning
+		root: __dirname,
 	},
 
 	// Environment variables

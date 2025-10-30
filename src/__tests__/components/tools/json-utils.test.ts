@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { formatJSON, isValidJSON, minifyJSON, parseJSON } from '@/components/tools/json/json-utils';
+import { describe, expect, it } from 'vitest';
 
 describe('JSON Utils', () => {
 	describe('isValidJSON', () => {

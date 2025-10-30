@@ -1,7 +1,7 @@
-import type { Metadata } from 'next';
-import { ErrorBoundary } from '@/components/error-boundary';
 import { AnalyticsInitializer } from '@/components/analytics-initializer';
+import { ErrorBoundary } from '@/components/error-boundary';
 import { PerformanceMonitor } from '@/components/performance-monitor';
+import type { Metadata } from 'next';
 
 import './globals.css';
 

@@ -4,8 +4,8 @@
  */
 
 import { Button } from '@/components/ui/button';
-import { AlertCircle, RefreshCw, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AlertCircle, ExternalLink, RefreshCw } from 'lucide-react';
 
 interface ErrorDisplayProps {
 	error: Error | string;

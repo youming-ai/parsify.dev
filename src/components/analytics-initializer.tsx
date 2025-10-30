@@ -5,8 +5,8 @@
 
 'use client';
 
-import { useEffect } from 'react';
 import { useSimplifiedAnalytics } from '@/lib/analytics/simplified';
+import { useEffect } from 'react';
 
 interface AnalyticsInitializerProps {
 	children: React.ReactNode;
