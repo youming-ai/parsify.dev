@@ -15,29 +15,16 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": false,
+			"recommended": true,
 			"suspicious": {
-				"noExplicitAny": "off",
-				"noArrayIndexKey": "off"
+				"noExplicitAny": "off"
 			},
 			"style": {
-				"useSelfClosingElements": "off",
-				"noNonNullAssertion": "off"
-			},
-			"a11y": {
-				"noSvgWithoutTitle": "off",
-				"useSemanticElements": "off",
-				"useButtonType": "off"
-			},
-			"complexity": {
-				"noForEach": "off"
-			},
-			"performance": {
-				"noDelete": "off"
+				"useSelfClosingElements": "off"
 			}
 		}
 	},
 	"files": {
-		"ignore": ["node_modules/**", "out/**", ".next/**", "*.min.js", "pnpm-lock.yaml"]
+		"ignore": ["node_modules/**", ".next/**", "*.min.js", "pnpm-lock.yaml", "src/__tests__/**"]
 	}
 }

@@ -188,7 +188,9 @@ export async function preloadCommonLanguages(): Promise<void> {
 export function disposeMonaco(): void {
 	if (monacoInstance) {
 		// Dispose all models
-		monacoInstance.editor.getModels().forEach((model: any) => model.dispose());
+		for (const model of monacoInstance.editor.getModels()) {
+			model.dispose();
+		}
 
 		// Clear instance
 		monacoInstance = null;

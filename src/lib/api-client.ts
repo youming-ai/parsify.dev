@@ -128,9 +128,9 @@ export class ApiClient {
 		const formData = new FormData();
 		formData.append('file', file);
 		if (options) {
-			Object.entries(options).forEach(([key, value]) => {
+			for (const [key, value] of Object.entries(options)) {
 				formData.append(key, String(value));
-			});
+			}
 		}
 
 		return this.request('/api/v1/upload', {

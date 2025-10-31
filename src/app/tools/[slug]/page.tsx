@@ -23,9 +23,9 @@ import { notFound } from 'next/navigation';
 import * as React from 'react';
 
 interface ToolPageProps {
-	params: {
+	params: Promise<{
 		slug: string;
-	};
+	}>;
 }
 
 // Icon mapping
@@ -73,8 +73,11 @@ export async function generateStaticParams() {
 	}));
 }
 
-export default function ToolPage({ params }: ToolPageProps) {
-	const { slug } = params;
+// Opt out of static generation for pages with interactive components
+export const dynamic = 'force-dynamic';
+
+export default async function ToolPage({ params }: ToolPageProps) {
+	const { slug } = await params;
 	const tool = getToolById(slug);
 
 	// If tool doesn't exist, show 404
@@ -180,8 +183,8 @@ export default function ToolPage({ params }: ToolPageProps) {
 							</CardHeader>
 							<CardContent>
 								<ul className="space-y-2">
-									{tool.features.map((feature, index) => (
-										<li key={index} className="flex items-start gap-2">
+									{tool.features.map((feature) => (
+										<li key={feature} className="flex items-start gap-2">
 											<div className="mt-1 h-2 w-2 rounded-full bg-blue-600"></div>
 											<span className="text-gray-700 dark:text-gray-300">{feature}</span>
 										</li>
