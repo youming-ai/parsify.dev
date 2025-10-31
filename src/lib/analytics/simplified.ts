@@ -81,23 +81,38 @@ class SimplifiedAnalytics {
 			}
 
 			await new Promise<void>((resolve, reject) => {
-				const script = document.createElement('script');
-				script.innerHTML = `
-          (function(c,l,a,r,i,t,y){
-            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-          })(window, document, "clarity", "script", "${clarityId}");
-        `;
+				// Create Clarity initialization function safely
+				const initClarity = () => {
+					// Create the clarity global function
+					(window as any).clarity =
+						(window as any).clarity ||
+						function () {
+							((window as any).clarity.q = (window as any).clarity.q || []).push(arguments);
+						};
 
-				script.onload = () => {
-					this.clarityReady = true;
-					resolve();
+					// Create and append the Clarity script
+					const script = document.createElement('script');
+					script.async = true;
+					script.src = `https://www.clarity.ms/tag/${clarityId}`;
+
+					script.onload = () => {
+						this.clarityReady = true;
+						resolve();
+					};
+
+					script.onerror = () => reject(new Error('Failed to load Clarity'));
+
+					// Insert script as first script element for better loading
+					const firstScript = document.getElementsByTagName('script')[0];
+					if (firstScript && firstScript.parentNode) {
+						firstScript.parentNode.insertBefore(script, firstScript);
+					} else {
+						document.head.appendChild(script);
+					}
 				};
 
-				script.onerror = () => reject(new Error('Failed to load Clarity'));
-
-				document.head.appendChild(script);
+				// Initialize Clarity
+				initClarity();
 			});
 
 			if (this.config.debugMode) {

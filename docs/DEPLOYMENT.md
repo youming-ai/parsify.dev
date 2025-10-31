@@ -124,12 +124,15 @@ pnpm format
 #### 2. 配置构建设置
 
 ```yaml
-Framework preset: Next.js
+Framework preset: None (Custom)
 Build command: pnpm run build
-Build output directory: .open-next/worker
+Build output directory: .open-next
 Root directory: /
 Node version: 20
 ```
+
+> ⚠️ **注意**
+> 选择 Next.js 预设会自动启用旧版 `@cloudflare/next-on-pages` 构建流程，生成 `.vercel/output` 而不是 `.open-next`，从而导致 Wrangler 查找不到构建目录。请选择 `None (Custom)` 并使用上面的自定义命令。
 
 #### 3. 配置环境变量
 
@@ -195,13 +198,13 @@ pnpm run preview
 pnpm run deploy
 
 # 或使用 wrangler 直接部署
-wrangler pages deploy .open-next/worker --project-name=parsify-dev
+wrangler pages deploy .open-next --project-name=parsify-dev
 ```
 
 #### 5. 部署到预览环境
 
 ```bash
-wrangler pages deploy .open-next/worker --project-name=parsify-dev --env=preview
+wrangler pages deploy .open-next --project-name=parsify-dev --env=preview
 ```
 
 ---

@@ -127,6 +127,9 @@ export interface CodeEditorProps {
 	showLineNumbers?: boolean;
 	minimap?: boolean;
 	className?: string;
+	onMount?: (editor: any, monaco: any) => void;
+	options?: any;
+	loading?: React.ReactNode;
 }
 
 export interface LanguageSelectorProps {

@@ -222,9 +222,11 @@ The project uses Cloudflare's Git integration for automatic deployment. When you
    - Select the repository
 
 2. **Configure Build Settings**
+   - **Framework preset**: `None` (Custom) – avoids legacy `@cloudflare/next-on-pages` build
    - **Build command**: `pnpm run build`
    - **Build output directory**: `.open-next`
    - **Node.js version**: `20+`
+   - _Tip_: Avoid the **Next.js** preset—Cloudflare will run the legacy `@cloudflare/next-on-pages` builder and fail to produce `.open-next`.
 
 3. **Environment Variables**
    - Set any required environment variables in Cloudflare Pages dashboard

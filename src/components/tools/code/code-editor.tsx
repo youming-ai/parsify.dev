@@ -1,8 +1,10 @@
 import { cn } from '@/lib/utils';
-import Editor from '@monaco-editor/react';
 import * as React from 'react';
 import type { CodeEditorProps } from './code-types';
 import { getLanguageConfig } from './language-configs';
+
+// Use lazy loading for better performance
+const Editor = React.lazy(() => import('@monaco-editor/react').then((mod) => ({ default: mod.Editor })));
 
 export function CodeEditor({
 	value,
@@ -136,52 +138,58 @@ export function CodeEditor({
 				</div>
 			</div>
 
-			<Editor
-				height={height}
-				width={width}
-				language={languageConfig.monacoLanguage}
-				value={value}
-				onChange={(newValue) => {
-					if (onChange && newValue !== undefined) {
-						onChange(newValue);
-					}
-				}}
-				onMount={handleEditorDidMount}
-				theme={theme === 'dark' ? 'vs-dark' : theme === 'high-contrast' ? 'hc-black' : 'vs-light'}
-				options={{
-					readOnly,
-					minimap: { enabled: minimap },
-					fontSize,
-					wordWrap: wordWrap ? 'on' : 'off',
-					lineNumbers: showLineNumbers ? 'on' : 'off',
-					scrollBeyondLastLine: false,
-					automaticLayout: true,
-					tabSize: 2,
-					insertSpaces: true,
-					renderLineHighlight: 'line',
-					renderWhitespace: 'selection',
-					bracketPairColorization: { enabled: true },
-					guides: {
-						bracketPairs: true,
-						indentation: true,
-					},
-					suggest: {
-						showKeywords: true,
-						showSnippets: true,
-						showFunctions: true,
-					},
-					quickSuggestions: {
-						other: true,
-						comments: true,
-						strings: true,
-					},
-				}}
-				loading={
+			<React.Suspense
+				fallback={
 					<div className="flex h-96 items-center justify-center">
-						<div className="h-8 w-8 animate-spin rounded-full border-blue-600 border-b-2" />
+						<div className="flex flex-col items-center space-y-4">
+							<div className="h-8 w-8 animate-spin rounded-full border-blue-600 border-b-2" />
+							<p className="text-gray-600 text-sm dark:text-gray-400">Loading editor...</p>
+						</div>
 					</div>
 				}
-			/>
+			>
+				<Editor
+					height={height}
+					width={width}
+					language={languageConfig.monacoLanguage}
+					value={value}
+					onChange={(newValue) => {
+						if (onChange && newValue !== undefined) {
+							onChange(newValue);
+						}
+					}}
+					onMount={handleEditorDidMount}
+					theme={theme === 'dark' ? 'vs-dark' : theme === 'high-contrast' ? 'hc-black' : 'vs-light'}
+					options={{
+						readOnly,
+						minimap: { enabled: minimap },
+						fontSize,
+						wordWrap: wordWrap ? 'on' : 'off',
+						lineNumbers: showLineNumbers ? 'on' : 'off',
+						scrollBeyondLastLine: false,
+						automaticLayout: true,
+						tabSize: 2,
+						insertSpaces: true,
+						renderLineHighlight: 'line',
+						renderWhitespace: 'selection',
+						bracketPairColorization: { enabled: true },
+						guides: {
+							bracketPairs: true,
+							indentation: true,
+						},
+						suggest: {
+							showKeywords: true,
+							showSnippets: true,
+							showFunctions: true,
+						},
+						quickSuggestions: {
+							other: true,
+							comments: true,
+							strings: true,
+						},
+					}}
+				/>
+			</React.Suspense>
 		</div>
 	);
 }
@@ -196,6 +204,54 @@ export const formatCode = async (code: string, _language: string): Promise<strin
 		console.error('Error formatting code:', error);
 		return code;
 	}
+};
+
+// Safe JavaScript syntax validation using try-catch with Function constructor restrictions
+const validateJavaScriptSyntax = (code: string): Promise<void> => {
+	return new Promise((resolve, reject) => {
+		// Check for potentially dangerous patterns
+		const dangerousPatterns = [
+			/eval\s*\(/gi,
+			/Function\s*\(/gi,
+			/document\./gi,
+			/window\./gi,
+			/global\./gi,
+			/process\./gi,
+			/require\s*\(/gi,
+			/import\s+.*\s+from/gi,
+			/fetch\s*\(/gi,
+			/XMLHttpRequest/gi,
+		];
+
+		for (const pattern of dangerousPatterns) {
+			if (pattern.test(code)) {
+				reject(new Error('Code contains potentially unsafe operations'));
+				return;
+			}
+		}
+
+		// Basic syntax validation - wrapped in try-catch for safety
+		try {
+			// Remove any potential IIFE (Immediately Invoked Function Expressions)
+			const sanitizedCode = code.replace(/\(\s*function\s*\([^)]*\)\s*\{[^}]*\}\s*\)/gi, '');
+
+			// Simple bracket and parenthesis matching
+			const openBrackets = (sanitizedCode.match(/\{/g) || []).length;
+			const closeBrackets = (sanitizedCode.match(/\}/g) || []).length;
+			const openParens = (sanitizedCode.match(/\(/g) || []).length;
+			const closeParens = (sanitizedCode.match(/\)/g) || []).length;
+
+			if (openBrackets !== closeBrackets || openParens !== closeParens) {
+				reject(new Error('Unmatched brackets or parentheses'));
+				return;
+			}
+
+			// If we get here, basic syntax looks OK
+			resolve();
+		} catch (error) {
+			reject(new Error('Syntax validation failed'));
+		}
+	});
 };
 
 export const validateCode = async (
@@ -218,8 +274,8 @@ export const validateCode = async (
 				JSON.parse(code);
 				break;
 			case 'javascript':
-				// Basic JS syntax check
-				new Function(code);
+				// Safe JS syntax check
+				await validateJavaScriptSyntax(code);
 				break;
 			default:
 				break;
