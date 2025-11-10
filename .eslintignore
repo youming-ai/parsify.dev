@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+dist/
+build/
+.next/
+.vercel/
+out/
+coverage/
+
+# Logs
+*.log
+*.log.*
+
+# Environment files
+.env*.local
+.env.production
+
+# Testing
+coverage/
+.nycov_output/
+
+# Temporary files
+*.tmp
+*.temp
+
+# IDE
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Cache
+.cache/
+.parcel-cache/
+
+# Build outputs
+*.tgz
+*.tar.gz
+
+# Runtime
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache
+.npm
+.eslintcache

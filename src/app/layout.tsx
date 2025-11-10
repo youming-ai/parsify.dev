@@ -2,6 +2,29 @@ import { AnalyticsInitializer } from '@/components/analytics-initializer';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { PerformanceMonitor } from '@/components/performance-monitor';
 import type { Metadata } from 'next';
+import { ThemeProvider } from 'next-themes';
+import { Inter } from 'next/font/google';
+
+import './globals.css';
+
+// Inter font for DevKit design
+const inter = Inter({
+	subsets: ['latin'],
+	variable: '--font-inter',
+	display: 'swap',
+});
+
+// Add Material Symbols to global head
+export function MaterialSymbolsFonts() {
+	return (
+		<>
+			<link
+				rel="stylesheet"
+				href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+			/>
+		</>
+	);
+}
 
 import './globals.css';
 
@@ -76,12 +99,17 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en" suppressHydrationWarning>
-			<body className="min-h-screen bg-background font-sans antialiased">
-				<ErrorBoundary maxRetries={3}>
-					<PerformanceMonitor>
-						<AnalyticsInitializer>{children}</AnalyticsInitializer>
-					</PerformanceMonitor>
-				</ErrorBoundary>
+			<head>
+				<MaterialSymbolsFonts />
+			</head>
+			<body className={`${inter.variable} min-h-screen bg-background font-sans antialiased`}>
+				<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+					<ErrorBoundary maxRetries={3}>
+						<PerformanceMonitor>
+							<AnalyticsInitializer>{children}</AnalyticsInitializer>
+						</PerformanceMonitor>
+					</ErrorBoundary>
+				</ThemeProvider>
 			</body>
 		</html>
 	);

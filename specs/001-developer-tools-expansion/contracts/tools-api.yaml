@@ -1,0 +1,648 @@
+openapi: 3.0.3
+info:
+  title: Parsify.dev Developer Tools API
+  description: Internal API contracts for client-side tool processing
+  version: 1.0.0
+  contact:
+    name: Parsify.dev Team
+
+servers:
+  - url: https://api.parsify.dev
+    description: Production server (client-side processing only)
+
+paths:
+  # Tool Discovery
+  /tools:
+    get:
+      summary: Get all available tools
+      description: Retrieve catalog of available developer tools with metadata
+      operationId: getTools
+      tags:
+        - Tool Discovery
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tool'
+        '500':
+          description: Internal server error
+
+  /tools/{toolId}:
+    get:
+      summary: Get tool details
+      description: Retrieve detailed information about a specific tool
+      operationId: getTool
+      tags:
+        - Tool Discovery
+      parameters:
+        - name: toolId
+          in: path
+          required: true
+          description: Unique identifier for the tool
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolDetail'
+        '404':
+          description: Tool not found
+
+  # Tool Categories
+  /categories:
+    get:
+      summary: Get tool categories
+      description: Retrieve all available tool categories
+      operationId: getCategories
+      tags:
+        - Tool Discovery
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /categories/{category}:
+    get:
+      summary: Get tools by category
+      description: Retrieve all tools in a specific category
+      operationId: getToolsByCategory
+      tags:
+        - Tool Discovery
+      parameters:
+        - name: category
+          in: path
+          required: true
+          description: Tool category name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tool'
+        '404':
+          description: Category not found
+
+  # Tool Operations
+  /tools/{toolId}/execute:
+    post:
+      summary: Execute tool operation
+      description: Execute a tool with provided inputs
+      operationId: executeTool
+      tags:
+        - Tool Execution
+      parameters:
+        - name: toolId
+          in: path
+          required: true
+          description: Unique identifier for the tool
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/JSONToolRequest'
+                - $ref: '#/components/schemas/CodeExecutionRequest'
+                - $ref: '#/components/schemas/FileConversionRequest'
+                - $ref: '#/components/schemas/TextProcessingRequest'
+                - $ref: '#/components/schemas/CryptoOperationRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              oneOf:
+                - $ref: '#/components/schemas/ToolResult'
+                - $ref: '#/components/schemas/ExecutionResult'
+                - $ref: '#/components/schemas/ConversionResult'
+                - $ref: '#/components/schemas/TextProcessingResult'
+                - $ref: '#/components/schemas/CryptoResult'
+        '400':
+          description: Invalid request
+        '404':
+          description: Tool not found
+        '422':
+          description: Validation failed
+
+  # Search
+  /tools/search:
+    get:
+      summary: Search tools
+      description: Search for tools by query string
+      operationId: searchTools
+      tags:
+        - Tool Discovery
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query
+          schema:
+            type: string
+        - name: category
+          in: query
+          required: false
+          description: Filter by category
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tool'
+
+components:
+  schemas:
+    Tool:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - category
+        - icon
+        - features
+        - tags
+        - difficulty
+        - status
+        - href
+        - processingType
+        - security
+      properties:
+        id:
+          type: string
+          description: Unique tool identifier
+          example: 'json-formatter'
+        name:
+          type: string
+          description: Display name
+          example: 'JSON Formatter'
+        description:
+          type: string
+          description: Tool description
+          example: 'Format, beautify, and validate JSON data'
+        category:
+          type: string
+          description: Tool category
+          example: 'JSON Processing'
+        icon:
+          type: string
+          description: Icon name
+          example: 'FileJson'
+        features:
+          type: array
+          items:
+            type: string
+          description: List of features
+          example: ['Format & Beautify', 'Syntax Validation']
+        tags:
+          type: array
+          items:
+            type: string
+          description: Search tags
+          example: ['json', 'formatter', 'validator']
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+          example: 'beginner'
+        status:
+          type: string
+          enum: [stable, beta, experimental]
+          example: 'stable'
+        href:
+          type: string
+          description: Tool URL path
+          example: '/tools/json/formatter'
+        isNew:
+          type: boolean
+          description: Whether the tool is new
+        isPopular:
+          type: boolean
+          description: Whether the tool is popular
+        processingType:
+          type: string
+          enum: [client-side, server-side, hybrid]
+          description: Processing type
+          example: 'client-side'
+        security:
+          type: string
+          enum: [local-only, secure-sandbox, network-required]
+          description: Security model
+          example: 'local-only'
+
+    ToolDetail:
+      allOf:
+        - $ref: '#/components/schemas/Tool'
+        - type: object
+          properties:
+            version:
+              type: string
+              description: Tool version
+              example: '1.0.0'
+            performance:
+              $ref: '#/components/schemas/PerformanceSpec'
+            limitations:
+              $ref: '#/components/schemas/Limitations'
+            examples:
+              type: array
+              items:
+                $ref: '#/components/schemas/ToolExample'
+            relatedTools:
+              type: array
+              items:
+                type: string
+              description: Related tool IDs
+
+    PerformanceSpec:
+      type: object
+      properties:
+        maxInputSize:
+          type: integer
+          format: int64
+          description: Maximum input size in bytes
+          example: 1048576
+        expectedTime:
+          type: integer
+          description: Expected processing time in milliseconds
+          example: 5000
+        memoryRequirement:
+          type: integer
+          format: int64
+          description: Memory requirement estimate in bytes
+          example: 52428800
+        concurrencyLevel:
+          type: integer
+          description: Concurrent operations supported
+          example: 3
+
+    Limitations:
+      type: object
+      properties:
+        fileSizeLimit:
+          type: integer
+          format: int64
+          description: File size limit in bytes
+          example: 10485760
+        processingTimeLimit:
+          type: integer
+          description: Time limit in seconds
+          example: 30
+        supportedFormats:
+          type: array
+          items:
+            type: string
+          description: Supported input/output formats
+          example: ['json', 'csv', 'xml']
+        browserRequirements:
+          type: array
+          items:
+            type: string
+          description: Required browser features
+          example: ['Web Workers', 'IndexedDB']
+
+    ToolExample:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Example title
+          example: 'Basic JSON Formatting'
+        description:
+          type: string
+          description: Example description
+          example: 'Format a simple JSON object'
+        input:
+          type: object
+          description: Example input
+        expectedOutput:
+          type: object
+          description: Expected output
+        category:
+          type: string
+          enum: [basic, intermediate, advanced]
+          example: 'basic'
+
+    # Request Schemas
+    JSONToolRequest:
+      type: object
+      required:
+        - operation
+        - data
+      properties:
+        operation:
+          type: string
+          enum: [format, validate, convert, query]
+          description: JSON operation type
+        data:
+          oneOf:
+            - type: string
+              description: JSON data as string
+            - type: object
+              description: JSON data as object
+        options:
+          $ref: '#/components/schemas/JSONToolOptions'
+
+    JSONToolOptions:
+      type: object
+      properties:
+        indentation:
+          type: integer
+          description: Indentation size
+          example: 2
+        sortKeys:
+          type: boolean
+          description: Sort object keys
+        validateSchema:
+          type: string
+          description: JSON schema for validation
+        targetFormat:
+          type: string
+          description: Target format for conversion
+        jsonPath:
+          type: string
+          description: JSONPath expression
+
+    CodeExecutionRequest:
+      type: object
+      required:
+        - language
+        - code
+      properties:
+        language:
+          type: string
+          enum: [javascript, python, java, csharp, cpp, go, rust, php, ruby, sql, html, css]
+          description: Programming language
+        code:
+          type: string
+          description: Source code to execute
+        input:
+          type: string
+          description: Standard input for execution
+        environment:
+          $ref: '#/components/schemas/ExecutionEnvironment'
+
+    ExecutionEnvironment:
+      type: object
+      properties:
+        timeout:
+          type: integer
+          description: Execution timeout in milliseconds
+          example: 30000
+        memoryLimit:
+          type: integer
+          description: Memory limit in bytes
+          example: 104857600
+        allowedImports:
+          type: array
+          items:
+            type: string
+          description: Allowed imports/modules
+
+    FileConversionRequest:
+      type: object
+      required:
+        - sourceData
+        - targetFormat
+      properties:
+        sourceData:
+          oneOf:
+            - type: string
+              description: File data as base64 string
+            - type: string
+              format: binary
+              description: Binary file data
+        sourceFormat:
+          type: string
+          description: Source format
+          example: 'json'
+        targetFormat:
+          type: string
+          description: Target format
+          example: 'csv'
+        options:
+          $ref: '#/components/schemas/ConversionOptions'
+
+    ConversionOptions:
+      type: object
+      properties:
+        includeHeaders:
+          type: boolean
+          description: Include headers in output
+        indentation:
+          type: integer
+          description: Indentation size
+        dateFormat:
+          type: string
+          description: Date format string
+        encoding:
+          type: string
+          description: Character encoding
+
+    TextProcessingRequest:
+      type: object
+      required:
+        - operation
+        - text
+      properties:
+        operation:
+          type: string
+          enum: [encode, decode, format, compress, extract]
+          description: Text processing operation
+        text:
+          type: string
+          description: Text to process
+        encoding:
+          type: string
+          description: Encoding type
+          example: 'base64'
+        options:
+          type: object
+          description: Operation-specific options
+
+    CryptoOperationRequest:
+      type: object
+      required:
+        - operation
+        - data
+      properties:
+        operation:
+          type: string
+          enum: [hash, encrypt, decrypt, generate]
+          description: Cryptographic operation
+        data:
+          type: string
+          description: Data to process
+        algorithm:
+          type: string
+          description: Algorithm to use
+          example: 'sha256'
+        key:
+          type: string
+          description: Encryption key
+          example: 'secret-key'
+        options:
+          type: object
+          description: Algorithm-specific options
+
+    # Response Schemas
+    ToolResult:
+      type: object
+      required:
+        - success
+        - result
+        - sessionId
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          description: Whether operation succeeded
+        result:
+          type: object
+          description: Operation result
+        error:
+          $ref: '#/components/schemas/ErrorResponse'
+        sessionId:
+          type: string
+          description: Session identifier
+        timestamp:
+          type: string
+          format: date-time
+          description: Operation timestamp
+        metrics:
+          $ref: '#/components/schemas/Metrics'
+
+    ExecutionResult:
+      allOf:
+        - $ref: '#/components/schemas/ToolResult'
+        - type: object
+          properties:
+            output:
+              type: string
+              description: Execution output
+            exitCode:
+              type: integer
+              description: Process exit code
+            duration:
+              type: integer
+              description: Execution duration in milliseconds
+
+    ConversionResult:
+      allOf:
+        - $ref: '#/components/schemas/ToolResult'
+        - type: object
+          properties:
+            convertedData:
+              type: string
+              description: Converted data
+            size:
+              type: integer
+              description: Result size in bytes
+            format:
+              type: string
+              description: Result format
+
+    TextProcessingResult:
+      allOf:
+        - $ref: '#/components/schemas/ToolResult'
+        - type: object
+          properties:
+            processedText:
+              type: string
+              description: Processed text
+            encoding:
+              type: string
+              description: Output encoding
+
+    CryptoResult:
+      allOf:
+        - $ref: '#/components/schemas/ToolResult'
+        - type: object
+          properties:
+            hash:
+              type: string
+              description: Generated hash
+            encryptedData:
+              type: string
+              description: Encrypted data
+            decryptedData:
+              type: string
+              description: Decrypted data
+            generatedData:
+              type: string
+              description: Generated data
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code
+          example: 'invalid_json'
+        message:
+          type: string
+          description: Error message
+          example: 'Invalid JSON syntax at line 5, column 12'
+        details:
+          type: object
+          description: Additional error details
+        suggestions:
+          type: array
+          items:
+            type: string
+          description: Suggested fixes
+
+    Metrics:
+      type: object
+      properties:
+        duration:
+          type: integer
+          description: Operation duration in milliseconds
+        memoryUsed:
+          type: integer
+          description: Memory used in bytes
+        outputSize:
+          type: integer
+          description: Output size in bytes
+        timestamp:
+          type: string
+          format: date-time
+          description: Completion timestamp
+
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication (future use)
+
+tags:
+  - name: Tool Discovery
+    description: Tool catalog and search endpoints
+  - name: Tool Execution
+    description: Tool operation execution endpoints

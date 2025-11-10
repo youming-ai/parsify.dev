@@ -4,48 +4,62 @@
 
 @layer base {
 	:root {
-		--background: 0 0% 100%;
-		--foreground: 222.2 84% 4.9%;
+		/* DevKit Design System - Light Theme */
+		--background: 220 8% 97%; /* #f6f6f8 */
+		--foreground: 220 8% 15%; /* Dark text */
 		--card: 0 0% 100%;
-		--card-foreground: 222.2 84% 4.9%;
+		--card-foreground: 220 8% 15%;
 		--popover: 0 0% 100%;
-		--popover-foreground: 222.2 84% 4.9%;
-		--primary: 221.2 83.2% 53.3%;
-		--primary-foreground: 210 40% 98%;
-		--secondary: 210 40% 96%;
-		--secondary-foreground: 222.2 84% 4.9%;
-		--muted: 210 40% 96%;
-		--muted-foreground: 215.4 16.3% 46.9%;
-		--accent: 210 40% 96%;
-		--accent-foreground: 222.2 84% 4.9%;
+		--popover-foreground: 220 8% 15%;
+		--primary: 217.2 75% 50%; /* #135bec - DevKit Primary */
+		--primary-foreground: 0 0% 100%;
+		--secondary: 220 8% 92%; /* Light gray */
+		--secondary-foreground: 220 8% 15%;
+		--muted: 220 8% 88%;
+		--muted-foreground: 220 8% 45%;
+		--accent: 220 8% 85%;
+		--accent-foreground: 220 8% 15%;
 		--destructive: 0 84.2% 60.2%;
-		--destructive-foreground: 210 40% 98%;
-		--border: 214.3 31.8% 91.4%;
-		--input: 214.3 31.8% 91.4%;
-		--ring: 221.2 83.2% 53.3%;
-		--radius: 0.5rem;
+		--destructive-foreground: 0 0% 100%;
+		--border: 220 8% 85%;
+		--input: 220 8% 85%;
+		--ring: 217.2 75% 50%;
+		--radius: 0.75rem;
+
+		/* DevKit specific colors */
+		--devkit-blue: 217.2 75% 50%; /* #135bec */
+		--devkit-blue-light: 217.2 75% 95%;
+		--devkit-gray: 220 8% 85%;
+		--devkit-gray-dark: 220 8% 25%;
 	}
 
 	.dark {
-		--background: 222.2 84% 4.9%;
+		/* DevKit Design System - Dark Theme */
+		--background: 220 25% 8%; /* #101622 */
 		--foreground: 210 40% 98%;
-		--card: 222.2 84% 4.9%;
+		--card: 220 25% 8%;
 		--card-foreground: 210 40% 98%;
-		--popover: 222.2 84% 4.9%;
+		--popover: 220 25% 8%;
 		--popover-foreground: 210 40% 98%;
-		--primary: 217.2 91.2% 59.8%;
-		--primary-foreground: 222.2 84% 4.9%;
-		--secondary: 217.2 32.6% 17.5%;
+		--primary: 217.2 75% 50%; /* #135bec - DevKit Primary */
+		--primary-foreground: 0 0% 100%;
+		--secondary: 220 25% 15%;
 		--secondary-foreground: 210 40% 98%;
-		--muted: 217.2 32.6% 17.5%;
-		--muted-foreground: 215 20.2% 65.1%;
-		--accent: 217.2 32.6% 17.5%;
+		--muted: 220 25% 18%;
+		--muted-foreground: 220 8% 60%;
+		--accent: 220 25% 20%;
 		--accent-foreground: 210 40% 98%;
 		--destructive: 0 62.8% 30.6%;
 		--destructive-foreground: 210 40% 98%;
-		--border: 217.2 32.6% 17.5%;
-		--input: 217.2 32.6% 17.5%;
-		--ring: 224.3 76.3% 94.1%;
+		--border: 220 25% 15%;
+		--input: 220 25% 15%;
+		--ring: 217.2 75% 50%;
+
+		/* DevKit specific colors - Dark */
+		--devkit-blue: 217.2 75% 60%; /* Slightly lighter in dark mode */
+		--devkit-blue-light: 217.2 75% 15%;
+		--devkit-gray: 220 25% 15%;
+		--devkit-gray-dark: 220 25% 80%;
 	}
 }
 

@@ -29,7 +29,7 @@ interface ExecutionStatusComponentProps extends ExecutionStatusProps {
 	onRetry?: () => void;
 }
 
-export function ExecutionStatus({
+export function ExecutionStatusComponent({
 	status,
 	progress = 0,
 	executionTime = 0,

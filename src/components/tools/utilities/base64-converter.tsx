@@ -1,13 +1,13 @@
 'use client';
 
-import * as React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { FileUpload } from '@/components/file-upload/file-upload';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { FileUpload } from '@/components/file-upload/file-upload';
-import { Copy, FileText, Upload, Zap, Code, Image } from 'lucide-react';
+import { Code, Copy, FileText, Image, Upload, Zap } from 'lucide-react';
+import * as React from 'react';
 import { toast } from 'sonner';
 
 export interface Base64Result {
@@ -89,7 +89,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
 	};
 
 	// Convert Base64 to blob
-	const base64ToBlob = (base64: string, mimeType: string = 'application/octet-stream'): Blob => {
+	const base64ToBlob = (base64: string, mimeType = 'application/octet-stream'): Blob => {
 		try {
 			const byteCharacters = atob(base64);
 			const byteNumbers = new Array(byteCharacters.length);
@@ -128,7 +128,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
 				timestamp: new Date(),
 			};
 
-			setResults(prev => [result, ...prev].slice(0, 10));
+			setResults((prev) => [result, ...prev].slice(0, 10));
 			onConversionComplete?.(result);
 
 			toast.success(`${activeTab === 'encode' ? 'Encoded' : 'Decoded'} successfully`);
@@ -168,7 +168,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
 					timestamp: new Date(),
 				};
 
-				setResults(prev => [result, ...prev].slice(0, 10));
+				setResults((prev) => [result, ...prev].slice(0, 10));
 				onConversionComplete?.(result);
 
 				toast.success(`${activeTab === 'encode' ? 'Encoded' : 'Decoded'} ${file.name}`);
@@ -208,7 +208,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
 	};
 
 	// Load example
-	const loadExample = (example: typeof base64Examples[0]) => {
+	const loadExample = (example: (typeof base64Examples)[0]) => {
 		setInputText(example.input);
 		setActiveTab('encode');
 		setActiveInputTab('text');
@@ -262,10 +262,9 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
 			}, 300);
 
 			return () => clearTimeout(timer);
-		} else {
-			setOutputText('');
 		}
-	}, [inputText, activeTab, activeInputTab]);
+		setOutputText('');
+	}, [inputText, activeTab, activeInputTab, encodeText, decodeText, isValidBase64]);
 
 	return (
 		<div className={className}>
@@ -284,18 +283,18 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
 					</TabsList>
 
 					<TabsContent value="encode" className="space-y-4">
-						<Card>
-							<CardHeader>
+						<Card variant="modern">
+							<CardHeader variant="modern">
 								<CardTitle className="flex items-center gap-2">
 									<Zap className="h-5 w-5" />
 									Base64 Encoding
 								</CardTitle>
 							</CardHeader>
-							<CardContent>
-								<div className="p-4 bg-blue-50 border border-blue-200 rounded">
-									<p className="text-sm text-blue-800">
-										<strong>Base64 Encoding:</strong> Converts binary data into ASCII string format.
-										Commonly used for transmitting data over media designed to handle text.
+							<CardContent variant="modern">
+								<div className="p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+									<p className="text-sm text-blue-800 dark:text-blue-200">
+										<strong>Base64 Encoding:</strong> Converts binary data into ASCII string format. Commonly used for
+										transmitting data over media designed to handle text.
 									</p>
 								</div>
 							</CardContent>
@@ -303,16 +302,16 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
 					</TabsContent>
 
 					<TabsContent value="decode">
-						<Card>
-							<CardHeader>
+						<Card variant="modern">
+							<CardHeader variant="modern">
 								<CardTitle className="flex items-center gap-2">
 									<FileText className="h-5 w-5" />
 									Base64 Decoding
 								</CardTitle>
 							</CardHeader>
-							<CardContent>
-								<div className="p-4 bg-green-50 border border-green-200 rounded">
-									<p className="text-sm text-green-800">
+							<CardContent variant="modern">
+								<div className="p-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg">
+									<p className="text-sm text-green-800 dark:text-green-200">
 										<strong>Base64 Decoding:</strong> Converts Base64 encoded strings back to original data.
 										Automatically detects and decodes valid Base64 strings.
 									</p>
@@ -356,15 +355,11 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
 										value={inputText}
 										onChange={(e) => setInputText(e.target.value)}
 										placeholder={
-											activeTab === 'encode'
-												? 'Enter text to encode to Base64...'
-												: 'Enter Base64 string to decode...'
+											activeTab === 'encode' ? 'Enter text to encode to Base64...' : 'Enter Base64 string to decode...'
 										}
 										className="min-h-32 font-mono"
 									/>
-									<div className="text-sm text-gray-500 mt-1">
-										{inputText.length} characters
-									</div>
+									<div className="text-sm text-gray-500 mt-1">{inputText.length} characters</div>
 								</div>
 
 								{outputText && (
@@ -374,33 +369,21 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
 												{activeTab === 'encode' ? 'Base64 Output' : 'Decoded Output'}
 											</label>
 											<div className="flex gap-2">
-												<Button
-													variant="ghost"
-													size="sm"
-													onClick={() => copyToClipboard(outputText)}
-												>
+												<Button variant="ghost" size="sm" onClick={() => copyToClipboard(outputText)}>
 													<Copy className="h-4 w-4 mr-1" />
 													Copy
 												</Button>
 												{activeTab === 'decode' && (
-													<Button
-														variant="ghost"
-														size="sm"
-														onClick={() => downloadAsFile(outputText, 'decoded.txt')}
-													>
+													<Button variant="ghost" size="sm" onClick={() => downloadAsFile(outputText, 'decoded.txt')}>
 														Download
 													</Button>
 												)}
 											</div>
 										</div>
 										<div className="p-3 bg-gray-50 border rounded">
-											<div className="font-mono text-sm break-all max-h-40 overflow-y-auto">
-												{outputText}
-											</div>
+											<div className="font-mono text-sm break-all max-h-40 overflow-y-auto">{outputText}</div>
 										</div>
-										<div className="text-sm text-gray-500 mt-1">
-											{outputText.length} characters
-										</div>
+										<div className="text-sm text-gray-500 mt-1">{outputText.length} characters</div>
 									</div>
 								)}
 
@@ -414,9 +397,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
 					<TabsContent value="file" className="space-y-4">
 						<Card>
 							<CardHeader>
-								<CardTitle>
-									{activeTab === 'encode' ? 'Files to Encode' : 'Files to Decode'}
-								</CardTitle>
+								<CardTitle>{activeTab === 'encode' ? 'Files to Encode' : 'Files to Decode'}</CardTitle>
 							</CardHeader>
 							<CardContent className="space-y-4">
 								<FileUpload
@@ -425,12 +406,9 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
 									maxFiles={10}
 									acceptedFormats={activeTab === 'encode' ? ['*'] : ['txt', 'base64']}
 								/>
-								<Button
-									onClick={processFiles}
-									disabled={inputFiles.length === 0}
-									className="w-full"
-								>
-									Process {inputFiles.length} File{inputFiles.length !== 1 ? 's' : ''}
+								<Button onClick={processFiles} disabled={inputFiles.length === 0} className="w-full">
+									Process {inputFiles.length} File
+									{inputFiles.length !== 1 ? 's' : ''}
 								</Button>
 							</CardContent>
 						</Card>
@@ -456,12 +434,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
 										<div className="text-xs text-gray-500 mb-1">Output:</div>
 										<div className="font-mono text-xs truncate">{example.encoded}</div>
 									</div>
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={() => loadExample(example)}
-										className="mt-2 w-full"
-									>
+									<Button variant="outline" size="sm" onClick={() => loadExample(example)} className="mt-2 w-full">
 										Load Example
 									</Button>
 								</div>
@@ -479,24 +452,48 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
 						<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
 							<div>
 								<div className="font-medium">Documents</div>
-								<div><code>text/plain</code> - Plain text</div>
-								<div><code>text/html</code> - HTML</div>
-								<div><code>application/json</code> - JSON</div>
-								<div><code>application/xml</code> - XML</div>
+								<div>
+									<code>text/plain</code> - Plain text
+								</div>
+								<div>
+									<code>text/html</code> - HTML
+								</div>
+								<div>
+									<code>application/json</code> - JSON
+								</div>
+								<div>
+									<code>application/xml</code> - XML
+								</div>
 							</div>
 							<div>
 								<div className="font-medium">Images</div>
-								<div><code>image/jpeg</code> - JPEG images</div>
-								<div><code>image/png</code> - PNG images</div>
-								<div><code>image/gif</code> - GIF images</div>
-								<div><code>image/webp</code> - WebP images</div>
+								<div>
+									<code>image/jpeg</code> - JPEG images
+								</div>
+								<div>
+									<code>image/png</code> - PNG images
+								</div>
+								<div>
+									<code>image/gif</code> - GIF images
+								</div>
+								<div>
+									<code>image/webp</code> - WebP images
+								</div>
 							</div>
 							<div>
 								<div className="font-medium">Other</div>
-								<div><code>application/pdf</code> - PDF files</div>
-								<div><code>application/zip</code> - ZIP archives</div>
-								<div><code>audio/mpeg</code> - MP3 audio</div>
-								<div><code>video/mp4</code> - MP4 video</div>
+								<div>
+									<code>application/pdf</code> - PDF files
+								</div>
+								<div>
+									<code>application/zip</code> - ZIP archives
+								</div>
+								<div>
+									<code>audio/mpeg</code> - MP3 audio
+								</div>
+								<div>
+									<code>video/mp4</code> - MP4 video
+								</div>
 							</div>
 						</div>
 					</CardContent>
@@ -514,9 +511,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
 									<div key={index} className="p-3 border rounded">
 										<div className="flex items-center justify-between mb-2">
 											<div className="flex items-center gap-2">
-												<Badge variant="outline">
-													{result.operation === 'encode' ? 'Encoded' : 'Decoded'}
-												</Badge>
+												<Badge variant="outline">{result.operation === 'encode' ? 'Encoded' : 'Decoded'}</Badge>
 												{result.inputType === 'file' && (
 													<Badge variant="secondary">
 														<Image className="h-3 w-3 mr-1" />
@@ -524,19 +519,11 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
 													</Badge>
 												)}
 											</div>
-											<span className="text-xs text-gray-500">
-												{result.timestamp.toLocaleTimeString()}
-											</span>
+											<span className="text-xs text-gray-500">{result.timestamp.toLocaleTimeString()}</span>
 										</div>
 										<div className="text-sm">
-											<div className="font-medium truncate">
-												{result.input}
-											</div>
-											{result.fileSize && (
-												<div className="text-xs text-gray-500">
-													{result.fileSize} bytes
-												</div>
-											)}
+											<div className="font-medium truncate">{result.input}</div>
+											{result.fileSize && <div className="text-xs text-gray-500">{result.fileSize} bytes</div>}
 										</div>
 									</div>
 								))}

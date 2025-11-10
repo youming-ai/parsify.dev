@@ -122,6 +122,7 @@ export function LanguageSelector({
 							const config = getLanguageConfig(language);
 							return (
 								<button
+									type="button"
 									key={language}
 									onClick={() => handleLanguageSelect(language)}
 									className={cn(
@@ -178,6 +179,7 @@ export function LanguageSelector({
 					{/* Category Tabs */}
 					<div className="flex overflow-x-auto border-b">
 						<button
+							type="button"
 							onClick={() => setSelectedCategory('All')}
 							className={cn(
 								'whitespace-nowrap border-b-2 px-3 py-2 font-medium text-sm transition-colors',
@@ -190,6 +192,7 @@ export function LanguageSelector({
 						</button>
 						{Object.keys(LANGUAGE_CATEGORIES).map((category) => (
 							<button
+								type="button"
 								key={category}
 								onClick={() => setSelectedCategory(category)}
 								className={cn(
@@ -214,6 +217,7 @@ export function LanguageSelector({
 									const config = getLanguageConfig(language);
 									return (
 										<button
+											type="button"
 											key={language}
 											onClick={() => handleLanguageSelect(language)}
 											className={cn(

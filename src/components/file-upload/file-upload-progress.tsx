@@ -59,7 +59,14 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
 		switch (status) {
 			case 'pending':
 				return (
-					<svg className="h-5 w-5 animate-pulse text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<svg
+						className="h-5 w-5 animate-pulse text-gray-400"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						aria-label="Pending upload"
+					>
+						<title>Pending upload</title>
 						<path
 							strokeLinecap="round"
 							strokeLinejoin="round"
@@ -70,7 +77,14 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
 				);
 			case 'uploading':
 				return (
-					<svg className="h-5 w-5 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<svg
+						className="h-5 w-5 animate-spin text-blue-500"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						aria-label="Uploading"
+					>
+						<title>Uploading</title>
 						<path
 							strokeLinecap="round"
 							strokeLinejoin="round"
@@ -81,7 +95,14 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
 				);
 			case 'success':
 				return (
-					<svg className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<svg
+						className="h-5 w-5 text-green-500"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						aria-label="Upload successful"
+					>
+						<title>Upload successful</title>
 						<path
 							strokeLinecap="round"
 							strokeLinejoin="round"
@@ -92,7 +113,14 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
 				);
 			case 'error':
 				return (
-					<svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<svg
+						className="h-5 w-5 text-red-500"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						aria-label="Upload error"
+					>
+						<title>Upload error</title>
 						<path
 							strokeLinecap="round"
 							strokeLinejoin="round"
@@ -103,7 +131,14 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
 				);
 			case 'cancelled':
 				return (
-					<svg className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<svg
+						className="h-5 w-5 text-gray-500"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						aria-label="Upload cancelled"
+					>
+						<title>Upload cancelled</title>
 						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
 					</svg>
 				);
@@ -168,8 +203,10 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
 							size="sm"
 							onClick={onCancel}
 							className="h-auto p-1 text-gray-500 hover:text-red-500"
+							aria-label="Cancel upload"
 						>
-							<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Cancel">
+								<title>Cancel</title>
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
 							</svg>
 						</Button>
@@ -181,8 +218,10 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
 							size="sm"
 							onClick={onRetry}
 							className="h-auto p-1 text-gray-500 hover:text-blue-500"
+							aria-label="Retry upload"
 						>
-							<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Retry">
+								<title>Retry</title>
 								<path
 									strokeLinecap="round"
 									strokeLinejoin="round"

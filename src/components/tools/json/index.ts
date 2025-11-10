@@ -4,6 +4,7 @@ export { JsonConverter } from './json-converter';
 export { JsonErrorDisplay } from './json-error-display';
 export { JsonFormatter } from './json-formatter';
 export { JsonInputEditor } from './json-input-editor';
+export { JsonPathQueries } from './json-path-queries';
 export { JsonToolComplete } from './json-tool-complete';
 // Types and Utilities
 export * from './json-types';

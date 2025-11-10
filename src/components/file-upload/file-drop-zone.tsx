@@ -160,9 +160,9 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
 	);
 
 	return (
-		<Card
+		<div
 			className={cn(
-				'relative cursor-pointer border-2 border-dashed transition-all duration-200',
+				'relative cursor-pointer border-2 border-dashed rounded-lg transition-all duration-200 w-full text-left',
 				{
 					'border-blue-500 bg-blue-50 dark:bg-blue-950/20': isDragActive,
 					'border-gray-300 bg-gray-50 dark:bg-gray-800/20': !isDragActive,
@@ -182,7 +182,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
 			aria-label="File upload drop zone"
 			aria-disabled={disabled}
 		>
-			<CardContent className="flex flex-col items-center justify-center p-8 text-center">
+			<div className="flex flex-col items-center justify-center p-8 text-center">
 				<input
 					ref={inputRef}
 					type="file"
@@ -242,8 +242,8 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
 						)}
 					</div>
 				)}
-			</CardContent>
-		</Card>
+			</div>
+		</div>
 	);
 };
 

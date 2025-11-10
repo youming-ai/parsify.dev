@@ -86,8 +86,10 @@ class SimplifiedAnalytics {
 					// Create the clarity global function
 					(window as any).clarity =
 						(window as any).clarity ||
-						(() => {
-							((window as any).clarity.q = (window as any).clarity.q || []).push(arguments);
+						((...args: any[]) => {
+							const q = (window as any).clarity.q || [];
+							(window as any).clarity.q = q;
+							q.push(args);
 						});
 
 					// Create and append the Clarity script
@@ -104,7 +106,7 @@ class SimplifiedAnalytics {
 
 					// Insert script as first script element for better loading
 					const firstScript = document.getElementsByTagName('script')[0];
-					if (firstScript && firstScript.parentNode) {
+					if (firstScript?.parentNode) {
 						firstScript.parentNode.insertBefore(script, firstScript);
 					} else {
 						document.head.appendChild(script);

@@ -85,6 +85,10 @@ export function Terminal({
 		}
 	};
 
+	const handleKeyUp = (e: React.KeyboardEvent) => {
+		// Handle key up events if needed
+	};
+
 	const clearTerminal = () => {
 		if (onClear) {
 			onClear();
@@ -271,7 +275,12 @@ export function Terminal({
 				)}
 				style={{ height }}
 				onClick={handleTerminalClick}
+				onKeyDown={handleKeyDown}
+				onKeyUp={handleKeyUp}
 				ref={terminalRef}
+				tabIndex={0}
+				role="region"
+				aria-label="Terminal output"
 			>
 				<div className="p-4">
 					{/* Terminal Lines */}

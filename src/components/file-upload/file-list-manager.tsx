@@ -140,7 +140,8 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 				);
 			case 'success':
 				return (
-					<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Success">
+						<title>Success</title>
 						<path
 							strokeLinecap="round"
 							strokeLinejoin="round"
@@ -151,7 +152,8 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 				);
 			case 'error':
 				return (
-					<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Error">
+						<title>Error</title>
 						<path
 							strokeLinecap="round"
 							strokeLinejoin="round"
@@ -162,7 +164,8 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 				);
 			case 'cancelled':
 				return (
-					<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Cancelled">
+						<title>Cancelled</title>
 						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
 					</svg>
 				);
@@ -184,7 +187,14 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 	if (files.length === 0) {
 		return (
 			<div className={cn('py-8 text-center text-gray-500', className)}>
-				<svg className="mx-auto mb-4 h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<svg
+					className="mx-auto mb-4 h-12 w-12 text-gray-300"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					aria-label="No files"
+				>
+					<title>No files</title>
 					<path
 						strokeLinecap="round"
 						strokeLinejoin="round"
@@ -227,8 +237,21 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 										{file.status === 'success' && (
 											<>
 												{onFilePreview && (
-													<Button variant="ghost" size="sm" onClick={() => onFilePreview(file)} className="h-auto p-1">
-														<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+													<Button
+														variant="ghost"
+														size="sm"
+														onClick={() => onFilePreview(file)}
+														className="h-auto p-1"
+														aria-label="Preview file"
+													>
+														<svg
+															className="h-4 w-4"
+															fill="none"
+															viewBox="0 0 24 24"
+															stroke="currentColor"
+															aria-label="Preview"
+														>
+															<title>Preview</title>
 															<path
 																strokeLinecap="round"
 																strokeLinejoin="round"
@@ -245,8 +268,21 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 													</Button>
 												)}
 												{onFileDownload && (
-													<Button variant="ghost" size="sm" onClick={() => onFileDownload(file)} className="h-auto p-1">
-														<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+													<Button
+														variant="ghost"
+														size="sm"
+														onClick={() => onFileDownload(file)}
+														className="h-auto p-1"
+														aria-label="Download file"
+													>
+														<svg
+															className="h-4 w-4"
+															fill="none"
+															viewBox="0 0 24 24"
+															stroke="currentColor"
+															aria-label="Download"
+														>
+															<title>Download</title>
 															<path
 																strokeLinecap="round"
 																strokeLinejoin="round"
@@ -266,7 +302,14 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 												onClick={() => onFileRetry(file.id)}
 												className="h-auto p-1 text-blue-600 hover:text-blue-700"
 											>
-												<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+												<svg
+													className="h-4 w-4"
+													fill="none"
+													viewBox="0 0 24 24"
+													stroke="currentColor"
+													aria-label="Retry"
+												>
+													<title>Retry</title>
 													<path
 														strokeLinecap="round"
 														strokeLinejoin="round"
@@ -283,8 +326,16 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 												size="sm"
 												onClick={() => onFileCancel(file.id)}
 												className="h-auto p-1 text-red-600 hover:text-red-700"
+												aria-label="Cancel upload"
 											>
-												<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+												<svg
+													className="h-4 w-4"
+													fill="none"
+													viewBox="0 0 24 24"
+													stroke="currentColor"
+													aria-label="Cancel"
+												>
+													<title>Cancel</title>
 													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
 												</svg>
 											</Button>
@@ -297,8 +348,16 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 													size="sm"
 													onClick={() => onFileRemove(file.id)}
 													className="h-auto p-1 text-red-600 hover:text-red-700"
+													aria-label="Remove file"
 												>
-													<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+													<svg
+														className="h-4 w-4"
+														fill="none"
+														viewBox="0 0 24 24"
+														stroke="currentColor"
+														aria-label="Remove"
+													>
+														<title>Remove</title>
 														<path
 															strokeLinecap="round"
 															strokeLinejoin="round"

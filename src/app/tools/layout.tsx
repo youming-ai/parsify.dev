@@ -1,4 +1,4 @@
-import { ToolsLayout as ToolsLayoutComponent } from '@/components/layout/tools-layout';
+import { MainLayout } from '@/components/layout/main-layout';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -31,5 +31,5 @@ export default function ToolsLayout({
 }: {
 	children: React.ReactNode;
 }) {
-	return <ToolsLayoutComponent>{children}</ToolsLayoutComponent>;
+	return <MainLayout>{children}</MainLayout>;
 }

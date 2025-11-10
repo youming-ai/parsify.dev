@@ -19,7 +19,7 @@ import type {
 	ExecutionStatus as ExecutionStatusEnum,
 	TerminalLine,
 } from './code-types';
-import { ExecutionStatus } from './execution-status';
+import { ExecutionStatusComponent } from './execution-status';
 import { getLanguageConfig, getTemplatesByLanguage } from './language-configs';
 import { LanguageSelector, QuickLanguageSelector } from './language-selector';
 import { Terminal, createTerminalLine, formatTerminalError, formatTerminalOutput } from './terminal';
@@ -387,7 +387,7 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
 								</Button>
 
 								{/* Execution Status */}
-								<ExecutionStatus
+								<ExecutionStatusComponent
 									status={executionStatus}
 									progress={executionProgress}
 									executionTime={executionResult?.executionTime}

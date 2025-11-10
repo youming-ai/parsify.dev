@@ -1,0 +1,58 @@
+/* Critical CSS for above-the-fold content */
+@layer base {
+	/* Hero section critical styles */
+	.hero-section {
+	contain: layout style paint;
+		background-image: linear-gradient(135deg,
+			hsl(211 100% 95% 94%) 0%,
+			hsl(221 83% 95% 94%) 50%,
+			hsl(217 91.2% 59.8% 100%);
+		);
+	}
+
+	/* Tool cards critical styles */
+	.tool-card {
+	contain: layout style paint;
+		will-change: transform;
+		backface-visibility: hidden;
+	}
+
+	/* Text content critical rendering */
+	.hero-text {
+		contain: layout style paint;
+		text-rendering: optimizeSpeed;
+	}
+
+	/* Badge animations */
+	@keyframes shimmer {
+	0% { background-position: 200% 0; }
+		100% { background-position: -200% 0; }
+	}
+
+	/* Reduce layout shift */
+	.cta-section {
+	contain: layout style paint;
+	}
+}
+
+/* Optimize button rendering */
+.btn-modern {
+	contain: layout style paint;
+		will-change: transform, filter, backdrop-filter;
+	}
+
+	/* Optimize image loading */
+	img {
+		content-visibility: auto;
+	}
+
+	/* Preload critical fonts */
+	@font-face {
+	font-display: swap;
+	}
+
+	/* Optimize text rendering */
+	p {
+		text-rendering: optimizeSpeed;
+	}
+}

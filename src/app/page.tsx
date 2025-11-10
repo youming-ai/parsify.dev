@@ -104,52 +104,59 @@ export default function Home() {
 	return (
 		<MainLayout>
 			{/* Hero Section */}
-			<section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+			<section className="hero-section relative overflow-hidden">
+				<div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 animate-pulse-slow"></div>
 				<div className="container mx-auto px-4 py-16 lg:py-24">
-					<div className="mx-auto max-w-4xl text-center">
-						<Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-							<Sparkles className="mr-1 h-3 w-3" />
+					<div className="mx-auto max-w-4xl text-center relative z-10">
+						<Badge className="mb-6 badge-modern animate-fade-in">
+							<Sparkles className="mr-2 h-4 w-4 animate-pulse" />
 							Professional Developer Tools
 						</Badge>
-						<h1 className="mb-6 font-bold text-4xl text-gray-900 lg:text-6xl dark:text-white">
+						<h1 className="mb-6 font-bold text-4xl text-gray-900 lg:text-6xl dark:text-white animate-slide-up">
 							Powerful Tools for
-							<span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-								{' '}
-								Modern Development
-							</span>
+							<span className="gradient-modern bg-clip-text text-transparent"> Modern Development</span>
 						</h1>
-						<p className="mx-auto mb-8 max-w-2xl text-gray-600 text-xl dark:text-gray-300">
+						<p
+							className="mx-auto mb-8 max-w-2xl text-gray-600 text-xl dark:text-gray-300 animate-slide-up"
+							style={{ animationDelay: '0.2s' }}
+						>
 							Transform, validate, and execute your code with our suite of professional developer tools. Built for
 							speed, security, and exceptional developer experience.
 						</p>
-						<div className="flex flex-col justify-center gap-4 sm:flex-row">
+						<div
+							className="flex flex-col justify-center gap-4 sm:flex-row animate-fade-in"
+							style={{ animationDelay: '0.4s' }}
+						>
 							<Link href="/tools">
-								<Button size="lg" className="px-8 py-3 text-lg">
+								<Button size="lg" className="btn-modern btn-primary">
 									<Play className="mr-2 h-5 w-5" />
 									Try Tools Now
 									<ArrowRight className="ml-2 h-5 w-5" />
 								</Button>
 							</Link>
 							<Link href="/docs">
-								<Button size="lg" variant="outline" className="px-8 py-3 text-lg">
+								<Button size="lg" className="btn-modern btn-secondary">
 									View Documentation
 								</Button>
 							</Link>
 						</div>
 
 						{/* Trust indicators */}
-						<div className="mt-12 flex flex-wrap justify-center gap-8 text-gray-500 text-sm dark:text-gray-400">
+						<div
+							className="mt-12 flex flex-wrap justify-center gap-8 text-gray-500 text-sm dark:text-gray-400 animate-slide-up"
+							style={{ animationDelay: '0.6s' }}
+						>
 							<div className="flex items-center">
 								<CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-								No Registration Required
+								<span className="font-medium">No Registration Required</span>
 							</div>
 							<div className="flex items-center">
 								<Shield className="mr-2 h-4 w-4 text-blue-500" />
-								100% Secure
+								<span className="font-medium">100% Secure</span>
 							</div>
 							<div className="flex items-center">
-								<Zap className="mr-2 h-4 w-4 text-yellow-500" />
-								Instant Processing
+								<Zap className="mr-2 h-4 w-4 text-yellow-500 animate-pulse" />
+								<span className="font-medium">Instant Processing</span>
 							</div>
 						</div>
 					</div>
@@ -157,73 +164,103 @@ export default function Home() {
 			</section>
 
 			{/* Tools Section */}
-			<section className="bg-white py-16 lg:py-24 dark:bg-gray-800">
+			<section className="py-16 lg:py-24 bg-white dark:bg-gray-800">
 				<div className="container mx-auto px-4">
 					<div className="mb-16 text-center">
-						<h2 className="mb-4 font-bold text-3xl text-gray-900 lg:text-4xl dark:text-white">
+						<h2 className="mb-4 font-bold text-3xl text-gray-900 lg:text-4xl dark:text-white animate-fade-in">
 							Professional Development Tools
 						</h2>
-						<p className="mx-auto max-w-2xl text-gray-600 text-lg dark:text-gray-300">
+						<p
+							className="mx-auto max-w-2xl text-gray-600 text-lg dark:text-gray-300 animate-fade-in"
+							style={{ animationDelay: '0.2s' }}
+						>
 							Everything you need to process, transform, and execute your code efficiently
 						</p>
 					</div>
 
 					<div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-						{tools.map((tool) => (
-							<Card
-								key={tool.id}
-								className="group border-gray-200 transition-all duration-300 hover:border-blue-300 hover:shadow-lg dark:border-gray-700 dark:hover:border-blue-600"
-							>
-								<CardHeader>
-									<div
-										className={`mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 ${tool.color}`}
+						{tools.map((tool, index) => (
+							<div key={tool.id} className="tool-card card-modern" style={{ animationDelay: `${0.1 * index}s` }}>
+								<div className="tool-status-badge">
+									<Badge
+										className={
+											tool.id === 'json-tools'
+												? 'badge-stable'
+												: tool.id === 'code-execution'
+													? 'badge-stable'
+													: tool.id === 'file-processing'
+														? 'badge-beta'
+														: 'badge-new'
+										}
 									>
-										<tool.icon className="h-6 w-6" />
+										{tool.id === 'json-tools'
+											? 'stable'
+											: tool.id === 'code-execution'
+												? 'stable'
+												: tool.id === 'file-processing'
+													? 'beta'
+													: 'new'}
+									</Badge>
+								</div>
+								<div className="tool-card-content">
+									<div className="card-header-modern">
+										<div
+											className={`mb-4 flex h-12 w-12 items-center justify-center rounded-lg ${tool.color}/20 backdrop-blur-sm`}
+										>
+											<tool.icon className="h-6 w-6" />
+										</div>
+										<h3 className="text-xl font-semibold transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400">
+											{tool.title}
+										</h3>
+										<p className="text-gray-600 dark:text-gray-300">{tool.description}</p>
 									</div>
-									<CardTitle className="text-xl transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400">
-										{tool.title}
-									</CardTitle>
-									<CardDescription className="text-gray-600 dark:text-gray-300">{tool.description}</CardDescription>
-								</CardHeader>
-								<CardContent>
-									<ul className="mb-6 space-y-2">
-										{tool.features.map((feature) => (
-											<li key={feature} className="flex items-center text-gray-600 text-sm dark:text-gray-300">
-												<CheckCircle className="mr-2 h-4 w-4 flex-shrink-0 text-green-500" />
-												{feature}
-											</li>
-										))}
-									</ul>
-									<Link href={tool.href}>
-										<Button className="w-full" variant="outline">
-											Try {tool.title}
-											<ArrowRight className="ml-2 h-4 w-4" />
-										</Button>
-									</Link>
-								</CardContent>
-							</Card>
+									<div className="card-content-modern">
+										<ul className="mb-6 space-y-2">
+											{tool.features.map((feature) => (
+												<li key={feature} className="flex items-center text-gray-600 text-sm dark:text-gray-300">
+													<CheckCircle className="mr-2 h-4 w-4 flex-shrink-0 text-green-500" />
+													<span>{feature}</span>
+												</li>
+											))}
+										</ul>
+										<Link href={tool.href}>
+											<Button className="btn-modern btn-primary w-full" size="lg">
+												Try {tool.title}
+												<ArrowRight className="ml-2 h-4 w-4" />
+											</Button>
+										</Link>
+									</div>
+								</div>
+							</div>
 						))}
 					</div>
 				</div>
 			</section>
 
 			{/* Features Section */}
-			<section className="bg-gray-50 py-16 lg:py-24 dark:bg-gray-900">
+			<section className="py-16 lg:py-24 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
 				<div className="container mx-auto px-4">
 					<div className="mb-16 text-center">
-						<h2 className="mb-4 font-bold text-3xl text-gray-900 lg:text-4xl dark:text-white">
+						<h2 className="mb-4 font-bold text-3xl text-gray-900 lg:text-4xl dark:text-white animate-fade-in">
 							Why Choose Parsify.dev?
 						</h2>
-						<p className="mx-auto max-w-2xl text-gray-600 text-lg dark:text-gray-300">
+						<p
+							className="mx-auto max-w-2xl text-gray-600 text-lg dark:text-gray-300 animate-fade-in"
+							style={{ animationDelay: '0.2s' }}
+						>
 							Built with modern technologies and developer-first principles
 						</p>
 					</div>
 
 					<div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-						{features.map((feature) => (
-							<div key={feature.title} className="text-center">
-								<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-									<feature.icon className="h-8 w-8 text-blue-600 dark:text-blue-300" />
+						{features.map((feature, index) => (
+							<div
+								key={feature.title}
+								className="text-center animate-slide-up"
+								style={{ animationDelay: `${0.1 * index}s` }}
+							>
+								<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 shadow-glow">
+									<feature.icon className="h-8 w-8 text-white" />
 								</div>
 								<h3 className="mb-2 font-semibold text-gray-900 text-xl dark:text-white">{feature.title}</h3>
 								<p className="text-gray-600 dark:text-gray-300">{feature.description}</p>
@@ -234,28 +271,35 @@ export default function Home() {
 			</section>
 
 			{/* CTA Section */}
-			<section className="bg-gradient-to-r from-blue-600 to-purple-600 py-16 text-white lg:py-24">
-				<div className="container mx-auto px-4 text-center">
-					<h2 className="mb-4 font-bold text-3xl lg:text-4xl">Ready to Boost Your Productivity?</h2>
-					<p className="mx-auto mb-8 max-w-2xl text-xl opacity-90">
-						Join thousands of developers who use our tools daily to streamline their workflow
-					</p>
-					<div className="flex flex-col justify-center gap-4 sm:flex-row">
-						<Link href="/tools">
-							<Button size="lg" variant="secondary" className="px-8 py-3 text-lg">
-								Start Using Tools
-								<ArrowRight className="ml-2 h-5 w-5" />
-							</Button>
-						</Link>
-						<Link href="/docs">
-							<Button
-								size="lg"
-								variant="outline"
-								className="border-white px-8 py-3 text-lg text-white hover:bg-white hover:text-gray-900"
-							>
-								Read the Docs
-							</Button>
-						</Link>
+			<section className="relative overflow-hidden">
+				<div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 animate-pulse-slow"></div>
+				<div className="container mx-auto px-4 py-16 lg:py-24 relative z-10">
+					<div className="text-center">
+						<h2 className="mb-4 font-bold text-3xl lg:text-4xl text-white animate-fade-in">
+							Ready to Boost Your Productivity?
+						</h2>
+						<p className="mx-auto mb-8 max-w-2xl text-xl opacity-90 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+							Join thousands of developers who use our tools daily to streamline their workflow
+						</p>
+						<div
+							className="flex flex-col justify-center gap-4 sm:flex-row animate-fade-in"
+							style={{ animationDelay: '0.4s' }}
+						>
+							<Link href="/tools">
+								<Button size="lg" className="btn-modern glass-effect text-white dark:text-gray-900 hover:bg-white/10">
+									Start Using Tools
+									<ArrowRight className="ml-2 h-5 w-5" />
+								</Button>
+							</Link>
+							<Link href="/docs">
+								<Button
+									size="lg"
+									className="btn-modern glass-effect border-white/20 text-white hover:bg-white/10 dark:text-gray-900"
+								>
+									Read the Docs
+								</Button>
+							</Link>
+						</div>
 					</div>
 				</div>
 			</section>

@@ -165,7 +165,14 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
 			>
 				{isDownloading ? (
 					<>
-						<svg className="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<svg
+							className="mr-2 h-4 w-4 animate-spin"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							aria-label="Downloading"
+						>
+							<title>Downloading</title>
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -177,7 +184,8 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
 					</>
 				) : (
 					<>
-						<svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Download">
+							<title>Download</title>
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -253,7 +261,7 @@ export const BatchDownloadButton: React.FC<BatchDownloadButtonProps> = ({
 
 			for (let i = 0; i < validFiles.length; i++) {
 				const file = validFiles[i];
-				const downloadUrl = file instanceof File ? URL.createObjectURL(file) : file.url!;
+				const downloadUrl = file instanceof File ? URL.createObjectURL(file) : file.url || '';
 				const finalFilename = options.filename
 					? `${options.filename.replace(/\.[^/.]+$/, '')}_${i + 1}.${file.name.split('.').pop()}`
 					: file.name;
@@ -321,7 +329,14 @@ export const BatchDownloadButton: React.FC<BatchDownloadButtonProps> = ({
 			>
 				{isDownloading ? (
 					<>
-						<svg className="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<svg
+							className="mr-2 h-4 w-4 animate-spin"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							aria-label="Downloading files"
+						>
+							<title>Downloading files</title>
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -333,7 +348,14 @@ export const BatchDownloadButton: React.FC<BatchDownloadButtonProps> = ({
 					</>
 				) : (
 					<>
-						<svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<svg
+							className="mr-2 h-4 w-4"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							aria-label="Download files"
+						>
+							<title>Download files</title>
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"

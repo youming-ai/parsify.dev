@@ -45,7 +45,7 @@ export function ToolWrapper({
 	const statusBadge = getStatusBadge();
 
 	return (
-		<div className={cn('container mx-auto py-6', className)}>
+		<div className={cn('py-6', className)}>
 			<div className="mb-6">
 				<div className="mb-2 flex items-center gap-2">
 					<Badge variant="secondary">{category}</Badge>

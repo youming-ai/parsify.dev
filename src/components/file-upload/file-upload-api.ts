@@ -288,10 +288,12 @@ export class FileUploadApiService {
 		const formData = new FormData();
 		formData.append('file', file);
 
-		// Add additional metadata
+		// Add additional metadata and prepare headers
+		let requestHeaders = headers;
 		if (headers['X-File-Metadata']) {
 			formData.append('metadata', headers['X-File-Metadata']);
-			delete headers['X-File-Metadata'];
+			const { 'X-File-Metadata': _, ...restHeaders } = headers;
+			requestHeaders = restHeaders;
 		}
 
 		let attempt = 0;
@@ -344,9 +346,9 @@ export class FileUploadApiService {
 					xhr.open('POST', endpoint);
 
 					// Set headers
-					Object.entries(headers).forEach(([key, value]) => {
+					for (const [key, value] of Object.entries(requestHeaders)) {
 						xhr.setRequestHeader(key, value);
-					});
+					}
 
 					xhr.send(formData);
 				});
