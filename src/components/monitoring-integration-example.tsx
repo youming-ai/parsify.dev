@@ -525,7 +525,7 @@ export function MonitoringIntegrationExample({
 												{(dashboardData.taskCompletion.metrics.failureRate * 100).toFixed(1)}%
 											</div>
 											<p className="text-xs text-muted-foreground">
-												Target: <10%
+												Target: less than 10%
 											</p>
 											<div className={`mt-1 text-xs ${
 												dashboardData.compliance.status.errorRate.currentValue <= 0.1

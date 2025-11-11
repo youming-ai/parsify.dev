@@ -1,0 +1,686 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop, '001-developer-tools-expansion' ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run E2E tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: 'Browser to test'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - chromium
+          - firefox
+          - webkit
+      test_suite:
+        description: 'Test suite to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - smoke
+          - homepage
+          - cross-browser
+      viewport:
+        description: 'Viewport to test'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - desktop
+          - mobile
+          - tablet
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '10.21.0'
+
+jobs:
+  # Install dependencies and cache
+  install:
+    name: Install Dependencies
+    runs-on: ubuntu-latest
+    outputs:
+      cache-hit: ${{ steps.cache.outputs.cache-hit }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+  # Build application
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: install
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore node_modules cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            .next
+            public
+          retention-days: 1
+
+  # Smoke tests (quick validation)
+  smoke-tests:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    needs: [install, build]
+    if: github.event.inputs.test_suite == 'smoke' || github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == ''
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-complete-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: Run smoke tests
+        run: pnpm test:e2e --config=playwright.config.ts --grep="smoke"
+        env:
+          CI: true
+
+      - name: Upload smoke test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: smoke-test-results-${{ matrix.browser }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+
+  # Homepage tests
+  homepage-tests:
+    name: Homepage Tests
+    runs-on: ubuntu-latest
+    needs: [install, build]
+    if: github.event.inputs.test_suite == 'homepage' || github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == ''
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+        viewport: [desktop, mobile]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-complete-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: Run homepage tests
+        run: |
+          pnpm test:e2e --config=playwright.config.ts \
+            --project=${{ matrix.browser }} \
+            --grep="homepage|discovery|search|filter|category" \
+            --reporter=html,github
+        env:
+          CI: true
+          VIEWPORT: ${{ matrix.viewport }}
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: homepage-test-results-${{ matrix.browser }}-${{ matrix.viewport }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+
+  # Cross-browser tests
+  cross-browser-tests:
+    name: Cross-Browser Tests
+    runs-on: ubuntu-latest
+    needs: [install, build]
+    if: github.event.inputs.test_suite == 'cross-browser' || github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == ''
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+        device: [desktop, mobile, tablet]
+        include:
+          - browser: chromium
+            device: desktop
+            config: 'Desktop Chrome'
+          - browser: firefox
+            device: desktop
+            config: 'Desktop Firefox'
+          - browser: webkit
+            device: desktop
+            config: 'Desktop Safari'
+          - browser: chromium
+            device: mobile
+            config: 'Pixel 5'
+          - browser: webkit
+            device: mobile
+            config: 'iPhone 12'
+          - browser: chromium
+            device: tablet
+            config: 'iPad Pro'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-complete-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: Run cross-browser tests
+        run: |
+          pnpm test:e2e --config=playwright.config.cross-browser.ts \
+            --project=${{ matrix.browser }} \
+            --grep="cross-browser|compatibility" \
+            --reporter=html,github
+        env:
+          CI: true
+          DEVICE: ${{ matrix.device }}
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cross-browser-results-${{ matrix.browser }}-${{ matrix.device }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+
+  # Accessibility tests
+  accessibility-tests:
+    name: Accessibility Tests
+    runs-on: ubuntu-latest
+    needs: [install, build]
+    if: github.event.inputs.test_suite == 'accessibility' || github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == ''
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-complete-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: Run accessibility tests
+        run: |
+          pnpm test:e2e --config=playwright.config.ts \
+            --grep="accessibility|a11y|screen-reader|keyboard" \
+            --reporter=html,github
+        env:
+          CI: true
+
+      - name: Upload accessibility test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: accessibility-test-results
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+
+  # Performance tests
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: [install, build]
+    if: github.event.inputs.test_suite == 'performance' || github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == ''
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-complete-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: Run performance tests
+        run: |
+          pnpm test:e2e --config=playwright.config.ts \
+            --grep="performance|load-time|speed|metrics" \
+            --reporter=html,github
+        env:
+          CI: true
+
+      - name: Upload performance test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: performance-test-results
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+
+  # Visual regression tests
+  visual-tests:
+    name: Visual Regression Tests
+    runs-on: ubuntu-latest
+    needs: [install, build]
+    if: github.event.inputs.test_suite == 'visual' || github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == ''
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-complete-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: Run visual regression tests
+        run: |
+          pnpm test:e2e --config=playwright.config.ts \
+            --grep="visual|screenshot|layout|consistency" \
+            --reporter=html,github \
+            --update-snapshots
+        env:
+          CI: true
+
+      - name: Upload visual test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: visual-test-results
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+
+  # Generate comprehensive test report
+  test-report:
+    name: Generate Test Report
+    runs-on: ubuntu-latest
+    needs: [
+      smoke-tests,
+      homepage-tests,
+      cross-browser-tests,
+      accessibility-tests,
+      performance-tests,
+      visual-tests
+    ]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all test artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: test-artifacts
+
+      - name: Generate comprehensive report
+        run: |
+          mkdir -p test-results-combined
+
+          # Combine all test results
+          find test-artifacts -name "*.json" -type f -exec cp {} test-results-combined/ \;
+          find test-artifacts -name "*.xml" -type f -exec cp {} test-results-combined/ \;
+
+          # Create summary report
+          cat > test-results-combined/SUMMARY.md << EOF
+          # E2E Test Results Summary
+
+          **Date:** $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          **Commit:** ${{ github.sha }}
+          **Branch:** ${{ github.ref_name }}
+
+          ## Test Suites
+
+          - **Smoke Tests:** ${{ needs.smoke-tests.result }}
+          - **Homepage Tests:** ${{ needs.homepage-tests.result }}
+          - **Cross-Browser Tests:** ${{ needs.cross-browser-tests.result }}
+          - **Accessibility Tests:** ${{ needs.accessibility-tests.result }}
+          - **Performance Tests:** ${{ needs.performance-tests.result }}
+          - **Visual Tests:** ${{ needs.visual-tests.result }}
+
+          ## Overall Status
+
+          EOF
+
+          # Determine overall status
+          if [[ "${{ needs.smoke-tests.result }}" == "failure" || \
+                "${{ needs.homepage-tests.result }}" == "failure" || \
+                "${{ needs.cross-browser-tests.result }}" == "failure" || \
+                "${{ needs.accessibility-tests.result }}" == "failure" || \
+                "${{ needs.performance-tests.result }}" == "failure" || \
+                "${{ needs.visual-tests.result }}" == "failure" ]]; then
+            echo "- **Status:** ❌ FAILED" >> test-results-combined/SUMMARY.md
+          else
+            echo "- **Status:** ✅ PASSED" >> test-results-combined/SUMMARY.md
+          fi
+
+      - name: Upload combined test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: combined-test-results
+          path: test-results-combined/
+          retention-days: 30
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = './test-results-combined/SUMMARY.md';
+
+            if (fs.existsSync(path)) {
+              const summary = fs.readFileSync(path, 'utf8');
+
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: summary
+              });
+            }
+
+  # Notify on failure
+  notify-on-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [smoke-tests, homepage-tests, cross-browser-tests]
+    if: failure() && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Notify Slack on failure
+        if: env.SLACK_WEBHOOK_URL != ''
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"❌ E2E Tests Failed on Main Branch\n\n'"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"'"}' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Create issue for failed tests
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `E2E Test Failure - ${new Date().toISOString().split('T')[0]}`;
+            const body = `
+            ## E2E Test Failure
+
+            **Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            **Commit:** ${{ github.sha }}
+            **Branch:** ${{ github.ref_name }}
+
+            ### Failed Jobs:
+            - Smoke Tests: ${{ needs.smoke-tests.result }}
+            - Homepage Tests: ${{ needs.homepage-tests.result }}
+            - Cross-Browser Tests: ${{ needs.cross-browser-tests.result }}
+
+            Please investigate the failed tests and fix any issues.
+
+            ### Next Steps:
+            1. Review test artifacts
+            2. Identify root cause
+            3. Fix failing tests
+            4. Verify fixes
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['bug', 'e2e-tests', 'priority-high']
+            });

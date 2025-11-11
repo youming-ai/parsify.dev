@@ -1,0 +1,332 @@
+/**
+ * Progress Accessibility CSS
+ * Accessibility-specific styles for progress indicators
+ */
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* High contrast mode */
+.progress-high-contrast {
+  /* Ensure high contrast for progress indicators */
+  --progress-bg: #000000;
+  --progress-fg: #FFFFFF;
+  --progress-border: #FFFFFF;
+  --progress-text: #FFFFFF;
+}
+
+.progress-high-contrast .progress-bar {
+  border: 2px solid var(--progress-border);
+  background: var(--progress-bg);
+}
+
+.progress-high-contrast .progress-fill {
+  background: var(--progress-fg);
+}
+
+.progress-high-contrast .progress-label {
+  color: var(--progress-text);
+}
+
+/* Reduced motion */
+.progress-reduced-motion *,
+.progress-reduced-motion *::before,
+.progress-reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+.progress-reduced-motion .progress-spinner {
+  animation: none;
+}
+
+.progress-reduced-motion .progress-dots {
+  animation: none;
+}
+
+.progress-reduced-motion .progress-pulse {
+  animation: none;
+}
+
+/* Focus styles */
+.progress-indicator:focus {
+  outline: 2px solid #0066CC;
+  outline-offset: 2px;
+}
+
+.progress-indicator:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* High contrast focus */
+.progress-high-contrast .progress-indicator:focus {
+  outline: 3px solid #FFFFFF;
+  outline-offset: 2px;
+  background: #000000;
+}
+
+/* Keyboard navigation hints */
+.progress-keyboard-hint {
+  position: absolute;
+  bottom: -30px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #666666;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.progress-indicator:focus .progress-keyboard-hint,
+.progress-indicator:hover .progress-keyboard-hint {
+  opacity: 1;
+}
+
+/* Screen reader specific */
+.progress-screen-reader .progress-visual {
+  /* Hide visual elements for screen reader mode if needed */
+}
+
+.progress-screen-reader .progress-status {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* Color blind friendly progress indicators */
+.progress-colorblind-friendly .progress-fill {
+  /* Use patterns and textures in addition to color */
+  background-image:
+    linear-gradient(45deg, #CCCCCC 25%, transparent 25%),
+    linear-gradient(-45deg, #CCCCCC 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #CCCCCC 75%),
+    linear-gradient(-45deg, transparent 75%, #CCCCCC 75%);
+  background-size: 10px 10px;
+  background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+}
+
+/* Large touch targets for mobile accessibility */
+.progress-touch-friendly .progress-indicator {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px;
+}
+
+.progress-touch-friendly .progress-button {
+  min-height: 44px;
+  min-width: 44px;
+  font-size: 16px; /* Prevents zoom on iOS */
+}
+
+/* ARIA live region styles */
+.aria-live-region {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Progress container accessibility */
+.progress-container[role="progressbar"] {
+  /* Ensure proper semantic meaning */
+  min-height: 1em;
+  display: block;
+}
+
+.progress-container[aria-busy="true"] {
+  /* Indicate busy state */
+}
+
+.progress-container[aria-invalid="true"] {
+  /* Indicate error state */
+  border-color: #CC0000;
+}
+
+/* Error state accessibility */
+.progress-error {
+  color: #CC0000;
+  font-weight: bold;
+}
+
+.progress-error::before {
+  content: "Error: ";
+  speak: normal;
+}
+
+/* Success state accessibility */
+.progress-success {
+  color: #006600;
+  font-weight: bold;
+}
+
+.progress-success::before {
+  content: "Completed: ";
+  speak: normal;
+}
+
+/* Paused state accessibility */
+.progress-paused {
+  color: #CC6600;
+  font-weight: bold;
+}
+
+.progress-paused::before {
+  content: "Paused: ";
+  speak: normal;
+}
+
+/* Step indicators accessibility */
+.progress-step {
+  position: relative;
+}
+
+.progress-step::before {
+  content: attr(data-step-label);
+  position: absolute;
+  left: -9999px;
+  speak: normal;
+}
+
+.progress-step:focus::before {
+  left: auto;
+  position: static;
+}
+
+/* Progress table accessibility */
+.progress-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.progress-table th,
+.progress-table td {
+  border: 1px solid #CCCCCC;
+  padding: 8px;
+  text-align: left;
+}
+
+.progress-table th {
+  background-color: #F5F5F5;
+  font-weight: bold;
+}
+
+.progress-table caption {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+/* Progress list accessibility */
+.progress-list {
+  list-style: none;
+  padding: 0;
+}
+
+.progress-list li {
+  position: relative;
+  padding-left: 24px;
+  margin-bottom: 8px;
+}
+
+.progress-list li::before {
+  content: "•";
+  position: absolute;
+  left: 8px;
+  speak: none;
+}
+
+/* Skip links for progress indicators */
+.progress-skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #0066CC;
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  z-index: 1000;
+}
+
+.progress-skip-link:focus {
+  top: 6px;
+}
+
+/* Landmarks for screen readers */
+.progress-landmark {
+  role: "region";
+  aria-label: "Progress indicators";
+}
+
+/* Print styles */
+@media print {
+  .progress-indicator {
+    border: 1px solid #000000;
+    background: #FFFFFF;
+  }
+
+  .progress-fill {
+    background: #000000 !important;
+  }
+
+  .progress-spinner,
+  .progress-dots,
+  .progress-pulse {
+    display: none;
+  }
+
+  .progress-print-label {
+    display: inline;
+    font-weight: bold;
+  }
+}
+
+/* Custom properties for theming */
+:root {
+  --progress-focus-color: #0066CC;
+  --progress-error-color: #CC0000;
+  --progress-success-color: #006600;
+  --progress-warning-color: #CC6600;
+  --progress-text-color: #333333;
+  --progress-bg-color: #F5F5F5;
+  --progress-border-color: #CCCCCC;
+}
+
+/* Dark mode accessibility */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --progress-focus-color: #66B3FF;
+    --progress-error-color: #FF6666;
+    --progress-success-color: #66CC66;
+    --progress-warning-color: #FFCC66;
+    --progress-text-color: #FFFFFF;
+    --progress-bg-color: #333333;
+    --progress-border-color: #666666;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --progress-focus-color: #FFFFFF;
+    --progress-error-color: #FF0000;
+    --progress-success-color: #00FF00;
+    --progress-warning-color: #FFFF00;
+    --progress-text-color: #FFFFFF;
+    --progress-bg-color: #000000;
+    --progress-border-color: #FFFFFF;
+  }
+}

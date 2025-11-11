@@ -1,0 +1,137 @@
+{
+  "meta": {
+    "title": "Parsify.dev - Online Developer Tools Platform",
+    "description": "Modern online developer tools for JSON processing, code execution, file processing, and data validation. Privacy-focused, client-side tools for developers.",
+    "keywords": "developer tools, JSON, code execution, file processing, data validation, online tools"
+  },
+  "nav": {
+    "home": "Home",
+    "tools": "Tools",
+    "categories": "Categories",
+    "about": "About",
+    "github": "GitHub"
+  },
+  "home": {
+    "title": "Modern Developer Tools Platform",
+    "subtitle": "Privacy-focused, client-side tools for developers",
+    "description": "Comprehensive suite of online developer tools for JSON processing, code execution, file processing, and data validation.",
+    "search": {
+      "placeholder": "Search for tools...",
+      "noResults": "No tools found for \"{query}\""
+    },
+    "featured": {
+      "title": "Featured Tools",
+      "viewAll": "View All Tools"
+    },
+    "categories": {
+      "title": "Browse by Category",
+      "json": "JSON Tools",
+      "code": "Code Execution",
+      "file": "File Processing",
+      "data": "Data Validation",
+      "utilities": "Utilities"
+    }
+  },
+  "tools": {
+    "title": "Developer Tools",
+    "subtitle": "Professional tools for modern development",
+    "search": {
+      "placeholder": "Search tools...",
+      "filters": "Filters",
+      "category": "Category",
+      "allCategories": "All Categories"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {current} of {total}"
+    }
+  },
+  "categories": {
+    "json": {
+      "title": "JSON Tools",
+      "description": "Format, validate, and transform JSON data"
+    },
+    "code": {
+      "title": "Code Execution",
+      "description": "Run and test code in multiple languages"
+    },
+    "file": {
+      "title": "File Processing",
+      "description": "Convert and process various file formats"
+    },
+    "data": {
+      "title": "Data Validation",
+      "description": "Validate and transform data formats"
+    },
+    "utilities": {
+      "title": "Utilities",
+      "description": "General purpose developer utilities"
+    }
+  },
+  "tool": {
+    "metadata": {
+      "lastUpdated": "Last updated",
+      "version": "Version",
+      "category": "Category",
+      "tags": "Tags"
+    },
+    "actions": {
+      "run": "Run",
+      "clear": "Clear",
+      "reset": "Reset",
+      "copy": "Copy",
+      "download": "Download",
+      "upload": "Upload",
+      "save": "Save",
+      "load": "Load"
+    },
+    "status": {
+      "ready": "Ready",
+      "processing": "Processing...",
+      "completed": "Completed",
+      "error": "Error",
+      "success": "Success"
+    },
+    "errors": {
+      "invalidInput": "Invalid input format",
+      "processingError": "Error processing data",
+      "networkError": "Network error occurred",
+      "fileTooLarge": "File too large",
+      "unsupportedFormat": "Unsupported file format"
+    }
+  },
+  "footer": {
+    "description": "Professional developer tools for modern web development",
+    "links": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "contact": "Contact",
+      "contribute": "Contribute"
+    },
+    "copyright": "© {year} Parsify.dev. All rights reserved."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "retry": "Retry",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "copy": "Copy",
+    "share": "Share",
+    "download": "Download",
+    "upload": "Upload"
+  }
+}

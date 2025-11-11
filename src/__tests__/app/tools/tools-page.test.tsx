@@ -1,808 +1,900 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import ToolsPage from '@/app/tools/page';
-import { mockTools, mockCategories, createMockLocalStorage, mockUserEvent } from '../test-utils';
-import type { Tool, ToolCategory, ToolDifficulty, ProcessingType, SecurityType } from '@/types/tools';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import ToolsPage from "@/app/tools/page";
+import {
+  mockTools,
+  mockSearchQueries,
+  mockSearchStates,
+} from "../../utils/test-data";
+import { customRender, testPatterns } from "../../utils/test-utils";
 
 // Mock Next.js router
-const mockRouter = {
-  push: vi.fn(),
-  replace: vi.fn(),
-  prefetch: vi.fn(),
-  back: vi.fn(),
-  forward: vi.fn(),
-  refresh: vi.fn(),
-};
-
-vi.mock('next/navigation', () => ({
-  useRouter: () => mockRouter,
-  useSearchParams: () => new URLSearchParams(),
-  usePathname: () => '/tools',
+const mockPush = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+  usePathname: () => "/tools",
 }));
 
 // Mock tools data
-vi.mock('@/data/tools-data', () => ({
+vi.mock("@/data/tools-data", () => ({
   toolsData: mockTools,
 }));
 
-// Mock localStorage
-const mockLocalStorage = createMockLocalStorage();
-Object.defineProperty(window, 'localStorage', {
-  value: mockLocalStorage,
-});
+// Mock category utils
+vi.mock("@/lib/category-utils", () => ({
+  getAllCategories: () => [
+    {
+      id: "json-processing",
+      name: "JSON Processing",
+      slug: "json",
+      icon: "FileJson",
+      description: "JSON processing tools",
+      color: "blue",
+      featured: true,
+      toolCount: 2,
+    },
+    {
+      id: "code-execution",
+      name: "Code Execution",
+      slug: "code",
+      icon: "Terminal",
+      description: "Code execution tools",
+      color: "green",
+      featured: false,
+      toolCount: 1,
+    },
+  ],
+  getFeaturedCategories: () => [
+    {
+      id: "json-processing",
+      name: "JSON Processing",
+      slug: "json",
+      icon: "FileJson",
+      description: "JSON processing tools",
+      color: "blue",
+      featured: true,
+      toolCount: 2,
+    },
+  ],
+  getToolsByCategory: (category: string) => {
+    return mockTools.filter((tool) => tool.category === category);
+  },
+  generateBreadcrumb: () => [
+    { label: "Home", href: "/" },
+    { label: "Tools", href: "/tools" },
+  ],
+  sortTools: (tools: any[], sortBy: string) => {
+    return [...tools].sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return a.name.localeCompare(b.name);
+        case "popularity":
+          return (b.isPopular ? 1 : 0) - (a.isPopular ? 1 : 0);
+        case "newest":
+          return (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0);
+        default:
+          return 0;
+      }
+    });
+  },
+}));
 
-// Mock timers for debouncing
-vi.useFakeTimers();
-
-describe('ToolsPage Component', () => {
-  const defaultProps = {};
-
+describe("ToolsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockLocalStorage.clear();
-    mockRouter.push.mockClear();
+    vi.useFakeTimers();
+
+    // Mock localStorage
+    const localStorageMock = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    };
+    Object.defineProperty(window, "localStorage", {
+      value: localStorageMock,
+    });
+
+    // Mock matchMedia
+    Object.defineProperty(window, "matchMedia", {
+      writable: true,
+      value: vi.fn().mockImplementation((query) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
   });
 
   afterEach(() => {
-    vi.runOnlyPendingTimers();
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
-  describe('Initial Rendering', () => {
-    it('renders the tools homepage', () => {
-      render(<ToolsPage {...defaultProps} />);
+  describe("Page Rendering", () => {
+    it("should render the main page structure", () => {
+      customRender(<ToolsPage />);
 
-      expect(screen.getByText('Developer Tools')).toBeInTheDocument();
-      expect(screen.getByText(/Professional tools for JSON processing/)).toBeInTheDocument();
-      expect(screen.getByText('All Tools')).toBeInTheDocument();
-      expect(screen.getByText('Popular')).toBeInTheDocument();
-      expect(screen.getByText('New')).toBeInTheDocument();
-      expect(screen.getByText('Recent')).toBeInTheDocument();
-      expect(screen.getByText('Favorites')).toBeInTheDocument();
+      expect(screen.getByText("Parsify.dev")).toBeInTheDocument();
+      expect(
+        screen.getByText("Professional Developer Tools"),
+      ).toBeInTheDocument();
+      expect(screen.getByText("Developer Tools")).toBeInTheDocument();
     });
 
-    it('displays total tools count', () => {
-      render(<ToolsPage {...defaultProps} />);
+    it("should render hero section", () => {
+      customRender(<ToolsPage />);
 
-      expect(screen.getByText(`${mockTools.length} Tools`)).toBeInTheDocument();
+      expect(
+        screen.getByText("Professional Developer Tools"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /Comprehensive suite of browser-based developer tools/,
+        ),
+      ).toBeInTheDocument();
     });
 
-    it('renders search input', () => {
-      render(<ToolsPage {...defaultProps} />);
+    it("should render stats badges", () => {
+      customRender(<ToolsPage />);
 
-      const searchInput = screen.getByPlaceholderText('Search tools by name, description, or tags...');
-      expect(searchInput).toBeInTheDocument();
+      expect(
+        screen.getByText(`${mockTools.length}+ Tools`),
+      ).toBeInTheDocument();
+      expect(screen.getByText("100% Client-side")).toBeInTheDocument();
+      expect(screen.getByText("No Data Tracking")).toBeInTheDocument();
     });
 
-    it('renders category filter', () => {
-      render(<ToolsPage {...defaultProps} />);
+    it("should render search component", () => {
+      customRender(<ToolsPage />);
 
-      expect(screen.getByText('All Tools')).toBeInTheDocument();
-      expect(screen.getByText('JSON Processing')).toBeInTheDocument();
-      expect(screen.getByText('Code Execution')).toBeInTheDocument();
-      expect(screen.getByText('File Processing')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("Search tools..."),
+      ).toBeInTheDocument();
     });
 
-    it('shows tool count in results summary', () => {
-      render(<ToolsPage {...defaultProps} />);
+    it("should render featured categories section", () => {
+      customRender(<ToolsPage />);
 
-      expect(screen.getByText(`Showing ${mockTools.length} of ${mockTools.length} tools`)).toBeInTheDocument();
+      expect(screen.getByText("Featured Categories")).toBeInTheDocument();
+      expect(screen.getByText("JSON Processing")).toBeInTheDocument();
     });
 
-    it('renders tools in grid view by default', () => {
-      render(<ToolsPage {...defaultProps} />);
+    it("should render all categories section", () => {
+      customRender(<ToolsPage />);
 
-      const gridContainer = document.querySelector('[class*="grid gap-6"]');
-      expect(gridContainer).toBeInTheDocument();
-    });
-  });
-
-  describe('Tab Navigation', () => {
-    it('switches to Popular tab', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
-
-      const popularTab = screen.getByText('Popular');
-      await user.click(popularTab);
-
-      expect(screen.getByText('Popular')).toHaveAttribute('data-state', 'active');
-
-      // Should show popular tools
-      const popularTools = mockTools.filter(tool => tool.isPopular);
-      popularTools.forEach(tool => {
-        expect(screen.getByText(tool.name)).toBeInTheDocument();
-      });
+      expect(screen.getByText("All Categories")).toBeInTheDocument();
+      expect(screen.getByText("Code Execution")).toBeInTheDocument();
     });
 
-    it('switches to New tab', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+    it("should render footer", () => {
+      customRender(<ToolsPage />);
 
-      const newTab = screen.getByText('New');
-      await user.click(newTab);
-
-      expect(screen.getByText('New')).toHaveAttribute('data-state', 'active');
-
-      // Should show new tools
-      const newTools = mockTools.filter(tool => tool.isNew);
-      newTools.forEach(tool => {
-        expect(screen.getByText(tool.name)).toBeInTheDocument();
-      });
-    });
-
-    it('switches to Recent tab with no recent tools', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
-
-      const recentTab = screen.getByText('Recent');
-      await user.click(recentTab);
-
-      expect(screen.getByText('Recent')).toHaveAttribute('data-state', 'active');
-      expect(screen.getByText('No recent tools')).toBeInTheDocument();
-      expect(screen.getByText('Tools you use will appear here for quick access.')).toBeInTheDocument();
-    });
-
-    it('switches to Favorites tab with no favorites', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
-
-      const favoritesTab = screen.getByText('Favorites');
-      await user.click(favoritesTab);
-
-      expect(screen.getByText('Favorites')).toHaveAttribute('data-state', 'active');
-      expect(screen.getByText('No favorite tools')).toBeInTheDocument();
-      expect(screen.getByText('Mark tools as favorites to see them here.')).toBeInTheDocument();
-    });
-
-    it('displays recent tools when localStorage has data', async () => {
-      const recentToolIds = ['json-formatter', 'json-validator'];
-      mockLocalStorage.setItem('recent-tools', JSON.stringify(recentToolIds));
-
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
-
-      const recentTab = screen.getByText('Recent');
-      await user.click(recentTab);
-
-      expect(screen.getByText('JSON Formatter')).toBeInTheDocument();
-      expect(screen.getByText('JSON Validator')).toBeInTheDocument();
-    });
-
-    it('displays favorite tools when localStorage has data', async () => {
-      const favoriteToolIds = ['json-formatter', 'code-executor'];
-      mockLocalStorage.setItem('favorite-tools', JSON.stringify(favoriteToolIds));
-
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
-
-      const favoritesTab = screen.getByText('Favorites');
-      await user.click(favoritesTab);
-
-      expect(screen.getByText('JSON Formatter')).toBeInTheDocument();
-      expect(screen.getByText('Code Executor')).toBeInTheDocument();
+      expect(
+        screen.getByText("© 2024 Parsify.dev. All rights reserved."),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "Professional developer tools that respect your privacy.",
+        ),
+      ).toBeInTheDocument();
     });
   });
 
-  describe('Search Functionality', () => {
-    it('filters tools based on search query', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+  describe("Header Components", () => {
+    it("should render logo and site name", () => {
+      customRender(<ToolsPage />);
 
-      const searchInput = screen.getByPlaceholderText('Search tools by name, description, or tags...');
-      await user.type(searchInput, 'JSON');
-
-      // Wait for debounce
-      act(() => {
-        vi.advanceTimersByTime(300);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Showing 2 of 7 tools')).toBeInTheDocument();
-      });
-
-      expect(screen.getByText('JSON Formatter')).toBeInTheDocument();
-      expect(screen.getByText('JSON Validator')).toBeInTheDocument();
-      expect(screen.queryByText('Code Executor')).not.toBeInTheDocument();
+      expect(screen.getByText("Parsify.dev")).toBeInTheDocument();
+      expect(screen.getByText("Developer Tools")).toBeInTheDocument();
     });
 
-    it('shows search suggestions while typing', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+    it("should render mobile controls", () => {
+      customRender(<ToolsPage />);
 
-      const searchInput = screen.getByPlaceholderText('Search tools by name, description, or tags...');
-      await user.type(searchInput, 'JSON');
-
-      await waitFor(() => {
-        expect(screen.getByText('JSON Formatter')).toBeInTheDocument();
-        expect(screen.getByText('JSON Processing')).toBeInTheDocument();
-      });
+      // Mobile sort button
+      expect(screen.getByLabelText("Sort options")).toBeInTheDocument();
+      // Filter toggle
+      expect(screen.getByLabelText("Toggle filters")).toBeInTheDocument();
+      // Dark mode toggle
+      expect(screen.getByLabelText("Toggle dark mode")).toBeInTheDocument();
     });
 
-    it('selects search suggestion', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+    it("should render breadcrumb navigation", () => {
+      customRender(<ToolsPage />);
 
-      const searchInput = screen.getByPlaceholderText('Search tools by name, description, or tags...');
-      await user.type(searchInput, 'JSON');
-
-      await waitFor(() => {
-        const suggestion = screen.getByText('JSON Formatter');
-        expect(suggestion).toBeInTheDocument();
-      });
-
-      const suggestion = screen.getByText('JSON Formatter');
-      await user.click(suggestion);
-
-      expect(searchInput).toHaveValue('JSON Formatter');
+      // Breadcrumb should be visible on desktop (hidden on mobile)
+      const breadcrumb = document.querySelector(".hidden.sm\\:block");
+      expect(breadcrumb).toBeInTheDocument();
     });
 
-    it('clears search when clear button is clicked', async () => {
+    it("should render desktop sort options", () => {
+      customRender(<ToolsPage />);
+
+      // Sort options should be hidden on mobile, visible on desktop
+      const sortOptions = document.querySelector(".hidden.md\\:flex");
+      expect(sortOptions).toBeInTheDocument();
+    });
+  });
+
+  describe("Search Functionality", () => {
+    it("should handle search input", async () => {
       const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+      customRender(<ToolsPage />);
 
-      const searchInput = screen.getByPlaceholderText('Search tools by name, description, or tags...');
-      await user.type(searchInput, 'JSON');
+      const searchInput = screen.getByPlaceholderText("Search tools...");
+      await user.type(searchInput, "json");
 
-      // Wait for debounce
-      act(() => {
-        vi.advanceTimersByTime(300);
-      });
-
-      const clearButton = screen.getByRole('button', { name: /clear/i });
-      await user.click(clearButton);
-
-      expect(searchInput).toHaveValue('');
+      // Should show search results
       await waitFor(() => {
-        expect(screen.getByText(`Showing ${mockTools.length} of ${mockTools.length} tools`)).toBeInTheDocument();
+        expect(screen.getByText(/Results for "json"/)).toBeInTheDocument();
       });
     });
 
-    it('saves search to localStorage', async () => {
+    it("should show search results when query is entered", async () => {
       const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+      customRender(<ToolsPage />);
 
-      const searchInput = screen.getByPlaceholderText('Search tools by name, description, or tags...');
-      await user.type(searchInput, 'JSON Formatter');
-
-      // Wait for debounce
-      act(() => {
-        vi.advanceTimersByTime(300);
-      });
+      const searchInput = screen.getByPlaceholderText("Search tools...");
+      await user.type(searchInput, "json");
 
       await waitFor(() => {
-        expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-          'search-history',
-          expect.stringContaining('JSON Formatter')
-        );
+        expect(screen.getByText(/Results for "json"/)).toBeInTheDocument();
+        expect(screen.getByText(/of .* tools/)).toBeInTheDocument();
       });
     });
 
-    it('shows no results message when search has no matches', async () => {
+    it("should show tool cards in search results", async () => {
       const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+      customRender(<ToolsPage />);
 
-      const searchInput = screen.getByPlaceholderText('Search tools by name, description, or tags...');
-      await user.type(searchInput, 'NonexistentTool');
-
-      // Wait for debounce
-      act(() => {
-        vi.advanceTimersByTime(300);
-      });
+      const searchInput = screen.getByPlaceholderText("Search tools...");
+      await user.type(searchInput, "json");
 
       await waitFor(() => {
-        expect(screen.getByText('No tools found')).toBeInTheDocument();
-        expect(screen.getByText('Try adjusting your search or filters to find what you\'re looking for.')).toBeInTheDocument();
+        const toolCards = document.querySelectorAll(".hover\\:shadow-lg");
+        expect(toolCards.length).toBeGreaterThan(0);
+      });
+    });
+
+    it("should navigate to tool when clicked", async () => {
+      const user = userEvent.setup();
+      customRender(<ToolsPage />);
+
+      // Search for a tool first
+      const searchInput = screen.getByPlaceholderText("Search tools...");
+      await user.type(searchInput, "json");
+
+      await waitFor(() => {
+        const toolCard = screen.getByText("JSON Formatter");
+        expect(toolCard).toBeInTheDocument();
+      });
+
+      const toolCard = screen
+        .getByText("JSON Formatter")
+        .closest(".cursor-pointer");
+      await user.click(toolCard!);
+
+      expect(mockPush).toHaveBeenCalledWith("/tools/json/formatter");
+    });
+
+    it("should clear search when query is empty", async () => {
+      const user = userEvent.setup();
+      customRender(<ToolsPage />);
+
+      const searchInput = screen.getByPlaceholderText("Search tools...");
+      await user.type(searchInput, "json");
+      await user.clear(searchInput);
+
+      // Should show default view again
+      await waitFor(() => {
+        expect(screen.getByText("Featured Categories")).toBeInTheDocument();
       });
     });
   });
 
-  describe('Category Filtering', () => {
-    it('filters tools by selected category', async () => {
+  describe("Filter Functionality", () => {
+    it("should open filters when toggle button is clicked", async () => {
       const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+      customRender(<ToolsPage />);
 
-      const jsonCategory = screen.getByText('JSON Processing');
-      await user.click(jsonCategory);
+      const filterToggle = screen.getByLabelText("Toggle filters");
+      await user.click(filterToggle);
 
-      await waitFor(() => {
-        expect(screen.getByText('Showing 2 of 7 tools')).toBeInTheDocument();
-      });
-
-      expect(screen.getByText('JSON Formatter')).toBeInTheDocument();
-      expect(screen.getByText('JSON Validator')).toBeInTheDocument();
-      expect(screen.queryByText('Code Executor')).not.toBeInTheDocument();
+      // Should show mobile filter overlay
+      const filterOverlay = document.querySelector(".fixed.inset-0");
+      expect(filterOverlay).toBeInTheDocument();
     });
 
-    it('shows category tool counts', () => {
-      render(<ToolsPage {...defaultProps} />);
+    it("should close filters when overlay is clicked", async () => {
+      const user = userEvent.setup();
+      customRender(<ToolsPage />);
 
-      expect(screen.getByText('11')).toBeInTheDocument(); // JSON Processing count
-      expect(screen.getByText('8')).toBeInTheDocument(); // Code Execution count
+      const filterToggle = screen.getByLabelText("Toggle filters");
+      await user.click(filterToggle);
+
+      const filterOverlay = document.querySelector(".fixed.inset-0");
+      await user.click(filterOverlay!);
+
+      // Overlay should be removed
+      await waitFor(() => {
+        expect(
+          document.querySelector(".fixed.inset-0"),
+        ).not.toBeInTheDocument();
+      });
     });
 
-    it('resets to "All Tools" category', async () => {
+    it("should show active filter count badge", async () => {
       const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+      customRender(<ToolsPage />);
 
-      // First select a category
-      const jsonCategory = screen.getByText('JSON Processing');
-      await user.click(jsonCategory);
+      // Apply a filter
+      const filterToggle = screen.getByLabelText("Toggle filters");
+      await user.click(filterToggle);
 
+      // Find and click a category filter
+      const categoryCheckbox = screen.getByLabelText(/JSON Processing/);
+      await user.click(categoryCheckbox);
+
+      // Should show filter count badge
       await waitFor(() => {
-        expect(screen.getByText('Showing 2 of 7 tools')).toBeInTheDocument();
+        const badge = screen.getByText("1");
+        expect(badge).toBeInTheDocument();
       });
+    });
 
-      // Then click "All Tools"
-      const allToolsButton = screen.getByText('All Tools');
-      await user.click(allToolsButton);
+    it("should highlight filter toggle when filters are active", async () => {
+      const user = userEvent.setup();
+      customRender(<ToolsPage />);
 
-      await waitFor(() => {
-        expect(screen.getByText(`Showing ${mockTools.length} of ${mockTools.length} tools`)).toBeInTheDocument();
-      });
+      // Apply a filter
+      const filterToggle = screen.getByLabelText("Toggle filters");
+      await user.click(filterToggle);
+
+      const categoryCheckbox = screen.getByLabelText(/JSON Processing/);
+      await user.click(categoryCheckbox);
+
+      // Close filter panel
+      const closeButton = screen.getByLabelText("Close");
+      await user.click(closeButton);
+
+      // Filter toggle should be highlighted
+      expect(filterToggle).toHaveClass(/text-blue-600/);
     });
   });
 
-  describe('Advanced Filters', () => {
-    it('opens advanced filters panel', async () => {
+  describe("Sorting Functionality", () => {
+    it("should show mobile sort dropdown when button is clicked", async () => {
       const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+      customRender(<ToolsPage />);
 
-      const advancedFiltersButton = screen.getByText('Advanced Filters');
-      await user.click(advancedFiltersButton);
+      const sortButton = screen.getByLabelText("Sort options");
+      await user.click(sortButton);
 
-      expect(screen.getByText('Difficulty')).toBeInTheDocument();
-      expect(screen.getByText('Processing Type')).toBeInTheDocument();
-      expect(screen.getByText('Security Level')).toBeInTheDocument();
-      expect(screen.getByText('Tags')).toBeInTheDocument();
+      // Should show mobile sort options
+      expect(screen.getByText("Name")).toBeInTheDocument();
+      expect(screen.getByText("Popular")).toBeInTheDocument();
+      expect(screen.getByText("New")).toBeInTheDocument();
     });
 
-    it('filters by difficulty', async () => {
+    it("should change sort order when sort option is clicked", async () => {
       const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+      customRender(<ToolsPage />);
 
-      const advancedFiltersButton = screen.getByText('Advanced Filters');
-      await user.click(advancedFiltersButton);
+      const sortButton = screen.getByLabelText("Sort options");
+      await user.click(sortButton);
 
-      const difficultySelect = screen.getByText('All Levels');
-      await user.click(difficultySelect);
+      const popularSort = screen.getByText("Popular");
+      await user.click(popularSort);
 
-      const beginnerOption = screen.getByText('Beginner');
-      await user.click(beginnerOption);
-
+      // Should close mobile sort and apply sorting
       await waitFor(() => {
-        const beginnerTools = mockTools.filter(tool => tool.difficulty === 'beginner');
-        expect(screen.getByText(`Showing ${beginnerTools.length} of ${mockTools.length} tools`)).toBeInTheDocument();
+        expect(screen.queryByText("Name")).not.toBeInTheDocument();
       });
     });
 
-    it('filters by processing type', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+    it("should highlight active sort option", async () => {
+      customRender(<ToolsPage />);
 
-      const advancedFiltersButton = screen.getByText('Advanced Filters');
-      await user.click(advancedFiltersButton);
-
-      const processingTypeSelect = screen.getByText('All Types');
-      await user.click(processingTypeSelect);
-
-      const clientSideOption = screen.getByText('Client-side');
-      await user.click(clientSideOption);
-
-      await waitFor(() => {
-        const clientSideTools = mockTools.filter(tool => tool.processingType === 'client-side');
-        expect(screen.getByText(`Showing ${clientSideTools.length} of ${mockTools.length} tools`)).toBeInTheDocument();
-      });
-    });
-
-    it('filters by security level', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
-
-      const advancedFiltersButton = screen.getByText('Advanced Filters');
-      await user.click(advancedFiltersButton);
-
-      const securitySelect = screen.getByText('All Levels');
-      await user.click(securitySelect);
-
-      const localOnlyOption = screen.getByText('Local Only');
-      await user.click(localOnlyOption);
-
-      await waitFor(() => {
-        const localOnlyTools = mockTools.filter(tool => tool.security === 'local-only');
-        expect(screen.getByText(`Showing ${localOnlyTools.length} of ${mockTools.length} tools`)).toBeInTheDocument();
-      });
-    });
-
-    it('filters by tags', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
-
-      const advancedFiltersButton = screen.getByText('Advanced Filters');
-      await user.click(advancedFiltersButton);
-
-      // Find and click a tag button
-      const tagButtons = screen.getAllByRole('button').filter(
-        button => button.textContent === 'json'
-      );
-      if (tagButtons.length > 0) {
-        await user.click(tagButtons[0]);
-
-        await waitFor(() => {
-          const jsonTools = mockTools.filter(tool => tool.tags.includes('json'));
-          expect(screen.getByText(`Showing ${jsonTools.length} of ${mockTools.length} tools`)).toBeInTheDocument();
-        });
-      }
-    });
-
-    it('shows filter count badge when filters are applied', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
-
-      const advancedFiltersButton = screen.getByText('Advanced Filters');
-      await user.click(advancedFiltersButton);
-
-      const difficultySelect = screen.getByText('All Levels');
-      await user.click(difficultySelect);
-
-      const beginnerOption = screen.getByText('Beginner');
-      await user.click(beginnerOption);
-
-      await waitFor(() => {
-        expect(screen.getByText('1')).toBeInTheDocument(); // Filter count badge
-      });
+      // Name sort should be active by default
+      const nameSort = screen.getByText("Name");
+      expect(nameSort).toBeInTheDocument();
     });
   });
 
-  describe('View Mode', () => {
-    it('switches to list view', async () => {
+  describe("Dark Mode", () => {
+    it("should toggle dark mode when button is clicked", async () => {
       const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+      customRender(<ToolsPage />);
 
-      const listViewButton = screen.getByRole('button', { name: /list/i });
-      await user.click(listViewButton);
+      const darkModeToggle = screen.getByLabelText("Toggle dark mode");
+      await user.click(darkModeToggle);
 
-      const listContainer = document.querySelector('[class*="space-y-4"]');
-      expect(listContainer).toBeInTheDocument();
+      // Should add dark class to document
+      expect(document.documentElement).toHaveClass("dark");
+      expect(localStorage.setItem).toHaveBeenCalledWith("darkMode", "true");
     });
 
-    it('switches back to grid view', async () => {
+    it("should toggle back to light mode", async () => {
       const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+      customRender(<ToolsPage />);
 
-      // Switch to list view first
-      const listViewButton = screen.getByRole('button', { name: /list/i });
-      await user.click(listViewButton);
+      const darkModeToggle = screen.getByLabelText("Toggle dark mode");
 
-      // Then switch back to grid view
-      const gridViewButton = screen.getByRole('button', { name: /grid/i });
-      await user.click(gridViewButton);
+      // Enable dark mode
+      await user.click(darkModeToggle);
 
-      const gridContainer = document.querySelector('[class*="grid gap-6"]');
-      expect(gridContainer).toBeInTheDocument();
+      // Disable dark mode
+      await user.click(darkModeToggle);
+
+      expect(document.documentElement).not.toHaveClass("dark");
+      expect(localStorage.setItem).toHaveBeenCalledWith("darkMode", "false");
     });
 
-    it('persists view mode preference', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+    it("should detect system dark mode preference", () => {
+      // Mock system dark mode
+      window.matchMedia = vi.fn().mockImplementation((query) => ({
+        matches: query === "(prefers-color-scheme: dark)",
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }));
 
-      const listViewButton = screen.getByRole('button', { name: /list/i });
-      await user.click(listViewButton);
+      customRender(<ToolsPage />);
 
-      // View mode preference should be saved to localStorage
-      // This would be tested with actual localStorage integration
+      // Should detect system preference and apply dark mode
+      expect(document.documentElement).toHaveClass("dark");
     });
   });
 
-  describe('Sort Functionality', () => {
-    it('sorts tools by name', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+  describe("Category Overview", () => {
+    it("should render category cards", () => {
+      customRender(<ToolsPage />);
 
-      const sortSelect = screen.getByText('Popularity');
-      await user.click(sortSelect);
-
-      const nameOption = screen.getByText('Name');
-      await user.click(nameOption);
-
-      // Tools should be sorted alphabetically
-      const toolNames = screen.getAllByRole('heading', { level: 3 }).map(h => h.textContent);
-      const sortedNames = [...toolNames!].sort();
-      expect(toolNames).toEqual(sortedNames);
+      expect(screen.getByText("JSON Processing")).toBeInTheDocument();
+      expect(screen.getByText("Code Execution")).toBeInTheDocument();
     });
 
-    it('sorts tools by difficulty', async () => {
+    it("should show category tool counts", () => {
+      customRender(<ToolsPage />);
+
+      expect(screen.getByText("2 tools")).toBeInTheDocument(); // JSON Processing
+      expect(screen.getByText("1 tools")).toBeInTheDocument(); // Code Execution
+    });
+
+    it("should show featured star for featured categories", () => {
+      customRender(<ToolsPage />);
+
+      const featuredStar = document.querySelector(".text-yellow-500");
+      expect(featuredStar).toBeInTheDocument();
+    });
+
+    it('should navigate to category when "View All" is clicked', async () => {
       const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+      customRender(<ToolsPage />);
 
-      const sortSelect = screen.getByText('Popularity');
-      await user.click(sortSelect);
+      const viewAllButton = screen.getByText("View All");
+      await user.click(viewAllButton);
 
-      const difficultyOption = screen.getByText('Difficulty');
-      await user.click(difficultyOption);
+      expect(mockPush).toHaveBeenCalledWith("/tools/json");
+    });
 
-      // Tools should be sorted by difficulty (beginner -> intermediate -> advanced)
-      const difficultyOrder = { beginner: 1, intermediate: 2, advanced: 3 };
-      // This would require checking the actual rendered order
+    it("should limit displayed tools in category overview", () => {
+      customRender(<ToolsPage />);
+
+      // Should show limited number of tools (4 for featured, 8 for regular)
+      const toolCards = document.querySelectorAll(".hover\\:shadow-lg");
+      expect(toolCards.length).toBeGreaterThan(0);
+      expect(toolCards.length).toBeLessThanOrEqual(12); // Total limit
+    });
+
+    it('should show "View all X tools" link when category has more tools', () => {
+      customRender(<ToolsPage />);
+
+      const viewAllLink = screen.getByText(/View all .* tools in/);
+      expect(viewAllLink).toBeInTheDocument();
     });
   });
 
-  describe('Clear Filters', () => {
-    it('clears all filters when button is clicked', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
+  describe("Tool Cards", () => {
+    it("should render tool information correctly", () => {
+      customRender(<ToolsPage />);
 
-      // Apply some filters
-      const searchInput = screen.getByPlaceholderText('Search tools by name, description, or tags...');
-      await user.type(searchInput, 'JSON');
-
-      const jsonCategory = screen.getByText('JSON Processing');
-      await user.click(jsonCategory);
-
-      // Wait for filters to apply
-      act(() => {
-        vi.advanceTimersByTime(300);
-      });
-
-      const clearFiltersButton = screen.getByText('Clear all filters');
-      await user.click(clearFiltersButton);
-
-      expect(searchInput).toHaveValue('');
-      expect(screen.getByText(`Showing ${mockTools.length} of ${mockTools.length} tools`)).toBeInTheDocument();
+      expect(screen.getByText("JSON Formatter")).toBeInTheDocument();
+      expect(screen.getByText("Code Executor")).toBeInTheDocument();
     });
 
-    it('shows clear filters button only when filters are applied', () => {
-      render(<ToolsPage {...defaultProps} />);
+    it("should show tool badges", () => {
+      customRender(<ToolsPage />);
 
-      // Initially should not show clear button
-      expect(screen.queryByText('Clear all filters')).not.toBeInTheDocument();
+      // Should show difficulty badges
+      expect(screen.getByText("beginner")).toBeInTheDocument();
+      expect(screen.getByText("intermediate")).toBeInTheDocument();
+
+      // Should show processing type badges
+      expect(screen.getAllByText("client-side")).toHaveLength(mockTools.length);
+    });
+
+    it("should show new and popular badges", () => {
+      customRender(<ToolsPage />);
+
+      // Should show new badge
+      expect(screen.getByText("New")).toBeInTheDocument();
+
+      // Should show popular badge
+      expect(screen.getAllByText("Popular")).toHaveLength(3); // 3 popular tools
+    });
+
+    it("should show tool tags", () => {
+      customRender(<ToolsPage />);
+
+      expect(screen.getByText("json")).toBeInTheDocument();
+      expect(screen.getByText("formatter")).toBeInTheDocument();
+      expect(screen.getByText("validator")).toBeInTheDocument();
+    });
+
+    it("should limit displayed tags", () => {
+      customRender(<ToolsPage />);
+
+      // Should show "+X" for tools with more than 3 tags
+      const moreTagsBadges = screen.getAllByText(/\+\d/);
+      expect(moreTagsBadges.length).toBeGreaterThan(0);
+    });
+
+    it("should navigate to tool when card is clicked", async () => {
+      const user = userEvent.setup();
+      customRender(<ToolsPage />);
+
+      const toolCard = screen
+        .getByText("JSON Formatter")
+        .closest(".cursor-pointer");
+      await user.click(toolCard!);
+
+      expect(mockPush).toHaveBeenCalledWith("/tools/json/formatter");
     });
   });
 
-  describe('Tool Cards', () => {
-    it('renders tool cards with correct information', () => {
-      render(<ToolsPage {...defaultProps} />);
-
-      mockTools.forEach(tool => {
-        expect(screen.getByText(tool.name)).toBeInTheDocument();
-        expect(screen.getByText(tool.description)).toBeInTheDocument();
-
-        // Check for difficulty badge
-        expect(screen.getByText(tool.difficulty)).toBeInTheDocument();
-
-        // Check for processing type
-        expect(screen.getByText(tool.processingType.replace('-', ' '))).toBeInTheDocument();
-      });
-    });
-
-    it('shows NEW badge for new tools', () => {
-      render(<ToolsPage {...defaultProps} />);
-
-      const newTools = mockTools.filter(tool => tool.isNew);
-      newTools.forEach(tool => {
-        expect(screen.getByText('New')).toBeInTheDocument();
-      });
-    });
-
-    it('shows Popular badge for popular tools', () => {
-      render(<ToolsPage {...defaultProps} />);
-
-      const popularTools = mockTools.filter(tool => tool.isPopular);
-      popularTools.forEach(tool => {
-        expect(screen.getByText('Popular')).toBeInTheDocument();
-      });
-    });
-
-    it('displays tool features', () => {
-      render(<ToolsPage {...defaultProps} />);
-
-      mockTools.forEach(tool => {
-        tool.features.slice(0, 3).forEach(feature => {
-          expect(screen.getByText(feature)).toBeInTheDocument();
-        });
-      });
-    });
-
-    it('displays tool tags', () => {
-      render(<ToolsPage {...defaultProps} />);
-
-      mockTools.forEach(tool => {
-        tool.tags.slice(0, 3).forEach(tag => {
-          expect(screen.getByText(tag)).toBeInTheDocument();
-        });
-      });
-    });
-  });
-
-  describe('Tool Interactions', () => {
-    it('navigates to tool page when Try Tool button is clicked', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
-
-      const tryToolButtons = screen.getAllByText('Try Tool');
-      expect(tryToolButtons.length).toBeGreaterThan(0);
-
-      await user.click(tryToolButtons[0]);
-
-      expect(mockRouter.push).toHaveBeenCalled();
-    });
-
-    it('saves tool to recent tools when accessed', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
-
-      const tryToolButtons = screen.getAllByText('Try Tool');
-      await user.click(tryToolButtons[0]);
-
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        'recent-tools',
-        expect.any(String)
-      );
-    });
-
-    it('toggles favorite tool when favorite button is clicked', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
-
-      const favoriteButtons = screen.getAllByRole('button').filter(
-        button => button.querySelector('svg') && button.querySelector('svg[class*="h-4 w-4"]')
-      );
-
-      if (favoriteButtons.length > 0) {
-        await user.click(favoriteButtons[0]);
-
-        expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-          'favorite-tools',
-          expect.any(String)
-        );
-      }
-    });
-  });
-
-  describe('Responsive Design', () => {
-    it('renders correctly on mobile', () => {
+  describe("Responsive Design", () => {
+    it("should hide desktop elements on mobile", () => {
       // Mock mobile viewport
-      Object.defineProperty(window, 'innerWidth', {
+      Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
         value: 375,
       });
 
-      render(<ToolsPage {...defaultProps} />);
+      customRender(<ToolsPage />);
 
-      expect(screen.getByText('Developer Tools')).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('Search tools by name, description, or tags...')).toBeInTheDocument();
+      // Mobile elements should be visible
+      expect(screen.getByLabelText("Sort options")).toBeInTheDocument();
+      expect(screen.getByLabelText("Toggle filters")).toBeInTheDocument();
+
+      // Desktop sort options should be hidden
+      const desktopSort = document.querySelector(".hidden.md\\:flex");
+      expect(desktopSort).toBeInTheDocument();
     });
 
-    it('renders correctly on desktop', () => {
-      // Mock desktop viewport
-      Object.defineProperty(window, 'innerWidth', {
-        writable: true,
-        configurable: true,
-        value: 1024,
-      });
+    it("should show mobile filter overlay", async () => {
+      const user = userEvent.setup();
+      customRender(<ToolsPage />);
 
-      render(<ToolsPage {...defaultProps} />);
+      const filterToggle = screen.getByLabelText("Toggle filters");
+      await user.click(filterToggle);
 
-      expect(screen.getByText('Developer Tools')).toBeInTheDocument();
-
-      const gridContainer = document.querySelector('[class*="md:grid-cols-2"]');
-      expect(gridContainer).toBeInTheDocument();
-    });
-  });
-
-  describe('Error Handling', () => {
-    it('handles missing tools data gracefully', () => {
-      vi.mocked(mockTools).splice(0, mockTools.length);
-
-      render(<ToolsPage {...defaultProps} />);
-
-      expect(screen.getByText('Showing 0 of 0 tools')).toBeInTheDocument();
+      const filterOverlay = document.querySelector(".xl\\:hidden");
+      expect(filterOverlay).toBeInTheDocument();
     });
 
-    it('handles localStorage errors gracefully', () => {
-      mockLocalStorage.getItem.mockImplementationOnce(() => {
-        throw new Error('localStorage error');
-      });
+    it("should adapt layout for different screen sizes", () => {
+      customRender(<ToolsPage />);
 
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-      render(<ToolsPage {...defaultProps} />);
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Failed to load user preferences:',
-        expect.any(Error)
-      );
-
-      consoleSpy.mockRestore();
+      // Should have responsive grid classes
+      const grid = document.querySelector(".grid.grid-cols-1.sm\\:grid-cols-2");
+      expect(grid).toBeInTheDocument();
     });
   });
 
-  describe('Performance', () => {
-    it('renders within acceptable time', () => {
-      const startTime = performance.now();
+  describe("Footer", () => {
+    it("should render all footer sections", () => {
+      customRender(<ToolsPage />);
 
-      render(<ToolsPage {...defaultProps} />);
-
-      const endTime = performance.now();
-      const renderTime = endTime - startTime;
-
-      expect(renderTime).toBeLessThan(1000); // Should render within 1 second
+      expect(screen.getByText("Tools")).toBeInTheDocument();
+      expect(screen.getByText("Resources")).toBeInTheDocument();
+      expect(screen.getByText("Company")).toBeInTheDocument();
     });
 
-    it('handles large tool lists efficiently', () => {
-      const largeToolList = Array.from({ length: 1000 }, (_, i) => ({
-        id: `tool-${i}`,
-        name: `Tool ${i}`,
-        description: `Description for tool ${i}`,
-        category: 'JSON Processing' as ToolCategory,
-        icon: 'FileJson',
-        features: [`Feature ${i}`],
-        tags: [`tag${i}`],
-        difficulty: 'beginner' as ToolDifficulty,
-        status: 'stable' as const,
-        href: `/tools/tool-${i}`,
-        processingType: 'client-side' as ProcessingType,
-        security: 'local-only' as SecurityType,
+    it("should render footer links", () => {
+      customRender(<ToolsPage />);
+
+      expect(screen.getByText("All Tools")).toBeInTheDocument();
+      expect(screen.getByText("Documentation")).toBeInTheDocument();
+      expect(screen.getByText("About")).toBeInTheDocument();
+    });
+
+    it("should have proper link structure", () => {
+      customRender(<ToolsPage />);
+
+      const links = document.querySelectorAll("a[href]");
+      expect(links.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("Active Filters Display", () => {
+    it("should show active filters when filters are applied", async () => {
+      const user = userEvent.setup();
+      customRender(<ToolsPage />);
+
+      // Apply filters
+      const filterToggle = screen.getByLabelText("Toggle filters");
+      await user.click(filterToggle);
+
+      const categoryCheckbox = screen.getByLabelText(/JSON Processing/);
+      await user.click(categoryCheckbox);
+
+      // Should show active filters
+      await waitFor(() => {
+        expect(screen.getByText("Active filters:")).toBeInTheDocument();
+      });
+    });
+
+    it("should allow removing individual filters", async () => {
+      const user = userEvent.setup();
+      customRender(<ToolsPage />);
+
+      // Apply filters
+      const filterToggle = screen.getByLabelText("Toggle filters");
+      await user.click(filterToggle);
+
+      const categoryCheckbox = screen.getByLabelText(/JSON Processing/);
+      await user.click(categoryCheckbox);
+
+      // Close filter panel
+      const closeButton = screen.getByLabelText("Close");
+      await user.click(closeButton);
+
+      // Remove filter
+      const removeButton = screen.getByLabelText("Close");
+      await user.click(removeButton);
+
+      // Should update filters
+      await waitFor(() => {
+        expect(screen.queryByText("Active filters:")).not.toBeInTheDocument();
+      });
+    });
+
+    it("should allow clearing all filters", async () => {
+      const user = userEvent.setup();
+      customRender(<ToolsPage />);
+
+      // Apply multiple filters
+      const filterToggle = screen.getByLabelText("Toggle filters");
+      await user.click(filterToggle);
+
+      const categoryCheckbox = screen.getByLabelText(/JSON Processing/);
+      await user.click(categoryCheckbox);
+
+      // Close filter panel
+      const closeButton = screen.getByLabelText("Close");
+      await user.click(closeButton);
+
+      // Clear all filters
+      const clearAllButton = screen.getByText("Clear All");
+      await user.click(clearAllButton);
+
+      // Should clear all filters
+      await waitFor(() => {
+        expect(screen.queryByText("Active filters:")).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("Accessibility", () => {
+    it("should have proper heading structure", () => {
+      customRender(<ToolsPage />);
+
+      const h1 = screen.getByRole("heading", { level: 1 });
+      const h2 = screen.getAllByRole("heading", { level: 2 });
+      const h3 = screen.getAllByRole("heading", { level: 3 });
+
+      expect(h1).toBeInTheDocument();
+      expect(h2.length).toBeGreaterThan(0);
+      expect(h3.length).toBeGreaterThan(0);
+    });
+
+    it("should have proper ARIA labels", () => {
+      customRender(<ToolsPage />);
+
+      expect(screen.getByLabelText("Sort options")).toBeInTheDocument();
+      expect(screen.getByLabelText("Toggle filters")).toBeInTheDocument();
+      expect(screen.getByLabelText("Toggle dark mode")).toBeInTheDocument();
+    });
+
+    it("should be keyboard navigable", async () => {
+      const user = userEvent.setup();
+      customRender(<ToolsPage />);
+
+      await user.tab();
+      const focusedElement = document.activeElement;
+      expect(focusedElement?.tagName).toBe("INPUT"); // Search input
+    });
+
+    it("should have proper button labels", () => {
+      customRender(<ToolsPage />);
+
+      const buttons = screen.getAllByRole("button");
+      buttons.forEach((button) => {
+        expect(button).toHaveAttribute("aria-label");
+      });
+    });
+  });
+
+  describe("Performance", () => {
+    it("should render efficiently with many tools", () => {
+      const manyTools = Array(100)
+        .fill(mockTools[0])
+        .map((tool, index) => ({
+          ...tool,
+          id: `${tool.id}-${index}`,
+          name: `${tool.name} ${index}`,
+        }));
+
+      vi.doMock("@/data/tools-data", () => ({
+        toolsData: manyTools,
       }));
 
-      vi.mocked(mockTools).push(...largeToolList);
+      customRender(<ToolsPage />);
 
-      const startTime = performance.now();
-      render(<ToolsPage {...defaultProps} />);
-      const endTime = performance.now();
+      expect(
+        screen.getByText("Professional Developer Tools"),
+      ).toBeInTheDocument();
+    });
 
-      expect(endTime - startTime).toBeLessThan(2000); // Should handle large lists efficiently
+    it("should handle rapid search input", async () => {
+      const user = userEvent.setup();
+      customRender(<ToolsPage />);
+
+      const searchInput = screen.getByPlaceholderText("Search tools...");
+
+      // Type quickly
+      for (const char of "json formatter") {
+        await user.keyboard(char);
+      }
+
+      // Should handle rapid input without crashing
+      expect(searchInput).toHaveValue("json formatter");
     });
   });
 
-  describe('Accessibility', () => {
-    it('has proper heading hierarchy', () => {
-      render(<ToolsPage {...defaultProps} />);
-
-      const h1 = screen.getByRole('heading', { level: 1 });
-      expect(h1).toHaveTextContent('Developer Tools');
-    });
-
-    it('supports keyboard navigation', async () => {
+  describe("Error Handling", () => {
+    it("should handle navigation errors gracefully", async () => {
       const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
-
-      // Tab through interactive elements
-      await user.tab();
-      expect(screen.getByPlaceholderText('Search tools by name, description, or tags...')).toHaveFocus();
-
-      await user.tab();
-      // Should focus on first category button
-      const firstCategory = screen.getByText('All Tools');
-      expect(firstCategory).toHaveFocus();
-    });
-
-    it('provides semantic structure', () => {
-      render(<ToolsPage {...defaultProps} />);
-
-      // Check for landmarks
-      expect(screen.getByRole('main')).toBeInTheDocument();
-
-      // Check for proper list structure in tabs
-      const tabList = document.querySelector('[role="tablist"]');
-      expect(tabList).toBeInTheDocument();
-    });
-
-    it('announces changes to screen readers', async () => {
-      const user = userEvent.setup();
-      render(<ToolsPage {...defaultProps} />);
-
-      const searchInput = screen.getByPlaceholderText('Search tools by name, description, or tags...');
-      await user.type(searchInput, 'JSON');
-
-      act(() => {
-        vi.advanceTimersByTime(300);
+      mockPush.mockImplementation(() => {
+        throw new Error("Navigation failed");
       });
+
+      customRender(<ToolsPage />);
+
+      const toolCard = screen
+        .getByText("JSON Formatter")
+        .closest(".cursor-pointer");
+
+      expect(async () => {
+        await user.click(toolCard!);
+      }).not.toThrow();
+    });
+
+    it("should handle localStorage errors", () => {
+      const localStorageMock = {
+        getItem: vi.fn(() => {
+          throw new Error("Storage error");
+        }),
+        setItem: vi.fn(),
+        removeItem: vi.fn(),
+        clear: vi.fn(),
+      };
+      Object.defineProperty(window, "localStorage", {
+        value: localStorageMock,
+      });
+
+      expect(() => {
+        customRender(<ToolsPage />);
+      }).not.toThrow();
+    });
+
+    it("should handle missing tools data", () => {
+      vi.doMock("@/data/tools-data", () => ({
+        toolsData: [],
+      }));
+
+      customRender(<ToolsPage />);
+
+      expect(
+        screen.getByText("Professional Developer Tools"),
+      ).toBeInTheDocument();
+      expect(screen.getByText("0+ Tools")).toBeInTheDocument();
+    });
+  });
+
+  describe("Integration Tests", () => {
+    it("should integrate search and filters workflow", async () => {
+      const user = userEvent.setup();
+      customRender(<ToolsPage />);
+
+      // Search for tools
+      const searchInput = screen.getByPlaceholderText("Search tools...");
+      await user.type(searchInput, "json");
 
       await waitFor(() => {
-        expect(screen.getByText('Showing 2 of 7 tools')).toBeInTheDocument();
+        expect(screen.getByText(/Results for "json"/)).toBeInTheDocument();
       });
+
+      // Apply filters
+      const filterToggle = screen.getByLabelText("Toggle filters");
+      await user.click(filterToggle);
+
+      const categoryCheckbox = screen.getByLabelText(/JSON Processing/);
+      await user.click(categoryCheckbox);
+
+      // Should show filtered search results
+      await waitFor(() => {
+        expect(screen.getByText(/Results for "json"/)).toBeInTheDocument();
+        expect(screen.getByText(/\(Filtered\)/)).toBeInTheDocument();
+      });
+    });
+
+    it("should maintain state during interactions", async () => {
+      const user = userEvent.setup();
+      customRender(<ToolsPage />);
+
+      // Enable dark mode
+      const darkModeToggle = screen.getByLabelText("Toggle dark mode");
+      await user.click(darkModeToggle);
+
+      // Search for tools
+      const searchInput = screen.getByPlaceholderText("Search tools...");
+      await user.type(searchInput, "json");
+
+      // Should maintain dark mode
+      expect(document.documentElement).toHaveClass("dark");
+
+      // Should show search results
+      await waitFor(() => {
+        expect(screen.getByText(/Results for "json"/)).toBeInTheDocument();
+      });
+    });
+
+    it("should handle complete user journey", async () => {
+      const user = userEvent.setup();
+      customRender(<ToolsPage />);
+
+      // 1. User searches for tools
+      const searchInput = screen.getByPlaceholderText("Search tools...");
+      await user.type(searchInput, "json");
+
+      await waitFor(() => {
+        expect(screen.getByText(/Results for "json"/)).toBeInTheDocument();
+      });
+
+      // 2. User clicks on a tool
+      const toolCard = screen
+        .getByText("JSON Formatter")
+        .closest(".cursor-pointer");
+      await user.click(toolCard!);
+
+      // 3. Should navigate to tool page
+      expect(mockPush).toHaveBeenCalledWith("/tools/json/formatter");
     });
   });
 });

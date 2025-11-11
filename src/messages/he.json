@@ -1,0 +1,137 @@
+{
+  "meta": {
+    "title": "Parsify.dev - פלטפורמת כלי מפתחים מקוונת",
+    "description": "כלי מפתחים מודרניים מקוונים לעיבוד JSON, הרצת קוד, עיבוד קבצים ואימות נתונים. כלים מצד הלקוח המתמקדים בפרטיות עבור מפתחים.",
+    "keywords": "כלי מפתחים, JSON, הרצת קוד, עיבוד קבצים, אימות נתונים, כלים מקוונים"
+  },
+  "nav": {
+    "home": "בית",
+    "tools": "כלים",
+    "categories": "קטגוריות",
+    "about": "אודות",
+    "github": "GitHub"
+  },
+  "home": {
+    "title": "פלטפורמת כלי מפתחים מודרנית",
+    "subtitle": "כלי מפתחים מצד הלקוח המתמקדים בפרטיות",
+    "description": "חבילה מקיפה של כלי מפתחים מקוונים לעיבוד JSON, הרצת קוד, עיבוד קבצים ואימות נתונים.",
+    "search": {
+      "placeholder": "חיפוש כלים...",
+      "noResults": "לא נמצאו כלים עבור \"{query}\""
+    },
+    "featured": {
+      "title": "כלים מובילים",
+      "viewAll": "הצג את כל הכלים"
+    },
+    "categories": {
+      "title": "עיין לפי קטגוריה",
+      "json": "כלי JSON",
+      "code": "הרצת קוד",
+      "file": "עיבוד קבצים",
+      "data": "אימות נתונים",
+      "utilities": "כלים"
+    }
+  },
+  "tools": {
+    "title": "כלי מפתחים",
+    "subtitle": "כלים מקצועיים לפיתוח מודרני",
+    "search": {
+      "placeholder": "חיפוש כלים...",
+      "filters": "מסננים",
+      "category": "קטגוריה",
+      "allCategories": "כל הקטגוריות"
+    },
+    "pagination": {
+      "previous": "קודם",
+      "next": "הבא",
+      "page": "עמוד {current} מתוך {total}"
+    }
+  },
+  "categories": {
+    "json": {
+      "title": "כלי JSON",
+      "description": "עיצוב, אימות והמרת נתוני JSON"
+    },
+    "code": {
+      "title": "הרצת קוד",
+      "description": "הרצה ובדיקת קוד בשפות מרובות"
+    },
+    "file": {
+      "title": "עיבוד קבצים",
+      "description": "המרה ועיבוד פורמטי קבצים שונים"
+    },
+    "data": {
+      "title": "אימות נתונים",
+      "description": "אימות והמרת פורמטי נתונים"
+    },
+    "utilities": {
+      "title": "כלים",
+      "description": "כלי עזר כלליים למפתחים"
+    }
+  },
+  "tool": {
+    "metadata": {
+      "lastUpdated": "עודכן לאחרונה",
+      "version": "גרסה",
+      "category": "קטגוריה",
+      "tags": "תגיות"
+    },
+    "actions": {
+      "run": "הפעל",
+      "clear": "נקה",
+      "reset": "אפס",
+      "copy": "העתק",
+      "download": "הורד",
+      "upload": "העלה",
+      "save": "שמור",
+      "load": "טען"
+    },
+    "status": {
+      "ready": "מוכן",
+      "processing": "מעבד...",
+      "completed": "הושלם",
+      "error": "שגיאה",
+      "success": "הצליח"
+    },
+    "errors": {
+      "invalidInput": "פורמט קלט לא חוקי",
+      "processingError": "שגיאת עיבוד נתונים",
+      "networkError": "אירעה שגיאת רשת",
+      "fileTooLarge": "קובץ גדול מדי",
+      "unsupportedFormat": "פורמט קובץ לא נתמך"
+    }
+  },
+  "footer": {
+    "description": "כלי מפתחים מקצועיים לפיתוח אינטרנט מודרני",
+    "links": {
+      "privacy": "מדיניות פרטיות",
+      "terms": "תנאי שימוש",
+      "contact": "צור קשר",
+      "contribute": "תרום"
+    },
+    "copyright": "© {year} Parsify.dev. כל הזכויות שמורות."
+  },
+  "common": {
+    "loading": "טוען...",
+    "error": "שגיאה",
+    "success": "הצליח",
+    "warning": "אזהרה",
+    "info": "מידע",
+    "cancel": "בטל",
+    "confirm": "אשר",
+    "close": "סגור",
+    "back": "חזור",
+    "next": "הבא",
+    "previous": "קודם",
+    "submit": "שלח",
+    "retry": "נסה שוב",
+    "save": "שמור",
+    "delete": "מחק",
+    "edit": "ערוך",
+    "view": "הצג",
+    "copy": "העתק",
+    "share": "שתף",
+    "download": "הורד",
+    "upload": "העלה"
+  }
+}

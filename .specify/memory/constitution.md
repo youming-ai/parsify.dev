@@ -1,95 +1,50 @@
-<!--
-Sync Impact Report:
-Version change: 1.0.0 → 1.0.0 (initial constitution)
-Modified principles: N/A (initial creation)
-Added sections: All sections
-Removed sections: N/A
-Templates requiring updates: 
-  ✅ plan-template.md (checked for consistency)
-  ✅ spec-template.md (checked for consistency) 
-  ✅ tasks-template.md (checked for consistency)
-Follow-up TODOs: N/A
--->
-
-# Parsify.dev Constitution
+# [PROJECT_NAME] Constitution
+<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
 
 ## Core Principles
 
-### I. Client-First Processing
-All tools MUST prioritize client-side processing for privacy and performance. Tools should run entirely in the browser when technically feasible, with no server-side dependencies for core functionality. Server-side processing should only be used for features that cannot be implemented client-side (e.g., large file processing, external API integrations).
+### [PRINCIPLE_1_NAME]
+<!-- Example: I. Library-First -->
+[PRINCIPLE_1_DESCRIPTION]
+<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
 
-### II. Privacy by Design
-User data MUST NOT leave the browser unless explicitly required for the tool's functionality. No telemetry or analytics that could expose user data content. All processing happens locally, with temporary data stored only in browser memory and cleared when the session ends.
+### [PRINCIPLE_2_NAME]
+<!-- Example: II. CLI Interface -->
+[PRINCIPLE_2_DESCRIPTION]
+<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
 
-### III. Tool-Centric Architecture
-Every feature MUST be implemented as a standalone tool with clear boundaries. Tools share common UI components and infrastructure but maintain independent logic and state. Each tool MUST be independently discoverable, testable, and deployable.
+### [PRINCIPLE_3_NAME]
+<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
+[PRINCIPLE_3_DESCRIPTION]
+<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
 
-### IV. Progressive Enhancement
-Tools MUST work with basic functionality first, then enhance with advanced features. Core functionality should not depend on optional features. Ensure graceful degradation when advanced features (like Monaco Editor) are loading or unavailable.
+### [PRINCIPLE_4_NAME]
+<!-- Example: IV. Integration Testing -->
+[PRINCIPLE_4_DESCRIPTION]
+<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
 
-### V. Type Safety & Validation
-All inputs and outputs MUST be strongly typed with comprehensive validation. Tools should provide real-time feedback for invalid inputs and clear error messages. TypeScript strict mode is mandatory for all new code.
+### [PRINCIPLE_5_NAME]
+<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
+[PRINCIPLE_5_DESCRIPTION]
+<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
 
-## Development Standards
+## [SECTION_2_NAME]
+<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
 
-### Technology Stack Constraints
-- **Frontend**: Next.js 16+ with App Router, TypeScript 5.7+, React 19+
-- **Styling**: Tailwind CSS with shadcn/ui components only
-- **State Management**: Zustand for client-side state, React hooks for component state  
-- **Code Editor**: Monaco Editor (lazy-loaded) for code-related tools
-- **Testing**: Vitest for unit tests, Playwright for E2E tests
-- **Package Manager**: pnpm v10.18.3 (enforced)
+[SECTION_2_CONTENT]
+<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
 
-### Performance Requirements
-- **Bundle Size**: Core bundle MUST stay under 500KB gzipped
-- **Loading**: Monaco Editor MUST be lazy-loaded to prevent initial bundle bloat
-- **Runtime**: Tools should complete operations within 5 seconds for typical inputs
-- **Memory**: Client-side processing should not exceed 100MB memory usage
+## [SECTION_3_NAME]
+<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
 
-### Security Standards
-- **Code Execution**: All code execution MUST use secure sandboxing (WASM/isolated environments)
-- **File Processing**: File uploads MUST be processed client-side when possible
-- **Data Storage**: No persistent storage of user input data beyond browser session
-- **Dependencies**: All dependencies MUST be scanned for security vulnerabilities
-
-## Quality Assurance
-
-### Testing Requirements
-- **Unit Tests**: All utility functions and business logic MUST have unit tests
-- **Integration Tests**: Tool workflows MUST be tested end-to-end
-- **Type Coverage**: 100% TypeScript coverage with strict mode enabled
-- **Browser Testing**: Tools must work in latest Chrome, Firefox, Safari, and Edge
-
-### Code Quality Standards
-- **Linting**: Biome MUST pass with no errors or warnings
-- **Formatting**: Automatic formatting with Biome (tab indentation, 120 char width)
-- **Imports**: Automatic import sorting enabled
-- **Documentation**: Complex functions MUST have JSDoc comments
-
-### User Experience Standards
-- **Responsive Design**: Tools MUST work on mobile and desktop devices
-- **Dark Mode**: All tools MUST support dark/light theme switching
-- **Error Handling**: Graceful error recovery with clear user feedback
-- **Loading States**: Appropriate loading indicators for all async operations
+[SECTION_3_CONTENT]
+<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
 
 ## Governance
+<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-This constitution supersedes all other development practices and guidelines. Amendments require:
+[GOVERNANCE_RULES]
+<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
 
-1. **Documentation**: Proposed changes MUST be documented with clear rationale
-2. **Review**: All constitution changes MUST undergo team review
-3. **Versioning**: Constitution version MUST follow semantic versioning (MAJOR.MINOR.PATCH)
-4. **Migration**: Changes MUST include migration plan for existing code/tools
-
-### Compliance Requirements
-- All pull requests MUST verify compliance with constitution principles
-- New tools MUST pass constitution checklist before implementation begins
-- Code reviews MUST check for constitutional compliance
-- Complexity deviations MUST be explicitly justified in PR descriptions
-
-### Guideline References
-- Use `CLAUDE.md` for runtime development guidance and project-specific patterns
-- Refer to tool templates in `src/components/tools/` for implementation patterns
-- Consult `src/data/tools-data.ts` for tool metadata requirements
-
-**Version**: 1.0.0 | **Ratified**: 2025-11-02 | **Last Amended**: 2025-11-02
+**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
+<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->

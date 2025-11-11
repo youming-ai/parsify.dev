@@ -1,0 +1,137 @@
+{
+  "meta": {
+    "title": "Parsify.dev - 在线开发者工具平台",
+    "description": "现代化的在线开发者工具，用于JSON处理、代码执行、文件处理和数据验证。注重隐私，为开发者提供的客户端工具。",
+    "keywords": "开发者工具, JSON, 代码执行, 文件处理, 数据验证, 在线工具"
+  },
+  "nav": {
+    "home": "首页",
+    "tools": "工具",
+    "categories": "分类",
+    "about": "关于",
+    "github": "GitHub"
+  },
+  "home": {
+    "title": "现代开发者工具平台",
+    "subtitle": "注重隐私的客户端开发者工具",
+    "description": "全面的在线开发者工具套件，用于JSON处理、代码执行、文件处理和数据验证。",
+    "search": {
+      "placeholder": "搜索工具...",
+      "noResults": "未找到工具 \"{query}\""
+    },
+    "featured": {
+      "title": "精选工具",
+      "viewAll": "查看所有工具"
+    },
+    "categories": {
+      "title": "按分类浏览",
+      "json": "JSON工具",
+      "code": "代码执行",
+      "file": "文件处理",
+      "data": "数据验证",
+      "utilities": "实用工具"
+    }
+  },
+  "tools": {
+    "title": "开发者工具",
+    "subtitle": "面向现代开发的专业工具",
+    "search": {
+      "placeholder": "搜索工具...",
+      "filters": "筛选器",
+      "category": "分类",
+      "allCategories": "所有分类"
+    },
+    "pagination": {
+      "previous": "上一页",
+      "next": "下一页",
+      "page": "第 {current} 页，共 {total} 页"
+    }
+  },
+  "categories": {
+    "json": {
+      "title": "JSON工具",
+      "description": "格式化、验证和转换JSON数据"
+    },
+    "code": {
+      "title": "代码执行",
+      "description": "运行和测试多种语言的代码"
+    },
+    "file": {
+      "title": "文件处理",
+      "description": "转换和处理各种文件格式"
+    },
+    "data": {
+      "title": "数据验证",
+      "description": "验证和转换数据格式"
+    },
+    "utilities": {
+      "title": "实用工具",
+      "description": "通用开发实用工具"
+    }
+  },
+  "tool": {
+    "metadata": {
+      "lastUpdated": "最后更新",
+      "version": "版本",
+      "category": "分类",
+      "tags": "标签"
+    },
+    "actions": {
+      "run": "运行",
+      "clear": "清除",
+      "reset": "重置",
+      "copy": "复制",
+      "download": "下载",
+      "upload": "上传",
+      "save": "保存",
+      "load": "加载"
+    },
+    "status": {
+      "ready": "就绪",
+      "processing": "处理中...",
+      "completed": "已完成",
+      "error": "错误",
+      "success": "成功"
+    },
+    "errors": {
+      "invalidInput": "输入格式无效",
+      "processingError": "数据处理错误",
+      "networkError": "发生网络错误",
+      "fileTooLarge": "文件过大",
+      "unsupportedFormat": "不支持的文件格式"
+    }
+  },
+  "footer": {
+    "description": "面向现代网络开发的专业开发者工具",
+    "links": {
+      "privacy": "隐私政策",
+      "terms": "服务条款",
+      "contact": "联系我们",
+      "contribute": "贡献"
+    },
+    "copyright": "© {year} Parsify.dev。保留所有权利。"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "warning": "警告",
+    "info": "信息",
+    "cancel": "取消",
+    "confirm": "确认",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "submit": "提交",
+    "retry": "重试",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "view": "查看",
+    "copy": "复制",
+    "share": "分享",
+    "download": "下载",
+    "upload": "上传"
+  }
+}

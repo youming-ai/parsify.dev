@@ -1,0 +1,137 @@
+{
+  "meta": {
+    "title": "Parsify.dev - 線上開發者工具平台",
+    "description": "現代化的線上開發者工具，用於JSON處理、程式碼執行、檔案處理和資料驗證。注重隱私，為開發者提供的用戶端工具。",
+    "keywords": "開發者工具, JSON, 程式碼執行, 檔案處理, 資料驗證, 線上工具"
+  },
+  "nav": {
+    "home": "首頁",
+    "tools": "工具",
+    "categories": "分類",
+    "about": "關於",
+    "github": "GitHub"
+  },
+  "home": {
+    "title": "現代開發者工具平台",
+    "subtitle": "注重隱私的用戶端開發者工具",
+    "description": "全面的線上開發者工具套件，用於JSON處理、程式碼執行、檔案處理和資料驗證。",
+    "search": {
+      "placeholder": "搜尋工具...",
+      "noResults": "未找到工具 \"{query}\""
+    },
+    "featured": {
+      "title": "精選工具",
+      "viewAll": "檢視所有工具"
+    },
+    "categories": {
+      "title": "依分類瀏覽",
+      "json": "JSON工具",
+      "code": "程式碼執行",
+      "file": "檔案處理",
+      "data": "資料驗證",
+      "utilities": "實用工具"
+    }
+  },
+  "tools": {
+    "title": "開發者工具",
+    "subtitle": "面向現代開發的專業工具",
+    "search": {
+      "placeholder": "搜尋工具...",
+      "filters": "篩選器",
+      "category": "分類",
+      "allCategories": "所有分類"
+    },
+    "pagination": {
+      "previous": "上一頁",
+      "next": "下一頁",
+      "page": "第 {current} 頁，共 {total} 頁"
+    }
+  },
+  "categories": {
+    "json": {
+      "title": "JSON工具",
+      "description": "格式化、驗證和轉換JSON資料"
+    },
+    "code": {
+      "title": "程式碼執行",
+      "description": "執行和測試多種語言的程式碼"
+    },
+    "file": {
+      "title": "檔案處理",
+      "description": "轉換和處理各種檔案格式"
+    },
+    "data": {
+      "title": "資料驗證",
+      "description": "驗證和轉換資料格式"
+    },
+    "utilities": {
+      "title": "實用工具",
+      "description": "通用開發實用工具"
+    }
+  },
+  "tool": {
+    "metadata": {
+      "lastUpdated": "最後更新",
+      "version": "版本",
+      "category": "分類",
+      "tags": "標籤"
+    },
+    "actions": {
+      "run": "執行",
+      "clear": "清除",
+      "reset": "重置",
+      "copy": "複製",
+      "download": "下載",
+      "upload": "上傳",
+      "save": "儲存",
+      "load": "載入"
+    },
+    "status": {
+      "ready": "就緒",
+      "processing": "處理中...",
+      "completed": "已完成",
+      "error": "錯誤",
+      "success": "成功"
+    },
+    "errors": {
+      "invalidInput": "輸入格式無效",
+      "processingError": "資料處理錯誤",
+      "networkError": "發生網路錯誤",
+      "fileTooLarge": "檔案過大",
+      "unsupportedFormat": "不支援的檔案格式"
+    }
+  },
+  "footer": {
+    "description": "面向現代網路開發的專業開發者工具",
+    "links": {
+      "privacy": "隱私政策",
+      "terms": "服務條款",
+      "contact": "聯絡我們",
+      "contribute": "貢獻"
+    },
+    "copyright": "© {year} Parsify.dev。保留所有權利。"
+  },
+  "common": {
+    "loading": "載入中...",
+    "error": "錯誤",
+    "success": "成功",
+    "warning": "警告",
+    "info": "資訊",
+    "cancel": "取消",
+    "confirm": "確認",
+    "close": "關閉",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "submit": "提交",
+    "retry": "重試",
+    "save": "儲存",
+    "delete": "刪除",
+    "edit": "編輯",
+    "view": "檢視",
+    "copy": "複製",
+    "share": "分享",
+    "download": "下載",
+    "upload": "上傳"
+  }
+}

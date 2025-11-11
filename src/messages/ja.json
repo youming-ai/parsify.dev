@@ -1,0 +1,137 @@
+{
+  "meta": {
+    "title": "Parsify.dev - オンライン開発者ツールプラットフォーム",
+    "description": "JSON処理、コード実行、ファイル処理、データ検証のための最新のオンライン開発者ツール。プライバシーに配慮したクライアントサイドツール。",
+    "keywords": "開発者ツール, JSON, コード実行, ファイル処理, データ検証, オンラインツール"
+  },
+  "nav": {
+    "home": "ホーム",
+    "tools": "ツール",
+    "categories": "カテゴリ",
+    "about": "について",
+    "github": "GitHub"
+  },
+  "home": {
+    "title": "最新の開発者ツールプラットフォーム",
+    "subtitle": "プライバシーに配慮したクライアントサイド開発者ツール",
+    "description": "JSON処理、コード実行、ファイル処理、データ検証のための包括的なオンライン開発者ツールスイート。",
+    "search": {
+      "placeholder": "ツールを検索...",
+      "noResults": "\"{query}\"のツールが見つかりません"
+    },
+    "featured": {
+      "title": "注目ツール",
+      "viewAll": "すべてのツールを表示"
+    },
+    "categories": {
+      "title": "カテゴリ別に閲覧",
+      "json": "JSONツール",
+      "code": "コード実行",
+      "file": "ファイル処理",
+      "data": "データ検証",
+      "utilities": "ユーティリティ"
+    }
+  },
+  "tools": {
+    "title": "開発者ツール",
+    "subtitle": "最新開発向けの専門ツール",
+    "search": {
+      "placeholder": "ツールを検索...",
+      "filters": "フィルター",
+      "category": "カテゴリ",
+      "allCategories": "すべてのカテゴリ"
+    },
+    "pagination": {
+      "previous": "前へ",
+      "next": "次へ",
+      "page": "{total}ページ中{current}ページ"
+    }
+  },
+  "categories": {
+    "json": {
+      "title": "JSONツール",
+      "description": "JSONデータのフォーマット、検証、変換"
+    },
+    "code": {
+      "title": "コード実行",
+      "description": "複数の言語でコードを実行・テスト"
+    },
+    "file": {
+      "title": "ファイル処理",
+      "description": "様々なファイル形式の変換・処理"
+    },
+    "data": {
+      "title": "データ検証",
+      "description": "データ形式の検証・変換"
+    },
+    "utilities": {
+      "title": "ユーティリティ",
+      "description": "汎用開発ユーティリティ"
+    }
+  },
+  "tool": {
+    "metadata": {
+      "lastUpdated": "最終更新",
+      "version": "バージョン",
+      "category": "カテゴリ",
+      "tags": "タグ"
+    },
+    "actions": {
+      "run": "実行",
+      "clear": "クリア",
+      "reset": "リセット",
+      "copy": "コピー",
+      "download": "ダウンロード",
+      "upload": "アップロード",
+      "save": "保存",
+      "load": "読み込み"
+    },
+    "status": {
+      "ready": "準備完了",
+      "processing": "処理中...",
+      "completed": "完了",
+      "error": "エラー",
+      "success": "成功"
+    },
+    "errors": {
+      "invalidInput": "入力形式が無効です",
+      "processingError": "データ処理エラー",
+      "networkError": "ネットワークエラーが発生しました",
+      "fileTooLarge": "ファイルが大きすぎます",
+      "unsupportedFormat": "サポートされていないファイル形式"
+    }
+  },
+  "footer": {
+    "description": "最新のWeb開発向けの専門開発者ツール",
+    "links": {
+      "privacy": "プライバシーポリシー",
+      "terms": "利用規約",
+      "contact": "お問い合わせ",
+      "contribute": "貢献"
+    },
+    "copyright": "© {year} Parsify.dev。すべての権利予約済み。"
+  },
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "warning": "警告",
+    "info": "情報",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "close": "閉じる",
+    "back": "戻る",
+    "next": "次へ",
+    "previous": "前へ",
+    "submit": "送信",
+    "retry": "再試行",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "view": "表示",
+    "copy": "コピー",
+    "share": "共有",
+    "download": "ダウンロード",
+    "upload": "アップロード"
+  }
+}

@@ -157,7 +157,13 @@ export interface ReportSummary {
 }
 
 export interface BundleOptimizationEvent {
-	type: 'analysis-started' | 'analysis-completed' | 'optimization-started' | 'optimization-completed' | 'violation-detected' | 'compliance-achieved';
+	type:
+		| 'analysis-started'
+		| 'analysis-completed'
+		| 'optimization-started'
+		| 'optimization-completed'
+		| 'violation-detected'
+		| 'compliance-achieved';
 	timestamp: Date;
 	data: any;
 	source: string;
@@ -282,7 +288,6 @@ export class BundleOptimizationSystemIntegration {
 
 			console.log('🚀 Bundle optimization system started successfully');
 			this.emitEvent('system-started', { config: this.config });
-
 		} catch (error) {
 			console.error('Failed to start bundle optimization system:', error);
 			this.isRunning = false;
@@ -390,7 +395,8 @@ export class BundleOptimizationSystemIntegration {
 			const currentStatus = sizeBudgetManager.getMonitoringStatus();
 			if (currentStatus.lastCheck) {
 				const timeSinceLastCheck = Date.now() - currentStatus.lastCheck.getTime();
-				if (timeSinceLastCheck > 5 * 60 * 1000) { // 5 minutes
+				if (timeSinceLastCheck > 5 * 60 * 1000) {
+					// 5 minutes
 					this.runOptimizationIfNeeded();
 				}
 			}
@@ -437,11 +443,16 @@ export class BundleOptimizationSystemIntegration {
 	// Get frequency in milliseconds
 	private getFrequencyInMilliseconds(): number {
 		switch (this.config.schedule.frequency) {
-			case 'realtime': return 5 * 60 * 1000; // 5 minutes
-			case 'hourly': return 60 * 60 * 1000; // 1 hour
-			case 'daily': return 24 * 60 * 60 * 1000; // 24 hours
-			case 'weekly': return 7 * 24 * 60 * 60 * 1000; // 7 days
-			default: return 60 * 60 * 1000; // Default to hourly
+			case 'realtime':
+				return 5 * 60 * 1000; // 5 minutes
+			case 'hourly':
+				return 60 * 60 * 1000; // 1 hour
+			case 'daily':
+				return 24 * 60 * 60 * 1000; // 24 hours
+			case 'weekly':
+				return 7 * 24 * 60 * 60 * 1000; // 7 days
+			default:
+				return 60 * 60 * 1000; // Default to hourly
 		}
 	}
 
@@ -480,7 +491,6 @@ export class BundleOptimizationSystemIntegration {
 
 			this.config.schedule.lastRun = new Date();
 			this.updateNextRunTime();
-
 		} catch (error) {
 			console.error('Scheduled optimization failed:', error);
 		}
@@ -496,9 +506,8 @@ export class BundleOptimizationSystemIntegration {
 			// Update metrics
 			this.status.metrics.lastAnalysis = new Date();
 			this.status.metrics.complianceScore = analysis.compliance.complianceScore;
-			this.status.metrics.performanceScore = analysis.performance.loadTime > 0
-				? Math.max(0, 100 - (analysis.performance.loadTime / 100))
-				: 100;
+			this.status.metrics.performanceScore =
+				analysis.performance.loadTime > 0 ? Math.max(0, 100 - analysis.performance.loadTime / 100) : 100;
 
 			// Update health
 			this.updateHealthStatus(analysis);
@@ -618,7 +627,7 @@ export class BundleOptimizationSystemIntegration {
 		}
 
 		// Add optimization opportunities from monitoring
-		monitoringState.optimizations.forEach(opp => {
+		monitoringState.optimizations.forEach((opp) => {
 			if (opp.confidence > this.config.thresholds.riskThreshold) {
 				recommendations.push({
 					id: opp.id,
@@ -656,7 +665,7 @@ export class BundleOptimizationSystemIntegration {
 
 	// Create actions from recommendations
 	private createActions(recommendations: SystemRecommendation[]): Action[] {
-		return recommendations.map(rec => ({
+		return recommendations.map((rec) => ({
 			id: `action_${rec.id}`,
 			type: rec.type === 'process' ? 'configure' : 'optimize',
 			description: rec.title,
@@ -667,8 +676,8 @@ export class BundleOptimizationSystemIntegration {
 
 	// Calculate report summary
 	private calculateSummary(recommendations: SystemRecommendation[]): ReportSummary {
-		const totalOptimizations = recommendations.filter(r => r.type === 'optimization').length;
-		const automatedActions = recommendations.filter(r => r.automatable).length;
+		const totalOptimizations = recommendations.filter((r) => r.type === 'optimization').length;
+		const automatedActions = recommendations.filter((r) => r.automatable).length;
 		const manualActions = recommendations.length - automatedActions;
 
 		const totalSavings = recommendations.reduce((sum, r) => sum + r.impact.sizeSavings, 0);
@@ -694,7 +703,7 @@ export class BundleOptimizationSystemIntegration {
 		const analysisBefore = await bundleAnalyzer.analyzeBundle();
 
 		// Filter recommendations based on automation settings
-		const executableRecommendations = recommendations.filter(rec => {
+		const executableRecommendations = recommendations.filter((rec) => {
 			if (!rec.automatable) return false;
 			if (this.config.automation.manualApproval) return false;
 			if (this.config.automation.safeMode && rec.priority === 'critical') return false;
@@ -743,9 +752,8 @@ export class BundleOptimizationSystemIntegration {
 
 		// Execute optimization based on type
 		const plans = await bundleOptimizationEngine.generateOptimizationPlan(analysisBefore);
-		const relevantPlans = plans.filter(plan =>
-			plan.automatable &&
-			plan.estimatedSavings >= recommendation.impact.sizeSavings * 0.5
+		const relevantPlans = plans.filter(
+			(plan) => plan.automatable && plan.estimatedSavings >= recommendation.impact.sizeSavings * 0.5,
 		);
 
 		if (relevantPlans.length === 0) {
@@ -782,10 +790,8 @@ export class BundleOptimizationSystemIntegration {
 		const plans = await bundleOptimizationEngine.generateOptimizationPlan(analysis);
 
 		// Filter for safe, low-risk optimizations
-		const safePlans = plans.filter(plan =>
-			plan.automatable &&
-			plan.risk.every(r => r.severity !== 'high') &&
-			plan.effort === 'low'
+		const safePlans = plans.filter(
+			(plan) => plan.automatable && plan.risk.every((r) => r.severity !== 'high') && plan.effort === 'low',
 		);
 
 		if (safePlans.length === 0) {
@@ -886,17 +892,17 @@ export class BundleOptimizationSystemIntegration {
 
 	// Update system metrics
 	private updateMetrics(results: ActionResult[]): void {
-		const successfulResults = results.filter(r => r.success);
+		const successfulResults = results.filter((r) => r.success);
 		const totalSavings = successfulResults.reduce((sum, r) => sum + r.impact.savings, 0);
 
 		this.status.metrics.totalSavings += totalSavings;
 		this.status.metrics.optimizationCount += results.length;
-		this.status.metrics.successRate = results.length > 0
-			? (successfulResults.length / results.length) * 100
-			: this.status.metrics.successRate;
-		this.status.metrics.averageReduction = this.status.metrics.optimizationCount > 0
-			? this.status.metrics.totalSavings / this.status.metrics.optimizationCount
-			: this.status.metrics.averageReduction;
+		this.status.metrics.successRate =
+			results.length > 0 ? (successfulResults.length / results.length) * 100 : this.status.metrics.successRate;
+		this.status.metrics.averageReduction =
+			this.status.metrics.optimizationCount > 0
+				? this.status.metrics.totalSavings / this.status.metrics.optimizationCount
+				: this.status.metrics.averageReduction;
 
 		this.status.optimization.lastResult = {
 			plan: {} as OptimizationPlan,
@@ -936,7 +942,7 @@ export class BundleOptimizationSystemIntegration {
 
 		const listeners = this.eventListeners.get(type);
 		if (listeners) {
-			listeners.forEach(listener => {
+			listeners.forEach((listener) => {
 				try {
 					listener(event);
 				} catch (error) {
@@ -1017,7 +1023,7 @@ export class BundleOptimizationSystemIntegration {
 			budgetLimit: 500 * 1024,
 			utilization: analysis.compliance.budgetUtilization,
 			score: analysis.compliance.complianceScore,
-			issues: analysis.compliance.criticalIssues.map(issue => issue.description),
+			issues: analysis.compliance.criticalIssues.map((issue) => issue.description),
 			optimizations: analysis.optimization.recommendations.length,
 		};
 	}

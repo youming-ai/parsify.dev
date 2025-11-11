@@ -1,0 +1,31 @@
+{
+  "scripts": {
+    "deploy:staging": "node scripts/deploy/staging-setup.js",
+    "deploy:production": "node scripts/deploy/production-deploy.js",
+    "deploy:pipe": "node scripts/deploy/deployment-pipeline.js",
+    "deploy:test": "node scripts/deploy/deployment-testing.js",
+    "deploy:monitor": "node scripts/deploy/monitoring-system.js",
+    "deploy:rollback": "./scripts/rollback.sh",
+    "deploy:build": "node scripts/deploy/production-build.js",
+    "deploy:env": "node scripts/deploy/environment-manager.js",
+
+    "staging:create": "node scripts/deploy/environment-manager.js create staging",
+    "staging:validate": "node scripts/deploy/environment-manager.js validate staging",
+    "staging:switch": "node scripts/deploy/environment-manager.js switch staging",
+    "staging:test": "DEPLOY_TARGET=staging node scripts/deploy/deployment-testing.js",
+
+    "production:create": "node scripts/deploy/environment-manager.js create production",
+    "production:validate": "node scripts/deploy/environment-manager.js validate production",
+    "production:switch": "node scripts/deploy/environment-manager.js switch production",
+    "production:test": "DEPLOY_TARGET=production node scripts/deploy/deployment-testing.js",
+
+    "build:prod": "node scripts/deploy/production-build.js",
+    "test:deployment": "node scripts/deploy/deployment-testing.js",
+    "test:e2e:staging": "BASE_URL=https://parsify-staging.vercel.app pnpm test:e2e",
+    "test:e2e:production": "BASE_URL=https://parsify.dev pnpm test:e2e",
+
+    "monitor:start": "node scripts/deploy/monitoring-system.js",
+    "monitor:staging": "DEPLOY_TARGET=staging node scripts/deploy/monitoring-system.js",
+    "monitor:production": "DEPLOY_TARGET=production node scripts/deploy/monitoring-system.js"
+  }
+}

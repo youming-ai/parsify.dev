@@ -602,7 +602,6 @@ export class RealtimeBundleMonitor {
 
 			// Emit event
 			this.emitEvent('snapshot', { snapshot, state: this.state });
-
 		} catch (error) {
 			console.error('Failed to capture bundle snapshot:', error);
 			this.emitEvent('error', { error, timestamp: new Date() });
@@ -614,7 +613,7 @@ export class RealtimeBundleMonitor {
 		const timestamp = new Date();
 
 		// Create chunk snapshots
-		const chunks = analysis.chunks.map(chunk => ({
+		const chunks = analysis.chunks.map((chunk) => ({
 			id: chunk.id,
 			name: chunk.name,
 			size: chunk.size,
@@ -625,7 +624,7 @@ export class RealtimeBundleMonitor {
 		}));
 
 		// Create dependency snapshots
-		const dependencies = analysis.dependencies.map(dep => ({
+		const dependencies = analysis.dependencies.map((dep) => ({
 			name: dep.name,
 			version: dep.version,
 			size: dep.size,
@@ -635,7 +634,7 @@ export class RealtimeBundleMonitor {
 		}));
 
 		// Create asset snapshots
-		const assets = analysis.assets.map(asset => ({
+		const assets = analysis.assets.map((asset) => ({
 			name: asset.name,
 			type: asset.type,
 			size: asset.size,
@@ -698,7 +697,8 @@ export class RealtimeBundleMonitor {
 		const sizeChange = snapshot.totalSize - this.lastSnapshot.totalSize;
 
 		// Size change detection
-		if (Math.abs(sizeChange) > 1024) { // More than 1KB change
+		if (Math.abs(sizeChange) > 1024) {
+			// More than 1KB change
 			changes.push({
 				timestamp: new Date(),
 				type: sizeChange > 0 ? 'size-increase' : 'size-decrease',
@@ -713,11 +713,11 @@ export class RealtimeBundleMonitor {
 		}
 
 		// New chunk detection
-		const newChunks = snapshot.chunks.filter(chunk =>
-			!this.lastSnapshot!.chunks.some(lastChunk => lastChunk.id === chunk.id)
+		const newChunks = snapshot.chunks.filter(
+			(chunk) => !this.lastSnapshot!.chunks.some((lastChunk) => lastChunk.id === chunk.id),
 		);
 
-		newChunks.forEach(chunk => {
+		newChunks.forEach((chunk) => {
 			changes.push({
 				timestamp: new Date(),
 				type: 'new-chunk',
@@ -733,11 +733,11 @@ export class RealtimeBundleMonitor {
 		});
 
 		// Removed chunk detection
-		const removedChunks = this.lastSnapshot.chunks.filter(chunk =>
-			!snapshot.chunks.some(currentChunk => currentChunk.id === chunk.id)
+		const removedChunks = this.lastSnapshot.chunks.filter(
+			(chunk) => !snapshot.chunks.some((currentChunk) => currentChunk.id === chunk.id),
 		);
 
-		removedChunks.forEach(chunk => {
+		removedChunks.forEach((chunk) => {
 			changes.push({
 				timestamp: new Date(),
 				type: 'removed-chunk',
@@ -761,7 +761,7 @@ export class RealtimeBundleMonitor {
 		}
 
 		// Emit change events
-		changes.forEach(change => {
+		changes.forEach((change) => {
 			this.emitEvent('change', { change });
 		});
 
@@ -784,8 +784,13 @@ export class RealtimeBundleMonitor {
 		// Calculate acceleration
 		let acceleration = 0;
 		if (recentSnapshots.length >= 3) {
-			const recentRate = (recentSnapshots[recentSnapshots.length - 1].totalSize - recentSnapshots[recentSnapshots.length - 3].totalSize) /
-							 ((recentSnapshots[recentSnapshots.length - 1].timestamp.getTime() - recentSnapshots[recentSnapshots.length - 3].timestamp.getTime()) / 1000 / 60);
+			const recentRate =
+				(recentSnapshots[recentSnapshots.length - 1].totalSize -
+					recentSnapshots[recentSnapshots.length - 3].totalSize) /
+				((recentSnapshots[recentSnapshots.length - 1].timestamp.getTime() -
+					recentSnapshots[recentSnapshots.length - 3].timestamp.getTime()) /
+					1000 /
+					60);
 			acceleration = rate - recentRate;
 		}
 
@@ -858,8 +863,9 @@ export class RealtimeBundleMonitor {
 		const factors: TrendFactor[] = [];
 
 		// Analyze chunk changes
-		const chunkGrowth = snapshot.chunks.reduce((sum, chunk) => sum + chunk.size, 0) -
-						   recentSnapshots[0].chunks.reduce((sum, chunk) => sum + chunk.size, 0);
+		const chunkGrowth =
+			snapshot.chunks.reduce((sum, chunk) => sum + chunk.size, 0) -
+			recentSnapshots[0].chunks.reduce((sum, chunk) => sum + chunk.size, 0);
 
 		if (Math.abs(chunkGrowth) > 1024) {
 			factors.push({
@@ -871,8 +877,9 @@ export class RealtimeBundleMonitor {
 		}
 
 		// Analyze dependency changes
-		const depGrowth = snapshot.dependencies.reduce((sum, dep) => sum + dep.size, 0) -
-						 recentSnapshots[0].dependencies.reduce((sum, dep) => sum + dep.size, 0);
+		const depGrowth =
+			snapshot.dependencies.reduce((sum, dep) => sum + dep.size, 0) -
+			recentSnapshots[0].dependencies.reduce((sum, dep) => sum + dep.size, 0);
 
 		if (Math.abs(depGrowth) > 512) {
 			factors.push({
@@ -884,8 +891,9 @@ export class RealtimeBundleMonitor {
 		}
 
 		// Analyze asset changes
-		const assetGrowth = snapshot.assets.reduce((sum, asset) => sum + asset.size, 0) -
-							recentSnapshots[0].assets.reduce((sum, asset) => sum + asset.size, 0);
+		const assetGrowth =
+			snapshot.assets.reduce((sum, asset) => sum + asset.size, 0) -
+			recentSnapshots[0].assets.reduce((sum, asset) => sum + asset.size, 0);
 
 		if (Math.abs(assetGrowth) > 512) {
 			factors.push({
@@ -907,97 +915,109 @@ export class RealtimeBundleMonitor {
 		const utilizationPercentage = (snapshot.totalSize / (500 * 1024)) * 100;
 
 		if (utilizationPercentage >= this.config.thresholds.sizeCritical) {
-			alerts.push(this.createAlert(
-				'critical',
-				'Critical: Bundle Size Exceeded',
-				`Bundle is ${utilizationPercentage.toFixed(1)}% of 500KB limit`,
-				{ currentSize: snapshot.totalSize, utilization: utilizationPercentage },
-				[
-					{
-						label: 'Run Optimization',
-						action: () => this.runAutoOptimization(),
-						type: 'primary',
-						automated: true,
-					},
-					{
-						label: 'View Analysis',
-						action: () => this.showDetailedAnalysis(),
-						type: 'secondary',
-						automated: false,
-					},
-				]
-			));
+			alerts.push(
+				this.createAlert(
+					'critical',
+					'Critical: Bundle Size Exceeded',
+					`Bundle is ${utilizationPercentage.toFixed(1)}% of 500KB limit`,
+					{ currentSize: snapshot.totalSize, utilization: utilizationPercentage },
+					[
+						{
+							label: 'Run Optimization',
+							action: () => this.runAutoOptimization(),
+							type: 'primary',
+							automated: true,
+						},
+						{
+							label: 'View Analysis',
+							action: () => this.showDetailedAnalysis(),
+							type: 'secondary',
+							automated: false,
+						},
+					],
+				),
+			);
 		} else if (utilizationPercentage >= this.config.thresholds.sizeWarning) {
-			alerts.push(this.createAlert(
-				'warning',
-				'Warning: Bundle Size Growing',
-				`Bundle is ${utilizationPercentage.toFixed(1)}% of 500KB limit`,
-				{ currentSize: snapshot.totalSize, utilization: utilizationPercentage },
-				[
-					{
-						label: 'Check Optimizations',
-						action: () => this.showOptimizationOpportunities(),
-						type: 'primary',
-						automated: false,
-					},
-				]
-			));
+			alerts.push(
+				this.createAlert(
+					'warning',
+					'Warning: Bundle Size Growing',
+					`Bundle is ${utilizationPercentage.toFixed(1)}% of 500KB limit`,
+					{ currentSize: snapshot.totalSize, utilization: utilizationPercentage },
+					[
+						{
+							label: 'Check Optimizations',
+							action: () => this.showOptimizationOpportunities(),
+							type: 'primary',
+							automated: false,
+						},
+					],
+				),
+			);
 		}
 
 		// Growth rate threshold checks
 		if (Math.abs(this.state.trends.rate) >= this.config.thresholds.growthRateCritical) {
-			alerts.push(this.createAlert(
-				'critical',
-				'Critical: Rapid Size Change',
-				`Bundle size changing at ${Math.abs(this.state.trends.rate).toFixed(1)}KB/min`,
-				{ rate: this.state.trends.rate, direction: this.state.trends.direction },
-				[
-					{
-						label: 'Investigate Changes',
-						action: () => this.showRecentChanges(),
-						type: 'primary',
-						automated: false,
-					},
-				]
-			));
+			alerts.push(
+				this.createAlert(
+					'critical',
+					'Critical: Rapid Size Change',
+					`Bundle size changing at ${Math.abs(this.state.trends.rate).toFixed(1)}KB/min`,
+					{ rate: this.state.trends.rate, direction: this.state.trends.direction },
+					[
+						{
+							label: 'Investigate Changes',
+							action: () => this.showRecentChanges(),
+							type: 'primary',
+							automated: false,
+						},
+					],
+				),
+			);
 		} else if (Math.abs(this.state.trends.rate) >= this.config.thresholds.growthRateWarning) {
-			alerts.push(this.createAlert(
-				'warning',
-				'Warning: Size Changing Rapidly',
-				`Bundle size changing at ${Math.abs(this.state.trends.rate).toFixed(1)}KB/min`,
-				{ rate: this.state.trends.rate, direction: this.state.trends.direction },
-				[]
-			));
+			alerts.push(
+				this.createAlert(
+					'warning',
+					'Warning: Size Changing Rapidly',
+					`Bundle size changing at ${Math.abs(this.state.trends.rate).toFixed(1)}KB/min`,
+					{ rate: this.state.trends.rate, direction: this.state.trends.direction },
+					[],
+				),
+			);
 		}
 
 		// Performance threshold checks
 		if (snapshot.performance.loadTime >= this.config.thresholds.performanceCritical) {
-			alerts.push(this.createAlert(
-				'critical',
-				'Critical: Poor Performance',
-				`Bundle load time is ${snapshot.performance.loadTime}ms`,
-				{ loadTime: snapshot.performance.loadTime },
-				[
-					{
-						label: 'Analyze Performance',
-						action: () => this.showPerformanceAnalysis(),
-						type: 'primary',
-						automated: false,
-					},
-				]
-			));
+			alerts.push(
+				this.createAlert(
+					'critical',
+					'Critical: Poor Performance',
+					`Bundle load time is ${snapshot.performance.loadTime}ms`,
+					{ loadTime: snapshot.performance.loadTime },
+					[
+						{
+							label: 'Analyze Performance',
+							action: () => this.showPerformanceAnalysis(),
+							type: 'primary',
+							automated: false,
+						},
+					],
+				),
+			);
 		} else if (snapshot.performance.loadTime >= this.config.thresholds.performanceWarning) {
-			alerts.push(this.createAlert(
-				'warning',
-				'Warning: Slow Load Time',
-				`Bundle load time is ${snapshot.performance.loadTime}ms`,
-				{ loadTime: snapshot.performance.loadTime },
-				[]
-			));
+			alerts.push(
+				this.createAlert(
+					'warning',
+					'Warning: Slow Load Time',
+					`Bundle load time is ${snapshot.performance.loadTime}ms`,
+					{ loadTime: snapshot.performance.loadTime },
+					[],
+				),
+			);
 		}
 
 		// Add alerts to state
-		alerts.forEach(alert => {
+		alerts.forEach((alert) => {
 			this.addAlert(alert);
 		});
 	}
@@ -1008,7 +1028,7 @@ export class RealtimeBundleMonitor {
 		title: string,
 		message: string,
 		details: any,
-		actions: AlertAction[]
+		actions: AlertAction[],
 	): RealtimeAlert {
 		return {
 			id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -1028,11 +1048,12 @@ export class RealtimeBundleMonitor {
 	private addAlert(alert: RealtimeAlert): void {
 		// Check for similar existing alerts
 		if (this.config.notifications.grouping) {
-			const existingAlert = this.state.alerts.find(existing =>
-				existing.type === alert.type &&
-				existing.severity === alert.severity &&
-				existing.title === alert.title &&
-				!existing.dismissed
+			const existingAlert = this.state.alerts.find(
+				(existing) =>
+					existing.type === alert.type &&
+					existing.severity === alert.severity &&
+					existing.title === alert.title &&
+					!existing.dismissed,
 			);
 
 			if (existingAlert) {
@@ -1065,14 +1086,23 @@ export class RealtimeBundleMonitor {
 
 		// Console notification
 		if (this.config.notifications.console) {
-			const consoleMethod = alert.severity === 'critical' ? 'error' :
-								 alert.severity === 'error' ? 'error' :
-								 alert.severity === 'warning' ? 'warn' : 'log';
+			const consoleMethod =
+				alert.severity === 'critical'
+					? 'error'
+					: alert.severity === 'error'
+						? 'error'
+						: alert.severity === 'warning'
+							? 'warn'
+							: 'log';
 			console[consoleMethod](`🚨 ${alert.title}: ${alert.message}`, alert.details);
 		}
 
 		// Browser notification
-		if (this.config.notifications.browser && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+		if (
+			this.config.notifications.browser &&
+			typeof Notification !== 'undefined' &&
+			Notification.permission === 'granted'
+		) {
 			new Notification(alert.title, {
 				body: alert.message,
 				icon: '/favicon.ico',
@@ -1096,9 +1126,15 @@ export class RealtimeBundleMonitor {
 			right: 20px;
 			max-width: 400px;
 			padding: 16px;
-			background: ${alert.severity === 'critical' ? '#dc2626' :
-						 alert.severity === 'error' ? '#dc2626' :
-						 alert.severity === 'warning' ? '#f59e0b' : '#3b82f6'};
+			background: ${
+				alert.severity === 'critical'
+					? '#dc2626'
+					: alert.severity === 'error'
+						? '#dc2626'
+						: alert.severity === 'warning'
+							? '#f59e0b'
+							: '#3b82f6'
+			};
 			color: white;
 			border-radius: 8px;
 			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -1115,15 +1151,23 @@ export class RealtimeBundleMonitor {
 				<button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px; line-height: 1;">&times;</button>
 			</div>
 			<div style="margin-bottom: 12px;">${alert.message}</div>
-			${alert.actions.length > 0 ? `
+			${
+				alert.actions.length > 0
+					? `
 				<div style="display: flex; gap: 8px; flex-wrap: wrap;">
-					${alert.actions.map(action => `
+					${alert.actions
+						.map(
+							(action) => `
 						<button style="padding: 6px 12px; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 4px; color: white; cursor: pointer; font-size: 12px;">
 							${action.label}
 						</button>
-					`).join('')}
+					`,
+						)
+						.join('')}
 				</div>
-			` : ''}
+			`
+					: ''
+			}
 		`;
 
 		// Add animation
@@ -1180,7 +1224,7 @@ export class RealtimeBundleMonitor {
 			size: currentSize,
 			score,
 			status,
-			events: this.state.changes.slice(-5).map(change => change.description),
+			events: this.state.changes.slice(-5).map((change) => change.description),
 		};
 
 		const history = [...this.state.compliance.sc14.timeline.history, currentPoint].slice(-30);
@@ -1211,7 +1255,7 @@ export class RealtimeBundleMonitor {
 		const accessibilityScore = this.state.compliance.accessibility.score;
 		const securityScore = this.state.compliance.security.score;
 
-		const overallScore = (sc14Score * 0.4 + performanceScore * 0.3 + accessibilityScore * 0.2 + securityScore * 0.1);
+		const overallScore = sc14Score * 0.4 + performanceScore * 0.3 + accessibilityScore * 0.2 + securityScore * 0.1;
 
 		let status: 'compliant' | 'warning' | 'critical';
 		if (overallScore >= 80) {
@@ -1222,8 +1266,16 @@ export class RealtimeBundleMonitor {
 			status = 'critical';
 		}
 
-		const scores = { sc14: sc14Score, performance: performanceScore, accessibility: accessibilityScore, security: securityScore };
-		const dominantIssue = Object.entries(scores).reduce((min, [key, value]) => value < scores[min as keyof typeof scores] ? key : min, 'sc14');
+		const scores = {
+			sc14: sc14Score,
+			performance: performanceScore,
+			accessibility: accessibilityScore,
+			security: securityScore,
+		};
+		const dominantIssue = Object.entries(scores).reduce(
+			(min, [key, value]) => (value < scores[min as keyof typeof scores] ? key : min),
+			'sc14',
+		);
 
 		this.state.compliance.overall = {
 			score: Math.round(overallScore),
@@ -1305,9 +1357,9 @@ export class RealtimeBundleMonitor {
 			return;
 		}
 
-		const loadTimes = recentSamples.map(s => s.metrics.bundleLoadTime);
-		const memoryUsage = recentSamples.map(s => s.metrics.memoryUsage);
-		const cacheHitRates = recentSamples.map(s => s.metrics.cacheHitRate);
+		const loadTimes = recentSamples.map((s) => s.metrics.bundleLoadTime);
+		const memoryUsage = recentSamples.map((s) => s.metrics.memoryUsage);
+		const cacheHitRates = recentSamples.map((s) => s.metrics.cacheHitRate);
 
 		// Calculate trend direction
 		const avgLoadTime = loadTimes.reduce((sum, time) => sum + time, 0) / loadTimes.length;
@@ -1352,7 +1404,8 @@ export class RealtimeBundleMonitor {
 		}
 
 		// Memory bottleneck
-		if (metrics.memoryUsage > 50 * 1024 * 1024) { // 50MB
+		if (metrics.memoryUsage > 50 * 1024 * 1024) {
+			// 50MB
 			bottlenecks.push({
 				type: 'memory',
 				severity: metrics.memoryUsage > 100 * 1024 * 1024 ? 'high' : 'medium',
@@ -1368,7 +1421,7 @@ export class RealtimeBundleMonitor {
 				type: 'network',
 				severity: 'medium',
 				description: `Cache hit rate is only ${metrics.cacheHitRate}%`,
-				impact: (100 - metrics.cacheHitRate) / 100 * metrics.totalTransferSize,
+				impact: ((100 - metrics.cacheHitRate) / 100) * metrics.totalTransferSize,
 				recommendation: 'Implement better caching strategies',
 			});
 		}
@@ -1490,7 +1543,7 @@ export class RealtimeBundleMonitor {
 		}
 
 		// Generate recommendations
-		if (issues.some(issue => issue.category === 'size')) {
+		if (issues.some((issue) => issue.category === 'size')) {
 			recommendations.push({
 				priority: 'high',
 				category: 'size',
@@ -1501,7 +1554,7 @@ export class RealtimeBundleMonitor {
 			});
 		}
 
-		if (issues.some(issue => issue.category === 'performance')) {
+		if (issues.some((issue) => issue.category === 'performance')) {
 			recommendations.push({
 				priority: 'medium',
 				category: 'performance',
@@ -1514,12 +1567,20 @@ export class RealtimeBundleMonitor {
 
 		// Calculate health score
 		let score = 100;
-		issues.forEach(issue => {
+		issues.forEach((issue) => {
 			switch (issue.severity) {
-				case 'critical': score -= 30; break;
-				case 'high': score -= 20; break;
-				case 'medium': score -= 10; break;
-				case 'low': score -= 5; break;
+				case 'critical':
+					score -= 30;
+					break;
+				case 'high':
+					score -= 20;
+					break;
+				case 'medium':
+					score -= 10;
+					break;
+				case 'low':
+					score -= 5;
+					break;
 			}
 		});
 
@@ -1551,8 +1612,8 @@ export class RealtimeBundleMonitor {
 		const opportunities: OptimizationOpportunity[] = [];
 
 		// Large chunks for dynamic imports
-		const largeChunks = snapshot.chunks.filter(chunk => chunk.size > 100 * 1024);
-		largeChunks.forEach(chunk => {
+		const largeChunks = snapshot.chunks.filter((chunk) => chunk.size > 100 * 1024);
+		largeChunks.forEach((chunk) => {
 			opportunities.push({
 				id: `dynamic-import-${chunk.id}`,
 				type: 'dynamic-import',
@@ -1588,7 +1649,7 @@ export class RealtimeBundleMonitor {
 		}
 
 		// Tree shaking opportunities
-		const unusedDeps = snapshot.dependencies.filter(dep => !dep.used);
+		const unusedDeps = snapshot.dependencies.filter((dep) => !dep.used);
 		if (unusedDeps.length > 0) {
 			const unusedSize = unusedDeps.reduce((sum, dep) => sum + dep.size, 0);
 			opportunities.push({
@@ -1637,7 +1698,7 @@ export class RealtimeBundleMonitor {
 
 		const listeners = this.eventListeners.get(type);
 		if (listeners) {
-			listeners.forEach(listener => {
+			listeners.forEach((listener) => {
 				try {
 					listener(event);
 				} catch (error) {
@@ -1661,7 +1722,7 @@ export class RealtimeBundleMonitor {
 			const plans = await bundleOptimizationEngine.generateOptimizationPlan(analysis);
 
 			// Execute safe, automated optimizations
-			const safePlans = plans.filter(plan => plan.automatable && plan.risk.every(r => r.severity !== 'high'));
+			const safePlans = plans.filter((plan) => plan.automatable && plan.risk.every((r) => r.severity !== 'high'));
 
 			for (const plan of safePlans) {
 				console.log(`Executing optimization: ${plan.name}`);
@@ -1712,13 +1773,13 @@ export class RealtimeBundleMonitor {
 			config: { ...this.config },
 			lastSnapshot: this.state.current.timestamp,
 			snapshotCount: this.state.snapshots.length,
-			alertCount: this.state.alerts.filter(a => !a.dismissed).length,
+			alertCount: this.state.alerts.filter((a) => !a.dismissed).length,
 		};
 	}
 
 	// Dismiss alert
 	public dismissAlert(alertId: string): void {
-		const alert = this.state.alerts.find(a => a.id === alertId);
+		const alert = this.state.alerts.find((a) => a.id === alertId);
 		if (alert) {
 			alert.dismissed = true;
 		}

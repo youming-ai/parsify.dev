@@ -135,7 +135,6 @@ test.describe('Security Tools E2E Tests', () => {
 				// Verify hash format
 				const hashResult = await page.locator('[data-testid="hash-result"]').textContent();
 				expect(hashResult).toHaveLength(64);
-
 			} finally {
 				// Clean up test file
 				if (fs.existsSync(testFilePath)) {
@@ -426,7 +425,6 @@ test.describe('Security Tools E2E Tests', () => {
 				const download = await downloadPromise;
 
 				expect(download.suggestedFilename()).toBe('secret-file.txt.enc');
-
 			} finally {
 				// Clean up test file
 				if (fs.existsSync(testFilePath)) {
@@ -516,7 +514,7 @@ test.describe('Security Tools E2E Tests', () => {
 		test('should handle batch file encryption', async ({ page }) => {
 			// Create multiple test files
 			const testFiles = ['file1.txt', 'file2.txt'];
-			const testFilePaths = testFiles.map(filename => path.join(__dirname, filename));
+			const testFilePaths = testFiles.map((filename) => path.join(__dirname, filename));
 
 			try {
 				// Create test files
@@ -552,10 +550,9 @@ test.describe('Security Tools E2E Tests', () => {
 				const download = await downloadPromise;
 
 				expect(download.suggestedFilename()).toMatch(/.*\.zip$/);
-
 			} finally {
 				// Clean up test files
-				testFilePaths.forEach(filePath => {
+				testFilePaths.forEach((filePath) => {
 					if (fs.existsSync(filePath)) {
 						fs.unlinkSync(filePath);
 					}
@@ -791,7 +788,7 @@ test.describe('Security Tools E2E Tests', () => {
 			expect(words).toHaveLength(6);
 
 			// All words should be alphabetic
-			words.forEach(word => {
+			words.forEach((word) => {
 				expect(word).toMatch(/^[a-zA-Z]+$/);
 			});
 
@@ -1114,12 +1111,12 @@ test.describe('Security Tools E2E Tests', () => {
 
 			// Should have sufficient contrast
 			const passwordInput = page.locator('input[type="password"]');
-			const computedStyle = await passwordInput.evaluate(el => {
+			const computedStyle = await passwordInput.evaluate((el) => {
 				const style = getComputedStyle(el);
 				return {
 					background: style.backgroundColor,
 					color: style.color,
-					border: style.borderColor
+					border: style.borderColor,
 				};
 			});
 

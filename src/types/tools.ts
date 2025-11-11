@@ -1,11 +1,61 @@
-// Basic tool types
+// Basic tool types - Updated to match the 6 main categories
 export type ToolCategory =
-	| 'JSON Processing'
-	| 'Code Execution'
-	| 'File Processing'
+	| 'JSON Processing Suite'
+	| 'Code Processing Suite'
+	| 'File Processing Suite'
 	| 'Network Utilities'
-	| 'Text Processing'
-	| 'Security & Encryption';
+	| 'Text Processing Suite'
+	| 'Security & Encryption Suite';
+
+// Subcategory types for more granular organization
+export type JSONSubcategory = 'JSON Tools' | 'Schema Tools' | 'Security Tools' | 'Visualization';
+
+export type CodeSubcategory = 'Code Execution' | 'Code Optimization' | 'Code Security' | 'Code Analysis';
+
+export type FileSubcategory = 'File Conversion' | 'Image Processing' | 'Document Processing';
+
+export type NetworkSubcategory = 'API Testing' | 'Network Analysis' | 'SEO Tools';
+
+export type TextSubcategory = 'Encoding Tools' | 'Formatting Tools' | 'Comparison Tools' | 'Generation Tools';
+
+export type SecuritySubcategory = 'Hashing' | 'Authentication' | 'Encryption' | 'Identifiers';
+
+// Category metadata interface
+export interface CategoryMetadata {
+	id: string;
+	name: string;
+	description: string;
+	icon: string;
+	color: string;
+	slug: string;
+	toolCount: number;
+	featured?: boolean;
+	subcategories?: Record<
+		string,
+		{
+			name: string;
+			description: string;
+			toolIds: string[];
+		}
+	>;
+}
+
+// Breadcrumb navigation item
+export interface BreadcrumbItem {
+	label: string;
+	href?: string;
+	isActive?: boolean;
+}
+
+// Navigation state
+export interface CategoryNavigationState {
+	activeCategory?: ToolCategory;
+	activeSubcategory?: string;
+	breadcrumb: BreadcrumbItem[];
+	viewMode: 'grid' | 'list';
+	sortBy: 'name' | 'popularity' | 'newest';
+	filtersExpanded: boolean;
+}
 
 export type ToolTag = string;
 export type ToolDifficulty = 'beginner' | 'intermediate' | 'advanced';
@@ -57,13 +107,202 @@ export interface Limitations {
 	browserRequirements?: string[];
 }
 
-// Tool examples
+// Enhanced tool examples system
 export interface ToolExample {
+	id: string;
 	title: string;
 	description: string;
 	input: any;
 	expectedOutput: any;
 	category: 'basic' | 'intermediate' | 'advanced';
+	tags: string[];
+	steps?: string[];
+	codeExamples?: CodeExample[];
+	interactive?: boolean;
+	liveExecution?: boolean;
+	useCase?: string;
+	benefits?: string[];
+	relatedExamples?: string[];
+}
+
+export interface CodeExample {
+	id: string;
+	language: string;
+	code: string;
+	explanation: string;
+	output?: string;
+	highlightedLines?: number[];
+	runnable?: boolean;
+}
+
+export interface Tutorial {
+	id: string;
+	title: string;
+	description: string;
+	category: TutorialCategory;
+	difficulty: 'beginner' | 'intermediate' | 'advanced';
+	estimatedTime: number;
+	prerequisites: string[];
+	tools: string[];
+	steps: TutorialStep[];
+	tags: string[];
+	author?: string;
+	publishedAt: Date;
+	updatedAt: Date;
+	relatedTutorials?: string[];
+}
+
+export type TutorialCategory =
+	| 'Getting Started'
+	| 'JSON Processing'
+	| 'Code Development'
+	| 'File Management'
+	| 'Web Development'
+	| 'Security & Privacy'
+	| 'Data Analysis'
+	| 'API Integration'
+	| 'Performance Optimization';
+
+export interface TutorialStep {
+	id: string;
+	title: string;
+	description: string;
+	content: string;
+	code?: CodeExample[];
+	toolId?: string;
+	toolConfig?: Record<string, any>;
+	expectedOutput?: string;
+	tips?: string[];
+	warnings?: string[];
+	completionCriteria?: string;
+}
+
+export interface WorkflowExample {
+	id: string;
+	title: string;
+	description: string;
+	category: WorkflowCategory;
+	difficulty: 'beginner' | 'intermediate' | 'advanced';
+	tools: WorkflowStep[];
+	tags: string[];
+	estimatedTime: number;
+	steps: WorkflowStep[];
+	previewImage?: string;
+	useCases: string[];
+}
+
+export type WorkflowCategory =
+	| 'Data Processing'
+	| 'Web Development'
+	| 'API Testing'
+	| 'File Conversion'
+	| 'Security Audit'
+	| 'Content Creation'
+	| 'Code Optimization';
+
+export interface WorkflowStep {
+	id: string;
+	toolId: string;
+	toolName: string;
+	description: string;
+	input: any;
+	config?: Record<string, any>;
+	expectedOutput: any;
+	notes?: string;
+	alternatives?: string[];
+}
+
+export interface IntegrationExample {
+	id: string;
+	title: string;
+	description: string;
+	tools: string[];
+	scenario: string;
+	steps: IntegrationStep[];
+	benefits: string[];
+	tags: string[];
+	codeExamples?: CodeExample[];
+	complexity: 'simple' | 'moderate' | 'complex';
+}
+
+export interface IntegrationStep {
+	id: string;
+	toolId: string;
+	description: string;
+	input: any;
+	output: any;
+	explanation: string;
+	transitionToNext?: string;
+}
+
+// Example library and search interfaces
+export interface ExampleLibrary {
+	examples: Record<string, ToolExample[]>;
+	tutorials: Tutorial[];
+	workflows: WorkflowExample[];
+	integrations: IntegrationExample[];
+	categories: ExampleCategory[];
+	searchIndex: ExampleSearchIndex;
+}
+
+export interface ExampleCategory {
+	id: string;
+	name: string;
+	description: string;
+	icon: string;
+	color: string;
+	exampleCount: number;
+	tutorialCount: number;
+	workflowCount: number;
+}
+
+export interface ExampleSearchIndex {
+	examples: ExampleSearchItem[];
+	tutorials: ExampleSearchItem[];
+	workflows: ExampleSearchItem[];
+	integrations: ExampleSearchItem[];
+}
+
+export interface ExampleSearchItem {
+	id: string;
+	title: string;
+	description: string;
+	type: 'example' | 'tutorial' | 'workflow' | 'integration';
+	category: string;
+	tags: string[];
+	difficulty: string;
+	popularity: number;
+	relevanceScore?: number;
+}
+
+export interface ExampleFilterState {
+	query: string;
+	categories: string[];
+	difficulties: string[];
+	tags: string[];
+	toolIds: string[];
+	types: Array<'example' | 'tutorial' | 'workflow' | 'integration'>;
+	interactiveOnly: boolean;
+	sortBy: 'relevance' | 'popularity' | 'newest' | 'difficulty';
+}
+
+export interface ExampleAnalytics {
+	viewCount: number;
+	completionRate: number;
+	averageTimeSpent: number;
+	popularityScore: number;
+	userRating: number;
+	feedback: ExampleFeedback[];
+}
+
+export interface ExampleFeedback {
+	id: string;
+	userId: string;
+	rating: number;
+	comment: string;
+	helpful: boolean;
+	suggestedImprovements: string[];
+	createdAt: Date;
 }
 
 // Tool session management
@@ -283,6 +522,47 @@ export interface ToolMetrics {
 	memoryUsed: number;
 	outputSize: number;
 	timestamp: Date;
+}
+
+// Search and filter related types
+export interface SearchState {
+	query: string;
+	categories: ToolCategory[];
+	difficulties: ToolDifficulty[];
+	processingTypes: ProcessingType[];
+	securityTypes: SecurityType[];
+	features: string[];
+	tags: string[];
+	status: string[];
+	isNew: boolean | null;
+	isPopular: boolean | null;
+}
+
+export interface FilterOptions {
+	categories: ToolCategory[];
+	difficulties: ToolDifficulty[];
+	processingTypes: ProcessingType[];
+	securityTypes: SecurityType[];
+	features: string[];
+	tags: string[];
+	status: string[];
+}
+
+export interface SearchSortOption {
+	key: 'relevance' | 'name' | 'category' | 'difficulty' | 'popularity';
+	direction: 'asc' | 'desc';
+}
+
+export interface SearchAnalytics {
+	totalResults: number;
+	filteredResults: number;
+	searchTime: number;
+	activeFilters: string[];
+}
+
+export interface SearchResult extends Tool {
+	relevanceScore: number;
+	matchedFields: string[];
 }
 
 // Type guards

@@ -48,7 +48,7 @@ export interface InitializationResult {
  * Initialize the bundle optimization system
  */
 export async function initializeBundleOptimization(
-	config?: Partial<InitializationConfig>
+	config?: Partial<InitializationConfig>,
 ): Promise<InitializationResult> {
 	const startTime = Date.now();
 	const fullConfig = getInitializationConfig(config);
@@ -121,9 +121,7 @@ export async function initializeBundleOptimization(
 				schedule: {
 					enabled: true,
 					frequency: fullConfig.environment === 'development' ? 'hourly' : 'daily',
-					timeWindow: fullConfig.environment === 'production'
-						? { start: '02:00', end: '04:00' }
-						: undefined,
+					timeWindow: fullConfig.environment === 'production' ? { start: '02:00', end: '04:00' } : undefined,
 				},
 			});
 		}
@@ -158,7 +156,7 @@ export async function initializeBundleOptimization(
 				bundleSize: finalAnalysis.totalSize,
 				budgetUtilization: finalAnalysis.compliance.budgetUtilization,
 				complianceScore: finalAnalysis.compliance.complianceScore,
-				performanceScore: Math.max(0, 100 - (finalAnalysis.performance.loadTime / 100)),
+				performanceScore: Math.max(0, 100 - finalAnalysis.performance.loadTime / 100),
 			},
 		};
 
@@ -181,7 +179,6 @@ export async function initializeBundleOptimization(
 		}
 
 		return result;
-
 	} catch (error) {
 		console.error('❌ Failed to initialize bundle optimization system:', error);
 
@@ -299,19 +296,19 @@ export async function getSystemStatus() {
 			loadTime: analysis.performance.loadTime,
 			parseTime: analysis.performance.parseTime,
 			cacheHitRate: analysis.performance.network.cacheUtilization,
-			score: Math.max(0, 100 - (analysis.performance.loadTime / 100)),
+			score: Math.max(0, 100 - analysis.performance.loadTime / 100),
 		},
 		monitoring: {
 			realtime: realtimeBundleMonitor.getMonitoringStatus(),
 			budget: sizeBudgetManager.getMonitoringStatus(),
 			system: systemStatus,
 			snapshots: monitoringState.snapshots.length,
-			alerts: monitoringState.alerts.filter(a => !a.dismissed).length,
+			alerts: monitoringState.alerts.filter((a) => !a.dismissed).length,
 		},
 		optimizations: {
 			opportunities: monitoringState.optimizations.length,
-			automatable: monitoringState.optimizations.filter(o => o.automatable).length,
-			highImpact: monitoringState.optimizations.filter(o => o.impact.sizeSavings > 50000).length,
+			automatable: monitoringState.optimizations.filter((o) => o.automatable).length,
+			highImpact: monitoringState.optimizations.filter((o) => o.impact.sizeSavings > 50000).length,
 		},
 	};
 }
@@ -338,7 +335,9 @@ export async function runComprehensiveAnalysis() {
 			console.log('\n💡 Top Recommendations:');
 			report.recommendations.slice(0, 5).forEach((rec, index) => {
 				console.log(`   ${index + 1}. [${rec.priority.toUpperCase()}] ${rec.title}`);
-				console.log(`      Impact: ${Math.round(rec.impact.sizeSavings / 1024)}KB saved, ${rec.automatable ? 'Automatable' : 'Manual'}`);
+				console.log(
+					`      Impact: ${Math.round(rec.impact.sizeSavings / 1024)}KB saved, ${rec.automatable ? 'Automatable' : 'Manual'}`,
+				);
 			});
 		}
 
@@ -347,12 +346,13 @@ export async function runComprehensiveAnalysis() {
 			console.log('\n🚀 Optimization Opportunities:');
 			report.monitoring.optimizations.slice(0, 5).forEach((opp, index) => {
 				console.log(`   ${index + 1}. ${opp.title}`);
-				console.log(`      Savings: ${Math.round(opp.impact.sizeSavings / 1024)}KB, Confidence: ${Math.round(opp.confidence * 100)}%`);
+				console.log(
+					`      Savings: ${Math.round(opp.impact.sizeSavings / 1024)}KB, Confidence: ${Math.round(opp.confidence * 100)}%`,
+				);
 			});
 		}
 
 		return report;
-
 	} catch (error) {
 		console.error('❌ Analysis failed:', error);
 		throw error;
