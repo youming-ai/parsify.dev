@@ -15,6 +15,7 @@ export interface SimplifiedAnalyticsEvent {
 }
 
 export interface AnalyticsConfig {
+  enableClarity: boolean;
   enableCloudflare: boolean;
   debugMode: boolean;
 }
@@ -23,10 +24,12 @@ class SimplifiedAnalytics {
   private events: SimplifiedAnalyticsEvent[] = [];
   private config: AnalyticsConfig;
   private isInitialized = false;
+  private clarityReady = false;
   private flushTimer: NodeJS.Timeout | null = null;
 
   constructor(config: Partial<AnalyticsConfig> = {}) {
     this.config = {
+      enableClarity: true,
       enableCloudflare: true,
       debugMode: process.env.NODE_ENV === "development",
       ...config,
@@ -37,6 +40,11 @@ class SimplifiedAnalytics {
     if (this.isInitialized) return;
 
     try {
+      // Initialize Microsoft Clarity if enabled
+      if (this.config.enableClarity) {
+        await this.initializeClarity();
+      }
+
       // Initialize Cloudflare Analytics if enabled
       if (this.config.enableCloudflare) {
         this.initializeCloudflare();
@@ -52,6 +60,69 @@ class SimplifiedAnalytics {
       }
     } catch (error) {
       console.warn("Analytics initialization failed:", error);
+    }
+  }
+
+  private async initializeClarity(): Promise<void> {
+    if (typeof window === "undefined") return;
+
+    try {
+      // Check if Clarity script is already loaded
+      if (window.clarity) {
+        this.clarityReady = true;
+        return;
+      }
+
+      // Load Clarity script dynamically
+      const clarityId = process.env.NEXT_PUBLIC_MICROSOFT_CLARITY_ID;
+      if (!clarityId) {
+        if (this.config.debugMode) {
+          console.warn("⚠️ Microsoft Clarity ID not found");
+        }
+        return;
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        // Create Clarity initialization function safely
+        const initClarity = () => {
+          // Create the clarity global function
+          (window as any).clarity =
+            (window as any).clarity ||
+            (() => {
+              ((window as any).clarity.q =
+                (window as any).clarity.q || []).push(arguments);
+            });
+
+          // Create and append the Clarity script
+          const script = document.createElement("script");
+          script.async = true;
+          script.src = `https://www.clarity.ms/tag/${clarityId}`;
+
+          script.onload = () => {
+            this.clarityReady = true;
+            resolve();
+          };
+
+          script.onerror = () => reject(new Error("Failed to load Clarity"));
+
+          // Insert script as first script element for better loading
+          const firstScript = document.getElementsByTagName("script")[0];
+          if (firstScript && firstScript.parentNode) {
+            firstScript.parentNode.insertBefore(script, firstScript);
+          } else {
+            document.head.appendChild(script);
+          }
+        };
+
+        // Initialize Clarity
+        initClarity();
+      });
+
+      if (this.config.debugMode) {
+        console.log("✅ Microsoft Clarity initialized");
+      }
+    } catch (error) {
+      console.warn("Microsoft Clarity initialization failed:", error);
     }
   }
 
@@ -88,6 +159,15 @@ class SimplifiedAnalytics {
   }
 
   private trackInServices(event: SimplifiedAnalyticsEvent): void {
+    // Track in Microsoft Clarity
+    if (this.clarityReady && window.clarity) {
+      try {
+        window.clarity("event", event.event, event.data);
+      } catch (error) {
+        console.warn("Clarity tracking failed:", error);
+      }
+    }
+
     // Cloudflare Web Analytics tracks page views automatically
     // Custom events can be sent via Cloudflare API if needed
   }
@@ -136,6 +216,13 @@ class SimplifiedAnalytics {
   }
 
   updateConsent(consented: boolean): void {
+    if (this.clarityReady && window.clarity) {
+      try {
+        window.clarity("consent", consented);
+      } catch (error) {
+        console.warn("Failed to update Clarity consent:", error);
+      }
+    }
     // Consent logic for Cloudflare Analytics if needed
   }
 
@@ -271,6 +358,13 @@ export function useToolTracking(toolId: string) {
     trackValidate,
     trackError,
   };
+}
+
+// Type declarations for global clarity
+declare global {
+  interface Window {
+    clarity?: (command: string, ...args: unknown[]) => void;
+  }
 }
 
 export default useSimplifiedAnalytics;

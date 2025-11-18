@@ -15,6 +15,7 @@ interface AnalyticsInitializerProps {
 
 export function AnalyticsInitializer({ children }: AnalyticsInitializerProps) {
   const { isReady, trackPageView } = useSimplifiedAnalytics({
+    enableClarity: !!process.env.NEXT_PUBLIC_MICROSOFT_CLARITY_ID,
     enableCloudflare: true,
     debugMode: process.env.NODE_ENV === "development",
   });

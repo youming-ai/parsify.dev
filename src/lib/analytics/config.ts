@@ -38,6 +38,55 @@ export const DEFAULT_ANALYTICS_CONFIG: AnalyticsConfig = {
   },
 };
 
+// Microsoft Clarity configuration
+export const MICROSOFT_CLARITY_CONFIG = {
+  projectId: process.env.NEXT_PUBLIC_MICROSOFT_CLARITY_ID || "u7vew6ll9z",
+  enabled: process.env.NODE_ENV !== "development",
+  debug: process.env.NODE_ENV === "development",
+
+  // Clarity-specific settings
+  upload: {
+    // Enable automatic data upload
+    enabled: true,
+    // Maximum content length for uploaded data
+    maxContentLength: 50000,
+    // Upload throttle time in milliseconds
+    throttleTime: 1000,
+  },
+
+  // User privacy settings
+  privacy: {
+    // Obfuscate user input data
+    obscureInputElements: true,
+    // Obfuscate numeric data
+    obscureNumbers: false,
+    // Capture all user input
+    captureAllInput: false,
+  },
+
+  // Session recording settings
+  sessionRecording: {
+    // Enable session recording
+    enabled: true,
+    // Maximum recording duration in minutes
+    maxDuration: 30,
+    // Record console logs
+    captureConsoleLog: false,
+  },
+
+  // Heatmap settings
+  heatmap: {
+    // Enable heatmap generation
+    enabled: true,
+    // Track click positions
+    trackClicks: true,
+    // Track scroll depth
+    trackScrolling: true,
+    // Track movement patterns
+    trackMovement: false,
+  },
+} as const;
+
 // Google Analytics configuration
 export const GOOGLE_ANALYTICS_CONFIG = {
   measurementId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "",

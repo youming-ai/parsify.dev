@@ -19,6 +19,7 @@
     "clean": "rm -rf node_modules .next dist"
   },
   "dependencies": {
+    "@microsoft/clarity": "^1.0.0",
     "@monaco-editor/react": "^4.6.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
