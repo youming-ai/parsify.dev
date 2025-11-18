@@ -230,7 +230,7 @@ The project uses Cloudflare's Git integration for automatic deployment. When you
 
 3. **Environment Variables**
    - Set any required environment variables in Cloudflare Pages dashboard
-   - Examples: `NEXT_PUBLIC_GA_MEASUREMENT_ID`, etc.
+   - Examples: `NEXT_PUBLIC_MICROSOFT_CLARITY_ID`, `NEXT_PUBLIC_GA_MEASUREMENT_ID`, etc.
 
 4. **Automatic Deployment**
    - Push to `main` branch → Production deployment
@@ -262,7 +262,18 @@ Environment variables are set through Cloudflare Pages dashboard or Git integrat
 
 ### Analytics Configuration
 
-The application supports Google Analytics 4:
+The application supports both Microsoft Clarity and Google Analytics 4 for comprehensive user behavior analytics:
+
+#### Microsoft Clarity
+1. **Get Clarity Project ID**
+   - Go to [Microsoft Clarity](https://clarity.microsoft.com/)
+   - Create a new project
+   - Copy the Project ID
+
+2. **Environment Variable**
+   ```env
+   NEXT_PUBLIC_MICROSOFT_CLARITY_ID=u7vew6ll9z
+   ```
 
 #### Google Analytics 4 (GA4)
 1. **Get GA4 Measurement ID**
@@ -278,15 +289,22 @@ The application supports Google Analytics 4:
 #### Usage in Components
 ```tsx
 import { GoogleAnalyticsProvider } from "@/components/analytics/google-analytics-provider";
+import { MicrosoftClarityProvider } from "@/components/analytics/microsoft-clarity-provider";
 
 function App() {
   return (
     <GoogleAnalyticsProvider>
-      <YourApp />
+      <MicrosoftClarityProvider>
+        <YourApp />
+      </MicrosoftClarityProvider>
     </GoogleAnalyticsProvider>
   );
 }
 ```
+
+Both analytics services work simultaneously:
+- **Microsoft Clarity**: Provides session recordings, heatmaps, and user interaction analytics
+- **Google Analytics**: Offers comprehensive traffic analysis, user behavior insights, and conversion tracking
 
 ### Custom Domain Setup
 
