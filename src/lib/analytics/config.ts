@@ -38,52 +38,62 @@ export const DEFAULT_ANALYTICS_CONFIG: AnalyticsConfig = {
   },
 };
 
-// Microsoft Clarity configuration
-export const MICROSOFT_CLARITY_CONFIG = {
-  projectId: process.env.NEXT_PUBLIC_MICROSOFT_CLARITY_ID || "tx90x0sxzq",
+// Google Analytics configuration
+export const GOOGLE_ANALYTICS_CONFIG = {
+  measurementId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "",
   enabled: process.env.NODE_ENV !== "development",
   debug: process.env.NODE_ENV === "development",
+  anonymizeIp: true,
+  allowAdPersonalization: false,
+  sendPageView: true,
 
-  // Clarity-specific settings
-  upload: {
-    // Enable automatic data upload
-    enabled: true,
-    // Maximum content length for uploaded data
-    maxContentLength: 50000,
-    // Upload throttle time in milliseconds
-    throttleTime: 1000,
+  // GA4 specific settings
+  trackingOptions: {
+    // Enable link attribution
+    link_attribution: true,
+    // Anonymize IP addresses
+    anonymize_ip: true,
+    // Allow ad personalization signals
+    allow_ad_personalization_signals: false,
+    // Allow Google signals
+    allow_google_signals: true,
+    // Enable restricted data processing
+    restricted_data_processing: true,
   },
 
-  // User privacy settings
-  privacy: {
-    // Obfuscate user input data
-    obscureInputElements: true,
-    // Obfuscate numeric data
-    obscureNumbers: false,
-    // Capture all user input
-    captureAllInput: false,
+  // Enhanced measurement settings
+  enhancedMeasurement: {
+    // Track page views automatically
+    page_view: true,
+    // Track scroll events
+    scroll: true,
+    // Track outbound clicks
+    outbound_click: true,
+    // Track site search
+    site_search: true,
+    // Track video engagement
+    video_engagement: true,
+    // Track file downloads
+    file_download: true,
+    // Track form interactions
+    form_interaction: true,
   },
 
-  // Session recording settings
-  sessionRecording: {
-    // Enable session recording
-    enabled: true,
-    // Maximum recording duration in minutes
-    maxDuration: 30,
-    // Record console logs
-    captureConsoleLog: false,
+  // Custom dimensions and metrics
+  customDimensions: {
+    // Tool usage tracking
+    tool_name: "custom_dimension_1",
+    tool_action: "custom_dimension_2",
+    user_role: "custom_dimension_3",
+    feature_usage: "custom_dimension_4",
   },
 
-  // Heatmap settings
-  heatmap: {
-    // Enable heatmap generation
-    enabled: true,
-    // Track click positions
-    trackClicks: true,
-    // Track scroll depth
-    trackScrolling: true,
-    // Track movement patterns
-    trackMovement: false,
+  // Custom metrics
+  customMetrics: {
+    // Performance metrics
+    load_time: "custom_metric_1",
+    interaction_time: "custom_metric_2",
+    tool_executions: "custom_metric_3",
   },
 } as const;
 
@@ -106,6 +116,21 @@ export const ANALYTICS_EVENTS = {
   JSON_CONVERT: "json_convert",
   CODE_EXECUTE: "code_execute",
   CODE_FORMAT: "code_format",
+
+  // GA4 Standard Events
+  GA4_ADD_TO_CART: "add_to_cart",
+  GA4_BEGIN_CHECKOUT: "begin_checkout",
+  GA4_GENERATE_LEAD: "generate_lead",
+  GA4_LOGIN: "login",
+  GA4_PURCHASE: "purchase",
+  GA4_SEARCH: "search",
+  GA4_SELECT_CONTENT: "select_content",
+  GA4_SHARE: "share",
+  GA4_SIGN_UP: "sign_up",
+  GA4_TUTORIAL_BEGIN: "tutorial_begin",
+  GA4_TUTORIAL_COMPLETE: "tutorial_complete",
+  GA4_VIEW_ITEM: "view_item",
+  GA4_VIEW_ITEM_LIST: "view_item_list",
 } as const;
 
 export const PERFORMANCE_METRICS = {

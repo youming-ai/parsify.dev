@@ -230,7 +230,7 @@ The project uses Cloudflare's Git integration for automatic deployment. When you
 
 3. **Environment Variables**
    - Set any required environment variables in Cloudflare Pages dashboard
-   - Examples: `NEXT_PUBLIC_MICROSOFT_CLARITY_ID`, etc.
+   - Examples: `NEXT_PUBLIC_GA_MEASUREMENT_ID`, etc.
 
 4. **Automatic Deployment**
    - Push to `main` branch → Production deployment
@@ -259,6 +259,34 @@ SENTRY_DSN="your-dev-sentry-dsn"
 
 **Production (Cloudflare Pages)**
 Environment variables are set through Cloudflare Pages dashboard or Git integration.
+
+### Analytics Configuration
+
+The application supports Google Analytics 4:
+
+#### Google Analytics 4 (GA4)
+1. **Get GA4 Measurement ID**
+   - Go to [Google Analytics](https://analytics.google.com/)
+   - Create a new GA4 property
+   - Copy the Measurement ID (format: `G-XXXXXXXXXX`)
+
+2. **Environment Variable**
+   ```env
+   NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+   ```
+
+#### Usage in Components
+```tsx
+import { GoogleAnalyticsProvider } from "@/components/analytics/google-analytics-provider";
+
+function App() {
+  return (
+    <GoogleAnalyticsProvider>
+      <YourApp />
+    </GoogleAnalyticsProvider>
+  );
+}
+```
 
 ### Custom Domain Setup
 
