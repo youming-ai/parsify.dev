@@ -111,18 +111,7 @@ export function JsonToolComplete({ className }: JsonToolCompleteProps) {
     <ToolWrapper
       title="JSON Tools"
       description="Comprehensive JSON toolkit for formatting, validation, conversion, and visualization"
-      category="Data Processing"
-      status={validationResult.isValid ? "success" : jsonInput.trim() ? "error" : "idle"}
       error={formatError || convertError}
-      features={[
-        "JSON Validation",
-        "JSON Formatting",
-        "JSON to XML/YAML/CSV Conversion",
-        "Interactive JSON Tree Viewer",
-        "Real-time Syntax Highlighting",
-        "Copy & Download Functionality",
-      ]}
-      className={className}
     >
       <Tabs defaultValue="editor" className="w-full">
         <TabsList className="grid w-full grid-cols-5">

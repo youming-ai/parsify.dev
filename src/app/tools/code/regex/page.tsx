@@ -41,7 +41,7 @@ export default function RegexTesterPage() {
 
       {/* Tool Component */}
       <div className="space-y-6">
-        <RegexTester height={300} />
+        <RegexTester />
 
         {/* Tool Features */}
         <Card>

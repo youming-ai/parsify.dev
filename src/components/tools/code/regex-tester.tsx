@@ -389,8 +389,8 @@ export function RegexTester() {
                 <li>* - 0 or more</li>
                 <li>+ - 1 or more</li>
                 <li>? - 0 or 1</li>
-                <li>{{ n }} - Exactly n</li>
-                <li>{{ n }} - n or more</li>
+                <li>{`{n}`} - Exactly n</li>
+                <li>{`{n,}`} - n or more</li>
               </ul>
             </div>
           </div>

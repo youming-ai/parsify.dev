@@ -283,22 +283,7 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
     <ToolWrapper
       title="Code Runner & IDE"
       description="Comprehensive code execution environment with multi-language support, formatting, and terminal interface"
-      category="Development Tools"
-      status={
-        executionStatus === "completed" ? "success" : executionStatus === "error" ? "error" : "idle"
-      }
       error={executionError}
-      features={[
-        "Multi-language Code Editor",
-        "Real-time Code Execution",
-        "Interactive Terminal",
-        "Code Formatting & Linting",
-        "Template Library",
-        "File Import/Export",
-        "Syntax Highlighting",
-        "Stdin Support",
-      ]}
-      className={className}
     >
       <div className="space-y-4">
         {/* Language Selection Bar */}
