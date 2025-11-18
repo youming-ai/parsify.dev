@@ -10,7 +10,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // Types for simplified analytics
 export interface SimplifiedAnalyticsEvent {
   event: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   timestamp: number;
 }
 
@@ -70,7 +70,7 @@ class SimplifiedAnalytics {
     }, 30000);
   }
 
-  track(event: string, data?: Record<string, any>): void {
+  track(event: string, data?: Record<string, unknown>): void {
     const analyticsEvent: SimplifiedAnalyticsEvent = {
       event,
       data,
@@ -99,7 +99,7 @@ class SimplifiedAnalytics {
   trackToolUsage(
     toolId: string,
     action: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, unknown>,
   ): void {
     this.track("tool_usage", {
       toolId,
@@ -108,7 +108,7 @@ class SimplifiedAnalytics {
     });
   }
 
-  trackError(error: Error | string, context?: Record<string, any>): void {
+  trackError(error: Error | string, context?: Record<string, unknown>): void {
     this.track("error", {
       message: error instanceof Error ? error.message : error,
       stack: error instanceof Error ? error.stack : undefined,
@@ -182,7 +182,7 @@ export function useSimplifiedAnalytics(config?: Partial<AnalyticsConfig>) {
     };
   }, [config]);
 
-  const track = useCallback((event: string, data?: Record<string, any>) => {
+  const track = useCallback((event: string, data?: Record<string, unknown>) => {
     analyticsRef.current?.track(event, data);
   }, []);
 
@@ -191,14 +191,14 @@ export function useSimplifiedAnalytics(config?: Partial<AnalyticsConfig>) {
   }, []);
 
   const trackToolUsage = useCallback(
-    (toolId: string, action: string, metadata?: Record<string, any>) => {
+    (toolId: string, action: string, metadata?: Record<string, unknown>) => {
       analyticsRef.current?.trackToolUsage(toolId, action, metadata);
     },
     [],
   );
 
   const trackError = useCallback(
-    (error: Error | string, context?: Record<string, any>) => {
+    (error: Error | string, context?: Record<string, unknown>) => {
       analyticsRef.current?.trackError(error, context);
     },
     [],

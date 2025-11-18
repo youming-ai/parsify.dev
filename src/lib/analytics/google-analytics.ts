@@ -25,13 +25,13 @@ export interface GAEvent {
   label?: string;
   value?: number;
   non_interaction?: boolean;
-  custom_parameters?: Record<string, any>;
+  custom_parameters?: Record<string, unknown>;
 }
 
 export interface GAUser {
   user_id?: string;
   session_id?: string;
-  custom_parameters?: Record<string, any>;
+  custom_parameters?: Record<string, unknown>;
 }
 
 /**
@@ -89,12 +89,12 @@ export class GoogleAnalyticsService {
 
     try {
       // Initialize gtag if not available
-      if (!(window as any).gtag) {
+      if (!window.gtag) {
         this.injectGtagScript();
       }
 
       // Configure gtag
-      (window as any).gtag("config", this.measurementId, {
+      window.gtag("config", this.measurementId, {
         debug_mode: this.debugMode,
         anonymize_ip: this.config.anonymizeIp,
         allow_google_signals: this.config.allowAdPersonalization,
@@ -137,16 +137,16 @@ export class GoogleAnalyticsService {
     document.head.appendChild(script);
 
     // Initialize gtag function
-    (window as any).dataLayer = (window as any).dataLayer || [];
-    (window as any).gtag = function () {
-      (window as any).dataLayer.push(arguments);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () {
+      window.dataLayer.push(arguments);
     };
   }
 
   /**
    * Track a custom event in Google Analytics
    */
-  trackEvent(action: string, parameters?: Record<string, any>): void {
+  trackEvent(action: string, parameters?: Record<string, unknown>): void {
     if (!this.isInitialized) {
       this.queueEvent(action, parameters);
       return;
@@ -158,7 +158,7 @@ export class GoogleAnalyticsService {
         custom_map: parameters?.custom_map || {},
       };
 
-      (window as any).gtag("event", action, eventParams);
+      window.gtag("event", action, eventParams);
       this.debug("Event tracked in GA", { action, parameters: eventParams });
     } catch (error) {
       this.debug("Failed to track event in GA", {
@@ -182,7 +182,7 @@ export class GoogleAnalyticsService {
       const pagePath = path || window.location.pathname;
       const pageTitle = title || document.title;
 
-      (window as any).gtag("config", this.measurementId, {
+      window.gtag("config", this.measurementId, {
         page_path: pagePath,
         page_title: pageTitle,
         page_location: window.location.href,
@@ -207,7 +207,7 @@ export class GoogleAnalyticsService {
     }
 
     try {
-      (window as any).gtag("config", this.measurementId, {
+      window.gtag("config", this.measurementId, {
         user_id: userId,
       });
       this.debug("User ID set in GA", { userId });
@@ -226,7 +226,7 @@ export class GoogleAnalyticsService {
     }
 
     try {
-      (window as any).gtag("config", this.measurementId, {
+      window.gtag("config", this.measurementId, {
         custom_map: properties,
       });
       this.debug("User properties set in GA", properties);
@@ -458,7 +458,11 @@ export function getGoogleAnalyticsService(): GoogleAnalyticsService {
 // Extend Window interface for gtag
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void;
-    dataLayer: any[];
+    gtag: (
+      command: string,
+      targetId: string,
+      config?: Record<string, unknown>,
+    ) => void;
+    dataLayer: unknown[];
   }
 }

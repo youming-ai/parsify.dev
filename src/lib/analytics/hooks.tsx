@@ -77,7 +77,7 @@ export function useAnalytics(config?: Partial<AnalyticsConfig>) {
     trackCustomEvent: useCallback(
       (
         eventName: string,
-        data: Record<string, any>,
+        data: Record<string, unknown>,
         properties?: Record<string, string | number | boolean>,
       ) => client?.trackCustomEvent(eventName, data, properties),
       [client],
@@ -453,6 +453,5 @@ export function withPageViewTracking<P extends object>(
     return <Component {...props} />;
   };
 }
-
 
 export default useAnalytics;

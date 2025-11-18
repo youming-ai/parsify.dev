@@ -74,7 +74,7 @@
   "packageManager": "pnpm@10.18.3",
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "biome check --apply",
+      "biome check --write",
       "biome format --write"
     ],
     "*.{json,md,yml,yaml}": [
