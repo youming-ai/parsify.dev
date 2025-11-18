@@ -27,9 +27,7 @@ export default function RegexTesterPage() {
         <div className="mb-4 flex items-center gap-3">
           <Code className="h-8 w-8 text-blue-600" />
           <div>
-            <h1 className="font-bold text-3xl text-gray-900 dark:text-white">
-              Regex Tester
-            </h1>
+            <h1 className="font-bold text-3xl text-gray-900 dark:text-white">Regex Tester</h1>
             <div className="flex items-center gap-2">
               <Badge variant="outline">Intermediate</Badge>
               <Badge variant="default">Stable</Badge>
@@ -37,8 +35,7 @@ export default function RegexTesterPage() {
           </div>
         </div>
         <p className="text-gray-600 dark:text-gray-400">
-          Test and debug regular expressions with real-time matching and
-          explanation
+          Test and debug regular expressions with real-time matching and explanation
         </p>
       </div>
 
@@ -96,29 +93,27 @@ export default function RegexTesterPage() {
             <div>
               <h4 className="font-medium mb-2">1. Enter Your Pattern</h4>
               <p className="text-gray-600 text-sm">
-                Type your regular expression in the pattern field. Don't include
-                the surrounding slashes (/).
+                Type your regular expression in the pattern field. Don't include the surrounding
+                slashes (/).
               </p>
             </div>
             <div>
               <h4 className="font-medium mb-2">2. Select Flags</h4>
               <p className="text-gray-600 text-sm">
-                Choose regex flags to modify behavior: g (global), i (ignore
-                case), m (multiline), etc.
+                Choose regex flags to modify behavior: g (global), i (ignore case), m (multiline),
+                etc.
               </p>
             </div>
             <div>
               <h4 className="font-medium mb-2">3. Test Text</h4>
               <p className="text-gray-600 text-sm">
-                Enter text to test your pattern against. Results update in
-                real-time.
+                Enter text to test your pattern against. Results update in real-time.
               </p>
             </div>
             <div>
               <h4 className="font-medium mb-2">4. View Results</h4>
               <p className="text-gray-600 text-sm">
-                See matches, groups, and highlighted text. Switch between
-                different result views.
+                See matches, groups, and highlighted text. Switch between different result views.
               </p>
             </div>
           </CardContent>

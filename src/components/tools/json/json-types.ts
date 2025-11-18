@@ -1,124 +1,124 @@
 export interface JsonValidationResult {
-	isValid: boolean;
-	errors: JsonValidationError[];
-	lineNumbers?: number[];
+  isValid: boolean;
+  errors: JsonValidationError[];
+  lineNumbers?: number[];
 }
 
 export interface JsonValidationError {
-	line: number;
-	column: number;
-	message: string;
-	severity: 'error' | 'warning';
+  line: number;
+  column: number;
+  message: string;
+  severity: "error" | "warning";
 }
 
 export interface JsonFormatOptions {
-	indent: number;
-	sortKeys: boolean;
-	compact: boolean;
-	trailingComma: boolean;
+  indent: number;
+  sortKeys: boolean;
+  compact: boolean;
+  trailingComma: boolean;
 }
 
 export interface JsonConversionOptions {
-	targetFormat: 'xml' | 'yaml' | 'csv';
-	rootElement?: string;
-	arrayItemName?: string;
-	flatten?: boolean;
-	csvDelimiter?: string;
+  targetFormat: "xml" | "yaml" | "csv";
+  rootElement?: string;
+  arrayItemName?: string;
+  flatten?: boolean;
+  csvDelimiter?: string;
 }
 
 export interface TreeNode {
-	key: string;
-	value: unknown;
-	type: 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null';
-	path: string;
-	children?: TreeNode[];
-	isExpanded?: boolean;
-	level: number;
+  key: string;
+  value: unknown;
+  type: "object" | "array" | "string" | "number" | "boolean" | "null";
+  path: string;
+  children?: TreeNode[];
+  isExpanded?: boolean;
+  level: number;
 }
 
-export type JsonParsingStatus = 'idle' | 'parsing' | 'valid' | 'error';
+export type JsonParsingStatus = "idle" | "parsing" | "valid" | "error";
 
 export interface JsonEditorState {
-	content: string;
-	parsedValue: unknown;
-	status: JsonParsingStatus;
-	validationErrors: JsonValidationError[];
-	formatOptions: JsonFormatOptions;
+  content: string;
+  parsedValue: unknown;
+  status: JsonParsingStatus;
+  validationErrors: JsonValidationError[];
+  formatOptions: JsonFormatOptions;
 }
 
 export interface FileParseRequest {
-	file: File;
-	options?: Record<string, unknown>;
+  file: File;
+  options?: Record<string, unknown>;
 }
 
 export interface FileParseResponse {
-	success: boolean;
-	data?: unknown;
-	error?: string;
-	metadata?: Record<string, unknown>;
+  success: boolean;
+  data?: unknown;
+  error?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface FileValidationRequest {
-	file: File;
-	options?: Record<string, unknown>;
+  file: File;
+  options?: Record<string, unknown>;
 }
 
 export interface FileValidationResponse {
-	isValid: boolean;
-	errors?: ValidationError[];
-	metadata?: Record<string, unknown>;
+  isValid: boolean;
+  errors?: ValidationError[];
+  metadata?: Record<string, unknown>;
 }
 
 export interface ValidationError {
-	code: string;
-	message: string;
-	line?: number;
-	column?: number;
-	severity?: 'error' | 'warning';
+  code: string;
+  message: string;
+  line?: number;
+  column?: number;
+  severity?: "error" | "warning";
 }
 
 export interface JsonViewerProps {
-	data: unknown;
-	expandLevel?: number;
-	showLineNumbers?: boolean;
-	copyable?: boolean;
-	className?: string;
+  data: unknown;
+  expandLevel?: number;
+  showLineNumbers?: boolean;
+  copyable?: boolean;
+  className?: string;
 }
 
 export interface JsonEditorProps {
-	value: string;
-	onChange: (value: string) => void;
-	onValidate?: (result: JsonValidationResult) => void;
-	placeholder?: string;
-	height?: string | number;
-	className?: string;
+  value: string;
+  onChange: (value: string) => void;
+  onValidate?: (result: JsonValidationResult) => void;
+  placeholder?: string;
+  height?: string | number;
+  className?: string;
 }
 
 export interface JsonFormatterProps {
-	input: string;
-	options?: JsonFormatOptions;
-	onFormat: (formatted: string) => void;
-	onError: (error: string) => void;
-	className?: string;
+  input: string;
+  options?: JsonFormatOptions;
+  onFormat: (formatted: string) => void;
+  onError: (error: string) => void;
+  className?: string;
 }
 
 export interface JsonValidatorProps {
-	input: string;
-	onValidationChange: (result: JsonValidationResult) => void;
-	showLineNumbers?: boolean;
-	className?: string;
+  input: string;
+  onValidationChange: (result: JsonValidationResult) => void;
+  showLineNumbers?: boolean;
+  className?: string;
 }
 
 export interface JsonConverterProps {
-	input: string;
-	options: JsonConversionOptions;
-	onConvert: (output: string) => void;
-	onError: (error: string) => void;
-	className?: string;
+  input: string;
+  options: JsonConversionOptions;
+  onConvert: (output: string) => void;
+  onError: (error: string) => void;
+  className?: string;
 }
 
 export interface JsonErrorDisplayProps {
-	errors: JsonValidationError[];
-	content: string;
-	className?: string;
+  errors: JsonValidationError[];
+  content: string;
+  className?: string;
 }

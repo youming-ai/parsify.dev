@@ -30,9 +30,7 @@ export function FileUpload({
   disabled = false,
 }: FileUploadProps) {
   const [isDragOver, setIsDragOver] = React.useState(false);
-  const [uploadProgress, setUploadProgress] = React.useState<
-    Record<string, number>
-  >({});
+  const [uploadProgress, setUploadProgress] = React.useState<Record<string, number>>({});
 
   const handleFilesDrop = (newFiles: File[]) => {
     // Filter files based on size and format
@@ -110,12 +108,8 @@ export function FileUpload({
             {Object.entries(uploadProgress).map(([fileName, progress]) => (
               <div key={fileName} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium truncate">
-                    {fileName}
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    {Math.round(progress)}%
-                  </span>
+                  <span className="text-sm font-medium truncate">{fileName}</span>
+                  <span className="text-sm text-gray-500">{Math.round(progress)}%</span>
                 </div>
                 <Progress value={progress} className="h-2" />
               </div>
@@ -136,12 +130,8 @@ export function FileUpload({
                   <div className="flex items-center space-x-3 flex-1 min-w-0">
                     <FileIcon className="h-5 w-5 text-gray-400 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {file.name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {formatFileSize(file.size)}
-                      </p>
+                      <p className="text-sm font-medium truncate">{file.name}</p>
+                      <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
                     </div>
                   </div>
                   <Button

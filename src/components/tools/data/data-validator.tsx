@@ -17,38 +17,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { FileUpload } from "@/components/file-upload/file-upload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Shield,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Upload,
-  Settings,
-} from "lucide-react";
+import { Shield, CheckCircle, XCircle, AlertCircle, Upload, Settings } from "lucide-react";
 import { toast } from "sonner";
 
 export interface ValidationRule {
   id: string;
   name: string;
-  type:
-    | "required"
-    | "pattern"
-    | "length"
-    | "range"
-    | "email"
-    | "url"
-    | "number"
-    | "custom";
+  type: "required" | "pattern" | "length" | "range" | "email" | "url" | "number" | "custom";
   field: string;
   value?: string | number;
-  operation?:
-    | "equals"
-    | "contains"
-    | "startsWith"
-    | "endsWith"
-    | "regex"
-    | "min"
-    | "max";
+  operation?: "equals" | "contains" | "startsWith" | "endsWith" | "regex" | "min" | "max";
   enabled: boolean;
   description: string;
 }
@@ -109,20 +87,13 @@ const ruleTemplates = {
   },
 };
 
-export function DataValidator({
-  onValidationComplete,
-  className,
-}: DataValidatorProps) {
+export function DataValidator({ onValidationComplete, className }: DataValidatorProps) {
   const [inputData, setInputData] = React.useState("");
-  const [dataFormat, setDataFormat] = React.useState<
-    "json" | "csv" | "xml" | "yaml" | "form"
-  >("json");
-  const [validationRules, setValidationRules] = React.useState<
-    ValidationRule[]
-  >([]);
-  const [results, setResults] = React.useState<DataValidationResult | null>(
-    null,
+  const [dataFormat, setDataFormat] = React.useState<"json" | "csv" | "xml" | "yaml" | "form">(
+    "json",
   );
+  const [validationRules, setValidationRules] = React.useState<ValidationRule[]>([]);
+  const [results, setResults] = React.useState<DataValidationResult | null>(null);
   const [isProcessing, setIsProcessing] = React.useState(false);
 
   // Validate email format
@@ -152,11 +123,7 @@ export function DataValidator({
   };
 
   // Validate length
-  const validateLength = (
-    value: string,
-    operation: "min" | "max",
-    length: number,
-  ): boolean => {
+  const validateLength = (value: string, operation: "min" | "max", length: number): boolean => {
     const valueLength = value.length;
     switch (operation) {
       case "min":
@@ -185,9 +152,7 @@ export function DataValidator({
           const headers = lines[0].split(",").map((h) => h.trim());
           const rows = lines.slice(1).map((line) => {
             const values = line.split(",").map((v) => v.trim());
-            return Object.fromEntries(
-              headers.map((header, index) => [header, values[index]]),
-            );
+            return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
           });
           return rows;
         case "xml":
@@ -222,9 +187,7 @@ export function DataValidator({
   };
 
   // Add rule
-  const addRule = (
-    template: (typeof ruleTemplates)[keyof typeof ruleTemplates],
-  ) => {
+  const addRule = (template: (typeof ruleTemplates)[keyof typeof ruleTemplates]) => {
     const newRule: ValidationRule = {
       id: Date.now().toString(),
       name: template.field,
@@ -280,10 +243,7 @@ export function DataValidator({
       let totalWarnings = 0;
 
       // Get all fields from data
-      const getAllFields = (
-        data: any,
-        prefix = "",
-      ): Array<{ path: string; value: any }> => {
+      const getAllFields = (data: any, prefix = ""): Array<{ path: string; value: any }> => {
         const fields: Array<{ path: string; value: any }> = [];
 
         if (Array.isArray(data)) {
@@ -295,11 +255,7 @@ export function DataValidator({
           Object.entries(data).forEach(([key, value]) => {
             const currentPath = prefix ? `${prefix}.${key}` : key;
             fields.push({ path: currentPath, value });
-            if (
-              typeof value === "object" &&
-              value !== null &&
-              !Array.isArray(value)
-            ) {
+            if (typeof value === "object" && value !== null && !Array.isArray(value)) {
               const nestedFields = getAllFields(value, currentPath);
               fields.push(...nestedFields);
             }
@@ -316,9 +272,7 @@ export function DataValidator({
       // Apply validation rules
       for (const fieldData of allFields) {
         const fieldRules = validationRules.filter(
-          (rule) =>
-            rule.enabled &&
-            (fieldData.path.includes(rule.field) || rule.field === "*"),
+          (rule) => rule.enabled && (fieldData.path.includes(rule.field) || rule.field === "*"),
         );
 
         if (fieldRules.length > 0) {
@@ -357,20 +311,14 @@ export function DataValidator({
                     rule.operation &&
                     (rule.operation === "min" || rule.operation === "max")
                   ) {
-                    isValid = validateLength(
-                      value,
-                      rule.operation,
-                      Number(rule.value),
-                    );
+                    isValid = validateLength(value, rule.operation, Number(rule.value));
                     errorMessage = `Length must be ${rule.operation} ${rule.value} characters`;
                   }
                   break;
                 case "range":
                   if (typeof fieldData.value === "number" && rule.value) {
                     // For range, value should be like "min,max"
-                    const [min, max] = String(rule.value)
-                      .split(",")
-                      .map(Number);
+                    const [min, max] = String(rule.value).split(",").map(Number);
                     isValid = validateRange(fieldData.value, min, max);
                     errorMessage = `Value must be between ${min} and ${max}`;
                   }
@@ -433,9 +381,7 @@ export function DataValidator({
         toast.error(`Validation failed: ${totalErrors} error(s) found`);
       }
     } catch (error) {
-      toast.error(
-        `Validation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      );
+      toast.error(`Validation failed: ${error instanceof Error ? error.message : "Unknown error"}`);
     } finally {
       setIsProcessing(false);
     }
@@ -490,10 +436,7 @@ website=https://johndoe.com`,
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Data Format</Label>
-                <Select
-                  value={dataFormat}
-                  onValueChange={(value: any) => setDataFormat(value)}
-                >
+                <Select value={dataFormat} onValueChange={(value: any) => setDataFormat(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select data format" />
                   </SelectTrigger>
@@ -549,8 +492,8 @@ website=https://johndoe.com`,
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Add validation rules to check your data. You can use
-                    predefined templates or create custom rules.
+                    Add validation rules to check your data. You can use predefined templates or
+                    create custom rules.
                   </AlertDescription>
                 </Alert>
               ) : (
@@ -562,34 +505,24 @@ website=https://johndoe.com`,
                           <input
                             type="checkbox"
                             checked={rule.enabled}
-                            onChange={(e) =>
-                              updateRule(rule.id, { enabled: e.target.checked })
-                            }
+                            onChange={(e) => updateRule(rule.id, { enabled: e.target.checked })}
                           />
                           <Input
                             value={rule.name}
-                            onChange={(e) =>
-                              updateRule(rule.id, { name: e.target.value })
-                            }
+                            onChange={(e) => updateRule(rule.id, { name: e.target.value })}
                             className="w-48"
                             placeholder="Rule name"
                           />
                           <Badge variant="outline">{rule.type}</Badge>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeRule(rule.id)}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => removeRule(rule.id)}>
                           Remove
                         </Button>
                       </div>
                       <div className="grid md:grid-cols-3 gap-2">
                         <Input
                           value={rule.field}
-                          onChange={(e) =>
-                            updateRule(rule.id, { field: e.target.value })
-                          }
+                          onChange={(e) => updateRule(rule.id, { field: e.target.value })}
                           placeholder="Field name"
                         />
                         {(rule.type === "length" || rule.type === "range") && (
@@ -611,16 +544,12 @@ website=https://johndoe.com`,
                         {rule.value !== undefined && (
                           <Input
                             value={String(rule.value)}
-                            onChange={(e) =>
-                              updateRule(rule.id, { value: e.target.value })
-                            }
+                            onChange={(e) => updateRule(rule.id, { value: e.target.value })}
                             placeholder="Value"
                           />
                         )}
                       </div>
-                      <div className="text-sm text-gray-600">
-                        {rule.description}
-                      </div>
+                      <div className="text-sm text-gray-600">{rule.description}</div>
                     </div>
                   ))}
                 </div>
@@ -628,12 +557,7 @@ website=https://johndoe.com`,
 
               <div className="flex flex-wrap gap-2 pt-4 border-t">
                 {Object.entries(ruleTemplates).map(([key, template]) => (
-                  <Button
-                    key={key}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => addRule(template)}
-                  >
+                  <Button key={key} variant="outline" size="sm" onClick={() => addRule(template)}>
                     Add {key}
                   </Button>
                 ))}
@@ -668,28 +592,20 @@ website=https://johndoe.com`,
               <div className="grid md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="font-medium">Status:</span>
-                  <Badge
-                    variant={results.isValid ? "default" : "destructive"}
-                    className="ml-2"
-                  >
+                  <Badge variant={results.isValid ? "default" : "destructive"} className="ml-2">
                     {results.isValid ? "Valid" : "Invalid"}
                   </Badge>
                 </div>
                 <div>
-                  <span className="font-medium">Fields:</span>{" "}
-                  {results.results.length}
+                  <span className="font-medium">Fields:</span> {results.results.length}
                 </div>
                 <div>
                   <span className="font-medium">Errors:</span>
-                  <span className="text-red-600 ml-1">
-                    {results.totalErrors}
-                  </span>
+                  <span className="text-red-600 ml-1">{results.totalErrors}</span>
                 </div>
                 <div>
                   <span className="font-medium">Warnings:</span>
-                  <span className="text-yellow-600 ml-1">
-                    {results.totalWarnings}
-                  </span>
+                  <span className="text-yellow-600 ml-1">{results.totalWarnings}</span>
                 </div>
               </div>
 
@@ -709,11 +625,7 @@ website=https://johndoe.com`,
                         )}
                         <span className="font-medium">{result.field}</span>
                         <span className="text-sm text-gray-600">
-                          (
-                          {typeof result.value === "string"
-                            ? `"${result.value}"`
-                            : result.value}
-                          )
+                          ({typeof result.value === "string" ? `"${result.value}"` : result.value})
                         </span>
                       </div>
 

@@ -27,9 +27,7 @@ export default function HashGeneratorPage() {
         <div className="mb-4 flex items-center gap-3">
           <Hash className="h-8 w-8 text-blue-600" />
           <div>
-            <h1 className="font-bold text-3xl text-gray-900 dark:text-white">
-              Hash Generator
-            </h1>
+            <h1 className="font-bold text-3xl text-gray-900 dark:text-white">Hash Generator</h1>
             <div className="flex items-center gap-2">
               <Badge variant="outline">Beginner</Badge>
               <Badge variant="default">Stable</Badge>
@@ -55,8 +53,7 @@ export default function HashGeneratorPage() {
               <li className="flex items-start gap-2">
                 <div className="mt-1 h-2 w-2 rounded-full bg-blue-600"></div>
                 <span className="text-gray-700 dark:text-gray-300">
-                  Multiple hash algorithms (MD5, SHA-1, SHA-256, SHA-384,
-                  SHA-512)
+                  Multiple hash algorithms (MD5, SHA-1, SHA-256, SHA-384, SHA-512)
                 </span>
               </li>
               <li className="flex items-start gap-2">
@@ -96,22 +93,19 @@ export default function HashGeneratorPage() {
             <div>
               <h4 className="font-medium mb-2">Password Security</h4>
               <p className="text-gray-600 text-sm">
-                Generate secure hash values for password storage and
-                verification.
+                Generate secure hash values for password storage and verification.
               </p>
             </div>
             <div>
               <h4 className="font-medium mb-2">File Integrity</h4>
               <p className="text-gray-600 text-sm">
-                Verify file integrity by comparing hash values before and after
-                transmission.
+                Verify file integrity by comparing hash values before and after transmission.
               </p>
             </div>
             <div>
               <h4 className="font-medium mb-2">Data Verification</h4>
               <p className="text-gray-600 text-sm">
-                Generate checksums to ensure data hasn't been corrupted or
-                tampered with.
+                Generate checksums to ensure data hasn't been corrupted or tampered with.
               </p>
             </div>
             <div>

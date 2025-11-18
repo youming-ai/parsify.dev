@@ -46,25 +46,15 @@ const urlExamples = [
   },
 ];
 
-export function URLEncoder({
-  onProcessingComplete,
-  className,
-}: URLEncoderProps) {
+export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps) {
   const [inputText, setInputText] = React.useState("");
   const [outputText, setOutputText] = React.useState("");
-  const [encodingType, setEncodingType] = React.useState<
-    "full" | "component" | "path"
-  >("full");
+  const [encodingType, setEncodingType] = React.useState<"full" | "component" | "path">("full");
   const [results, setResults] = React.useState<URLResult[]>([]);
-  const [activeTab, setActiveTab] = React.useState<"encode" | "decode">(
-    "encode",
-  );
+  const [activeTab, setActiveTab] = React.useState<"encode" | "decode">("encode");
 
   // URL Encode function
-  const encodeURL = (
-    text: string,
-    type: "full" | "component" | "path",
-  ): string => {
+  const encodeURL = (text: string, type: "full" | "component" | "path"): string => {
     try {
       switch (type) {
         case "full":
@@ -131,12 +121,9 @@ export function URLEncoder({
       setResults((prev) => [result, ...prev].slice(0, 10)); // Keep last 10 results
       onProcessingComplete?.(result);
 
-      toast.success(
-        `${activeTab === "encode" ? "Encoded" : "Decoded"} successfully`,
-      );
+      toast.success(`${activeTab === "encode" ? "Encoded" : "Decoded"} successfully`);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Processing failed";
+      const errorMessage = error instanceof Error ? error.message : "Processing failed";
       toast.error(errorMessage);
       setOutputText("");
     }
@@ -230,9 +217,7 @@ export function URLEncoder({
                     <div className="grid md:grid-cols-3 gap-4">
                       <div
                         className={`p-3 border rounded cursor-pointer ${
-                          encodingType === "full"
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200"
+                          encodingType === "full" ? "border-blue-500 bg-blue-50" : "border-gray-200"
                         }`}
                         onClick={() => setEncodingType("full")}
                       >
@@ -256,9 +241,7 @@ export function URLEncoder({
                       </div>
                       <div
                         className={`p-3 border rounded cursor-pointer ${
-                          encodingType === "path"
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200"
+                          encodingType === "path" ? "border-blue-500 bg-blue-50" : "border-gray-200"
                         }`}
                         onClick={() => setEncodingType("path")}
                       >
@@ -285,9 +268,8 @@ export function URLEncoder({
               <CardContent>
                 <div className="p-4 bg-blue-50 border border-blue-200 rounded">
                   <p className="text-sm text-blue-800">
-                    <strong>Note:</strong> Decoding will automatically detect
-                    and decode URL-encoded characters including spaces (%20),
-                    special characters, and Unicode characters.
+                    <strong>Note:</strong> Decoding will automatically detect and decode URL-encoded
+                    characters including spaces (%20), special characters, and Unicode characters.
                   </p>
                 </div>
               </CardContent>
@@ -299,9 +281,7 @@ export function URLEncoder({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>
-                {activeTab === "encode" ? "Input Text" : "URL to Decode"}
-              </span>
+              <span>{activeTab === "encode" ? "Input Text" : "URL to Decode"}</span>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={swapInputOutput}>
                   Swap ↔
@@ -324,36 +304,24 @@ export function URLEncoder({
                 }
                 className="min-h-32 font-mono"
               />
-              <div className="text-sm text-gray-500 mt-1">
-                {inputText.length} characters
-              </div>
+              <div className="text-sm text-gray-500 mt-1">{inputText.length} characters</div>
             </div>
 
             {outputText && (
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm font-medium">
-                    {activeTab === "encode"
-                      ? "Encoded Output"
-                      : "Decoded Output"}
+                    {activeTab === "encode" ? "Encoded Output" : "Decoded Output"}
                   </label>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => copyToClipboard(outputText)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => copyToClipboard(outputText)}>
                     <Copy className="h-4 w-4 mr-1" />
                     Copy
                   </Button>
                 </div>
                 <div className="p-3 bg-gray-50 border rounded">
-                  <div className="font-mono text-sm break-all">
-                    {outputText}
-                  </div>
+                  <div className="font-mono text-sm break-all">{outputText}</div>
                 </div>
-                <div className="text-sm text-gray-500 mt-1">
-                  {outputText.length} characters
-                </div>
+                <div className="text-sm text-gray-500 mt-1">{outputText.length} characters</div>
               </div>
             )}
 
@@ -373,14 +341,8 @@ export function URLEncoder({
               {urlExamples.map((example, index) => (
                 <div key={index} className="p-3 border rounded">
                   <div className="font-medium mb-1">{example.name}</div>
-                  <div className="text-sm text-gray-600 mb-2">
-                    {example.description}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => loadExample(example)}
-                  >
+                  <div className="text-sm text-gray-600 mb-2">{example.description}</div>
+                  <Button variant="outline" size="sm" onClick={() => loadExample(example)}>
                     Load Example
                   </Button>
                 </div>
@@ -399,8 +361,7 @@ export function URLEncoder({
               <div className="space-y-1">
                 <div className="font-medium">Spaces & Special</div>
                 <div>
-                  <code className="bg-gray-100 px-1">Space:</code>{" "}
-                  <code>%20</code>
+                  <code className="bg-gray-100 px-1">Space:</code> <code>%20</code>
                 </div>
                 <div>
                   <code className="bg-gray-100 px-1">!:</code> <code>%21</code>
@@ -430,20 +391,16 @@ export function URLEncoder({
               <div className="space-y-1">
                 <div className="font-medium">Unicode</div>
                 <div>
-                  <code className="bg-gray-100 px-1">©:</code>{" "}
-                  <code>%C2%A9</code>
+                  <code className="bg-gray-100 px-1">©:</code> <code>%C2%A9</code>
                 </div>
                 <div>
-                  <code className="bg-gray-100 px-1">®:</code>{" "}
-                  <code>%C2%AE</code>
+                  <code className="bg-gray-100 px-1">®:</code> <code>%C2%AE</code>
                 </div>
                 <div>
-                  <code className="bg-gray-100 px-1">€:</code>{" "}
-                  <code>%E2%82%AC</code>
+                  <code className="bg-gray-100 px-1">€:</code> <code>%E2%82%AC</code>
                 </div>
                 <div>
-                  <code className="bg-gray-100 px-1">你:</code>{" "}
-                  <code>%E4%BD%A0</code>
+                  <code className="bg-gray-100 px-1">你:</code> <code>%E4%BD%A0</code>
                 </div>
               </div>
             </div>

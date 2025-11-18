@@ -1,70 +1,70 @@
-import type { CodeTemplate, LanguageConfig } from './code-types';
+import type { CodeTemplate, LanguageConfig } from "./code-types";
 
 export const LANGUAGE_CONFIGS: Record<string, LanguageConfig> = {
-	javascript: {
-		name: 'JavaScript',
-		version: '18.17.0',
-		extensions: ['.js', '.mjs', '.cjs'],
-		interpreter: 'node',
-		defaultCode: `// Welcome to JavaScript Code Runner
+  javascript: {
+    name: "JavaScript",
+    version: "18.17.0",
+    extensions: [".js", ".mjs", ".cjs"],
+    interpreter: "node",
+    defaultCode: `// Welcome to JavaScript Code Runner
 console.log("Hello, World!");
 
 // Try running some JavaScript code
 const message = "JavaScript is awesome!";
 console.log(message);`,
-		compileTimeLimit: 0,
-		executionTimeLimit: 5000,
-		memoryLimit: 128,
-		supportsStdin: true,
-		supportsCompilation: false,
-		monacoLanguage: 'javascript',
-	},
-	typescript: {
-		name: 'TypeScript',
-		version: '5.2.2',
-		extensions: ['.ts', '.tsx'],
-		compiler: 'tsc',
-		interpreter: 'ts-node',
-		defaultCode: `// Welcome to TypeScript Code Runner
+    compileTimeLimit: 0,
+    executionTimeLimit: 5000,
+    memoryLimit: 128,
+    supportsStdin: true,
+    supportsCompilation: false,
+    monacoLanguage: "javascript",
+  },
+  typescript: {
+    name: "TypeScript",
+    version: "5.2.2",
+    extensions: [".ts", ".tsx"],
+    compiler: "tsc",
+    interpreter: "ts-node",
+    defaultCode: `// Welcome to TypeScript Code Runner
 function greet(name: string): string {
   return \`Hello, \${name}!\`;
 }
 
 const message = greet("TypeScript");
 console.log(message);`,
-		compileTimeLimit: 3000,
-		executionTimeLimit: 5000,
-		memoryLimit: 256,
-		supportsStdin: true,
-		supportsCompilation: true,
-		monacoLanguage: 'typescript',
-	},
-	python: {
-		name: 'Python',
-		version: '3.11.5',
-		extensions: ['.py'],
-		interpreter: 'python3',
-		defaultCode: `# Welcome to Python Code Runner
+    compileTimeLimit: 3000,
+    executionTimeLimit: 5000,
+    memoryLimit: 256,
+    supportsStdin: true,
+    supportsCompilation: true,
+    monacoLanguage: "typescript",
+  },
+  python: {
+    name: "Python",
+    version: "3.11.5",
+    extensions: [".py"],
+    interpreter: "python3",
+    defaultCode: `# Welcome to Python Code Runner
 print("Hello, World!")
 
 # Try running some Python code
 name = "Python"
 message = f"Hello, {name}!"
 print(message)`,
-		compileTimeLimit: 0,
-		executionTimeLimit: 5000,
-		memoryLimit: 128,
-		supportsStdin: true,
-		supportsCompilation: false,
-		monacoLanguage: 'python',
-	},
-	java: {
-		name: 'Java',
-		version: '17.0.8',
-		extensions: ['.java'],
-		compiler: 'javac',
-		interpreter: 'java',
-		defaultCode: `// Welcome to Java Code Runner
+    compileTimeLimit: 0,
+    executionTimeLimit: 5000,
+    memoryLimit: 128,
+    supportsStdin: true,
+    supportsCompilation: false,
+    monacoLanguage: "python",
+  },
+  java: {
+    name: "Java",
+    version: "17.0.8",
+    extensions: [".java"],
+    compiler: "javac",
+    interpreter: "java",
+    defaultCode: `// Welcome to Java Code Runner
 public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
@@ -74,20 +74,20 @@ public class Main {
         System.out.println(message);
     }
 }`,
-		compileTimeLimit: 5000,
-		executionTimeLimit: 5000,
-		memoryLimit: 256,
-		supportsStdin: true,
-		supportsCompilation: true,
-		monacoLanguage: 'java',
-	},
-	cpp: {
-		name: 'C++',
-		version: '17',
-		extensions: ['.cpp', '.cc', '.cxx'],
-		compiler: 'g++',
-		interpreter: 'cpp',
-		defaultCode: `// Welcome to C++ Code Runner
+    compileTimeLimit: 5000,
+    executionTimeLimit: 5000,
+    memoryLimit: 256,
+    supportsStdin: true,
+    supportsCompilation: true,
+    monacoLanguage: "java",
+  },
+  cpp: {
+    name: "C++",
+    version: "17",
+    extensions: [".cpp", ".cc", ".cxx"],
+    compiler: "g++",
+    interpreter: "cpp",
+    defaultCode: `// Welcome to C++ Code Runner
 #include <iostream>
 #include <string>
 
@@ -100,20 +100,20 @@ int main() {
 
     return 0;
 }`,
-		compileTimeLimit: 5000,
-		executionTimeLimit: 5000,
-		memoryLimit: 256,
-		supportsStdin: true,
-		supportsCompilation: true,
-		monacoLanguage: 'cpp',
-	},
-	c: {
-		name: 'C',
-		version: 'C17',
-		extensions: ['.c'],
-		compiler: 'gcc',
-		interpreter: 'c',
-		defaultCode: `// Welcome to C Code Runner
+    compileTimeLimit: 5000,
+    executionTimeLimit: 5000,
+    memoryLimit: 256,
+    supportsStdin: true,
+    supportsCompilation: true,
+    monacoLanguage: "cpp",
+  },
+  c: {
+    name: "C",
+    version: "C17",
+    extensions: [".c"],
+    compiler: "gcc",
+    interpreter: "c",
+    defaultCode: `// Welcome to C Code Runner
 #include <stdio.h>
 
 int main() {
@@ -125,20 +125,20 @@ int main() {
 
     return 0;
 }`,
-		compileTimeLimit: 5000,
-		executionTimeLimit: 5000,
-		memoryLimit: 256,
-		supportsStdin: true,
-		supportsCompilation: true,
-		monacoLanguage: 'c',
-	},
-	csharp: {
-		name: 'C#',
-		version: '7.0',
-		extensions: ['.cs'],
-		compiler: 'csc',
-		interpreter: 'dotnet',
-		defaultCode: `// Welcome to C# Code Runner
+    compileTimeLimit: 5000,
+    executionTimeLimit: 5000,
+    memoryLimit: 256,
+    supportsStdin: true,
+    supportsCompilation: true,
+    monacoLanguage: "c",
+  },
+  csharp: {
+    name: "C#",
+    version: "7.0",
+    extensions: [".cs"],
+    compiler: "csc",
+    interpreter: "dotnet",
+    defaultCode: `// Welcome to C# Code Runner
 using System;
 
 class Program {
@@ -150,20 +150,20 @@ class Program {
         Console.WriteLine(message);
     }
 }`,
-		compileTimeLimit: 5000,
-		executionTimeLimit: 5000,
-		memoryLimit: 256,
-		supportsStdin: true,
-		supportsCompilation: true,
-		monacoLanguage: 'csharp',
-	},
-	go: {
-		name: 'Go',
-		version: '1.21.3',
-		extensions: ['.go'],
-		compiler: 'go',
-		interpreter: 'go',
-		defaultCode: `// Welcome to Go Code Runner
+    compileTimeLimit: 5000,
+    executionTimeLimit: 5000,
+    memoryLimit: 256,
+    supportsStdin: true,
+    supportsCompilation: true,
+    monacoLanguage: "csharp",
+  },
+  go: {
+    name: "Go",
+    version: "1.21.3",
+    extensions: [".go"],
+    compiler: "go",
+    interpreter: "go",
+    defaultCode: `// Welcome to Go Code Runner
 package main
 
 import "fmt"
@@ -175,20 +175,20 @@ func main() {
     message := "Go is concurrent!"
     fmt.Println(message)
 }`,
-		compileTimeLimit: 3000,
-		executionTimeLimit: 5000,
-		memoryLimit: 128,
-		supportsStdin: true,
-		supportsCompilation: true,
-		monacoLanguage: 'go',
-	},
-	rust: {
-		name: 'Rust',
-		version: '1.73.0',
-		extensions: ['.rs'],
-		compiler: 'rustc',
-		interpreter: 'rust',
-		defaultCode: `// Welcome to Rust Code Runner
+    compileTimeLimit: 3000,
+    executionTimeLimit: 5000,
+    memoryLimit: 128,
+    supportsStdin: true,
+    supportsCompilation: true,
+    monacoLanguage: "go",
+  },
+  rust: {
+    name: "Rust",
+    version: "1.73.0",
+    extensions: [".rs"],
+    compiler: "rustc",
+    interpreter: "rust",
+    defaultCode: `// Welcome to Rust Code Runner
 fn main() {
     println!("Hello, World!");
 
@@ -196,19 +196,19 @@ fn main() {
     let message = "Rust is safe!";
     println!("{}", message);
 }`,
-		compileTimeLimit: 5000,
-		executionTimeLimit: 5000,
-		memoryLimit: 256,
-		supportsStdin: true,
-		supportsCompilation: true,
-		monacoLanguage: 'rust',
-	},
-	php: {
-		name: 'PHP',
-		version: '8.2.11',
-		extensions: ['.php'],
-		interpreter: 'php',
-		defaultCode: `<?php
+    compileTimeLimit: 5000,
+    executionTimeLimit: 5000,
+    memoryLimit: 256,
+    supportsStdin: true,
+    supportsCompilation: true,
+    monacoLanguage: "rust",
+  },
+  php: {
+    name: "PHP",
+    version: "8.2.11",
+    extensions: [".php"],
+    interpreter: "php",
+    defaultCode: `<?php
 // Welcome to PHP Code Runner
 echo "Hello, World!\\n";
 
@@ -216,57 +216,57 @@ echo "Hello, World!\\n";
 $message = "PHP is popular!";
 echo "$message\\n";
 ?>`,
-		compileTimeLimit: 0,
-		executionTimeLimit: 5000,
-		memoryLimit: 128,
-		supportsStdin: true,
-		supportsCompilation: false,
-		monacoLanguage: 'php',
-	},
-	ruby: {
-		name: 'Ruby',
-		version: '3.2.2',
-		extensions: ['.rb'],
-		interpreter: 'ruby',
-		defaultCode: `# Welcome to Ruby Code Runner
+    compileTimeLimit: 0,
+    executionTimeLimit: 5000,
+    memoryLimit: 128,
+    supportsStdin: true,
+    supportsCompilation: false,
+    monacoLanguage: "php",
+  },
+  ruby: {
+    name: "Ruby",
+    version: "3.2.2",
+    extensions: [".rb"],
+    interpreter: "ruby",
+    defaultCode: `# Welcome to Ruby Code Runner
 puts "Hello, World!"
 
 # Try running some Ruby code
 message = "Ruby is dynamic!"
 puts message`,
-		compileTimeLimit: 0,
-		executionTimeLimit: 5000,
-		memoryLimit: 128,
-		supportsStdin: true,
-		supportsCompilation: false,
-		monacoLanguage: 'ruby',
-	},
-	swift: {
-		name: 'Swift',
-		version: '5.9',
-		extensions: ['.swift'],
-		compiler: 'swiftc',
-		interpreter: 'swift',
-		defaultCode: `// Welcome to Swift Code Runner
+    compileTimeLimit: 0,
+    executionTimeLimit: 5000,
+    memoryLimit: 128,
+    supportsStdin: true,
+    supportsCompilation: false,
+    monacoLanguage: "ruby",
+  },
+  swift: {
+    name: "Swift",
+    version: "5.9",
+    extensions: [".swift"],
+    compiler: "swiftc",
+    interpreter: "swift",
+    defaultCode: `// Welcome to Swift Code Runner
 print("Hello, World!")
 
 // Try running some Swift code
 let message = "Swift is modern!"
 print(message)`,
-		compileTimeLimit: 5000,
-		executionTimeLimit: 5000,
-		memoryLimit: 256,
-		supportsStdin: true,
-		supportsCompilation: true,
-		monacoLanguage: 'swift',
-	},
-	kotlin: {
-		name: 'Kotlin',
-		version: '1.9.10',
-		extensions: ['.kt', '.kts'],
-		compiler: 'kotlinc',
-		interpreter: 'kotlin',
-		defaultCode: `// Welcome to Kotlin Code Runner
+    compileTimeLimit: 5000,
+    executionTimeLimit: 5000,
+    memoryLimit: 256,
+    supportsStdin: true,
+    supportsCompilation: true,
+    monacoLanguage: "swift",
+  },
+  kotlin: {
+    name: "Kotlin",
+    version: "1.9.10",
+    extensions: [".kt", ".kts"],
+    compiler: "kotlinc",
+    interpreter: "kotlin",
+    defaultCode: `// Welcome to Kotlin Code Runner
 fun main() {
     println("Hello, World!")
 
@@ -274,56 +274,56 @@ fun main() {
     val message = "Kotlin is concise!"
     println(message)
 }`,
-		compileTimeLimit: 5000,
-		executionTimeLimit: 5000,
-		memoryLimit: 256,
-		supportsStdin: true,
-		supportsCompilation: true,
-		monacoLanguage: 'kotlin',
-	},
-	bash: {
-		name: 'Bash',
-		version: '5.2.15',
-		extensions: ['.sh', '.bash'],
-		interpreter: 'bash',
-		defaultCode: `#!/bin/bash
+    compileTimeLimit: 5000,
+    executionTimeLimit: 5000,
+    memoryLimit: 256,
+    supportsStdin: true,
+    supportsCompilation: true,
+    monacoLanguage: "kotlin",
+  },
+  bash: {
+    name: "Bash",
+    version: "5.2.15",
+    extensions: [".sh", ".bash"],
+    interpreter: "bash",
+    defaultCode: `#!/bin/bash
 # Welcome to Bash Code Runner
 echo "Hello, World!"
 
 # Try running some Bash code
 message="Bash is powerful!"
 echo "$message"`,
-		compileTimeLimit: 0,
-		executionTimeLimit: 5000,
-		memoryLimit: 64,
-		supportsStdin: true,
-		supportsCompilation: false,
-		monacoLanguage: 'shell',
-	},
-	powershell: {
-		name: 'PowerShell',
-		version: '7.3.8',
-		extensions: ['.ps1', '.psm1'],
-		interpreter: 'pwsh',
-		defaultCode: `# Welcome to PowerShell Code Runner
+    compileTimeLimit: 0,
+    executionTimeLimit: 5000,
+    memoryLimit: 64,
+    supportsStdin: true,
+    supportsCompilation: false,
+    monacoLanguage: "shell",
+  },
+  powershell: {
+    name: "PowerShell",
+    version: "7.3.8",
+    extensions: [".ps1", ".psm1"],
+    interpreter: "pwsh",
+    defaultCode: `# Welcome to PowerShell Code Runner
 Write-Host "Hello, World!"
 
 # Try running some PowerShell code
 $message = "PowerShell is versatile!"
 Write-Host $message`,
-		compileTimeLimit: 0,
-		executionTimeLimit: 5000,
-		memoryLimit: 128,
-		supportsStdin: true,
-		supportsCompilation: false,
-		monacoLanguage: 'powershell',
-	},
-	sql: {
-		name: 'SQL',
-		version: 'Standard SQL',
-		extensions: ['.sql'],
-		interpreter: 'sql',
-		defaultCode: `-- Welcome to SQL Code Runner
+    compileTimeLimit: 0,
+    executionTimeLimit: 5000,
+    memoryLimit: 128,
+    supportsStdin: true,
+    supportsCompilation: false,
+    monacoLanguage: "powershell",
+  },
+  sql: {
+    name: "SQL",
+    version: "Standard SQL",
+    extensions: [".sql"],
+    interpreter: "sql",
+    defaultCode: `-- Welcome to SQL Code Runner
 -- This is a sample SQL query
 SELECT 'Hello, World!' AS greeting;
 
@@ -332,32 +332,32 @@ SELECT
     'SQL is declarative!' AS message,
     DATABASE() as current_database,
     NOW() as current_time;`,
-		compileTimeLimit: 0,
-		executionTimeLimit: 10000,
-		memoryLimit: 128,
-		supportsStdin: false,
-		supportsCompilation: false,
-		monacoLanguage: 'sql',
-	},
+    compileTimeLimit: 0,
+    executionTimeLimit: 10000,
+    memoryLimit: 128,
+    supportsStdin: false,
+    supportsCompilation: false,
+    monacoLanguage: "sql",
+  },
 };
 
 export const CODE_TEMPLATES: CodeTemplate[] = [
-	// JavaScript Templates
-	{
-		id: 'js-hello-world',
-		name: 'Hello World',
-		language: 'javascript',
-		description: 'Simple hello world program',
-		code: `console.log("Hello, World!");`,
-		category: 'Basics',
-		difficulty: 'beginner',
-	},
-	{
-		id: 'js-array-methods',
-		name: 'Array Methods',
-		language: 'javascript',
-		description: 'Common array manipulation methods',
-		code: `const numbers = [1, 2, 3, 4, 5];
+  // JavaScript Templates
+  {
+    id: "js-hello-world",
+    name: "Hello World",
+    language: "javascript",
+    description: "Simple hello world program",
+    code: `console.log("Hello, World!");`,
+    category: "Basics",
+    difficulty: "beginner",
+  },
+  {
+    id: "js-array-methods",
+    name: "Array Methods",
+    language: "javascript",
+    description: "Common array manipulation methods",
+    code: `const numbers = [1, 2, 3, 4, 5];
 
 // Map: Transform each element
 const doubled = numbers.map(n => n * 2);
@@ -374,15 +374,15 @@ console.log("Sum:", sum);
 // Find: Find first element that meets condition
 const firstGreaterThan3 = numbers.find(n => n > 3);
 console.log("First > 3:", firstGreaterThan3);`,
-		category: 'Arrays',
-		difficulty: 'intermediate',
-	},
-	{
-		id: 'js-async-await',
-		name: 'Async/Await',
-		language: 'javascript',
-		description: 'Asynchronous programming with async/await',
-		code: `// Simulate async operation
+    category: "Arrays",
+    difficulty: "intermediate",
+  },
+  {
+    id: "js-async-await",
+    name: "Async/Await",
+    language: "javascript",
+    description: "Asynchronous programming with async/await",
+    code: `// Simulate async operation
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -408,26 +408,26 @@ async function fetchUserData(userId) {
 
 // Usage
 fetchUserData(123);`,
-		category: 'Async',
-		difficulty: 'intermediate',
-	},
+    category: "Async",
+    difficulty: "intermediate",
+  },
 
-	// Python Templates
-	{
-		id: 'py-hello-world',
-		name: 'Hello World',
-		language: 'python',
-		description: 'Simple hello world program',
-		code: `print("Hello, World!")`,
-		category: 'Basics',
-		difficulty: 'beginner',
-	},
-	{
-		id: 'py-list-comprehension',
-		name: 'List Comprehensions',
-		language: 'python',
-		description: 'Pythonic way to create lists',
-		code: `# Basic list comprehension
+  // Python Templates
+  {
+    id: "py-hello-world",
+    name: "Hello World",
+    language: "python",
+    description: "Simple hello world program",
+    code: `print("Hello, World!")`,
+    category: "Basics",
+    difficulty: "beginner",
+  },
+  {
+    id: "py-list-comprehension",
+    name: "List Comprehensions",
+    language: "python",
+    description: "Pythonic way to create lists",
+    code: `# Basic list comprehension
 numbers = [1, 2, 3, 4, 5]
 squares = [n**2 for n in numbers]
 print("Squares:", squares)
@@ -443,15 +443,15 @@ print("Matrix:", matrix)
 # Dictionary comprehension
 word_lengths = {word: len(word) for word in ["hello", "world", "python"]}
 print("Word lengths:", word_lengths)`,
-		category: 'Data Structures',
-		difficulty: 'intermediate',
-	},
-	{
-		id: 'py-decorators',
-		name: 'Decorators',
-		language: 'python',
-		description: 'Python decorators for function modification',
-		code: `# Simple decorator
+    category: "Data Structures",
+    difficulty: "intermediate",
+  },
+  {
+    id: "py-decorators",
+    name: "Decorators",
+    language: "python",
+    description: "Python decorators for function modification",
+    code: `# Simple decorator
 def timer(func):
     import time
     def wrapper(*args, **kwargs):
@@ -487,30 +487,30 @@ def greet(name):
     print(f"Hello, {name}!")
 
 greet("Python")`,
-		category: 'Functions',
-		difficulty: 'advanced',
-	},
+    category: "Functions",
+    difficulty: "advanced",
+  },
 
-	// Java Templates
-	{
-		id: 'java-hello-world',
-		name: 'Hello World',
-		language: 'java',
-		description: 'Simple hello world program',
-		code: `public class Main {
+  // Java Templates
+  {
+    id: "java-hello-world",
+    name: "Hello World",
+    language: "java",
+    description: "Simple hello world program",
+    code: `public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
     }
 }`,
-		category: 'Basics',
-		difficulty: 'beginner',
-	},
-	{
-		id: 'java-oop',
-		name: 'Object-Oriented Programming',
-		language: 'java',
-		description: 'Classes and objects in Java',
-		code: `class Person {
+    category: "Basics",
+    difficulty: "beginner",
+  },
+  {
+    id: "java-oop",
+    name: "Object-Oriented Programming",
+    language: "java",
+    description: "Classes and objects in Java",
+    code: `class Person {
     private String name;
     private int age;
 
@@ -551,31 +551,31 @@ public class Main {
         student.introduce();
     }
 }`,
-		category: 'OOP',
-		difficulty: 'intermediate',
-	},
+    category: "OOP",
+    difficulty: "intermediate",
+  },
 
-	// C++ Templates
-	{
-		id: 'cpp-hello-world',
-		name: 'Hello World',
-		language: 'cpp',
-		description: 'Simple hello world program',
-		code: `#include <iostream>
+  // C++ Templates
+  {
+    id: "cpp-hello-world",
+    name: "Hello World",
+    language: "cpp",
+    description: "Simple hello world program",
+    code: `#include <iostream>
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
     return 0;
 }`,
-		category: 'Basics',
-		difficulty: 'beginner',
-	},
-	{
-		id: 'cpp-stl-containers',
-		name: 'STL Containers',
-		language: 'cpp',
-		description: 'Using Standard Template Library containers',
-		code: `#include <iostream>
+    category: "Basics",
+    difficulty: "beginner",
+  },
+  {
+    id: "cpp-stl-containers",
+    name: "STL Containers",
+    language: "cpp",
+    description: "Using Standard Template Library containers",
+    code: `#include <iostream>
 #include <vector>
 #include <map>
 #include <set>
@@ -626,29 +626,29 @@ int main() {
 
     return 0;
 }`,
-		category: 'STL',
-		difficulty: 'intermediate',
-	},
+    category: "STL",
+    difficulty: "intermediate",
+  },
 ];
 
 export const getLanguageConfig = (language: string): LanguageConfig => {
-	return LANGUAGE_CONFIGS[language] || LANGUAGE_CONFIGS.javascript;
+  return LANGUAGE_CONFIGS[language] || LANGUAGE_CONFIGS.javascript;
 };
 
 export const getTemplatesByLanguage = (language: string): CodeTemplate[] => {
-	return CODE_TEMPLATES.filter((template) => template.language === language);
+  return CODE_TEMPLATES.filter((template) => template.language === language);
 };
 
 export const getTemplatesByCategory = (category: string): CodeTemplate[] => {
-	return CODE_TEMPLATES.filter((template) => template.category === category);
+  return CODE_TEMPLATES.filter((template) => template.category === category);
 };
 
 export const searchTemplates = (query: string, language?: string): CodeTemplate[] => {
-	return CODE_TEMPLATES.filter((template) => {
-		const matchesQuery =
-			template.name.toLowerCase().includes(query.toLowerCase()) ||
-			template.description.toLowerCase().includes(query.toLowerCase());
-		const matchesLanguage = !language || template.language === language;
-		return matchesQuery && matchesLanguage;
-	});
+  return CODE_TEMPLATES.filter((template) => {
+    const matchesQuery =
+      template.name.toLowerCase().includes(query.toLowerCase()) ||
+      template.description.toLowerCase().includes(query.toLowerCase());
+    const matchesLanguage = !language || template.language === language;
+    return matchesQuery && matchesLanguage;
+  });
 };

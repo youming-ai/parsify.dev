@@ -1,30 +1,31 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Spinner } from '@/components/ui/spinner';
-import { cn } from '@/lib/utils';
-import type { ToolLoadingProps } from './tool-types';
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
-export function ToolLoading({ message = 'Processing...', className }: ToolLoadingProps) {
-	return (
-		<Card className={cn('border-gray-200', className)}>
-			<CardContent className="flex flex-col items-center justify-center py-12">
-				<Spinner size="lg" className="mb-4" />
-				<p className="text-center text-gray-600">{message}</p>
-			</CardContent>
-		</Card>
-	);
+interface ToolLoadingProps {
+  message?: string;
+  onRetry?: () => void;
 }
 
-interface ToolInlineLoadingProps {
-	message?: string;
-	className?: string;
-	size?: 'sm' | 'md' | 'lg';
-}
-
-export function ToolInlineLoading({ message = 'Loading...', className, size = 'sm' }: ToolInlineLoadingProps) {
-	return (
-		<div className={cn('flex items-center gap-2 text-gray-600', className)}>
-			<Spinner size={size} />
-			<span className="text-sm">{message}</span>
-		</div>
-	);
+export function ToolLoading({ message = "Loading...", onRetry }: ToolLoadingProps) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[200px] space-y-4">
+      <div className="flex items-center space-x-3">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <LoadingSkeleton className="h-4 w-32" />
+      </div>
+      <p className="text-gray-600 dark:text-gray-400 text-sm">{message}</p>
+      {onRetry && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRetry}
+          className="flex items-center space-x-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          <span>Retry</span>
+        </Button>
+      )}
+    </div>
+  );
 }

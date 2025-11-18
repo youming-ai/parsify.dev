@@ -1,264 +1,281 @@
-import { MainLayout } from '@/components/layout/main-layout';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Metadata } from 'next';
-import Link from 'next/link';
+"use client";
 
-export const metadata: Metadata = {
-	title: 'Parsify.dev - Online Developer Tools Platform | JSON & Code Processing',
-	description:
-		'Professional online tools for JSON processing, code execution, and file transformation. Secure, fast, and privacy-focused developer utilities.',
-	keywords: 'JSON formatter, code executor, developer tools, online utilities, WASM sandbox, TypeScript tools',
-	openGraph: {
-		title: 'Parsify.dev - Online Developer Tools Platform',
-		description: 'Professional online tools for JSON processing, code execution, and file transformation',
-		type: 'website',
-	},
-	twitter: {
-		card: 'summary_large_image',
-		title: 'Parsify.dev - Online Developer Tools Platform',
-		description: 'Professional online tools for JSON processing, code execution, and file transformation',
-	},
+import { Badge } from "@/components/ui/badge";
+import { MainLayout } from "@/components/layout/main-layout";
+import {
+  toolsData,
+  categoryStructure,
+  getToolsByCategoryAndSubcategory,
+  getSubcategoriesForCategory,
+} from "@/data/tools-data";
+import type { Tool } from "@/types/tools";
+import {
+  ChevronRight,
+  Database,
+  Code,
+  Terminal,
+  Image,
+  Palette,
+  FileText,
+  Hash,
+  Shield,
+  Settings,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
+import * as React from "react";
+
+// Icon mapping
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  FileJson: Database,
+  DataObject: Database,
+  CheckCircle: Hash,
+  Route: Database,
+  Database,
+  Code,
+  Terminal,
+  Pattern: Database,
+  Http: Settings,
+  Link: Database,
+  BugReport: Code,
+  Image,
+  Palette,
+  Password: Hash,
+  Difference: FileText,
+  FormatAlignLeft: FileText,
+  TextFields: FileText,
+  Schedule: Hash,
+  Fingerprint: Hash,
+  EnhancedEncryption: Shield,
+  Hash: Shield,
+  QrCode: Database,
 };
 
-import {
-	ArrowRight,
-	CheckCircle,
-	Code,
-	Cpu,
-	FileJson,
-	Globe,
-	Lock,
-	Play,
-	Shield,
-	Sparkles,
-	Terminal,
-	Zap,
-} from 'lucide-react';
-
 export default function Home() {
-	const tools = [
-		{
-			id: 'json-tools',
-			title: 'JSON Tools',
-			description: 'Format, validate, and transform JSON data with advanced parsing capabilities',
-			href: '/tools/json',
-			icon: FileJson,
-			features: ['Format & Beautify', 'Validate & Error Detection', 'Convert & Transform', 'Path Queries'],
-			color: 'text-blue-600',
-		},
-		{
-			id: 'code-execution',
-			title: 'Code Execution',
-			description: 'Execute code in a secure WASM sandbox with multiple language support',
-			href: '/tools/code',
-			icon: Terminal,
-			features: ['Multi-language Support', 'Secure Sandboxing', 'Real-time Output', 'Debug Mode'],
-			color: 'text-green-600',
-		},
-		{
-			id: 'file-processing',
-			title: 'File Processing',
-			description: 'Process and transform various file formats with powerful tools',
-			href: '/tools/file',
-			icon: Code,
-			features: ['Batch Processing', 'Format Conversion', 'Data Extraction', 'Validation'],
-			color: 'text-purple-600',
-		},
-	];
+  // Use all tools directly since search is removed
+  const filteredTools = toolsData;
 
-	const features = [
-		{
-			icon: Zap,
-			title: 'Lightning Fast',
-			description: 'Built for performance with modern web technologies and optimized algorithms',
-		},
-		{
-			icon: Shield,
-			title: 'Secure Execution',
-			description: 'Code runs in isolated WASM sandboxes ensuring complete security and isolation',
-		},
-		{
-			icon: Globe,
-			title: 'Browser Native',
-			description: 'No server required - all processing happens directly in your browser',
-		},
-		{
-			icon: Lock,
-			title: 'Privacy First',
-			description: 'Your data never leaves your browser. Complete privacy and data security',
-		},
-		{
-			icon: Cpu,
-			title: 'Modern Tech Stack',
-			description: 'Built with TypeScript, Next.js, and Cloudflare Workers for reliability',
-		},
-		{
-			icon: Sparkles,
-			title: 'Developer Experience',
-			description: 'Clean interface with powerful features designed for developers',
-		},
-	];
+  // Get tools by category for display
+  const getToolsForCategory = (categoryName: string) => {
+    return filteredTools.filter((tool) => tool.category === categoryName);
+  };
 
-	return (
-		<MainLayout>
-			{/* Hero Section */}
-			<section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-				<div className="container mx-auto px-4 py-16 lg:py-24">
-					<div className="mx-auto max-w-4xl text-center">
-						<Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-							<Sparkles className="mr-1 h-3 w-3" />
-							Professional Developer Tools
-						</Badge>
-						<h1 className="mb-6 font-bold text-4xl text-gray-900 lg:text-6xl dark:text-white">
-							Powerful Tools for
-							<span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-								{' '}
-								Modern Development
-							</span>
-						</h1>
-						<p className="mx-auto mb-8 max-w-2xl text-gray-600 text-xl dark:text-gray-300">
-							Transform, validate, and execute your code with our suite of professional developer tools. Built for
-							speed, security, and exceptional developer experience.
-						</p>
-						<div className="flex flex-col justify-center gap-4 sm:flex-row">
-							<Link href="/tools">
-								<Button size="lg" className="px-8 py-3 text-lg">
-									<Play className="mr-2 h-5 w-5" />
-									Try Tools Now
-									<ArrowRight className="ml-2 h-5 w-5" />
-								</Button>
-							</Link>
-							<Link href="/docs">
-								<Button size="lg" variant="outline" className="px-8 py-3 text-lg">
-									View Documentation
-								</Button>
-							</Link>
-						</div>
+  // Get tools for subcategory
+  const getToolsForSubcategory = (categoryName: string, subcategoryName: string) => {
+    return filteredTools.filter(
+      (tool) => tool.category === categoryName && tool.subcategory === subcategoryName,
+    );
+  };
 
-						{/* Trust indicators */}
-						<div className="mt-12 flex flex-wrap justify-center gap-8 text-gray-500 text-sm dark:text-gray-400">
-							<div className="flex items-center">
-								<CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-								No Registration Required
-							</div>
-							<div className="flex items-center">
-								<Shield className="mr-2 h-4 w-4 text-blue-500" />
-								100% Secure
-							</div>
-							<div className="flex items-center">
-								<Zap className="mr-2 h-4 w-4 text-yellow-500" />
-								Instant Processing
-							</div>
-						</div>
-					</div>
-				</div>
-			</section>
+  // Get tool count for display
+  const getToolCount = (categoryName: string, subcategoryName?: string) => {
+    if (subcategoryName) {
+      return filteredTools.filter(
+        (tool) => tool.category === categoryName && tool.subcategory === subcategoryName,
+      ).length;
+    }
+    return filteredTools.filter((tool) => tool.category === categoryName).length;
+  };
 
-			{/* Tools Section */}
-			<section className="bg-white py-16 lg:py-24 dark:bg-gray-800">
-				<div className="container mx-auto px-4">
-					<div className="mb-16 text-center">
-						<h2 className="mb-4 font-bold text-3xl text-gray-900 lg:text-4xl dark:text-white">
-							Professional Development Tools
-						</h2>
-						<p className="mx-auto max-w-2xl text-gray-600 text-lg dark:text-gray-300">
-							Everything you need to process, transform, and execute your code efficiently
-						</p>
-					</div>
+  const ToolCard = ({ tool }: { tool: Tool }) => {
+    const IconComponent = iconMap[tool.icon] || Database;
 
-					<div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-						{tools.map((tool) => (
-							<Card
-								key={tool.id}
-								className="group border-gray-200 transition-all duration-300 hover:border-blue-300 hover:shadow-lg dark:border-gray-700 dark:hover:border-blue-600"
-							>
-								<CardHeader>
-									<div
-										className={`mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 ${tool.color}`}
-									>
-										<tool.icon className="h-6 w-6" />
-									</div>
-									<CardTitle className="text-xl transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400">
-										{tool.title}
-									</CardTitle>
-									<CardDescription className="text-gray-600 dark:text-gray-300">{tool.description}</CardDescription>
-								</CardHeader>
-								<CardContent>
-									<ul className="mb-6 space-y-2">
-										{tool.features.map((feature) => (
-											<li key={feature} className="flex items-center text-gray-600 text-sm dark:text-gray-300">
-												<CheckCircle className="mr-2 h-4 w-4 flex-shrink-0 text-green-500" />
-												{feature}
-											</li>
-										))}
-									</ul>
-									<Link href={tool.href}>
-										<Button className="w-full" variant="outline">
-											Try {tool.title}
-											<ArrowRight className="ml-2 h-4 w-4" />
-										</Button>
-									</Link>
-								</CardContent>
-							</Card>
-						))}
-					</div>
-				</div>
-			</section>
+    return (
+      <Link
+        href={tool.href}
+        className="flex flex-1 gap-2 sm:gap-3 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 sm:p-4 items-center hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 transition-all duration-200 group"
+      >
+        <div className="flex-shrink-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/50 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+            <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
+          </div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-gray-900 dark:text-white text-sm sm:text-base font-bold leading-tight truncate">
+            {tool.name}
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 truncate hidden sm:block">
+            {tool.description}
+          </p>
+        </div>
+        <div className="flex-shrink-0 ml-auto flex items-center gap-1">
+          {tool.isNew && (
+            <Badge
+              variant="secondary"
+              className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+            >
+              New
+            </Badge>
+          )}
+          {tool.isPopular && (
+            <Badge
+              variant="outline"
+              className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700"
+            >
+              Popular
+            </Badge>
+          )}
+        </div>
+      </Link>
+    );
+  };
 
-			{/* Features Section */}
-			<section className="bg-gray-50 py-16 lg:py-24 dark:bg-gray-900">
-				<div className="container mx-auto px-4">
-					<div className="mb-16 text-center">
-						<h2 className="mb-4 font-bold text-3xl text-gray-900 lg:text-4xl dark:text-white">
-							Why Choose Parsify.dev?
-						</h2>
-						<p className="mx-auto max-w-2xl text-gray-600 text-lg dark:text-gray-300">
-							Built with modern technologies and developer-first principles
-						</p>
-					</div>
+  return (
+    <MainLayout>
+      <div className="bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <main className="flex flex-col gap-6 sm:gap-8">
+            {/* JSON Tools Section */}
+            <section>
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-1 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full"></div>
+                  <h2 className="text-gray-900 dark:text-white text-xl font-bold">JSON Tools</h2>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                    7 tools
+                  </span>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getToolsForCategory("JSON Tools").map((tool) => (
+                  <ToolCard key={tool.id} tool={tool} />
+                ))}
+              </div>
+            </section>
 
-					<div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-						{features.map((feature) => (
-							<div key={feature.title} className="text-center">
-								<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-									<feature.icon className="h-8 w-8 text-blue-600 dark:text-blue-300" />
-								</div>
-								<h3 className="mb-2 font-semibold text-gray-900 text-xl dark:text-white">{feature.title}</h3>
-								<p className="text-gray-600 dark:text-gray-300">{feature.description}</p>
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
+            {/* Common/Auxiliary Tools Section */}
+            <section>
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-1 h-6 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full"></div>
+                  <h2 className="text-gray-900 dark:text-white text-xl font-bold">
+                    Common/Auxiliary Tools
+                  </h2>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                    {getToolCount("Common/Auxiliary Tools")} tools
+                  </span>
+                </div>
+              </div>
 
-			{/* CTA Section */}
-			<section className="bg-gradient-to-r from-blue-600 to-purple-600 py-16 text-white lg:py-24">
-				<div className="container mx-auto px-4 text-center">
-					<h2 className="mb-4 font-bold text-3xl lg:text-4xl">Ready to Boost Your Productivity?</h2>
-					<p className="mx-auto mb-8 max-w-2xl text-xl opacity-90">
-						Join thousands of developers who use our tools daily to streamline their workflow
-					</p>
-					<div className="flex flex-col justify-center gap-4 sm:flex-row">
-						<Link href="/tools">
-							<Button size="lg" variant="secondary" className="px-8 py-3 text-lg">
-								Start Using Tools
-								<ArrowRight className="ml-2 h-5 w-5" />
-							</Button>
-						</Link>
-						<Link href="/docs">
-							<Button
-								size="lg"
-								variant="outline"
-								className="border-white px-8 py-3 text-lg text-white hover:bg-white hover:text-gray-900"
-							>
-								Read the Docs
-							</Button>
-						</Link>
-					</div>
-				</div>
-			</section>
-		</MainLayout>
-	);
+            {/* Formatting Subcategory */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-3">
+                Formatting
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getToolsForSubcategory("Common/Auxiliary Tools", "Formatting").map((tool) => (
+                  <ToolCard key={tool.id} tool={tool} />
+                ))}
+              </div>
+            </div>
+
+            {/* Online Language Support Subcategory */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-3">
+                Online Language Support
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getToolsForSubcategory("Common/Auxiliary Tools", "Online Language Support").map(
+                  (tool) => (
+                    <ToolCard key={tool.id} tool={tool} />
+                  ),
+                )}
+              </div>
+            </div>
+
+            {/* Other Tools Subcategory */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-3">
+                Other Tools
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getToolsForSubcategory("Common/Auxiliary Tools", "Other Tools").map((tool) => (
+                  <ToolCard key={tool.id} tool={tool} />
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Image/Media Tools Section */}
+          <section>
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-1 h-6 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full"></div>
+                <h2 className="text-gray-900 dark:text-white text-xl font-bold">
+                  Image/Media Tools
+                </h2>
+                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                  {getToolCount("Image/Media Tools")} tools
+                </span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {getToolsForCategory("Image/Media Tools").map((tool) => (
+                <ToolCard key={tool.id} tool={tool} />
+              ))}
+            </div>
+          </section>
+
+          {/* Network/Ops/Encoding Tools Section */}
+          <section>
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-1 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full"></div>
+                <h2 className="text-gray-900 dark:text-white text-xl font-bold">
+                  Network/Ops/Encoding Tools
+                </h2>
+                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                  {getToolCount("Network/Ops/Encoding Tools")} tools
+                </span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {getToolsForCategory("Network/Ops/Encoding Tools").map((tool) => (
+                <ToolCard key={tool.id} tool={tool} />
+              ))}
+            </div>
+          </section>
+
+          {/* Text Tools Section */}
+          <section>
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-1 h-6 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full"></div>
+                <h2 className="text-gray-900 dark:text-white text-xl font-bold">Text Tools</h2>
+                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                  {getToolCount("Text Tools")} tools
+                </span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {getToolsForCategory("Text Tools").map((tool) => (
+                <ToolCard key={tool.id} tool={tool} />
+              ))}
+            </div>
+          </section>
+
+          {/* Encryption/Hashing/Generation Section */}
+          <section>
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-1 h-6 bg-gradient-to-br from-red-500 to-red-600 rounded-full"></div>
+                <h2 className="text-gray-900 dark:text-white text-xl font-bold">
+                  Encryption/Hashing/Generation
+                </h2>
+                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                  {getToolCount("Encryption/Hashing/Generation")} tools
+                </span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {getToolsForCategory("Encryption/Hashing/Generation").map((tool) => (
+                <ToolCard key={tool.id} tool={tool} />
+              ))}
+            </div>
+            </section>
+          </main>
+        </div>
+      </div>
+    </MainLayout>
+  );
 }

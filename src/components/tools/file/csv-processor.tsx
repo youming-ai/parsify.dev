@@ -47,13 +47,7 @@ export interface CSVProcessingOptions {
   // Filter options
   filters: {
     column: string;
-    operator:
-      | "equals"
-      | "contains"
-      | "startsWith"
-      | "endsWith"
-      | "greater"
-      | "less";
+    operator: "equals" | "contains" | "startsWith" | "endsWith" | "greater" | "less";
     value: string;
   }[];
 
@@ -104,11 +98,7 @@ const dateFormats = [
   { value: "ISO", label: "ISO 8601" },
 ];
 
-export function CSVProcessor({
-  onProcessingComplete,
-  onError,
-  className,
-}: CSVProcessorProps) {
+export function CSVProcessor({ onProcessingComplete, onError, className }: CSVProcessorProps) {
   const [files, setFiles] = React.useState<File[]>([]);
   const [csvData, setCsvData] = React.useState<CSVRow[]>([]);
   const [headers, setHeaders] = React.useState<string[]>([]);
@@ -274,8 +264,7 @@ export function CSVProcessor({
       setResult(processingResult);
       onProcessingComplete?.(processingResult);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Processing failed";
+      const errorMessage = error instanceof Error ? error.message : "Processing failed";
       onError?.(errorMessage);
     } finally {
       setIsProcessing(false);
@@ -284,8 +273,7 @@ export function CSVProcessor({
 
   const handleFilesDrop = (newFiles: File[]) => {
     const csvFiles = newFiles.filter(
-      (file) =>
-        file.type === "text/csv" || file.name.toLowerCase().endsWith(".csv"),
+      (file) => file.type === "text/csv" || file.name.toLowerCase().endsWith(".csv"),
     );
 
     csvFiles.forEach((file) => {
@@ -450,8 +438,7 @@ ${html}
             />
             {files.length > 0 && (
               <div className="mt-2 text-sm text-gray-600">
-                Loaded: {files[0].name} ({headers.length} columns,{" "}
-                {csvData.length} rows)
+                Loaded: {files[0].name} ({headers.length} columns, {csvData.length} rows)
               </div>
             )}
           </CardContent>
@@ -477,11 +464,7 @@ ${html}
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Delimiter</Label>
-                        <Select
-                          onValueChange={(value) =>
-                            updateOption("delimiter", value)
-                          }
-                        >
+                        <Select onValueChange={(value) => updateOption("delimiter", value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select delimiter" />
                           </SelectTrigger>
@@ -496,11 +479,7 @@ ${html}
                       </div>
                       <div className="space-y-2">
                         <Label>Encoding</Label>
-                        <Select
-                          onValueChange={(value) =>
-                            updateOption("encoding", value)
-                          }
-                        >
+                        <Select onValueChange={(value) => updateOption("encoding", value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select encoding" />
                           </SelectTrigger>
@@ -516,20 +495,13 @@ ${html}
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Date Format</Label>
-                        <Select
-                          onValueChange={(value) =>
-                            updateOption("dateFormat", value)
-                          }
-                        >
+                        <Select onValueChange={(value) => updateOption("dateFormat", value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select date format" />
                           </SelectTrigger>
                           <SelectContent>
                             {dateFormats.map((format) => (
-                              <SelectItem
-                                key={format.value}
-                                value={format.value}
-                              >
+                              <SelectItem key={format.value} value={format.value}>
                                 {format.label}
                               </SelectItem>
                             ))}
@@ -558,27 +530,21 @@ ${html}
                       <div className="flex items-center space-x-2">
                         <Switch
                           checked={options.hasHeaders}
-                          onCheckedChange={(checked) =>
-                            updateOption("hasHeaders", checked)
-                          }
+                          onCheckedChange={(checked) => updateOption("hasHeaders", checked)}
                         />
                         <Label>First row contains headers</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Switch
                           checked={options.skipEmptyRows}
-                          onCheckedChange={(checked) =>
-                            updateOption("skipEmptyRows", checked)
-                          }
+                          onCheckedChange={(checked) => updateOption("skipEmptyRows", checked)}
                         />
                         <Label>Skip empty rows</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Switch
                           checked={options.trimFields}
-                          onCheckedChange={(checked) =>
-                            updateOption("trimFields", checked)
-                          }
+                          onCheckedChange={(checked) => updateOption("trimFields", checked)}
                         />
                         <Label>Trim fields</Label>
                       </div>
@@ -600,21 +566,14 @@ ${html}
                   <CardContent className="space-y-4">
                     {options.filters.length === 0 ? (
                       <div className="text-center py-8 text-gray-500">
-                        No filters applied. Click "Add Filter" to start
-                        filtering data.
+                        No filters applied. Click "Add Filter" to start filtering data.
                       </div>
                     ) : (
                       options.filters.map((filter, index) => (
                         <div key={index} className="grid md:grid-cols-4 gap-2">
-                          <Select
-                            onValueChange={(value) =>
-                              updateFilter(index, "column", value)
-                            }
-                          >
+                          <Select onValueChange={(value) => updateFilter(index, "column", value)}>
                             <SelectTrigger>
-                              <SelectValue
-                                placeholder={filter.column || "Select column"}
-                              />
+                              <SelectValue placeholder={filter.column || "Select column"} />
                             </SelectTrigger>
                             <SelectContent>
                               {headers.map((header) => (
@@ -624,45 +583,25 @@ ${html}
                               ))}
                             </SelectContent>
                           </Select>
-                          <Select
-                            onValueChange={(value) =>
-                              updateFilter(index, "operator", value)
-                            }
-                          >
+                          <Select onValueChange={(value) => updateFilter(index, "operator", value)}>
                             <SelectTrigger>
-                              <SelectValue
-                                placeholder={
-                                  filter.operator || "Select operator"
-                                }
-                              />
+                              <SelectValue placeholder={filter.operator || "Select operator"} />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="equals">Equals</SelectItem>
                               <SelectItem value="contains">Contains</SelectItem>
-                              <SelectItem value="startsWith">
-                                Starts with
-                              </SelectItem>
-                              <SelectItem value="endsWith">
-                                Ends with
-                              </SelectItem>
-                              <SelectItem value="greater">
-                                Greater than
-                              </SelectItem>
+                              <SelectItem value="startsWith">Starts with</SelectItem>
+                              <SelectItem value="endsWith">Ends with</SelectItem>
+                              <SelectItem value="greater">Greater than</SelectItem>
                               <SelectItem value="less">Less than</SelectItem>
                             </SelectContent>
                           </Select>
                           <Input
                             value={filter.value}
-                            onChange={(e) =>
-                              updateFilter(index, "value", e.target.value)
-                            }
+                            onChange={(e) => updateFilter(index, "value", e.target.value)}
                             placeholder="Filter value..."
                           />
-                          <Button
-                            onClick={() => removeFilter(index)}
-                            variant="outline"
-                            size="sm"
-                          >
+                          <Button onClick={() => removeFilter(index)} variant="outline" size="sm">
                             Remove
                           </Button>
                         </div>
@@ -681,11 +620,7 @@ ${html}
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Sort by Column</Label>
-                        <Select
-                          onValueChange={(value) =>
-                            updateOption("sortBy", value)
-                          }
-                        >
+                        <Select onValueChange={(value) => updateOption("sortBy", value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select column" />
                           </SelectTrigger>
@@ -728,11 +663,7 @@ ${html}
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Export Format</Label>
-                        <Select
-                          onValueChange={(value: any) =>
-                            updateOption("exportFormat", value)
-                          }
-                        >
+                        <Select onValueChange={(value: any) => updateOption("exportFormat", value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select format" />
                           </SelectTrigger>
@@ -746,11 +677,7 @@ ${html}
                       </div>
                       <div className="space-y-2">
                         <Label>Delimiter (for CSV)</Label>
-                        <Select
-                          onValueChange={(value) =>
-                            updateOption("exportDelimiter", value)
-                          }
-                        >
+                        <Select onValueChange={(value) => updateOption("exportDelimiter", value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select delimiter" />
                           </SelectTrigger>
@@ -768,9 +695,7 @@ ${html}
                     <div className="flex items-center space-x-2">
                       <Switch
                         checked={options.includeHeaders}
-                        onCheckedChange={(checked) =>
-                          updateOption("includeHeaders", checked)
-                        }
+                        onCheckedChange={(checked) => updateOption("includeHeaders", checked)}
                       />
                       <Label>Include headers in export</Label>
                     </div>
@@ -787,8 +712,7 @@ ${html}
                   Data Preview
                   {result && (
                     <Badge variant="outline">
-                      {result.stats.processedRows} of {result.stats.totalRows}{" "}
-                      rows
+                      {result.stats.processedRows} of {result.stats.totalRows} rows
                     </Badge>
                   )}
                 </CardTitle>
@@ -807,9 +731,7 @@ ${html}
                       {displayData.slice(0, 100).map((row, index) => (
                         <TableRow key={index}>
                           {displayHeaders.map((header) => (
-                            <TableCell key={header}>
-                              {String(row[header] || "")}
-                            </TableCell>
+                            <TableCell key={header}>{String(row[header] || "")}</TableCell>
                           ))}
                         </TableRow>
                       ))}
@@ -837,10 +759,7 @@ ${html}
                   onClick={() => {
                     const data = exportData();
                     const blob = new Blob([data], {
-                      type:
-                        options.exportFormat === "json"
-                          ? "application/json"
-                          : "text/plain",
+                      type: options.exportFormat === "json" ? "application/json" : "text/plain",
                     });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
@@ -864,9 +783,8 @@ ${html}
           <Alert>
             <FileSpreadsheet className="h-4 w-4" />
             <AlertDescription>
-              Upload a CSV file to start processing. Supported features include
-              filtering, sorting, data transformation, and export to multiple
-              formats.
+              Upload a CSV file to start processing. Supported features include filtering, sorting,
+              data transformation, and export to multiple formats.
             </AlertDescription>
           </Alert>
         )}

@@ -99,9 +99,7 @@ export function FileConverter({
     return filename.split(".").pop()?.toLowerCase() || "";
   };
 
-  const getFormatCategory = (
-    format: string,
-  ): "image" | "document" | "data" | null => {
+  const getFormatCategory = (format: string): "image" | "document" | "data" | null => {
     const lowerFormat = format.toLowerCase();
     for (const [category, formats] of Object.entries(supportedFormats)) {
       if (formats.input.includes(lowerFormat)) {
@@ -143,22 +141,13 @@ export function FileConverter({
 
           switch (category) {
             case "image":
-              convertedFile = await convertImage(
-                file,
-                e.target?.result as string,
-              );
+              convertedFile = await convertImage(file, e.target?.result as string);
               break;
             case "data":
-              convertedFile = await convertData(
-                file,
-                e.target?.result as string,
-              );
+              convertedFile = await convertData(file, e.target?.result as string);
               break;
             case "document":
-              convertedFile = await convertDocument(
-                file,
-                e.target?.result as string,
-              );
+              convertedFile = await convertDocument(file, e.target?.result as string);
               break;
             default:
               throw new Error(`Unsupported file type: ${inputFormat}`);
@@ -178,8 +167,7 @@ export function FileConverter({
           onConversionComplete?.(result);
           resolve(convertedFile);
         } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : "Conversion failed";
+          const errorMessage = error instanceof Error ? error.message : "Conversion failed";
           onError?.(errorMessage);
           reject(error);
         }
@@ -190,22 +178,15 @@ export function FileConverter({
     });
   };
 
-  const convertImage = async (
-    file: File,
-    data: string | ArrayBuffer,
-  ): Promise<File> => {
+  const convertImage = async (file: File, data: string | ArrayBuffer): Promise<File> => {
     // Simplified image conversion - in real implementation, use canvas or libraries like sharp
     const blob = new Blob([data], { type: `image/${targetFormat}` });
     const newFilename = file.name.replace(/\.[^/.]+$/, "") + `.${targetFormat}`;
     return new File([blob], newFilename, { type: `image/${targetFormat}` });
   };
 
-  const convertData = async (
-    file: File,
-    data: string | ArrayBuffer,
-  ): Promise<File> => {
-    const text =
-      typeof data === "string" ? data : new TextDecoder().decode(data);
+  const convertData = async (file: File, data: string | ArrayBuffer): Promise<File> => {
+    const text = typeof data === "string" ? data : new TextDecoder().decode(data);
     const inputFormat = getFileExtension(file.name);
     const newFilename = file.name.replace(/\.[^/.]+$/, "") + `.${targetFormat}`;
 
@@ -238,12 +219,8 @@ export function FileConverter({
     });
   };
 
-  const convertDocument = async (
-    file: File,
-    data: string | ArrayBuffer,
-  ): Promise<File> => {
-    const text =
-      typeof data === "string" ? data : new TextDecoder().decode(data);
+  const convertDocument = async (file: File, data: string | ArrayBuffer): Promise<File> => {
+    const text = typeof data === "string" ? data : new TextDecoder().decode(data);
     const newFilename = file.name.replace(/\.[^/.]+$/, "") + `.${targetFormat}`;
 
     let convertedContent: string;
@@ -281,16 +258,12 @@ export function FileConverter({
     // Simplified CSV parsing
     const lines = csv.split("\n").filter((line) => line.trim());
     const headers = lines[0].split(",").map((h) => h.trim());
-    const rows = lines
-      .slice(1)
-      .map((line) => line.split(",").map((cell) => cell.trim()));
+    const rows = lines.slice(1).map((line) => line.split(",").map((cell) => cell.trim()));
 
     switch (targetFormat) {
       case "json":
         return JSON.stringify(
-          rows.map((row) =>
-            Object.fromEntries(headers.map((header, i) => [header, row[i]])),
-          ),
+          rows.map((row) => Object.fromEntries(headers.map((header, i) => [header, row[i]]))),
           null,
           2,
         );
@@ -385,8 +358,7 @@ export function FileConverter({
     }
   };
 
-  const availableFormats =
-    files.length > 0 ? getAvailableFormats(files[0]) : [];
+  const availableFormats = files.length > 0 ? getAvailableFormats(files[0]) : [];
 
   return (
     <div className={className}>
@@ -447,30 +419,25 @@ export function FileConverter({
                 </div>
 
                 {/* Format-specific options */}
-                {targetFormat &&
-                  ["jpg", "jpeg", "webp"].includes(targetFormat) && (
-                    <div className="space-y-2">
-                      <Label>Quality: {options.quality}%</Label>
-                      <Slider
-                        value={[options.quality || 85]}
-                        onValueChange={([value]) =>
-                          updateOptions("quality", value)
-                        }
-                        max={100}
-                        min={1}
-                        step={1}
-                      />
-                    </div>
-                  )}
+                {targetFormat && ["jpg", "jpeg", "webp"].includes(targetFormat) && (
+                  <div className="space-y-2">
+                    <Label>Quality: {options.quality}%</Label>
+                    <Slider
+                      value={[options.quality || 85]}
+                      onValueChange={([value]) => updateOptions("quality", value)}
+                      max={100}
+                      min={1}
+                      step={1}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center space-x-2">
                   <Switch
                     checked={options.compress || false}
-                    onCheckedChange={(checked) =>
-                      updateOptions("compress", checked)
-                    }
+                    onCheckedChange={(checked) => updateOptions("compress", checked)}
                   />
                   <Label>Compress output</Label>
                 </div>
@@ -478,9 +445,7 @@ export function FileConverter({
                 <div className="flex items-center space-x-2">
                   <Switch
                     checked={options.preserveMetadata || false}
-                    onCheckedChange={(checked) =>
-                      updateOptions("preserveMetadata", checked)
-                    }
+                    onCheckedChange={(checked) => updateOptions("preserveMetadata", checked)}
                   />
                   <Label>Preserve metadata</Label>
                 </div>
@@ -520,12 +485,10 @@ export function FileConverter({
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="font-medium">
-                          {result.originalFile.name} →{" "}
-                          {result.convertedFile.name}
+                          {result.originalFile.name} → {result.convertedFile.name}
                         </div>
                         <div className="text-sm text-gray-600">
-                          {result.originalFile.size} bytes →{" "}
-                          {result.convertedFile.size} bytes
+                          {result.originalFile.size} bytes → {result.convertedFile.size} bytes
                         </div>
                       </div>
                       <Badge variant="default">{result.processingTime}ms</Badge>
@@ -577,10 +540,9 @@ export function FileConverter({
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Max file size: {(maxFileSize / 1024 / 1024).toFixed(0)}MB. Supported
-            formats: Images (JPG, PNG, WebP), Documents (PDF, TXT), Data files
-            (JSON, CSV, XML). Conversion happens in your browser - files are
-            never uploaded to servers.
+            Max file size: {(maxFileSize / 1024 / 1024).toFixed(0)}MB. Supported formats: Images
+            (JPG, PNG, WebP), Documents (PDF, TXT), Data files (JSON, CSV, XML). Conversion happens
+            in your browser - files are never uploaded to servers.
           </AlertDescription>
         </Alert>
       </div>

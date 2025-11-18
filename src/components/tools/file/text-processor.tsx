@@ -41,15 +41,7 @@ export interface TextProcessingOptions {
   trimLines: boolean;
 
   // Case Conversion
-  caseType:
-    | "upper"
-    | "lower"
-    | "title"
-    | "sentence"
-    | "camel"
-    | "pascal"
-    | "snake"
-    | "kebab";
+  caseType: "upper" | "lower" | "title" | "sentence" | "camel" | "pascal" | "snake" | "kebab";
 }
 
 export interface TextProcessingResult {
@@ -74,25 +66,24 @@ interface TextProcessorProps {
   className?: string;
 }
 
-const searchTypes: { value: SearchType; label: string; description: string }[] =
-  [
-    { value: "normal", label: "Normal", description: "Standard text search" },
-    {
-      value: "regex",
-      label: "Regex",
-      description: "Regular expression pattern",
-    },
-    {
-      value: "case-insensitive",
-      label: "Case Insensitive",
-      description: "Ignore case differences",
-    },
-    {
-      value: "whole-word",
-      label: "Whole Word",
-      description: "Match complete words only",
-    },
-  ];
+const searchTypes: { value: SearchType; label: string; description: string }[] = [
+  { value: "normal", label: "Normal", description: "Standard text search" },
+  {
+    value: "regex",
+    label: "Regex",
+    description: "Regular expression pattern",
+  },
+  {
+    value: "case-insensitive",
+    label: "Case Insensitive",
+    description: "Ignore case differences",
+  },
+  {
+    value: "whole-word",
+    label: "Whole Word",
+    description: "Match complete words only",
+  },
+];
 
 const transformTypes: {
   value: TransformType;
@@ -129,12 +120,7 @@ const caseConversionOptions = [
   { value: "kebab", label: "kebab-case", example: "hello-world" },
 ];
 
-export function TextProcessor({
-  value,
-  onChange,
-  height = 400,
-  className,
-}: TextProcessorProps) {
+export function TextProcessor({ value, onChange, height = 400, className }: TextProcessorProps) {
   const [text, setText] = React.useState(value || "");
   const [processedText, setProcessedText] = React.useState("");
   const [options, setOptions] = React.useState<TextProcessingOptions>({
@@ -312,10 +298,7 @@ export function TextProcessor({
       .join("\n\n");
   };
 
-  const normalizeLineEndings = (
-    text: string,
-    lineEndings: "lf" | "crlf" | "cr",
-  ): string => {
+  const normalizeLineEndings = (text: string, lineEndings: "lf" | "crlf" | "cr"): string => {
     switch (lineEndings) {
       case "lf":
         return text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
@@ -414,17 +397,7 @@ export function TextProcessor({
               files={files}
               onFilesChange={setFiles}
               maxFiles={5}
-              acceptedFormats={[
-                "txt",
-                "md",
-                "csv",
-                "json",
-                "xml",
-                "html",
-                "css",
-                "js",
-                "ts",
-              ]}
+              acceptedFormats={["txt", "md", "csv", "json", "xml", "html", "css", "js", "ts"]}
             />
             <CodeEditor
               language="javascript"
@@ -439,10 +412,7 @@ export function TextProcessor({
         {/* Processing Options */}
         <Tabs defaultValue="search-replace" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger
-              value="search-replace"
-              className="flex items-center gap-2"
-            >
+            <TabsTrigger value="search-replace" className="flex items-center gap-2">
               <Search className="h-4 w-4" />
               Search & Replace
             </TabsTrigger>
@@ -472,9 +442,7 @@ export function TextProcessor({
                     <Input
                       id="search-text"
                       value={options.searchText}
-                      onChange={(e) =>
-                        updateOption("searchText", e.target.value)
-                      }
+                      onChange={(e) => updateOption("searchText", e.target.value)}
                       placeholder="Text to search for..."
                     />
                   </div>
@@ -483,9 +451,7 @@ export function TextProcessor({
                     <Input
                       id="replace-text"
                       value={options.replaceText}
-                      onChange={(e) =>
-                        updateOption("replaceText", e.target.value)
-                      }
+                      onChange={(e) => updateOption("replaceText", e.target.value)}
                       placeholder="Replacement text..."
                     />
                   </div>
@@ -495,9 +461,7 @@ export function TextProcessor({
                   <div className="space-y-2">
                     <Label>Search Type</Label>
                     <Select
-                      onValueChange={(value: SearchType) =>
-                        updateOption("searchType", value)
-                      }
+                      onValueChange={(value: SearchType) => updateOption("searchType", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select search type" />
@@ -507,9 +471,7 @@ export function TextProcessor({
                           <SelectItem key={type.value} value={type.value}>
                             <div>
                               <div className="font-medium">{type.label}</div>
-                              <div className="text-xs text-gray-500">
-                                {type.description}
-                              </div>
+                              <div className="text-xs text-gray-500">{type.description}</div>
                             </div>
                           </SelectItem>
                         ))}
@@ -522,27 +484,21 @@ export function TextProcessor({
                   <div className="flex items-center space-x-2">
                     <Switch
                       checked={options.caseSensitive}
-                      onCheckedChange={(checked) =>
-                        updateOption("caseSensitive", checked)
-                      }
+                      onCheckedChange={(checked) => updateOption("caseSensitive", checked)}
                     />
                     <Label>Case Sensitive</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Switch
                       checked={options.wholeWord}
-                      onCheckedChange={(checked) =>
-                        updateOption("wholeWord", checked)
-                      }
+                      onCheckedChange={(checked) => updateOption("wholeWord", checked)}
                     />
                     <Label>Whole Word</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Switch
                       checked={options.useRegex}
-                      onCheckedChange={(checked) =>
-                        updateOption("useRegex", checked)
-                      }
+                      onCheckedChange={(checked) => updateOption("useRegex", checked)}
                     />
                     <Label>Use Regex</Label>
                   </div>
@@ -561,9 +517,7 @@ export function TextProcessor({
                   <div className="space-y-2">
                     <Label>Transform Type</Label>
                     <Select
-                      onValueChange={(value: TransformType) =>
-                        updateOption("transformType", value)
-                      }
+                      onValueChange={(value: TransformType) => updateOption("transformType", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select transform type" />
@@ -573,9 +527,7 @@ export function TextProcessor({
                           <SelectItem key={type.value} value={type.value}>
                             <div>
                               <div className="font-medium">{type.label}</div>
-                              <div className="text-xs text-gray-500">
-                                {type.description}
-                              </div>
+                              <div className="text-xs text-gray-500">{type.description}</div>
                             </div>
                           </SelectItem>
                         ))}
@@ -584,20 +536,13 @@ export function TextProcessor({
                   </div>
                   <div className="space-y-2">
                     <Label>Target Encoding</Label>
-                    <Select
-                      onValueChange={(value) =>
-                        updateOption("targetEncoding", value)
-                      }
-                    >
+                    <Select onValueChange={(value) => updateOption("targetEncoding", value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select encoding" />
                       </SelectTrigger>
                       <SelectContent>
                         {encodingOptions.map((encoding) => (
-                          <SelectItem
-                            key={encoding.value}
-                            value={encoding.value}
-                          >
+                          <SelectItem key={encoding.value} value={encoding.value}>
                             {encoding.label}
                           </SelectItem>
                         ))}
@@ -629,9 +574,7 @@ export function TextProcessor({
                 <div className="flex items-center space-x-2">
                   <Switch
                     checked={options.trimLines}
-                    onCheckedChange={(checked) =>
-                      updateOption("trimLines", checked)
-                    }
+                    onCheckedChange={(checked) => updateOption("trimLines", checked)}
                   />
                   <Label>Trim Lines</Label>
                 </div>
@@ -648,9 +591,7 @@ export function TextProcessor({
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Case Type</Label>
-                    <Select
-                      onValueChange={(value) => updateOption("caseType", value)}
-                    >
+                    <Select onValueChange={(value) => updateOption("caseType", value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select case conversion" />
                       </SelectTrigger>
@@ -659,9 +600,7 @@ export function TextProcessor({
                           <SelectItem key={option.value} value={option.value}>
                             <div>
                               <div className="font-medium">{option.label}</div>
-                              <div className="text-xs text-gray-500">
-                                {option.example}
-                              </div>
+                              <div className="text-xs text-gray-500">{option.example}</div>
                             </div>
                           </SelectItem>
                         ))}
@@ -680,9 +619,8 @@ export function TextProcessor({
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  Additional formatting options will be available here, such as
-                  indentation, wrapping, and more advanced text structure
-                  modifications.
+                  Additional formatting options will be available here, such as indentation,
+                  wrapping, and more advanced text structure modifications.
                 </p>
               </CardContent>
             </Card>
@@ -720,8 +658,7 @@ export function TextProcessor({
                       {result.stats.matchesFound}
                     </div>
                     <div>
-                      <span className="font-medium">Replacements:</span>{" "}
-                      {result.stats.replacements}
+                      <span className="font-medium">Replacements:</span> {result.stats.replacements}
                     </div>
                   </div>
 
@@ -752,18 +689,13 @@ export function TextProcessor({
                       <Download className="h-4 w-4 mr-2" />
                       Download Result
                     </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => setText(processedText)}
-                    >
+                    <Button variant="outline" onClick={() => setText(processedText)}>
                       Use as Input
                     </Button>
                   </div>
                 </>
               ) : (
-                <div className="text-red-600 text-center py-4">
-                  {result.error}
-                </div>
+                <div className="text-red-600 text-center py-4">{result.error}</div>
               )}
             </CardContent>
           </Card>
