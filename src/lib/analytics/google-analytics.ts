@@ -353,7 +353,9 @@ export class GoogleAnalyticsService {
 
     this.eventQueue.forEach((event) => {
       if (event.action === "page_view") {
-        const { path, title } = event.custom_parameters || {};
+        const params =
+          (event.custom_parameters as Record<string, string | undefined>) || {};
+        const { path, title } = params;
         this.trackPageView(path, title);
       } else {
         this.trackEvent(event.action, event.custom_parameters);
