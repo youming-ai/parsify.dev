@@ -95,6 +95,22 @@
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
 - **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
 
+### Security Requirements *(Constitution Compliance)*
+
+- **SEC-001**: Tool MUST NOT use eval() or unsafe dynamic code execution
+- **SEC-002**: All user inputs MUST be sanitized before processing
+- **SEC-003**: Implementation MUST be CSP-compliant
+- **SEC-004**: No external CDN dependencies for core functionality
+- **SEC-005**: Input validation MUST handle malformed/malicious data gracefully
+
+### Performance Requirements *(Constitution Compliance)*
+
+- **PERF-001**: Tool bundle size MUST stay under 200KB compressed
+- **PERF-002**: Tool MUST load and become interactive within 3 seconds
+- **PERF-003**: Monaco Editor language MUST be loaded on-demand
+- **PERF-004**: Tool MUST handle large inputs (1MB+ JSON, 10K+ lines code) without UI freezing
+- **PERF-005**: Memory usage MUST stay under 100MB during operation
+
 ### Key Entities *(include if feature involves data)*
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]

@@ -16,3 +16,10 @@ Use `@/openspec/AGENTS.md` to learn:
 Keep this managed block so 'openspec update' can refresh the instructions.
 
 <!-- OPENSPEC:END -->
+
+## Active Technologies
+- TypeScript 5.0+ (strict mode), React 19+ + Next.js 16, Monaco Editor, Tailwind CSS, Zustand, Pyodide (Python WASM), TeaVM (Java WASM), WASM Go runtime, Web Crypto API (001-complete-dev-tools)
+- Client-side localStorage for preferences, IndexedDB for temporary files, no backend storage (001-complete-dev-tools)
+
+## Recent Changes
+- 001-complete-dev-tools: Added TypeScript 5.0+ (strict mode), React 19+ + Next.js 16, Monaco Editor, Tailwind CSS, Zustand, Pyodide (Python WASM), TeaVM (Java WASM), WASM Go runtime, Web Crypto API
