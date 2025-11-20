@@ -128,9 +128,7 @@ export interface DiagnosticsDefinition {
     model: monaco.editor.ITextModel,
     position: monaco.Position,
   ) => Promise<monaco.languages.Diagnostic[]>;
-  doValidation?: (
-    model: monaco.editor.ITextModel,
-  ) => Promise<monaco.languages.Diagnostic[]>;
+  doValidation?: (model: monaco.editor.ITextModel) => Promise<monaco.languages.Diagnostic[]>;
 }
 
 export interface MonacoExtension {
@@ -147,7 +145,6 @@ export interface MonacoExtension {
 }
 
 export class MonacoExtensionManager {
-  private static instance: MonacoExtensionManager;
   private extensions: Map<string, MonacoExtension>;
   private languageRegistry: Map<string, LanguageDefinition>;
   private themeRegistry: Map<string, EditorThemeDefinition>;
@@ -262,18 +259,12 @@ export class MonacoExtensionManager {
 
       // Set language configuration
       if (language.configuration) {
-        monaco.languages.setLanguageConfiguration(
-          language.id,
-          language.configuration,
-        );
+        monaco.languages.setLanguageConfiguration(language.id, language.configuration);
       }
 
       // Set tokens provider
       if (language.tokenizer) {
-        monaco.languages.setMonarchTokensProvider(
-          language.id,
-          language.tokenizer,
-        );
+        monaco.languages.setMonarchTokensProvider(language.id, language.tokenizer);
       }
 
       // Set up worker if provided
@@ -283,54 +274,46 @@ export class MonacoExtensionManager {
 
       // Set up completion provider
       if (language.completion) {
-        const disposable = monaco.languages.registerCompletionItemProvider(
-          language.id,
-          {
-            provideCompletionItems:
-              language.completion.provider.provideCompletionItems,
-            resolveCompletionItem:
-              language.completion.provider.resolveCompletionItem,
-            triggerCharacters: language.completion.triggerCharacters,
-          },
-        );
+        const disposable = monaco.languages.registerCompletionItemProvider(language.id, {
+          provideCompletionItems: language.completion.provider.provideCompletionItems,
+          resolveCompletionItem: language.completion.provider.resolveCompletionItem,
+          triggerCharacters: language.completion.triggerCharacters,
+        });
         this.completionProviders.set(language.id, disposable);
       }
 
       // Set up formatting provider
       if (language.formatting) {
-        const disposable =
-          monaco.languages.registerDocumentFormattingEditProvider(language.id, {
-            provideDocumentFormattingEdits:
-              language.formatting.provideDocumentFormattingEdits,
-            provideDocumentRangeFormattingEdits:
-              language.formatting.provideDocumentRangeFormattingEdits,
-          });
+        const disposable = monaco.languages.registerDocumentFormattingEditProvider(language.id, {
+          provideDocumentFormattingEdits: language.formatting.provideDocumentFormattingEdits,
+          provideDocumentRangeFormattingEdits:
+            language.formatting.provideDocumentRangeFormattingEdits,
+        });
         this.formattingProviders.set(language.id, disposable);
       }
 
       // Set up diagnostics provider
       if (language.diagnostics) {
-        const disposable =
-          monaco.languages.registerDocumentSemanticTokensProvider(language.id, {
-            provideDocumentSemanticTokens: async (model) => {
-              if (language.diagnostics?.validate) {
-                const diagnostics = await language.diagnostics.validate(
-                  model,
-                  model.getPositionAt(0),
-                );
-                return {
-                  data: new Uint32Array([0]),
-                  resultId: "",
-                };
-              }
-              return { data: new Uint32Array([0]), resultId: "" };
-            },
-            getLegend: () => ({
-              tokenTypes: ["type", "class", "function"],
-              tokenModifiers: [],
-            }),
-            releaseDocumentSemanticTokens: () => {},
-          });
+        const disposable = monaco.languages.registerDocumentSemanticTokensProvider(language.id, {
+          provideDocumentSemanticTokens: async (model) => {
+            if (language.diagnostics?.validate) {
+              const _diagnostics = await language.diagnostics.validate(
+                model,
+                model.getPositionAt(0),
+              );
+              return {
+                data: new Uint32Array([0]),
+                resultId: "",
+              };
+            }
+            return { data: new Uint32Array([0]), resultId: "" };
+          },
+          getLegend: () => ({
+            tokenTypes: ["type", "class", "function"],
+            tokenModifiers: [],
+          }),
+          releaseDocumentSemanticTokens: () => {},
+        });
         this.diagnosticsProviders.set(language.id, disposable);
       }
 
@@ -517,295 +500,6 @@ export class MonacoExtensionManager {
     this.emit("manager:disposed");
   }
 
-  /**
-   * Private methods
-   */
-  private initializeDefaultLanguages(): void {
-    // Define built-in languages
-    const builtInLanguages = [
-      this.createTypeScriptDefinition(),
-      this.createJavaScriptDefinition(),
-      this.createPythonDefinition(),
-      this.createGoDefinition(),
-      this.createRustDefinition(),
-      this.createJavaDefinition(),
-      this.createCppDefinition(),
-      this.createJsonDefinition(),
-      this.createYamlDefinition(),
-      this.createMarkdownDefinition(),
-    ];
-
-    builtInLanguages.forEach((language) => {
-      this.languageRegistry.set(language.id, language);
-    });
-  }
-
-  private createTypeScriptDefinition(): LanguageDefinition {
-    return {
-      id: "typescript",
-      name: "TypeScript",
-      extensions: [".ts", ".tsx"],
-      aliases: ["TypeScript", "ts"],
-      mimetypes: ["text/typescript"],
-      configuration: {
-        comments: {
-          lineComment: "//",
-          blockComment: ["/*", "*/"],
-        },
-        brackets: [
-          ["{", "}"],
-          ["[", "]"],
-          ["(", ")"],
-        ],
-        autoClosingPairs: [
-          { open: "{", close: "}" },
-          { open: "[", close: "]" },
-          { open: "(", close: ")" },
-          { open: '"', close: '"', notIn: ["string"] },
-          { open: "'", close: "'", notIn: ["string", "comment"] },
-          { open: "`", close: "`", notIn: ["string", "comment"] },
-        ],
-      },
-    };
-  }
-
-  private createJavaScriptDefinition(): LanguageDefinition {
-    return {
-      id: "javascript",
-      name: "JavaScript",
-      extensions: [".js", ".jsx", ".mjs"],
-      aliases: ["JavaScript", "js"],
-      mimetypes: ["text/javascript", "application/javascript"],
-      configuration: {
-        comments: {
-          lineComment: "//",
-          blockComment: ["/*", "*/"],
-        },
-        brackets: [
-          ["{", "}"],
-          ["[", "]"],
-          ["(", ")"],
-        ],
-        autoClosingPairs: [
-          { open: "{", close: "}" },
-          { open: "[", close: "]" },
-          { open: "(", close: ")" },
-          { open: '"', close: '"', notIn: ["string"] },
-          { open: "'", close: "'", notIn: ["string", "comment"] },
-          { open: "`", close: "`", notIn: ["string", "comment"] },
-        ],
-      },
-    };
-  }
-
-  private createPythonDefinition(): LanguageDefinition {
-    return {
-      id: "python",
-      name: "Python",
-      extensions: [".py", ".pyw", ".pyi"],
-      aliases: ["Python", "py"],
-      mimetypes: ["text/x-python", "text/x-script.python"],
-      configuration: {
-        comments: {
-          lineComment: "#",
-          blockComment: ['"""', '"""'],
-        },
-        brackets: [
-          ["{", "}"],
-          ["[", "]"],
-          ["(", ")"],
-        ],
-        autoClosingPairs: [
-          { open: "{", close: "}" },
-          { open: "[", close: "]" },
-          { open: "(", close: ")" },
-          { open: '"', close: '"', notIn: ["string"] },
-          { open: "'", close: "'", notIn: ["string", "comment"] },
-        ],
-        indentationRules: {
-          increaseIndentPattern: /^.*:\s*$/,
-          decreaseIndentPattern: /^\s*(pass|return|break|continue|raise)\b.*$/,
-        },
-      },
-    };
-  }
-
-  private createGoDefinition(): LanguageDefinition {
-    return {
-      id: "go",
-      name: "Go",
-      extensions: [".go"],
-      aliases: ["Go", "golang"],
-      mimetypes: ["text/x-go"],
-      configuration: {
-        comments: {
-          lineComment: "//",
-          blockComment: ["/*", "*/"],
-        },
-        brackets: [
-          ["{", "}"],
-          ["[", "]"],
-          ["(", ")"],
-        ],
-        autoClosingPairs: [
-          { open: "{", close: "}" },
-          { open: "[", close: "]" },
-          { open: "(", close: ")" },
-          { open: '"', close: '"', notIn: ["string"] },
-          { open: "'", close: "'", notIn: ["string", "comment"] },
-          { open: "`", close: "`" },
-        ],
-      },
-    };
-  }
-
-  private createRustDefinition(): LanguageDefinition {
-    return {
-      id: "rust",
-      name: "Rust",
-      extensions: [".rs"],
-      aliases: ["Rust", "rs"],
-      mimetypes: ["text/x-rust"],
-      configuration: {
-        comments: {
-          lineComment: "//",
-          blockComment: ["/*", "*/"],
-        },
-        brackets: [
-          ["{", "}"],
-          ["[", "]"],
-          ["(", ")"],
-        ],
-        autoClosingPairs: [
-          { open: "{", close: "}" },
-          { open: "[", close: "]" },
-          { open: "(", close: ")" },
-          { open: '"', close: '"', notIn: ["string"] },
-          { open: "'", close: "'", notIn: ["string", "comment"] },
-        ],
-      },
-    };
-  }
-
-  private createJavaDefinition(): LanguageDefinition {
-    return {
-      id: "java",
-      name: "Java",
-      extensions: [".java", ".class"],
-      aliases: ["Java"],
-      mimetypes: ["text/x-java", "text/x-java-source"],
-      configuration: {
-        comments: {
-          lineComment: "//",
-          blockComment: ["/*", "*/"],
-        },
-        brackets: [
-          ["{", "}"],
-          ["[", "]"],
-          ["(", ")"],
-        ],
-        autoClosingPairs: [
-          { open: "{", close: "}" },
-          { open: "[", close: "]" },
-          { open: "(", close: ")" },
-          { open: '"', close: '"', notIn: ["string"] },
-          { open: "'", close: "'", notIn: ["string", "comment"] },
-        ],
-      },
-    };
-  }
-
-  private createCppDefinition(): LanguageDefinition {
-    return {
-      id: "cpp",
-      name: "C++",
-      extensions: [".cpp", ".cxx", ".cc", ".c++", ".h", ".hh", ".hpp", ".hxx"],
-      aliases: ["C++", "cpp", "c++"],
-      mimetypes: ["text/x-c++", "text/x-c++src"],
-      configuration: {
-        comments: {
-          lineComment: "//",
-          blockComment: ["/*", "*/"],
-        },
-        brackets: [
-          ["{", "}"],
-          ["[", "]"],
-          ["(", ")"],
-          ["<", ">"],
-        ],
-        autoClosingPairs: [
-          { open: "{", close: "}" },
-          { open: "[", close: "]" },
-          { open: "(", close: ")" },
-          { open: "<", close: ">" },
-          { open: '"', close: '"', notIn: ["string"] },
-          { open: "'", close: "'", notIn: ["string", "comment"] },
-        ],
-      },
-    };
-  }
-
-  private createJsonDefinition(): LanguageDefinition {
-    return {
-      id: "json",
-      name: "JSON",
-      extensions: [".json", ".jsonc", ".jsonl"],
-      aliases: ["JSON", "json"],
-      mimetypes: ["application/json", "application/jsonc"],
-      configuration: {
-        brackets: [
-          ["{", "}"],
-          ["[", "]"],
-        ],
-        autoClosingPairs: [
-          { open: "{", close: "}" },
-          { open: "[", close: "]" },
-          { open: '"', close: '"' },
-        ],
-      },
-    };
-  }
-
-  private createYamlDefinition(): LanguageDefinition {
-    return {
-      id: "yaml",
-      name: "YAML",
-      extensions: [".yaml", ".yml"],
-      aliases: ["YAML", "yaml", "yml"],
-      mimetypes: ["text/x-yaml", "application/x-yaml"],
-      configuration: {
-        comments: {
-          lineComment: "#",
-        },
-        brackets: [
-          ["{", "}"],
-          ["[", "]"],
-        ],
-        autoClosingPairs: [
-          { open: "{", close: "}" },
-          { open: "[", close: "]" },
-          { open: '"', close: '"' },
-          { open: "'", close: "'" },
-        ],
-      },
-    };
-  }
-
-  private createMarkdownDefinition(): LanguageDefinition {
-    return {
-      id: "markdown",
-      name: "Markdown",
-      extensions: [".md", ".markdown", ".mdown", ".mkd"],
-      aliases: ["Markdown", "md"],
-      mimetypes: ["text/x-markdown", "text/markdown"],
-      configuration: {
-        comments: {
-          blockComment: ["<!--", "-->"],
-        },
-      },
-    };
-  }
-
   private validateExtension(extension: MonacoExtension): void {
     if (!extension.id || !extension.name) {
       throw new Error("Extension must have id and name");
@@ -848,16 +542,11 @@ export class MonacoExtensionManager {
 
     // Re-register providers
     if (language.completion) {
-      const disposable = monaco.languages.registerCompletionItemProvider(
-        languageId,
-        {
-          provideCompletionItems:
-            language.completion.provider.provideCompletionItems,
-          resolveCompletionItem:
-            language.completion.provider.resolveCompletionItem,
-          triggerCharacters: language.completion.triggerCharacters,
-        },
-      );
+      const disposable = monaco.languages.registerCompletionItemProvider(languageId, {
+        provideCompletionItems: language.completion.provider.provideCompletionItems,
+        resolveCompletionItem: language.completion.provider.resolveCompletionItem,
+        triggerCharacters: language.completion.triggerCharacters,
+      });
       this.completionProviders.set(languageId, disposable);
     }
   }
@@ -877,7 +566,7 @@ export class MonacoExtensionManager {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
-    this.eventListeners.get(event)!.push(listener);
+    this.eventListeners.get(event)?.push(listener);
   }
 
   public off(event: string, listener: Function): void {
@@ -896,10 +585,7 @@ export class MonacoExtensionManager {
       try {
         listener(data);
       } catch (error) {
-        console.error(
-          `Error in Monaco extension manager event listener for ${event}:`,
-          error,
-        );
+        console.error(`Error in Monaco extension manager event listener for ${event}:`, error);
       }
     });
   }

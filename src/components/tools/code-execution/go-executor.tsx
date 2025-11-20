@@ -3,28 +3,14 @@
  * Executes Go code in browser using TinyGo WASM compilation
  */
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Package, Play, Square } from "lucide-react";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { type ToolConfig, ToolWrapper } from "@/components/tools/tool-wrapper";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Play,
-  Square,
-  Download,
-  Upload,
-  Package,
-  Settings,
-} from "lucide-react";
-import { ToolWrapper, type ToolConfig } from "@/components/tools/tool-wrapper";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { MemoryManager } from "@/lib/memory-manager";
 import { PerformanceMonitor } from "@/lib/performance-monitor";
 import type { GoExecutionResult } from "@/lib/runtimes/go-wasm";
@@ -430,9 +416,7 @@ export function GoExecutor(): React.ReactElement {
     if (!goRuntime || !state.code.trim()) {
       setState((prev) => ({
         ...prev,
-        error: state.code.trim()
-          ? "Go runtime not initialized"
-          : "Please enter Go code",
+        error: state.code.trim() ? "Go runtime not initialized" : "Please enter Go code",
       }));
       return;
     }
@@ -478,16 +462,21 @@ export function GoExecutor(): React.ReactElement {
     } finally {
       setState((prev) => ({ ...prev, isRunning: false }));
     }
-  }, [goRuntime, state.code, state.packageName, state.goVersion, state.target]);
+  }, [
+    goRuntime,
+    state.code,
+    state.packageName,
+    state.goVersion,
+    state.target,
+    performanceMonitor.trackToolLoad,
+  ]);
 
   // Run compiled Go code
   const runCode = useCallback(async () => {
     if (!goRuntime || !state.isCompiled) {
       setState((prev) => ({
         ...prev,
-        error: !state.isCompiled
-          ? "Please build the code first"
-          : "Go runtime not initialized",
+        error: !state.isCompiled ? "Please build the code first" : "Go runtime not initialized",
       }));
       return;
     }
@@ -497,10 +486,7 @@ export function GoExecutor(): React.ReactElement {
     try {
       const startTime = performance.now();
 
-      const result: GoExecutionResult = await goRuntime.run(
-        state.wasmFile,
-        state.input,
-      );
+      const result: GoExecutionResult = await goRuntime.run(state.wasmFile, state.input);
 
       const executionTime = performance.now() - startTime;
       const memoryUsage = memoryManager.getCurrentMemoryUsage();
@@ -569,33 +555,30 @@ export function GoExecutor(): React.ReactElement {
   }, [state.code, state.packageName]);
 
   // Import code
-  const importCode = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
+  const importCode = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
-        const fileName = file.name.toLowerCase();
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      const fileName = file.name.toLowerCase();
 
-        if (fileName.endsWith(".go")) {
-          // Extract package name from file or use default
-          const packageName = file.name.replace(/\.go$/i, "");
-          setState((prev) => ({
-            ...prev,
-            code: content,
-            packageName,
-            isCompiled: false,
-            output: "",
-            error: null,
-          }));
-        }
-      };
-      reader.readAsText(file);
-    },
-    [],
-  );
+      if (fileName.endsWith(".go")) {
+        // Extract package name from file or use default
+        const packageName = file.name.replace(/\.go$/i, "");
+        setState((prev) => ({
+          ...prev,
+          code: content,
+          packageName,
+          isCompiled: false,
+          output: "",
+          error: null,
+        }));
+      }
+    };
+    reader.readAsText(file);
+  }, []);
 
   // Scroll to bottom of output
   useEffect(() => {
@@ -646,17 +629,9 @@ export function GoExecutor(): React.ReactElement {
             ]
           : []
       }
-      onNotificationDismiss={() =>
-        setState((prev) => ({ ...prev, error: null }))
-      }
+      onNotificationDismiss={() => setState((prev) => ({ ...prev, error: null }))}
     >
-      <input
-        id="go-import"
-        type="file"
-        accept=".go"
-        onChange={importCode}
-        className="hidden"
-      />
+      <input id="go-import" type="file" accept=".go" onChange={importCode} className="hidden" />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Code Editor Section */}
@@ -667,7 +642,7 @@ export function GoExecutor(): React.ReactElement {
               <select
                 value={selectedPreset}
                 onChange={(e) => {
-                  const index = parseInt(e.target.value);
+                  const index = parseInt(e.target.value, 10);
                   setSelectedPreset(index);
                   loadPreset(GO_PRESETS[index]);
                 }}
@@ -751,9 +726,7 @@ export function GoExecutor(): React.ReactElement {
             <CardContent className="p-4">
               <textarea
                 value={state.input}
-                onChange={(e) =>
-                  setState((prev) => ({ ...prev, input: e.target.value }))
-                }
+                onChange={(e) => setState((prev) => ({ ...prev, input: e.target.value }))}
                 className="w-full h-24 px-3 py-2 border rounded-md text-sm font-mono resize-none"
                 placeholder="Enter input for the Go program..."
               />
@@ -767,14 +740,10 @@ export function GoExecutor(): React.ReactElement {
             <h3 className="text-lg font-semibold">Console Output</h3>
             <div className="flex items-center gap-2">
               {state.buildTime > 0 && (
-                <Badge variant="secondary">
-                  Build: {state.buildTime.toFixed(2)}ms
-                </Badge>
+                <Badge variant="secondary">Build: {state.buildTime.toFixed(2)}ms</Badge>
               )}
               {state.executionTime > 0 && (
-                <Badge variant="secondary">
-                  Run: {state.executionTime.toFixed(2)}ms
-                </Badge>
+                <Badge variant="secondary">Run: {state.executionTime.toFixed(2)}ms</Badge>
               )}
               {state.memoryUsage > 0 && (
                 <Badge variant="secondary">

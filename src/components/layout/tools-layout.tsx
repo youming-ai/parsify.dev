@@ -1,7 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Footer } from "./footer";
 import { Header } from "./header";
-import { Sidebar } from "./sidebar";
 
 interface ToolsLayoutProps {
   children: React.ReactNode;

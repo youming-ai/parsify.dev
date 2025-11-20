@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronRight, Copy, Download } from "lucide-react";
 import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { JsonViewerProps, TreeNode } from "./json-types";
 import { copyToClipboard, downloadFile, parseJsonToTree } from "./json-utils";
 

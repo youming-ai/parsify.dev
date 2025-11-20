@@ -1,3 +1,5 @@
+import { Copy, Download, Play, RotateCcw, Settings, Upload } from "lucide-react";
+import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,8 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Copy, Download, Play, RotateCcw, Settings, Upload } from "lucide-react";
-import * as React from "react";
 import { ToolWrapper } from "../tool-wrapper";
 import { CodeEditor } from "./code-editor";
 import { CodeFormatter, type FORMAT_PRESETS, FormatPresetSelector } from "./code-formatter";
@@ -23,10 +23,10 @@ import { ExecutionStatus } from "./execution-status";
 import { getLanguageConfig, getTemplatesByLanguage } from "./language-configs";
 import { LanguageSelector, QuickLanguageSelector } from "./language-selector";
 import {
-  Terminal,
   createTerminalLine,
   formatTerminalError,
   formatTerminalOutput,
+  Terminal,
 } from "./terminal";
 
 interface CodeToolCompleteProps {

@@ -1,7 +1,7 @@
+import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import * as React from "react";
 import type { JsonEditorProps } from "./json-types";
 import { validateJson } from "./json-utils";
 

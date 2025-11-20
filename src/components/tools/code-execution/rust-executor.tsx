@@ -3,15 +3,14 @@
  * Executes Rust code in browser using native WASM compilation
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Package, Play, Square, } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { type ToolConfig, ToolWrapper } from '@/components/tools/tool-wrapper';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Play, Square, Download, Upload, Package, Settings } from 'lucide-react';
-import { ToolWrapper, type ToolConfig } from '@/components/tools/tool-wrapper';
 import { MemoryManager } from '@/lib/memory-manager';
 import { PerformanceMonitor } from '@/lib/performance-monitor';
 import type { RustExecutionResult } from '@/lib/runtimes/rust-wasm';
@@ -314,7 +313,7 @@ fn main() {
   },
   {
     name: 'Error Handling',
-    description: 'Rust's ownership and error handling',
+    description: 'Rust ownership and error handling',
     code: `use std::fs::File;
 use std::io::{self, Read};
 
@@ -603,7 +602,7 @@ export function RustExecutor(): React.ReactElement {
     } finally {
       setState(prev => ({ ...prev, isRunning: false }));
     }
-  }, [rustRuntime, state.code, state.crateName, state.dependencies, state.features, state.optimizationLevel, state.rustVersion, state.target]);
+  }, [rustRuntime, state.code, state.crateName, state.dependencies, state.features, state.optimizationLevel, state.rustVersion, state.target, performanceMonitor.trackToolLoad]);
 
   // Run compiled Rust code
   const runCode = useCallback(async () => {
@@ -815,7 +814,7 @@ export function RustExecutor(): React.ReactElement {
               <select
                 value={selectedPreset}
                 onChange={(e) => {
-                  const index = parseInt(e.target.value);
+                  const index = parseInt(e.target.value, 10);
                   setSelectedPreset(index);
                   loadPreset(RUST_PRESETS[index]);
                 }}

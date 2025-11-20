@@ -29,7 +29,7 @@ export interface CryptoProvider {
 
   // Format operations
   formatBytes(bytes: number): string;
-  formatHash(hash: string, format?: 'hex' | 'base64' | 'binary'): string;
+  formatHash(hash: string, format?: "hex" | "base64" | "binary"): string;
 
   // Metadata
   isAvailable(): boolean;
@@ -67,19 +67,18 @@ export interface HashResult {
 }
 
 export class WebCryptoProvider implements CryptoProvider {
-  private static instance: WebCryptoProvider;
   private subtle: SubtleCrypto;
   private randomValues: (array: ArrayBufferView | ArrayBuffer) => ArrayBufferView | ArrayBuffer;
 
   private constructor() {
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
+    if (typeof window !== "undefined" && window.crypto && window.crypto.subtle) {
       this.subtle = window.crypto.subtle;
       this.randomValues = window.crypto.getRandomValues.bind(window.crypto);
-    } else if (typeof global !== 'undefined' && global.crypto && global.crypto.subtle) {
+    } else if (typeof global !== "undefined" && global.crypto && global.crypto.subtle) {
       this.subtle = global.crypto.subtle;
       this.randomValues = global.crypto.getRandomValues.bind(global.crypto);
     } else {
-      throw new Error('Web Crypto API is not available in this environment');
+      throw new Error("Web Crypto API is not available in this environment");
     }
   }
 
@@ -93,16 +92,15 @@ export class WebCryptoProvider implements CryptoProvider {
   /**
    * Hash data using specified algorithm
    */
-  public async hash(
-    data: string | ArrayBuffer,
-    algorithm: string = 'SHA-256'
-  ): Promise<string> {
+  public async hash(data: string | ArrayBuffer, algorithm: string = "SHA-256"): Promise<string> {
     try {
       const dataArrayBuffer = this.toArrayBuffer(data);
       const hashBuffer = await this.subtle.digest(algorithm, dataArrayBuffer);
       return this.bufferToHex(hashBuffer);
     } catch (error) {
-      throw new Error(`Hash operation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Hash operation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -112,24 +110,26 @@ export class WebCryptoProvider implements CryptoProvider {
   public async hmac(
     data: string | ArrayBuffer,
     key: string | ArrayBuffer,
-    algorithm: string = 'SHA-256'
+    algorithm: string = "SHA-256",
   ): Promise<string> {
     try {
       const dataArrayBuffer = this.toArrayBuffer(data);
       const keyArrayBuffer = this.toArrayBuffer(key);
 
       const cryptoKey = await this.subtle.importKey(
-        'raw',
+        "raw",
         keyArrayBuffer,
-        { name: 'HMAC', hash: algorithm },
+        { name: "HMAC", hash: algorithm },
         false,
-        ['sign']
+        ["sign"],
       );
 
-      const signatureBuffer = await this.subtle.sign('HMAC', cryptoKey, dataArrayBuffer);
+      const signatureBuffer = await this.subtle.sign("HMAC", cryptoKey, dataArrayBuffer);
       return this.bufferToHex(signatureBuffer);
     } catch (error) {
-      throw new Error(`HMAC operation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `HMAC operation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -140,7 +140,7 @@ export class WebCryptoProvider implements CryptoProvider {
     password: string,
     salt: string,
     iterations: number = 100000,
-    keyLength: number = 32
+    keyLength: number = 32,
   ): Promise<string> {
     try {
       const encoder = new TextEncoder();
@@ -148,27 +148,29 @@ export class WebCryptoProvider implements CryptoProvider {
       const saltBuffer = encoder.encode(salt);
 
       const importedKey = await this.subtle.importKey(
-        'raw',
+        "raw",
         passwordBuffer,
-        { name: 'PBKDF2' },
+        { name: "PBKDF2" },
         false,
-        ['deriveBits']
+        ["deriveBits"],
       );
 
       const derivedBits = await this.subtle.deriveBits(
         {
-          name: 'PBKDF2',
+          name: "PBKDF2",
           salt: saltBuffer,
           iterations: iterations,
-          hash: 'SHA-256',
+          hash: "SHA-256",
         },
         importedKey,
-        keyLength * 8
+        keyLength * 8,
       );
 
       return this.bufferToHex(derivedBits as ArrayBuffer);
     } catch (error) {
-      throw new Error(`PBKDF2 operation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `PBKDF2 operation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -177,15 +179,16 @@ export class WebCryptoProvider implements CryptoProvider {
    */
   public async generateAESKey(length: number = 256): Promise<ArrayBuffer> {
     try {
-      const key = await this.subtle.generateKey(
-        { name: 'AES-GCM', length },
-        true,
-        ['encrypt', 'decrypt']
-      );
+      const key = await this.subtle.generateKey({ name: "AES-GCM", length }, true, [
+        "encrypt",
+        "decrypt",
+      ]);
 
-      return await this.subtle.exportKey('raw', key);
+      return await this.subtle.exportKey("raw", key);
     } catch (error) {
-      throw new Error(`AES key generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `AES key generation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -195,24 +198,20 @@ export class WebCryptoProvider implements CryptoProvider {
   public async aesEncrypt(
     data: string | ArrayBuffer,
     key: ArrayBuffer,
-    iv?: ArrayBuffer
+    iv?: ArrayBuffer,
   ): Promise<ArrayBuffer> {
     try {
       const dataArrayBuffer = this.toArrayBuffer(data);
       const ivBuffer = iv || this.randomValues(new Uint8Array(12)).buffer;
 
-      const cryptoKey = await this.subtle.importKey(
-        'raw',
-        key,
-        { name: 'AES-GCM' },
-        false,
-        ['encrypt']
-      );
+      const cryptoKey = await this.subtle.importKey("raw", key, { name: "AES-GCM" }, false, [
+        "encrypt",
+      ]);
 
       const encryptedData = await this.subtle.encrypt(
-        { name: 'AES-GCM', iv: ivBuffer },
+        { name: "AES-GCM", iv: ivBuffer },
         cryptoKey,
-        dataArrayBuffer
+        dataArrayBuffer,
       );
 
       // Prepend IV to encrypted data
@@ -222,7 +221,9 @@ export class WebCryptoProvider implements CryptoProvider {
 
       return combined.buffer;
     } catch (error) {
-      throw new Error(`AES encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `AES encryption failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -232,26 +233,24 @@ export class WebCryptoProvider implements CryptoProvider {
   public async aesDecrypt(
     encryptedData: ArrayBuffer,
     key: ArrayBuffer,
-    iv: ArrayBuffer
+    iv: ArrayBuffer,
   ): Promise<ArrayBuffer> {
     try {
-      const cryptoKey = await this.subtle.importKey(
-        'raw',
-        key,
-        { name: 'AES-GCM' },
-        false,
-        ['decrypt']
-      );
+      const cryptoKey = await this.subtle.importKey("raw", key, { name: "AES-GCM" }, false, [
+        "decrypt",
+      ]);
 
       const decryptedData = await this.subtle.decrypt(
-        { name: 'AES-GCM', iv: iv },
+        { name: "AES-GCM", iv: iv },
         cryptoKey,
-        encryptedData
+        encryptedData,
       );
 
       return decryptedData;
     } catch (error) {
-      throw new Error(`AES decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `AES decryption failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -262,18 +261,20 @@ export class WebCryptoProvider implements CryptoProvider {
     try {
       const keyPair = await this.subtle.generateKey(
         {
-          name: 'RSA-OAEP',
+          name: "RSA-OAEP",
           modulusLength: modulusLength,
           publicExponent: new Uint8Array([1, 0, 1]),
-          hash: { name: 'SHA-256' },
+          hash: { name: "SHA-256" },
         },
         true,
-        ['encrypt', 'decrypt']
+        ["encrypt", "decrypt"],
       );
 
       return keyPair;
     } catch (error) {
-      throw new Error(`RSA key pair generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `RSA key pair generation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -282,13 +283,11 @@ export class WebCryptoProvider implements CryptoProvider {
    */
   public async rsaEncrypt(data: ArrayBuffer, publicKey: CryptoKey): Promise<ArrayBuffer> {
     try {
-      return await this.subtle.encrypt(
-        { name: 'RSA-OAEP' },
-        publicKey,
-        data
-      );
+      return await this.subtle.encrypt({ name: "RSA-OAEP" }, publicKey, data);
     } catch (error) {
-      throw new Error(`RSA encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `RSA encryption failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -297,13 +296,11 @@ export class WebCryptoProvider implements CryptoProvider {
    */
   public async rsaDecrypt(encryptedData: ArrayBuffer, privateKey: CryptoKey): Promise<ArrayBuffer> {
     try {
-      return await this.subtle.decrypt(
-        { name: 'RSA-OAEP' },
-        privateKey,
-        encryptedData
-      );
+      return await this.subtle.decrypt({ name: "RSA-OAEP" }, privateKey, encryptedData);
     } catch (error) {
-      throw new Error(`RSA decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `RSA decryption failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -312,13 +309,11 @@ export class WebCryptoProvider implements CryptoProvider {
    */
   public async rsaSign(data: ArrayBuffer, privateKey: CryptoKey): Promise<ArrayBuffer> {
     try {
-      return await this.subtle.sign(
-        { name: 'RSA-PSS', saltLength: 32 },
-        privateKey,
-        data
-      );
+      return await this.subtle.sign({ name: "RSA-PSS", saltLength: 32 }, privateKey, data);
     } catch (error) {
-      throw new Error(`RSA signing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `RSA signing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -328,17 +323,19 @@ export class WebCryptoProvider implements CryptoProvider {
   public async rsaVerify(
     data: ArrayBuffer,
     signature: ArrayBuffer,
-    publicKey: CryptoKey
+    publicKey: CryptoKey,
   ): Promise<boolean> {
     try {
       return await this.subtle.verify(
-        { name: 'RSA-PSS', saltLength: 32 },
+        { name: "RSA-PSS", saltLength: 32 },
         publicKey,
         signature,
-        data
+        data,
       );
     } catch (error) {
-      throw new Error(`RSA verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `RSA verification failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -350,7 +347,9 @@ export class WebCryptoProvider implements CryptoProvider {
       const array = new Uint8Array(length);
       return this.randomValues(array).buffer;
     } catch (error) {
-      throw new Error(`Random bytes generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Random bytes generation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -368,13 +367,15 @@ export class WebCryptoProvider implements CryptoProvider {
   public encodeBase64(data: ArrayBuffer): string {
     try {
       const bytes = new Uint8Array(data);
-      let binary = '';
+      let binary = "";
       for (let i = 0; i < bytes.byteLength; i++) {
         binary += String.fromCharCode(bytes[i]);
       }
       return btoa(binary);
     } catch (error) {
-      throw new Error(`Base64 encoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Base64 encoding failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -390,7 +391,9 @@ export class WebCryptoProvider implements CryptoProvider {
       }
       return bytes.buffer;
     } catch (error) {
-      throw new Error(`Base64 decoding failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Base64 decoding failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -398,23 +401,22 @@ export class WebCryptoProvider implements CryptoProvider {
    * Format bytes to human readable format
    */
   public formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }
 
   /**
    * Format hash string
    */
-  public formatHash(hash: string, format: 'hex' | 'base64' | 'binary' = 'hex'): string {
+  public formatHash(hash: string, format: "hex" | "base64" | "binary" = "hex"): string {
     switch (format) {
-      case 'base64':
+      case "base64":
         return this.encodeBase64(this.hexToArrayBuffer(hash));
-      case 'binary':
+      case "binary":
         return String.fromCharCode(...this.hexToBytes(hash));
-      case 'hex':
       default:
         return hash;
     }
@@ -424,7 +426,7 @@ export class WebCryptoProvider implements CryptoProvider {
    * Check if Web Crypto API is available
    */
   public isAvailable(): boolean {
-    return !!(typeof window !== 'undefined' ? window.crypto?.subtle : global.crypto?.subtle);
+    return !!(typeof window !== "undefined" ? window.crypto?.subtle : global.crypto?.subtle);
   }
 
   /**
@@ -432,11 +434,19 @@ export class WebCryptoProvider implements CryptoProvider {
    */
   public getSupportedAlgorithms(): string[] {
     return [
-      'SHA-1', 'SHA-256', 'SHA-384', 'SHA-512',
-      'AES-GCM', 'AES-CBC', 'AES-CTR',
-      'RSA-OAEP', 'RSA-PSS',
-      'HMAC', 'PBKDF2',
-      'ECDSA', 'ECDH',
+      "SHA-1",
+      "SHA-256",
+      "SHA-384",
+      "SHA-512",
+      "AES-GCM",
+      "AES-CBC",
+      "AES-CTR",
+      "RSA-OAEP",
+      "RSA-PSS",
+      "HMAC",
+      "PBKDF2",
+      "ECDSA",
+      "ECDH",
     ];
   }
 
@@ -444,27 +454,27 @@ export class WebCryptoProvider implements CryptoProvider {
    * Convenience methods for common operations
    */
   public async sha256(data: string | ArrayBuffer): Promise<string> {
-    return this.hash(data, 'SHA-256');
+    return this.hash(data, "SHA-256");
   }
 
   public async sha512(data: string | ArrayBuffer): Promise<string> {
-    return this.hash(data, 'SHA-512');
+    return this.hash(data, "SHA-512");
   }
 
   public async sha1(data: string | ArrayBuffer): Promise<string> {
-    return this.hash(data, 'SHA-1');
+    return this.hash(data, "SHA-1");
   }
 
   public async sha384(data: string | ArrayBuffer): Promise<string> {
-    return this.hash(data, 'SHA-384');
+    return this.hash(data, "SHA-384");
   }
 
   public async hmacSha256(data: string | ArrayBuffer, key: string | ArrayBuffer): Promise<string> {
-    return this.hmac(data, key, 'SHA-256');
+    return this.hmac(data, key, "SHA-256");
   }
 
   public async hmacSha512(data: string | ArrayBuffer, key: string | ArrayBuffer): Promise<string> {
-    return this.hmac(data, key, 'SHA-512');
+    return this.hmac(data, key, "SHA-512");
   }
 
   /**
@@ -472,15 +482,20 @@ export class WebCryptoProvider implements CryptoProvider {
    */
   public async exportRSAPublicKeyToPem(publicKey: CryptoKey): Promise<string> {
     try {
-      const exported = await this.subtle.exportKey('spki', publicKey);
-      const exportedAsString = String.fromCharCode.apply(null, Array.from(new Uint8Array(exported)));
+      const exported = await this.subtle.exportKey("spki", publicKey);
+      const exportedAsString = String.fromCharCode.apply(
+        null,
+        Array.from(new Uint8Array(exported)),
+      );
       const exportedAsBase64 = btoa(exportedAsString);
-      const pemHeader = '-----BEGIN PUBLIC KEY-----';
-      const pemFooter = '-----END PUBLIC KEY-----';
-      const pemContents = exportedAsBase64.match(/.{1,64}/g)?.join('\n') || exportedAsBase64;
+      const pemHeader = "-----BEGIN PUBLIC KEY-----";
+      const pemFooter = "-----END PUBLIC KEY-----";
+      const pemContents = exportedAsBase64.match(/.{1,64}/g)?.join("\n") || exportedAsBase64;
       return `${pemHeader}\n${pemContents}\n${pemFooter}`;
     } catch (error) {
-      throw new Error(`RSA key export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `RSA key export failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -489,9 +504,11 @@ export class WebCryptoProvider implements CryptoProvider {
    */
   public async importRSAPublicKeyFromPem(pem: string): Promise<CryptoKey> {
     try {
-      const pemHeader = '-----BEGIN PUBLIC KEY-----';
-      const pemFooter = '-----END PUBLIC KEY-----';
-      const pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length).replace(/\s/g, '');
+      const pemHeader = "-----BEGIN PUBLIC KEY-----";
+      const pemFooter = "-----END PUBLIC KEY-----";
+      const pemContents = pem
+        .substring(pemHeader.length, pem.length - pemFooter.length)
+        .replace(/\s/g, "");
       const binaryDer = atob(pemContents);
       const der = new Uint8Array(binaryDer.length);
       for (let i = 0; i < binaryDer.length; i++) {
@@ -499,17 +516,19 @@ export class WebCryptoProvider implements CryptoProvider {
       }
 
       return await this.subtle.importKey(
-        'spki',
+        "spki",
         der.buffer,
         {
-          name: 'RSA-OAEP',
-          hash: { name: 'SHA-256' },
+          name: "RSA-OAEP",
+          hash: { name: "SHA-256" },
         },
         true,
-        ['encrypt']
+        ["encrypt"],
       );
     } catch (error) {
-      throw new Error(`RSA key import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `RSA key import failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -527,7 +546,7 @@ export class WebCryptoProvider implements CryptoProvider {
 
   private bufferToHex(buffer: ArrayBuffer): string {
     const bytes = new Uint8Array(buffer);
-    return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
   }
 
   private hexToArrayBuffer(hex: string): ArrayBuffer {
@@ -553,7 +572,7 @@ export class WebCryptoProvider implements CryptoProvider {
     success: boolean,
     data?: ArrayBuffer,
     iv?: ArrayBuffer,
-    error?: string
+    error?: string,
   ): EncryptionResult {
     return { success, data, iv, error };
   }
@@ -561,7 +580,7 @@ export class WebCryptoProvider implements CryptoProvider {
   public createDecryptionResult(
     success: boolean,
     data?: ArrayBuffer,
-    error?: string
+    error?: string,
   ): DecryptionResult {
     return { success, data, error };
   }
@@ -570,16 +589,12 @@ export class WebCryptoProvider implements CryptoProvider {
     success: boolean,
     publicKey?: CryptoKey,
     privateKey?: CryptoKey,
-    error?: string
+    error?: string,
   ): KeyPairResult {
     return { success, publicKey, privateKey, error };
   }
 
-  public createHashResult(
-    success: boolean,
-    hash?: string,
-    error?: string
-  ): HashResult {
+  public createHashResult(success: boolean, hash?: string, error?: string): HashResult {
     return { success, hash, error };
   }
 }
@@ -602,80 +617,100 @@ export class FallbackCryptoProvider implements CryptoProvider {
     return [];
   }
 
-  public async hash(data: string | ArrayBuffer, algorithm?: string): Promise<string> {
-    throw new Error('Crypto provider not available');
+  public async hash(_data: string | ArrayBuffer, _algorithm?: string): Promise<string> {
+    throw new Error("Crypto provider not available");
   }
 
-  public async hmac(data: string | ArrayBuffer, key: string | ArrayBuffer, algorithm?: string): Promise<string> {
-    throw new Error('Crypto provider not available');
+  public async hmac(
+    _data: string | ArrayBuffer,
+    _key: string | ArrayBuffer,
+    _algorithm?: string,
+  ): Promise<string> {
+    throw new Error("Crypto provider not available");
   }
 
-  public async pbkdf2(password: string, salt: string, iterations?: number, keyLength?: number): Promise<string> {
-    throw new Error('Crypto provider not available');
+  public async pbkdf2(
+    _password: string,
+    _salt: string,
+    _iterations?: number,
+    _keyLength?: number,
+  ): Promise<string> {
+    throw new Error("Crypto provider not available");
   }
 
-  public async generateAESKey(length?: number): Promise<ArrayBuffer> {
-    throw new Error('Crypto provider not available');
+  public async generateAESKey(_length?: number): Promise<ArrayBuffer> {
+    throw new Error("Crypto provider not available");
   }
 
-  public async aesEncrypt(data: string | ArrayBuffer, key: ArrayBuffer, iv?: ArrayBuffer): Promise<ArrayBuffer> {
-    throw new Error('Crypto provider not available');
+  public async aesEncrypt(
+    _data: string | ArrayBuffer,
+    _key: ArrayBuffer,
+    _iv?: ArrayBuffer,
+  ): Promise<ArrayBuffer> {
+    throw new Error("Crypto provider not available");
   }
 
-  public async aesDecrypt(encryptedData: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer> {
-    throw new Error('Crypto provider not available');
+  public async aesDecrypt(
+    _encryptedData: ArrayBuffer,
+    _key: ArrayBuffer,
+    _iv: ArrayBuffer,
+  ): Promise<ArrayBuffer> {
+    throw new Error("Crypto provider not available");
   }
 
-  public async generateRSAKeyPair(modulusLength?: number): Promise<CryptoKeyPair> {
-    throw new Error('Crypto provider not available');
+  public async generateRSAKeyPair(_modulusLength?: number): Promise<CryptoKeyPair> {
+    throw new Error("Crypto provider not available");
   }
 
-  public async rsaEncrypt(data: ArrayBuffer, publicKey: CryptoKey): Promise<ArrayBuffer> {
-    throw new Error('Crypto provider not available');
+  public async rsaEncrypt(_data: ArrayBuffer, _publicKey: CryptoKey): Promise<ArrayBuffer> {
+    throw new Error("Crypto provider not available");
   }
 
-  public async rsaDecrypt(encryptedData: ArrayBuffer, privateKey: CryptoKey): Promise<ArrayBuffer> {
-    throw new Error('Crypto provider not available');
+  public async rsaDecrypt(
+    _encryptedData: ArrayBuffer,
+    _privateKey: CryptoKey,
+  ): Promise<ArrayBuffer> {
+    throw new Error("Crypto provider not available");
   }
 
-  public async rsaSign(data: ArrayBuffer, privateKey: CryptoKey): Promise<ArrayBuffer> {
-    throw new Error('Crypto provider not available');
+  public async rsaSign(_data: ArrayBuffer, _privateKey: CryptoKey): Promise<ArrayBuffer> {
+    throw new Error("Crypto provider not available");
   }
 
-  public async rsaVerify(data: ArrayBuffer, signature: ArrayBuffer, publicKey: CryptoKey): Promise<boolean> {
-    throw new Error('Crypto provider not available');
+  public async rsaVerify(
+    _data: ArrayBuffer,
+    _signature: ArrayBuffer,
+    _publicKey: CryptoKey,
+  ): Promise<boolean> {
+    throw new Error("Crypto provider not available");
   }
 
-  public async generateRandomBytes(length: number): Promise<ArrayBuffer> {
-    throw new Error('Crypto provider not available');
+  public async generateRandomBytes(_length: number): Promise<ArrayBuffer> {
+    throw new Error("Crypto provider not available");
   }
 
-  public async generateSalt(length?: number): Promise<string> {
-    throw new Error('Crypto provider not available');
+  public async generateSalt(_length?: number): Promise<string> {
+    throw new Error("Crypto provider not available");
   }
 
-  public encodeBase64(data: ArrayBuffer): string {
-    throw new Error('Crypto provider not available');
+  public encodeBase64(_data: ArrayBuffer): string {
+    throw new Error("Crypto provider not available");
   }
 
-  public decodeBase64(base64: string): ArrayBuffer {
-    throw new Error('Crypto provider not available');
+  public decodeBase64(_base64: string): ArrayBuffer {
+    throw new Error("Crypto provider not available");
   }
 
   public formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }
 
-  public formatHash(hash: string, format?: 'hex' | 'base64' | 'binary'): string {
+  public formatHash(hash: string, _format?: "hex" | "base64" | "binary"): string {
     return hash;
-  }
-
-  private checkAvailability(): boolean {
-    return !!(typeof window !== 'undefined' ? window.crypto?.subtle : global.crypto?.subtle);
   }
 }
 

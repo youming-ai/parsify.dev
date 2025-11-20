@@ -1,24 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+  CheckCircle,
+  Clock,
+  Copy,
+  Hash,
+  Minus,
+  Plus,
+  RefreshCw,
+  Shield,
+  XCircle,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  Copy,
-  RefreshCw,
-  Hash,
-  Clock,
-  Shield,
-  CheckCircle,
-  XCircle,
-  Plus,
-  Minus,
-} from "lucide-react";
 
 interface UUIDItem {
   id: string;
@@ -36,7 +35,7 @@ export default function UUIDGeneratorClient() {
   const [copied, setCopied] = useState<string | null>(null);
 
   const generateUUIDv4 = (): string => {
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
       const r = (Math.random() * 16) | 0;
       const v = c === "x" ? r : (r & 0x3) | 0x8;
       return v.toString(16);
@@ -68,7 +67,6 @@ export default function UUIDGeneratorClient() {
       case "guid":
         uuid = generateGUID();
         break;
-      case "v4":
       default:
         uuid = generateUUIDv4();
         break;
@@ -120,7 +118,7 @@ export default function UUIDGeneratorClient() {
     return uuidRegex.test(uuid);
   };
 
-  const getVersionFromUUID = (uuid: string): string => {
+  const _getVersionFromUUID = (uuid: string): string => {
     const parts = uuid.split("-");
     if (parts.length >= 3) {
       const versionChar = parts[2][0];
@@ -131,7 +129,7 @@ export default function UUIDGeneratorClient() {
 
   useEffect(() => {
     generateUUIDs();
-  }, []);
+  }, [generateUUIDs]);
 
   const getVersionInfo = (ver: string) => {
     switch (ver) {
@@ -223,7 +221,7 @@ export default function UUIDGeneratorClient() {
                   max="100"
                   value={quantity}
                   onChange={(e) =>
-                    setQuantity(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))
+                    setQuantity(Math.min(100, Math.max(1, parseInt(e.target.value, 10) || 1)))
                   }
                   className="w-20 text-center"
                 />

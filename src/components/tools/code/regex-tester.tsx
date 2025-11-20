@@ -1,22 +1,15 @@
 "use client";
 
+import { AlertTriangle, BookOpen, CheckCircle2, Copy, XCircle } from "lucide-react";
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { CheckCircle2, XCircle, AlertTriangle, Copy, BookOpen } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 
 interface TestResult {
   matches: boolean;
@@ -88,7 +81,7 @@ export function RegexTester() {
   const [testText, setTestText] = React.useState("");
   const [result, setResult] = React.useState<TestResult | null>(null);
   const [error, setError] = React.useState<string | null>(null);
-  const [activeExample, setActiveExample] = React.useState<PatternExample | null>(null);
+  const [_activeExample, setActiveExample] = React.useState<PatternExample | null>(null);
 
   const testRegex = React.useCallback(() => {
     if (!pattern) {
@@ -127,7 +120,7 @@ export function RegexTester() {
     });
   };
 
-  const getFlagDescription = (flag: string) => {
+  const _getFlagDescription = (flag: string) => {
     const descriptions: Record<string, string> = {
       g: "Global - Find all matches",
       i: "Case Insensitive",

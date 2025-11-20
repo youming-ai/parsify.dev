@@ -1,9 +1,5 @@
 "use client";
 
-import { MainLayout } from "@/components/layout/main-layout";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Activity,
   BarChart3,
@@ -16,9 +12,12 @@ import {
   Zap,
 } from "lucide-react";
 import { useState } from "react";
+import { MainLayout } from "@/components/layout/main-layout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, _setIsLoading] = useState(false);
   const [recentActivity, _setRecentActivity] = useState([
     {
       id: 1,

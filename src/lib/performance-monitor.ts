@@ -76,7 +76,6 @@ export interface PerformanceAlert {
 }
 
 export class PerformanceMonitor {
-  private static instance: PerformanceMonitor;
   private thresholds: PerformanceThreshold;
   private toolMetrics: Map<string, ToolPerformanceMetrics>;
   private alerts: PerformanceAlert[];
@@ -108,9 +107,7 @@ export class PerformanceMonitor {
     this.initializeBundleAnalyzer();
   }
 
-  public static getInstance(
-    thresholds?: Partial<PerformanceThreshold>,
-  ): PerformanceMonitor {
+  public static getInstance(thresholds?: Partial<PerformanceThreshold>): PerformanceMonitor {
     if (!PerformanceMonitor.instance) {
       PerformanceMonitor.instance = new PerformanceMonitor(thresholds);
     }
@@ -216,11 +213,7 @@ export class PerformanceMonitor {
   /**
    * Track tool execution
    */
-  public trackToolExecution(
-    toolId: string,
-    executionTime: number,
-    success: boolean = true,
-  ): void {
+  public trackToolExecution(toolId: string, executionTime: number, success: boolean = true): void {
     const metrics = this.toolMetrics.get(toolId);
     if (!metrics) return;
 
@@ -244,10 +237,7 @@ export class PerformanceMonitor {
     const metrics = this.toolMetrics.get(toolId);
     if (!metrics) return;
 
-    metrics.interactionTime = Math.max(
-      metrics.interactionTime,
-      interactionTime,
-    );
+    metrics.interactionTime = Math.max(metrics.interactionTime, interactionTime);
     metrics.lastUsed = Date.now();
     metrics.status = "processing";
 
@@ -263,9 +253,7 @@ export class PerformanceMonitor {
   /**
    * Get tool metrics
    */
-  public getToolMetrics(
-    toolId?: string,
-  ): ToolPerformanceMetrics[] | ToolPerformanceMetrics | null {
+  public getToolMetrics(toolId?: string): ToolPerformanceMetrics[] | ToolPerformanceMetrics | null {
     if (toolId) {
       return this.toolMetrics.get(toolId) || null;
     }
@@ -327,9 +315,7 @@ export class PerformanceMonitor {
   /**
    * Get alerts
    */
-  public getAlerts(
-    severity?: "warning" | "error" | "critical",
-  ): PerformanceAlert[] {
+  public getAlerts(severity?: "warning" | "error" | "critical"): PerformanceAlert[] {
     let alerts = this.alerts;
     if (severity) {
       alerts = alerts.filter((alert) => alert.severity === severity);
@@ -357,9 +343,7 @@ export class PerformanceMonitor {
     const cutoff = olderThan || Date.now();
     const initialCount = this.alerts.length;
 
-    this.alerts = this.alerts.filter(
-      (alert) => alert.timestamp > cutoff && !alert.acknowledged,
-    );
+    this.alerts = this.alerts.filter((alert) => alert.timestamp > cutoff && !alert.acknowledged);
 
     const clearedCount = initialCount - this.alerts.length;
     this.emit("alerts:cleared", { clearedCount });
@@ -383,7 +367,7 @@ export class PerformanceMonitor {
   /**
    * Get performance trends
    */
-  public getTrends(timeRange: number = 3600000): {
+  public getTrends(_timeRange: number = 3600000): {
     loadTime: number;
     renderTime: number;
     memoryUsage: number;
@@ -403,19 +387,6 @@ export class PerformanceMonitor {
     };
   }
 
-  /**
-   * Private methods
-   */
-  private initializeBundleAnalyzer(): void {
-    import("./bundle-analyzer")
-      .then((module) => {
-        this.bundleAnalyzer = module.BundleAnalyzer.getInstance();
-      })
-      .catch((error) => {
-        console.warn("Failed to initialize bundle analyzer:", error);
-      });
-  }
-
   private setupPerformanceObservers(): void {
     if (typeof window === "undefined" || !("PerformanceObserver" in window)) {
       return;
@@ -431,8 +402,7 @@ export class PerformanceMonitor {
             timestamp: navEntry.fetchStart,
             metrics: {
               domContentLoaded:
-                navEntry.domContentLoadedEventEnd -
-                navEntry.domContentLoadedEventStart,
+                navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart,
               loadComplete: navEntry.loadEventEnd - navEntry.loadEventStart,
               ttfb: navEntry.responseStart - navEntry.requestStart,
             },
@@ -500,13 +470,7 @@ export class PerformanceMonitor {
       fidObserver.observe({ entryTypes: ["first-input"] });
       clsObserver.observe({ entryTypes: ["layout-shift"] });
 
-      this.observers.push(
-        navigationObserver,
-        paintObserver,
-        lcpObserver,
-        fidObserver,
-        clsObserver,
-      );
+      this.observers.push(navigationObserver, paintObserver, lcpObserver, fidObserver, clsObserver);
     } catch (error) {
       console.warn("Failed to setup performance observers:", error);
     }
@@ -579,10 +543,7 @@ export class PerformanceMonitor {
     }
 
     // Check execution time
-    if (
-      metrics.executionTime &&
-      metrics.executionTime > this.thresholds.maxExecutionTime
-    ) {
+    if (metrics.executionTime && metrics.executionTime > this.thresholds.maxExecutionTime) {
       this.createAlert(
         "execution_time",
         "error",
@@ -624,20 +585,15 @@ export class PerformanceMonitor {
     const systemMetrics = this.getSystemMetrics();
 
     // Bundle size recommendations
-    const largeBundles = tools.filter(
-      (t) => t.bundleSize > this.thresholds.maxBundleSize,
-    );
+    const largeBundles = tools.filter((t) => t.bundleSize > this.thresholds.maxBundleSize);
     if (largeBundles.length > 0) {
       recommendations.push({
         type: "bundle",
         severity: "medium",
         title: "Large Tool Bundles Detected",
         description: `${largeBundles.length} tools exceed the ${this.formatBytes(this.thresholds.maxBundleSize)} bundle size limit`,
-        action:
-          "Consider code splitting, tree shaking, or lazy loading for these tools",
-        metrics: largeBundles.map(
-          (t) => `${t.toolId}: ${this.formatBytes(t.bundleSize)}`,
-        ),
+        action: "Consider code splitting, tree shaking, or lazy loading for these tools",
+        metrics: largeBundles.map((t) => `${t.toolId}: ${this.formatBytes(t.bundleSize)}`),
       });
     }
 
@@ -648,23 +604,19 @@ export class PerformanceMonitor {
         severity: "high",
         title: "High Memory Usage",
         description: `Memory usage (${this.formatBytes(systemMetrics.totalMemoryUsage)}) is approaching the limit`,
-        action:
-          "Implement memory cleanup, optimize data structures, or unload unused tools",
+        action: "Implement memory cleanup, optimize data structures, or unload unused tools",
       });
     }
 
     // Performance recommendations
-    const slowTools = tools.filter(
-      (t) => t.loadTime > this.thresholds.maxLoadTime,
-    );
+    const slowTools = tools.filter((t) => t.loadTime > this.thresholds.maxLoadTime);
     if (slowTools.length > 0) {
       recommendations.push({
         type: "performance",
         severity: "medium",
         title: "Slow Loading Tools",
         description: `${slowTools.length} tools have load times exceeding ${this.thresholds.maxLoadTime}ms`,
-        action:
-          "Optimize initialization, implement progressive loading, or reduce dependencies",
+        action: "Optimize initialization, implement progressive loading, or reduce dependencies",
         metrics: slowTools.map((t) => `${t.toolId}: ${t.loadTime}ms`),
       });
     }
@@ -676,8 +628,7 @@ export class PerformanceMonitor {
         severity: "high",
         title: "High Error Rate",
         description: `Error rate (${systemMetrics.errorRate}%) exceeds the ${this.thresholds.maxErrorRate}% threshold`,
-        action:
-          "Review error logs, improve error handling, and add input validation",
+        action: "Review error logs, improve error handling, and add input validation",
       });
     }
 
@@ -708,39 +659,27 @@ export class PerformanceMonitor {
   private calculateErrorRate(tools: ToolPerformanceMetrics[]): number {
     if (tools.length === 0) return 0;
 
-    const totalExecutions = tools.reduce(
-      (sum, tool) => sum + tool.usageCount,
-      0,
-    );
+    const totalExecutions = tools.reduce((sum, tool) => sum + tool.usageCount, 0);
     const totalErrors = tools.reduce((sum, tool) => sum + tool.errorCount, 0);
 
     return totalExecutions > 0 ? (totalErrors / totalExecutions) * 100 : 0;
   }
 
-  private calculateAverageResponseTime(
-    tools: ToolPerformanceMetrics[],
-  ): number {
-    const responseTimes = tools
-      .filter((t) => t.interactionTime > 0)
-      .map((t) => t.interactionTime);
+  private calculateAverageResponseTime(tools: ToolPerformanceMetrics[]): number {
+    const responseTimes = tools.filter((t) => t.interactionTime > 0).map((t) => t.interactionTime);
 
     return responseTimes.length > 0
-      ? responseTimes.reduce((sum, time) => sum + time, 0) /
-          responseTimes.length
+      ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
       : 0;
   }
 
   private calculateAverage(values: number[]): number {
-    return values.length > 0
-      ? values.reduce((sum, val) => sum + val, 0) / values.length
-      : 0;
+    return values.length > 0 ? values.reduce((sum, val) => sum + val, 0) / values.length : 0;
   }
 
   private getMetric(name: string): number | undefined {
     const entries = performance.getEntriesByName(name);
-    return entries.length > 0
-      ? entries[entries.length - 1].startTime
-      : undefined;
+    return entries.length > 0 ? entries[entries.length - 1].startTime : undefined;
   }
 
   private formatBytes(bytes: number): string {
@@ -748,7 +687,7 @@ export class PerformanceMonitor {
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }
 
   /**
@@ -758,7 +697,7 @@ export class PerformanceMonitor {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
-    this.eventListeners.get(event)!.push(listener);
+    this.eventListeners.get(event)?.push(listener);
   }
 
   public off(event: string, listener: Function): void {
@@ -777,10 +716,7 @@ export class PerformanceMonitor {
       try {
         listener(data);
       } catch (error) {
-        console.error(
-          `Error in performance monitor event listener for ${event}:`,
-          error,
-        );
+        console.error(`Error in performance monitor event listener for ${event}:`, error);
       }
     });
   }

@@ -3,18 +3,17 @@
  * Executes Java code in browser using TeaVM WASM compilation
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Play, Square, Download, Upload, Package, Settings } from 'lucide-react';
-import { ToolWrapper, type ToolConfig } from '@/components/tools/tool-wrapper';
-import { MemoryManager } from '@/lib/memory-manager';
-import { PerformanceMonitor } from '@/lib/performance-monitor';
-import type { JavaExecutionResult } from '@/lib/runtimes/java-wasm';
+import { Package, Play, Square } from "lucide-react";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { type ToolConfig, ToolWrapper } from "@/components/tools/tool-wrapper";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { MemoryManager } from "@/lib/memory-manager";
+import { PerformanceMonitor } from "@/lib/performance-monitor";
+import type { JavaExecutionResult } from "@/lib/runtimes/java-wasm";
 
 interface JavaExecutorState {
   code: string;
@@ -34,7 +33,7 @@ interface JavaExecutorState {
   consoleVisible: boolean;
   editorSettings: {
     fontSize: number;
-    theme: 'light' | 'dark';
+    theme: "light" | "dark";
     wordWrap: boolean;
     minimap: boolean;
   };
@@ -50,7 +49,7 @@ interface JavaPreset {
 
 const JAVA_PRESETS: JavaPreset[] = [
   {
-    name: 'Hello World',
+    name: "Hello World",
     description: 'Simple Java "Hello World" program',
     code: `public class HelloWorld {
     public static void main(String[] args) {
@@ -66,12 +65,12 @@ const JAVA_PRESETS: JavaPreset[] = [
         System.out.println("Pi: " + decimal);
     }
 }`,
-    className: 'HelloWorld',
-    input: '',
+    className: "HelloWorld",
+    input: "",
   },
   {
-    name: 'Class Example',
-    description: 'Java class with methods and properties',
+    name: "Class Example",
+    description: "Java class with methods and properties",
     code: `public class Calculator {
     private double result;
 
@@ -112,12 +111,12 @@ const JAVA_PRESETS: JavaPreset[] = [
         System.out.println("15 / 3 = " + calc.divide(15, 3));
     }
 }`,
-    className: 'Calculator',
-    input: '',
+    className: "Calculator",
+    input: "",
   },
   {
-    name: 'Array Operations',
-    description: 'Java array manipulation and algorithms',
+    name: "Array Operations",
+    description: "Java array manipulation and algorithms",
     code: `import java.util.Arrays;
 import java.util.ArrayList;
 
@@ -163,12 +162,12 @@ public class ArrayDemo {
         }
     }
 }`,
-    className: 'ArrayDemo',
-    input: '',
+    className: "ArrayDemo",
+    input: "",
   },
   {
-    name: 'String Processing',
-    description: 'Java string manipulation and methods',
+    name: "String Processing",
+    description: "Java string manipulation and methods",
     code: `import java.util.StringTokenizer;
 
 public class StringDemo {
@@ -218,8 +217,8 @@ public class StringDemo {
         System.out.println("\\nStringBuilder result:\\n" + sb.toString());
     }
 }`,
-    className: 'StringDemo',
-    input: '',
+    className: "StringDemo",
+    input: "",
   },
 ];
 
@@ -228,7 +227,7 @@ export function JavaExecutor(): React.ReactElement {
     code: JAVA_PRESETS[0].code,
     className: JAVA_PRESETS[0].className,
     input: JAVA_PRESETS[0].input,
-    output: '',
+    output: "",
     error: null,
     isRunning: false,
     isCompiled: false,
@@ -242,7 +241,7 @@ export function JavaExecutor(): React.ReactElement {
     consoleVisible: true,
     editorSettings: {
       fontSize: 14,
-      theme: 'dark',
+      theme: "dark",
       wordWrap: true,
       minimap: true,
     },
@@ -258,15 +257,15 @@ export function JavaExecutor(): React.ReactElement {
   useEffect(() => {
     const initRuntime = async () => {
       try {
-        const { JavaWasm } = await import('@/lib/runtimes/java-wasm');
+        const { JavaWasm } = await import("@/lib/runtimes/java-wasm");
         const runtime = JavaWasm.getInstance();
         await runtime.initialize();
         setJavaRuntime(runtime);
       } catch (error) {
-        console.error('Failed to initialize Java runtime:', error);
-        setState(prev => ({
+        console.error("Failed to initialize Java runtime:", error);
+        setState((prev) => ({
           ...prev,
-          error: 'Failed to initialize Java runtime. Please refresh the page.',
+          error: "Failed to initialize Java runtime. Please refresh the page.",
         }));
       }
     };
@@ -276,12 +275,12 @@ export function JavaExecutor(): React.ReactElement {
 
   // Load preset
   const loadPreset = useCallback((preset: JavaPreset) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       code: preset.code,
       className: preset.className,
       input: preset.input,
-      output: '',
+      output: "",
       error: null,
       isCompiled: false,
     }));
@@ -290,65 +289,66 @@ export function JavaExecutor(): React.ReactElement {
   // Compile Java code
   const compileCode = useCallback(async () => {
     if (!javaRuntime || !state.code.trim()) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        error: state.code.trim() ? 'Java runtime not initialized' : 'Please enter Java code',
+        error: state.code.trim() ? "Java runtime not initialized" : "Please enter Java code",
       }));
       return;
     }
 
-    setState(prev => ({ ...prev, isRunning: true, error: null }));
+    setState((prev) => ({ ...prev, isRunning: true, error: null }));
 
     try {
       // Start performance tracking
       const startTime = performance.now();
-      performanceMonitor.trackToolLoad('java-executor');
+      performanceMonitor.trackToolLoad("java-executor");
 
       const result = await javaRuntime.compile(state.code, state.className);
       const compileTime = performance.now() - startTime;
 
       if (result.success) {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isCompiled: true,
           jarFiles: result.jarFiles || [],
           compileTime,
-          output: '✅ Compilation successful!\n' +
-                  `Generated ${result.jarFiles?.length || 0} class files\n` +
-                  `Compilation time: ${compileTime.toFixed(2)}ms\n`,
+          output:
+            "✅ Compilation successful!\n" +
+            `Generated ${result.jarFiles?.length || 0} class files\n` +
+            `Compilation time: ${compileTime.toFixed(2)}ms\n`,
           error: null,
         }));
       } else {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isCompiled: false,
-          error: result.error || 'Compilation failed',
-          output: '',
+          error: result.error || "Compilation failed",
+          output: "",
         }));
       }
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        error: error instanceof Error ? error.message : 'Compilation error',
+        error: error instanceof Error ? error.message : "Compilation error",
         isCompiled: false,
-        output: '',
+        output: "",
       }));
     } finally {
-      setState(prev => ({ ...prev, isRunning: false }));
+      setState((prev) => ({ ...prev, isRunning: false }));
     }
-  }, [javaRuntime, state.code, state.className]);
+  }, [javaRuntime, state.code, state.className, performanceMonitor.trackToolLoad]);
 
   // Run compiled Java code
   const runCode = useCallback(async () => {
     if (!javaRuntime || !state.isCompiled) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        error: !state.isCompiled ? 'Please compile the code first' : 'Java runtime not initialized',
+        error: !state.isCompiled ? "Please compile the code first" : "Java runtime not initialized",
       }));
       return;
     }
 
-    setState(prev => ({ ...prev, isRunning: true, error: null }));
+    setState((prev) => ({ ...prev, isRunning: true, error: null }));
 
     try {
       const startTime = performance.now();
@@ -356,38 +356,38 @@ export function JavaExecutor(): React.ReactElement {
       const result: JavaExecutionResult = await javaRuntime.run(
         state.className,
         state.className,
-        state.input
+        state.input,
       );
 
       const executionTime = performance.now() - startTime;
       const memoryUsage = memoryManager.getCurrentMemoryUsage();
 
       if (result.success) {
-        const output = result.output || '';
-        setState(prev => ({
+        const output = result.output || "";
+        setState((prev) => ({
           ...prev,
-          output: output || 'Program executed successfully (no output)',
+          output: output || "Program executed successfully (no output)",
           executionTime,
           memoryUsage,
           error: null,
         }));
       } else {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
-          error: result.error || 'Execution failed',
-          output: result.output || '',
+          error: result.error || "Execution failed",
+          output: result.output || "",
           executionTime,
           memoryUsage,
         }));
       }
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        error: error instanceof Error ? error.message : 'Execution error',
-        output: '',
+        error: error instanceof Error ? error.message : "Execution error",
+        output: "",
       }));
     } finally {
-      setState(prev => ({ ...prev, isRunning: false }));
+      setState((prev) => ({ ...prev, isRunning: false }));
     }
   }, [javaRuntime, state.className, state.input, state.isCompiled, memoryManager]);
 
@@ -403,22 +403,22 @@ export function JavaExecutor(): React.ReactElement {
   const stopExecution = useCallback(() => {
     if (javaRuntime) {
       javaRuntime.stop();
-      setState(prev => ({ ...prev, isRunning: false }));
+      setState((prev) => ({ ...prev, isRunning: false }));
     }
   }, [javaRuntime]);
 
   // Clear output
   const clearOutput = useCallback(() => {
-    setState(prev => ({ ...prev, output: '', error: null }));
+    setState((prev) => ({ ...prev, output: "", error: null }));
   }, []);
 
   // Export code
   const exportCode = useCallback(() => {
-    const blob = new Blob([state.code], { type: 'text/x-java-source' });
+    const blob = new Blob([state.code], { type: "text/x-java-source" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${state.className || 'Main'}.java`;
+    a.download = `${state.className || "Main"}.java`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -435,14 +435,14 @@ export function JavaExecutor(): React.ReactElement {
       const content = e.target?.result as string;
       const fileName = file.name.toLowerCase();
 
-      if (fileName.endsWith('.java')) {
-        const className = file.name.replace(/\.java$/i, '');
-        setState(prev => ({
+      if (fileName.endsWith(".java")) {
+        const className = file.name.replace(/\.java$/i, "");
+        setState((prev) => ({
           ...prev,
           code: content,
           className,
           isCompiled: false,
-          output: '',
+          output: "",
           error: null,
         }));
       }
@@ -458,13 +458,13 @@ export function JavaExecutor(): React.ReactElement {
   }, [state.output]);
 
   const toolConfig: ToolConfig = {
-    id: 'java-executor',
-    name: 'Java Executor',
-    description: 'Execute Java code in browser using TeaVM WASM compilation',
-    category: 'code',
-    version: '1.0.0',
-    icon: '☕',
-    tags: ['java', 'compiler', 'tea', 'wasm', 'execution'],
+    id: "java-executor",
+    name: "Java Executor",
+    description: "Execute Java code in browser using TeaVM WASM compilation",
+    category: "code",
+    version: "1.0.0",
+    icon: "☕",
+    tags: ["java", "compiler", "tea", "wasm", "execution"],
     hasSettings: true,
     hasHelp: true,
     canExport: true,
@@ -479,7 +479,7 @@ export function JavaExecutor(): React.ReactElement {
       isLoading={!javaRuntime}
       loadingMessage="Initializing Java runtime..."
       onExport={exportCode}
-      onImport={() => document.getElementById('java-import')?.click()}
+      onImport={() => document.getElementById("java-import")?.click()}
       onCopy={() => navigator.clipboard.writeText(state.output)}
       onReset={() => loadPreset(JAVA_PRESETS[0])}
       performance={{
@@ -487,21 +487,21 @@ export function JavaExecutor(): React.ReactElement {
         memoryUsage: state.memoryUsage,
         renderTime: 0,
       }}
-      status={state.isRunning ? 'processing' : state.error ? 'error' : 'ready'}
-      notifications={state.error ? [{
-        type: 'error',
-        message: state.error,
-        timestamp: Date.now(),
-      }] : []}
-      onNotificationDismiss={() => setState(prev => ({ ...prev, error: null }))}
+      status={state.isRunning ? "processing" : state.error ? "error" : "ready"}
+      notifications={
+        state.error
+          ? [
+              {
+                type: "error",
+                message: state.error,
+                timestamp: Date.now(),
+              },
+            ]
+          : []
+      }
+      onNotificationDismiss={() => setState((prev) => ({ ...prev, error: null }))}
     >
-      <input
-        id="java-import"
-        type="file"
-        accept=".java"
-        onChange={importCode}
-        className="hidden"
-      />
+      <input id="java-import" type="file" accept=".java" onChange={importCode} className="hidden" />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Code Editor Section */}
@@ -512,7 +512,7 @@ export function JavaExecutor(): React.ReactElement {
               <select
                 value={selectedPreset}
                 onChange={(e) => {
-                  const index = parseInt(e.target.value);
+                  const index = parseInt(e.target.value, 10);
                   setSelectedPreset(index);
                   loadPreset(JAVA_PRESETS[index]);
                 }}
@@ -553,11 +553,13 @@ export function JavaExecutor(): React.ReactElement {
                   <input
                     type="text"
                     value={state.className}
-                    onChange={(e) => setState(prev => ({
-                      ...prev,
-                      className: e.target.value,
-                      isCompiled: false
-                    }))}
+                    onChange={(e) =>
+                      setState((prev) => ({
+                        ...prev,
+                        className: e.target.value,
+                        isCompiled: false,
+                      }))
+                    }
                     className="w-full mt-1 px-3 py-2 border rounded-md text-sm font-mono"
                     placeholder="Main"
                   />
@@ -567,11 +569,13 @@ export function JavaExecutor(): React.ReactElement {
                   <label className="text-sm font-medium">Java Code</label>
                   <textarea
                     value={state.code}
-                    onChange={(e) => setState(prev => ({
-                      ...prev,
-                      code: e.target.value,
-                      isCompiled: false
-                    }))}
+                    onChange={(e) =>
+                      setState((prev) => ({
+                        ...prev,
+                        code: e.target.value,
+                        isCompiled: false,
+                      }))
+                    }
                     className="w-full mt-1 h-64 px-3 py-2 border rounded-md text-sm font-mono resize-none"
                     placeholder="Enter your Java code here..."
                     spellCheck={false}
@@ -592,7 +596,7 @@ export function JavaExecutor(): React.ReactElement {
             <CardContent className="p-4">
               <textarea
                 value={state.input}
-                onChange={(e) => setState(prev => ({ ...prev, input: e.target.value }))}
+                onChange={(e) => setState((prev) => ({ ...prev, input: e.target.value }))}
                 className="w-full h-24 px-3 py-2 border rounded-md text-sm font-mono resize-none"
                 placeholder="Enter input for the Java program..."
               />
@@ -606,14 +610,10 @@ export function JavaExecutor(): React.ReactElement {
             <h3 className="text-lg font-semibold">Console Output</h3>
             <div className="flex items-center gap-2">
               {state.compileTime > 0 && (
-                <Badge variant="secondary">
-                  Compile: {state.compileTime.toFixed(2)}ms
-                </Badge>
+                <Badge variant="secondary">Compile: {state.compileTime.toFixed(2)}ms</Badge>
               )}
               {state.executionTime > 0 && (
-                <Badge variant="secondary">
-                  Run: {state.executionTime.toFixed(2)}ms
-                </Badge>
+                <Badge variant="secondary">Run: {state.executionTime.toFixed(2)}ms</Badge>
               )}
               {state.memoryUsage > 0 && (
                 <Badge variant="secondary">
@@ -632,7 +632,7 @@ export function JavaExecutor(): React.ReactElement {
                 className="h-80 border rounded-md p-3 font-mono text-sm bg-gray-50 dark:bg-gray-900"
                 ref={outputRef}
               >
-                {state.output || 'Output will appear here...'}
+                {state.output || "Output will appear here..."}
               </ScrollArea>
             </CardContent>
           </Card>

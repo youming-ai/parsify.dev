@@ -1,10 +1,10 @@
 "use client";
 
+import { FileJson } from "lucide-react";
+import Link from "next/link";
 import { JsonToolComplete } from "@/components/tools/json/json-tool-complete";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileJson } from "lucide-react";
-import Link from "next/link";
 
 export default function JsonPathQueriesPage() {
   return (

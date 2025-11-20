@@ -1,14 +1,14 @@
 "use client";
 
+import { Code, Copy, FileText, Image, Upload, Zap } from "lucide-react";
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { FileUpload } from "@/components/file-upload/file-upload";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { FileUpload } from "@/components/file-upload/file-upload";
-import { Copy, FileText, Upload, Zap, Code, Image } from "lucide-react";
-import { toast } from "sonner";
 
 export interface Base64Result {
   operation: "encode" | "decode";
@@ -60,7 +60,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
   const encodeText = (text: string): string => {
     try {
       return btoa(unescape(encodeURIComponent(text)));
-    } catch (error) {
+    } catch (_error) {
       throw new Error("Failed to encode text to Base64");
     }
   };
@@ -69,7 +69,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
   const decodeText = (base64: string): string => {
     try {
       return decodeURIComponent(escape(atob(base64)));
-    } catch (error) {
+    } catch (_error) {
       throw new Error("Invalid Base64 format or corrupted data");
     }
   };
@@ -89,7 +89,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
   };
 
   // Convert Base64 to blob
-  const base64ToBlob = (base64: string, mimeType: string = "application/octet-stream"): Blob => {
+  const _base64ToBlob = (base64: string, mimeType: string = "application/octet-stream"): Blob => {
     try {
       const byteCharacters = atob(base64);
       const byteNumbers = new Array(byteCharacters.length);
@@ -98,7 +98,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
       }
       const byteArray = new Uint8Array(byteNumbers);
       return new Blob([byteArray], { type: mimeType });
-    } catch (error) {
+    } catch (_error) {
       throw new Error("Failed to decode Base64");
     }
   };
@@ -184,7 +184,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
     try {
       await navigator.clipboard.writeText(text);
       toast.success("Copied to clipboard");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to copy to clipboard");
     }
   };
@@ -202,7 +202,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       toast.success("File downloaded");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to download file");
     }
   };
@@ -265,7 +265,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
     } else {
       setOutputText("");
     }
-  }, [inputText, activeTab, activeInputTab]);
+  }, [inputText, activeTab, activeInputTab, decodeText, encodeText, isValidBase64]);
 
   return (
     <div className={className}>

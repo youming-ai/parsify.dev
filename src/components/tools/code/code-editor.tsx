@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
 import * as React from "react";
+import { cn } from "@/lib/utils";
 import type { CodeEditorProps } from "./code-types";
 import { getLanguageConfig } from "./language-configs";
 
@@ -255,7 +255,7 @@ const validateJavaScriptSyntax = (code: string): Promise<void> => {
 
       // If we get here, basic syntax looks OK
       resolve();
-    } catch (error) {
+    } catch (_error) {
       reject(new Error("Syntax validation failed"));
     }
   });

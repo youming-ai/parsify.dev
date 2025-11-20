@@ -1,9 +1,12 @@
 "use client";
 
+import { Download, Eye, FileSpreadsheet } from "lucide-react";
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { FileUpload } from "@/components/file-upload/file-upload";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,7 +17,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -23,10 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileUpload } from "@/components/file-upload/file-upload";
-import { DownloadButton } from "@/components/file-upload/download-button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { FileSpreadsheet, Filter, Download, Eye, Settings } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export interface CSVRow extends Record<string, string | number> {
   [index: string]: string | number;
@@ -118,7 +117,7 @@ export function CSVProcessor({ onProcessingComplete, onError, className }: CSVPr
     includeHeaders: true,
   });
   const [result, setResult] = React.useState<CSVProcessingResult | null>(null);
-  const [isProcessing, setIsProcessing] = React.useState(false);
+  const [_isProcessing, setIsProcessing] = React.useState(false);
 
   const parseCSV = (content: string): { data: CSVRow[]; headers: string[] } => {
     const lines = content.split("\n").filter((line) => line.trim());
@@ -158,7 +157,7 @@ export function CSVProcessor({ onProcessingComplete, onError, className }: CSVPr
         let value: string | number = values[index] || "";
 
         // Convert numbers
-        if (!isNaN(Number(value)) && value !== "") {
+        if (!Number.isNaN(Number(value)) && value !== "") {
           value = Number(value);
         }
 
@@ -271,7 +270,7 @@ export function CSVProcessor({ onProcessingComplete, onError, className }: CSVPr
     }
   }, [csvData, headers, options, files, onProcessingComplete, onError]);
 
-  const handleFilesDrop = (newFiles: File[]) => {
+  const _handleFilesDrop = (newFiles: File[]) => {
     const csvFiles = newFiles.filter(
       (file) => file.type === "text/csv" || file.name.toLowerCase().endsWith(".csv"),
     );
@@ -409,7 +408,7 @@ ${html}
     if (csvData.length > 0) {
       processCSV();
     }
-  }, [csvData, options.filters, options.sortBy, options.sortOrder]);
+  }, [csvData, processCSV]);
 
   const updateOption = (key: keyof CSVProcessingOptions, value: any) => {
     setOptions((prev) => ({ ...prev, [key]: value }));

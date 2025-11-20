@@ -10,12 +10,12 @@ import {
   RATE_LIMITS,
 } from "./config";
 import type {
-  APIUsageEvent,
   AnalyticsBatch,
   AnalyticsConfig,
   AnalyticsConsent,
   AnalyticsEvent,
   AnalyticsSession,
+  APIUsageEvent,
   PageViewEvent,
   PerformanceEvent,
   ToolUsageEvent,
@@ -33,7 +33,6 @@ export class CloudflareAnalyticsClient {
   private performanceObserver: PerformanceObserver | null = null;
   private isInitialized = false;
   private eventCounters = new Map<string, number>();
-  private batchTimer: NodeJS.Timeout | null = null;
 
   constructor(config?: Partial<AnalyticsConfig>) {
     this.config = { ...DEFAULT_ANALYTICS_CONFIG, ...config };

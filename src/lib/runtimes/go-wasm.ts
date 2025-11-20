@@ -6,7 +6,7 @@
 export interface GoSourceFile {
   name: string;
   content: string;
-  type: 'go';
+  type: "go";
 }
 
 export interface GoExecutionOptions {
@@ -55,7 +55,7 @@ export class GoRuntime {
   private async _doInitialize(): Promise<void> {
     try {
       // TinyGo would need to be loaded via command line tools or WASM modules
-      console.log('Initializing TinyGo runtime...');
+      console.log("Initializing TinyGo runtime...");
 
       // Initialize TinyGo configuration
       this.tinygo = {
@@ -63,7 +63,7 @@ export class GoRuntime {
         run: this._runStub.bind(this),
         buildAndRun: this._buildAndRunStub.bind(this),
         getGoModuleInfo: this._getGoModuleInfoStub.bind(this),
-        getStatus: this._getStatusStub.bind(this)
+        getStatus: this._getStatusStub.bind(this),
       };
 
       this.isInitialized = true;
@@ -79,19 +79,19 @@ export class GoRuntime {
     await this.initialize();
 
     if (!this.tinygo) {
-      throw new Error('Go runtime not initialized');
+      throw new Error("Go runtime not initialized");
     }
 
     const {
-      mainPackage = 'main',
+      mainPackage = "main",
       sourceFiles,
       buildTags = [],
-      gcFlags = '',
-      ldFlags = '',
-      goVersion = '1.21',
+      gcFlags = "",
+      ldFlags = "",
+      goVersion = "1.21",
       timeoutMs = 5000,
       memoryLimitMB = 100,
-      captureOutput = true
+      captureOutput = true,
     } = options;
 
     const startTime = performance.now();
@@ -108,44 +108,40 @@ export class GoRuntime {
         gcFlags,
         ldFlags,
         goVersion,
-        target: 'wasm'
+        target: "wasm",
       });
 
-      const executionResult = await this.tinygo.run(
-        buildResult,
-        {
-          mainPackage,
-          captureOutput
-        }
-      );
+      const executionResult = await this.tinygo.run(buildResult, {
+        mainPackage,
+        captureOutput,
+      });
 
       const endTime = performance.now();
       const executionTime = endTime - startTime;
 
       return {
-        stdout: executionResult.stdout || '',
-        stderr: executionResult.stderr || '',
+        stdout: executionResult.stdout || "",
+        stderr: executionResult.stderr || "",
         exitCode: executionResult.exitCode || 0,
         executionTime,
         memoryUsed: this._estimateMemoryUsage(),
         packageName: mainPackage,
         buildSuccess: buildResult.success,
         warnings: executionResult.warnings || [],
-        error: executionResult.error
+        error: executionResult.error,
       };
-
     } catch (error) {
       const endTime = performance.now();
       const executionTime = endTime - startTime;
 
       return {
-        stdout: '',
+        stdout: "",
         stderr: error instanceof Error ? error.message : String(error),
         exitCode: 1,
         executionTime,
         memoryUsed: this._estimateMemoryUsage(),
         error: error instanceof Error ? error : new Error(String(error)),
-        warnings: []
+        warnings: [],
       };
     }
   }
@@ -157,15 +153,15 @@ export class GoRuntime {
     await this.initialize();
 
     if (!this.tinygo) {
-      throw new Error('Go runtime not initialized');
+      throw new Error("Go runtime not initialized");
     }
 
     try {
-      const { sourceFiles, buildTags = [], goVersion = '1.21' } = options;
+      const { sourceFiles, buildTags = [], goVersion = "1.21" } = options;
       return await this.tinygo.getGoModuleInfo(sourceFiles, {
         buildTags,
         goVersion,
-        target: 'wasm'
+        target: "wasm",
       });
     } catch (error) {
       throw new Error(`Go module info failed: ${error.message}`);
@@ -190,30 +186,30 @@ export class GoRuntime {
   getStatus() {
     return {
       initialized: this.isInitialized,
-      version: '1.21',
-      compiler: 'TinyGo',
-      memoryUsage: this._estimateMemoryUsage()
+      version: "1.21",
+      compiler: "TinyGo",
+      memoryUsage: this._estimateMemoryUsage(),
     };
   }
 
   // Stub implementations (would be replaced with real TinyGo functionality)
-  private _buildStub(sourceFiles: GoSourceFile[], options?: any): any {
+  private _buildStub(_sourceFiles: GoSourceFile[], options?: any): any {
     return {
       success: true,
-      wasmModule: 'simulated-wasm-module',
+      wasmModule: "simulated-wasm-module",
       buildTime: 200,
       warnings: [],
       buildTags: options?.buildTags || [],
-      goVersion: options?.goVersion || '1.21'
+      goVersion: options?.goVersion || "1.21",
     };
   }
 
-  private _runStub(wasmModule: any, options?: any): any {
+  private _runStub(_wasmModule: any, _options?: any): any {
     return {
-      stdout: 'Go execution completed (simulated)',
-      stderr: '',
+      stdout: "Go execution completed (simulated)",
+      stderr: "",
       exitCode: 0,
-      warnings: []
+      warnings: [],
     };
   }
 
@@ -222,25 +218,25 @@ export class GoRuntime {
     return this._runStub(buildResult.wasmModule, options);
   }
 
-  private _getGoModuleInfoStub(sourceFiles: GoSourceFile[], options?: any): any {
+  private _getGoModuleInfoStub(_sourceFiles: GoSourceFile[], options?: any): any {
     return {
-      moduleName: 'main',
+      moduleName: "main",
       dependencies: [],
       buildInfo: {
-        goVersion: options?.goVersion || '1.21',
+        goVersion: options?.goVersion || "1.21",
         buildTags: options?.buildTags || [],
-        target: 'wasm',
-        features: ['goroutines', 'channels']
-      }
+        target: "wasm",
+        features: ["goroutines", "channels"],
+      },
     };
   }
 
   private _getStatusStub(): any {
     return {
       available: true,
-      version: 'TinyGo 0.30.0',
-      supportedTargets: ['wasm', 'js', 'wasm-unknown'],
-      features: ['goroutines', 'channels', 'interfaces', 'generics']
+      version: "TinyGo 0.30.0",
+      supportedTargets: ["wasm", "js", "wasm-unknown"],
+      features: ["goroutines", "channels", "interfaces", "generics"],
     };
   }
 

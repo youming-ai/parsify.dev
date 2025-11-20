@@ -495,7 +495,7 @@ export const searchTools = (query: string): Tool[] => {
       tool.description.toLowerCase().includes(lowercaseQuery) ||
       tool.tags.some((tag) => tag.toLowerCase().includes(lowercaseQuery)) ||
       tool.category.toLowerCase().includes(lowercaseQuery) ||
-      (tool.subcategory && tool.subcategory.toLowerCase().includes(lowercaseQuery)),
+      tool.subcategory?.toLowerCase().includes(lowercaseQuery),
   );
 };
 

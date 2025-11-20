@@ -1,29 +1,22 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { MainLayout } from "@/components/layout/main-layout";
 import {
-  toolsData,
-  categoryStructure,
-  getToolsByCategoryAndSubcategory,
-  getSubcategoriesForCategory,
-} from "@/data/tools-data";
-import type { Tool } from "@/types/tools";
-import {
-  ChevronRight,
-  Database,
   Code,
-  Terminal,
-  Image,
-  Palette,
+  Database,
   FileText,
   Hash,
-  Shield,
+  Image,
+  Palette,
   Settings,
-  Zap,
+  Shield,
+  Terminal,
 } from "lucide-react";
 import Link from "next/link";
-import * as React from "react";
+import type * as React from "react";
+import { MainLayout } from "@/components/layout/main-layout";
+import { Badge } from "@/components/ui/badge";
+import { toolsData } from "@/data/tools-data";
+import type { Tool } from "@/types/tools";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -157,121 +150,121 @@ export default function Home() {
                 </div>
               </div>
 
-            {/* Formatting Subcategory */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-3">
-                Formatting
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getToolsForSubcategory("Common/Auxiliary Tools", "Formatting").map((tool) => (
-                  <ToolCard key={tool.id} tool={tool} />
-                ))}
-              </div>
-            </div>
-
-            {/* Online Language Support Subcategory */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-3">
-                Online Language Support
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getToolsForSubcategory("Common/Auxiliary Tools", "Online Language Support").map(
-                  (tool) => (
+              {/* Formatting Subcategory */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-3">
+                  Formatting
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {getToolsForSubcategory("Common/Auxiliary Tools", "Formatting").map((tool) => (
                     <ToolCard key={tool.id} tool={tool} />
-                  ),
-                )}
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Other Tools Subcategory */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-3">
-                Other Tools
-              </h3>
+              {/* Online Language Support Subcategory */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-3">
+                  Online Language Support
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {getToolsForSubcategory("Common/Auxiliary Tools", "Online Language Support").map(
+                    (tool) => (
+                      <ToolCard key={tool.id} tool={tool} />
+                    ),
+                  )}
+                </div>
+              </div>
+
+              {/* Other Tools Subcategory */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-3">
+                  Other Tools
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {getToolsForSubcategory("Common/Auxiliary Tools", "Other Tools").map((tool) => (
+                    <ToolCard key={tool.id} tool={tool} />
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* Image/Media Tools Section */}
+            <section>
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-1 h-6 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full"></div>
+                  <h2 className="text-gray-900 dark:text-white text-xl font-bold">
+                    Image/Media Tools
+                  </h2>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                    {getToolCount("Image/Media Tools")} tools
+                  </span>
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getToolsForSubcategory("Common/Auxiliary Tools", "Other Tools").map((tool) => (
+                {getToolsForCategory("Image/Media Tools").map((tool) => (
                   <ToolCard key={tool.id} tool={tool} />
                 ))}
               </div>
-            </div>
-          </section>
+            </section>
 
-          {/* Image/Media Tools Section */}
-          <section>
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-1 h-6 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full"></div>
-                <h2 className="text-gray-900 dark:text-white text-xl font-bold">
-                  Image/Media Tools
-                </h2>
-                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                  {getToolCount("Image/Media Tools")} tools
-                </span>
+            {/* Network/Ops/Encoding Tools Section */}
+            <section>
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-1 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full"></div>
+                  <h2 className="text-gray-900 dark:text-white text-xl font-bold">
+                    Network/Ops/Encoding Tools
+                  </h2>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                    {getToolCount("Network/Ops/Encoding Tools")} tools
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {getToolsForCategory("Image/Media Tools").map((tool) => (
-                <ToolCard key={tool.id} tool={tool} />
-              ))}
-            </div>
-          </section>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getToolsForCategory("Network/Ops/Encoding Tools").map((tool) => (
+                  <ToolCard key={tool.id} tool={tool} />
+                ))}
+              </div>
+            </section>
 
-          {/* Network/Ops/Encoding Tools Section */}
-          <section>
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-1 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full"></div>
-                <h2 className="text-gray-900 dark:text-white text-xl font-bold">
-                  Network/Ops/Encoding Tools
-                </h2>
-                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                  {getToolCount("Network/Ops/Encoding Tools")} tools
-                </span>
+            {/* Text Tools Section */}
+            <section>
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-1 h-6 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full"></div>
+                  <h2 className="text-gray-900 dark:text-white text-xl font-bold">Text Tools</h2>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                    {getToolCount("Text Tools")} tools
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {getToolsForCategory("Network/Ops/Encoding Tools").map((tool) => (
-                <ToolCard key={tool.id} tool={tool} />
-              ))}
-            </div>
-          </section>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getToolsForCategory("Text Tools").map((tool) => (
+                  <ToolCard key={tool.id} tool={tool} />
+                ))}
+              </div>
+            </section>
 
-          {/* Text Tools Section */}
-          <section>
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-1 h-6 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full"></div>
-                <h2 className="text-gray-900 dark:text-white text-xl font-bold">Text Tools</h2>
-                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                  {getToolCount("Text Tools")} tools
-                </span>
+            {/* Encryption/Hashing/Generation Section */}
+            <section>
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-1 h-6 bg-gradient-to-br from-red-500 to-red-600 rounded-full"></div>
+                  <h2 className="text-gray-900 dark:text-white text-xl font-bold">
+                    Encryption/Hashing/Generation
+                  </h2>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                    {getToolCount("Encryption/Hashing/Generation")} tools
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {getToolsForCategory("Text Tools").map((tool) => (
-                <ToolCard key={tool.id} tool={tool} />
-              ))}
-            </div>
-          </section>
-
-          {/* Encryption/Hashing/Generation Section */}
-          <section>
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-1 h-6 bg-gradient-to-br from-red-500 to-red-600 rounded-full"></div>
-                <h2 className="text-gray-900 dark:text-white text-xl font-bold">
-                  Encryption/Hashing/Generation
-                </h2>
-                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                  {getToolCount("Encryption/Hashing/Generation")} tools
-                </span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getToolsForCategory("Encryption/Hashing/Generation").map((tool) => (
+                  <ToolCard key={tool.id} tool={tool} />
+                ))}
               </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {getToolsForCategory("Encryption/Hashing/Generation").map((tool) => (
-                <ToolCard key={tool.id} tool={tool} />
-              ))}
-            </div>
             </section>
           </main>
         </div>

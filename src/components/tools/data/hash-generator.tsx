@@ -1,23 +1,15 @@
 "use client";
 
+import { Copy, FileText, Hash, Upload } from "lucide-react";
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { FileUpload } from "@/components/file-upload/file-upload";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { FileUpload } from "@/components/file-upload/file-upload";
-import { Copy, Hash, FileText, Upload } from "lucide-react";
-import { toast } from "sonner";
 
 export interface HashResult {
   algorithm: string;
@@ -93,7 +85,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
         const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
         return hashHex;
       }
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`Unsupported algorithm: ${algorithm}`);
     }
 
@@ -130,7 +122,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
 
       setResults((prev) => [...prev, ...newResults]);
       toast.success(`Generated ${newResults.length} hash(es)`);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to generate hashes");
     } finally {
       setIsProcessing(false);
@@ -173,7 +165,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
 
       setResults((prev) => [...prev, ...newResults]);
       toast.success(`Generated ${newResults.length} hash(es) from ${inputFiles.length} file(s)`);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to process files");
     } finally {
       setIsProcessing(false);
@@ -185,7 +177,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
     try {
       await navigator.clipboard.writeText(hash);
       toast.success("Hash copied to clipboard");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to copy to clipboard");
     }
   };

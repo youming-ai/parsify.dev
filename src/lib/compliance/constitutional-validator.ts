@@ -3,13 +3,11 @@
  * Validates compliance with Parsify.dev constitutional principles
  */
 
-import type { BundleMetrics } from '../performance/bundle-analyzer';
-
 export interface ComplianceResult {
   passed: boolean;
   principle: string;
   details: string;
-  severity: 'error' | 'warning' | 'info';
+  severity: "error" | "warning" | "info";
   recommendation?: string;
 }
 
@@ -29,12 +27,11 @@ export interface ConstitutionalComplianceReport {
 }
 
 export class ConstitutionalValidator {
-  private static instance: ConstitutionalValidator;
   private bundleAnalyzer: any;
 
   private constructor() {
     // Lazy load bundle analyzer
-    import('../performance/bundle-analyzer').then(module => {
+    import("../performance/bundle-analyzer").then((module) => {
       this.bundleAnalyzer = module.BundleAnalyzer.getInstance();
     });
   }
@@ -67,12 +64,12 @@ export class ConstitutionalValidator {
     // Principle 5: Performance optimization (<200KB per tool, <2MB total)
     principles.push(await this.validatePerformanceOptimization());
 
-    const errors = principles.filter(p => p.severity === 'error').length;
-    const warnings = principles.filter(p => p.severity === 'warning').length;
+    const errors = principles.filter((p) => p.severity === "error").length;
+    const warnings = principles.filter((p) => p.severity === "warning").length;
     const passed = errors === 0;
 
     // Calculate compliance score
-    const score = Math.max(0, 100 - (errors * 10) - (warnings * 5));
+    const score = Math.max(0, 100 - errors * 10 - warnings * 5);
 
     return {
       overall: {
@@ -94,28 +91,28 @@ export class ConstitutionalValidator {
 
     // Check for server-side API routes
     try {
-      const response = await fetch('/api/health', { method: 'HEAD' });
+      const response = await fetch("/api/health", { method: "HEAD" });
       if (response.ok) {
-        violations.push('Server-side API routes detected');
+        violations.push("Server-side API routes detected");
       }
     } catch {
       // No API routes found - this is good for client-side processing
     }
 
     // Check for external server dependencies in tool implementations
-    const toolImports = [
-      'crypto.subtle', // Web Crypto API (allowed - client-side)
-      'fetch', // Allowed - client-side HTTP
-      'WebSocket', // Allowed - client-side
-      'Worker', // Allowed - client-side
+    const _toolImports = [
+      "crypto.subtle", // Web Crypto API (allowed - client-side)
+      "fetch", // Allowed - client-side HTTP
+      "WebSocket", // Allowed - client-side
+      "Worker", // Allowed - client-side
     ];
 
-    const disallowedPatterns = [
+    const _disallowedPatterns = [
       'require("child_process")',
       'require("fs")',
       'require("net")',
-      'spawn(',
-      'exec(',
+      "spawn(",
+      "exec(",
     ];
 
     // This would require actual code scanning in a real implementation
@@ -124,18 +121,18 @@ export class ConstitutionalValidator {
     if (violations.length > 0 || hasServerCode) {
       return {
         passed: false,
-        principle: 'Client-side Processing',
-        details: violations.join('; '),
-        severity: 'error',
-        recommendation: 'Remove server-side dependencies and implement client-side alternatives',
+        principle: "Client-side Processing",
+        details: violations.join("; "),
+        severity: "error",
+        recommendation: "Remove server-side dependencies and implement client-side alternatives",
       };
     }
 
     return {
       passed: true,
-      principle: 'Client-side Processing',
-      details: 'All tools use client-side processing',
-      severity: 'info',
+      principle: "Client-side Processing",
+      details: "All tools use client-side processing",
+      severity: "info",
     };
   }
 
@@ -144,25 +141,26 @@ export class ConstitutionalValidator {
    */
   private async validateMonacoIntegration(): Promise<ComplianceResult> {
     // Check if Monaco Editor is available
-    const hasMonaco = typeof window !== 'undefined' &&
-                     (window as any).monaco ||
-                     document.querySelector('[data-monaco-editor]');
+    const hasMonaco =
+      (typeof window !== "undefined" && (window as any).monaco) ||
+      document.querySelector("[data-monaco-editor]");
 
     if (!hasMonaco) {
       return {
         passed: false,
-        principle: 'Monaco Editor Integration',
-        details: 'Monaco Editor not integrated for code/data input tools',
-        severity: 'warning',
-        recommendation: 'Integrate Monaco Editor for JSON formatting, code execution, and data manipulation tools',
+        principle: "Monaco Editor Integration",
+        details: "Monaco Editor not integrated for code/data input tools",
+        severity: "warning",
+        recommendation:
+          "Integrate Monaco Editor for JSON formatting, code execution, and data manipulation tools",
       };
     }
 
     return {
       passed: true,
-      principle: 'Monaco Editor Integration',
-      details: 'Monaco Editor properly integrated',
-      severity: 'info',
+      principle: "Monaco Editor Integration",
+      details: "Monaco Editor properly integrated",
+      severity: "info",
     };
   }
 
@@ -173,35 +171,35 @@ export class ConstitutionalValidator {
     const issues: string[] = [];
 
     // Check for tool isolation (this would require actual code analysis)
-    const tools = document.querySelectorAll('[data-tool-id]');
+    const tools = document.querySelectorAll("[data-tool-id]");
 
     if (tools.length === 0) {
-      issues.push('No tools found with proper data-tool-id attributes');
+      issues.push("No tools found with proper data-tool-id attributes");
     }
 
     // Check for shared state issues
-    const hasGlobalState = typeof window !== 'undefined' &&
-                          (window as any).__SHARED_TOOL_STATE;
+    const hasGlobalState = typeof window !== "undefined" && (window as any).__SHARED_TOOL_STATE;
 
     if (hasGlobalState) {
-      issues.push('Tools share global state - violates modularity');
+      issues.push("Tools share global state - violates modularity");
     }
 
     if (issues.length > 0) {
       return {
         passed: false,
-        principle: 'Tool Modularity',
-        details: issues.join('; '),
-        severity: 'error',
-        recommendation: 'Ensure tools are implemented as standalone React components without shared state',
+        principle: "Tool Modularity",
+        details: issues.join("; "),
+        severity: "error",
+        recommendation:
+          "Ensure tools are implemented as standalone React components without shared state",
       };
     }
 
     return {
       passed: true,
-      principle: 'Tool Modularity',
-      details: 'Tools are properly modularized',
-      severity: 'info',
+      principle: "Tool Modularity",
+      details: "Tools are properly modularized",
+      severity: "info",
     };
   }
 
@@ -212,44 +210,49 @@ export class ConstitutionalValidator {
     const issues: string[] = [];
 
     // Check for keyboard navigation
-    const focusableElements = document.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const focusableElements = document.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    );
     if (focusableElements.length === 0) {
-      issues.push('Limited keyboard navigation support');
+      issues.push("Limited keyboard navigation support");
     }
 
     // Check for ARIA attributes
-    const ariaElements = document.querySelectorAll('[aria-label], [aria-describedby], [role]');
+    const ariaElements = document.querySelectorAll("[aria-label], [aria-describedby], [role]");
     if (ariaElements.length === 0) {
-      issues.push('Limited ARIA accessibility attributes');
+      issues.push("Limited ARIA accessibility attributes");
     }
 
     // Check for semantic HTML
-    const semanticElements = document.querySelectorAll('main, nav, header, footer, section, article');
+    const semanticElements = document.querySelectorAll(
+      "main, nav, header, footer, section, article",
+    );
     if (semanticElements.length === 0) {
-      issues.push('Limited semantic HTML structure');
+      issues.push("Limited semantic HTML structure");
     }
 
     // Check for screen reader support
     const srOnlyElements = document.querySelectorAll('.sr-only, [aria-hidden="true"]');
     if (srOnlyElements.length === 0) {
-      issues.push('No screen reader specific content detected');
+      issues.push("No screen reader specific content detected");
     }
 
     if (issues.length > 2) {
       return {
         passed: false,
-        principle: 'Progressive Enhancement & Accessibility',
-        details: issues.join('; '),
-        severity: 'warning',
-        recommendation: 'Implement comprehensive accessibility features including ARIA, keyboard navigation, and screen reader support',
+        principle: "Progressive Enhancement & Accessibility",
+        details: issues.join("; "),
+        severity: "warning",
+        recommendation:
+          "Implement comprehensive accessibility features including ARIA, keyboard navigation, and screen reader support",
       };
     }
 
     return {
       passed: true,
-      principle: 'Progressive Enhancement & Accessibility',
-      details: 'Progressive enhancement features implemented',
-      severity: 'info',
+      principle: "Progressive Enhancement & Accessibility",
+      details: "Progressive enhancement features implemented",
+      severity: "info",
     };
   }
 
@@ -260,10 +263,10 @@ export class ConstitutionalValidator {
     if (!this.bundleAnalyzer) {
       return {
         passed: false,
-        principle: 'Performance Optimization',
-        details: 'Bundle analyzer not available',
-        severity: 'warning',
-        recommendation: 'Initialize bundle analyzer to check performance constraints',
+        principle: "Performance Optimization",
+        details: "Bundle analyzer not available",
+        severity: "warning",
+        recommendation: "Initialize bundle analyzer to check performance constraints",
       };
     }
 
@@ -292,18 +295,19 @@ export class ConstitutionalValidator {
     if (violations.length > 0) {
       return {
         passed: false,
-        principle: 'Performance Optimization',
-        details: violations.join('; '),
-        severity: violations.some(v => v.includes('exceeds')) ? 'error' : 'warning',
-        recommendation: 'Optimize bundle sizes, implement code splitting, and improve loading performance',
+        principle: "Performance Optimization",
+        details: violations.join("; "),
+        severity: violations.some((v) => v.includes("exceeds")) ? "error" : "warning",
+        recommendation:
+          "Optimize bundle sizes, implement code splitting, and improve loading performance",
       };
     }
 
     return {
       passed: true,
-      principle: 'Performance Optimization',
+      principle: "Performance Optimization",
       details: `Bundle size ${this.formatBytes(metrics.totalSize)}, all tools within limits`,
-      severity: 'info',
+      severity: "info",
     };
   }
 
@@ -319,7 +323,7 @@ export class ConstitutionalValidator {
       return {
         totalSize: 0,
         toolSizes: {},
-        violations: ['Bundle analyzer not available'],
+        violations: ["Bundle analyzer not available"],
       };
     }
 
@@ -347,11 +351,11 @@ export class ConstitutionalValidator {
    * Format bytes to human readable format
    */
   private formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }
 
   /**
@@ -359,32 +363,32 @@ export class ConstitutionalValidator {
    */
   public generateReport(compliance: ConstitutionalComplianceReport): string {
     const report = [
-      '# Parsify.dev Constitutional Compliance Report',
-      '',
+      "# Parsify.dev Constitutional Compliance Report",
+      "",
       `## Overall Compliance Score: ${compliance.overall.score}/100`,
-      compliance.overall.passed ? '✅ **PASSED**' : '❌ **FAILED**',
-      '',
+      compliance.overall.passed ? "✅ **PASSED**" : "❌ **FAILED**",
+      "",
       `**Errors**: ${compliance.overall.errors} | **Warnings**: ${compliance.overall.warnings}`,
-      '',
-      '## Constitutional Principles',
-      '',
+      "",
+      "## Constitutional Principles",
+      "",
     ];
 
-    compliance.principles.forEach(principle => {
-      const icon = principle.severity === 'error' ? '❌' :
-                   principle.severity === 'warning' ? '⚠️' : '✅';
+    compliance.principles.forEach((principle) => {
+      const icon =
+        principle.severity === "error" ? "❌" : principle.severity === "warning" ? "⚠️" : "✅";
 
       report.push(`### ${icon} ${principle.principle}`);
-      report.push(`${principle.passed ? 'Passed' : 'Failed'}: ${principle.details}`);
+      report.push(`${principle.passed ? "Passed" : "Failed"}: ${principle.details}`);
 
       if (principle.recommendation) {
         report.push(`**Recommendation**: ${principle.recommendation}`);
       }
-      report.push('');
+      report.push("");
     });
 
     if (compliance.bundleAnalysis) {
-      report.push('## Bundle Analysis');
+      report.push("## Bundle Analysis");
       report.push(`- **Total Size**: ${this.formatBytes(compliance.bundleAnalysis.totalSize)}`);
       report.push(`- **Individual Tool Sizes**:`);
 
@@ -393,21 +397,21 @@ export class ConstitutionalValidator {
       });
 
       if (compliance.bundleAnalysis.violations.length > 0) {
-        report.push('**Violations**:');
-        compliance.bundleAnalysis.violations.forEach(violation => {
+        report.push("**Violations**:");
+        compliance.bundleAnalysis.violations.forEach((violation) => {
           report.push(`- ${violation}`);
         });
       }
-      report.push('');
+      report.push("");
     }
 
-    report.push('## Compliance Checklist');
-    report.push('- [ ] Client-side processing verified');
-    report.push('- [ ] Monaco Editor integration confirmed');
-    report.push('- [ ] Tool modularity validated');
-    report.push('- [ ] Progressive enhancement features implemented');
-    report.push('- [ ] Performance constraints satisfied');
+    report.push("## Compliance Checklist");
+    report.push("- [ ] Client-side processing verified");
+    report.push("- [ ] Monaco Editor integration confirmed");
+    report.push("- [ ] Tool modularity validated");
+    report.push("- [ ] Progressive enhancement features implemented");
+    report.push("- [ ] Performance constraints satisfied");
 
-    return report.join('\n');
+    return report.join("\n");
   }
 }

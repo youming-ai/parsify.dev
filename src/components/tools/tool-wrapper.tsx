@@ -3,33 +3,26 @@
  * Provides consistent UI and behavior across all tools
  */
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import {
-  Settings,
-  HelpCircle,
-  Download,
-  Upload,
-  Copy,
-  RefreshCw,
   AlertTriangle,
   CheckCircle,
   Clock,
+  Copy,
+  Download,
+  HelpCircle,
+  RefreshCw,
+  Settings,
+  Upload,
   Zap,
 } from "lucide-react";
+import React, { useCallback, useRef, useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 // Types
 export interface ToolConfig {
@@ -97,8 +90,8 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
   notifications = [],
   onNotificationDismiss,
 }) => {
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [_isSettingsOpen, _setIsSettingsOpen] = useState(false);
+  const [_isHelpOpen, _setIsHelpOpen] = useState(false);
   const [showPerformance, setShowPerformance] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -162,9 +155,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
                   {statusInfo.text}
                 </Badge>
               </CardTitle>
-              <CardDescription className="mt-1">
-                {config.description}
-              </CardDescription>
+              <CardDescription className="mt-1">{config.description}</CardDescription>
               <div className="flex items-center gap-2 mt-2">
                 <Badge variant="outline">{config.category}</Badge>
                 <Badge variant="outline">v{config.version}</Badge>
@@ -189,11 +180,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
 
             {config.canImport && (
               <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                >
+                <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
                   <Upload className="w-4 h-4 mr-1" />
                   Import
                 </Button>
@@ -265,9 +252,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() =>
-                      onNotificationDismiss(notification.timestamp)
-                    }
+                    onClick={() => onNotificationDismiss(notification.timestamp)}
                     className="ml-2 h-6 w-6 p-0"
                   >
                     ×
@@ -319,9 +304,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
               <div className="flex items-center gap-4">
                 <span>Load: {performance.loadTime}ms</span>
                 <span>Render: {performance.renderTime}ms</span>
-                <span>
-                  Memory: {(performance.memoryUsage / 1024 / 1024).toFixed(1)}MB
-                </span>
+                <span>Memory: {(performance.memoryUsage / 1024 / 1024).toFixed(1)}MB</span>
               </div>
             )}
           </div>
@@ -347,9 +330,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
           <div>
             Tool ID: {config.id} | Version: {config.version}
           </div>
-          {performance && (
-            <div>Last updated: {new Date().toLocaleTimeString()}</div>
-          )}
+          {performance && <div>Last updated: {new Date().toLocaleTimeString()}</div>}
         </div>
       </div>
     </Card>

@@ -15,7 +15,7 @@ export interface MemoryUsage {
 export interface MemoryAllocation {
   id: string;
   owner: string; // tool ID or system component
-  type: 'buffer' | 'array' | 'object' | 'blob' | 'canvas' | 'wasm' | 'other';
+  type: "buffer" | "array" | "object" | "blob" | "canvas" | "wasm" | "other";
   size: number; // bytes
   data: any;
   createdAt: number;
@@ -29,18 +29,18 @@ export interface MemoryQuota {
   owner: string;
   limit: number; // bytes
   current: number; // bytes
-  priority: 'low' | 'normal' | 'high' | 'critical';
+  priority: "low" | "normal" | "high" | "critical";
 }
 
 export interface CleanupStrategy {
-  type: 'lru' | 'lfu' | 'fifo' | 'priority' | 'custom';
+  type: "lru" | "lfu" | "fifo" | "priority" | "custom";
   targetReduction: number; // percentage
   maxAge?: number; // milliseconds
   preservePersistent?: boolean;
 }
 
 export interface MemoryPressureEvent {
-  level: 'normal' | 'warning' | 'critical' | 'emergency';
+  level: "normal" | "warning" | "critical" | "emergency";
   usage: MemoryUsage;
   timestamp: number;
   actions: string[];
@@ -55,7 +55,6 @@ export interface MemoryLeak {
 }
 
 export class MemoryManager {
-  private static instance: MemoryManager;
   private allocations: Map<string, MemoryAllocation>;
   private quotas: Map<string, MemoryQuota>;
   private globalLimit: number;
@@ -87,7 +86,7 @@ export class MemoryManager {
     this.cleanupHistory = [];
 
     this.pressureThresholds = {
-      warning: 70,  // 70% of limit
+      warning: 70, // 70% of limit
       critical: 85, // 85% of limit
       emergency: 95, // 95% of limit
     };
@@ -108,13 +107,13 @@ export class MemoryManager {
    */
   public allocate(
     owner: string,
-    type: MemoryAllocation['type'],
+    type: MemoryAllocation["type"],
     data: any,
     options: {
       persistent?: boolean;
       metadata?: Record<string, any>;
       quota?: number;
-    } = {}
+    } = {},
   ): string {
     const id = this.generateAllocationId();
     const size = this.calculateSize(data);
@@ -146,7 +145,7 @@ export class MemoryManager {
     // Track potential leaks
     this.trackLeakDetection(owner, type, size);
 
-    this.emit('memory:allocated', { allocation, owner, totalUsage: this.currentUsage });
+    this.emit("memory:allocated", { allocation, owner, totalUsage: this.currentUsage });
 
     // Check memory pressure
     this.checkMemoryPressure();
@@ -175,7 +174,7 @@ export class MemoryManager {
     // Remove from leak detection
     this.leakDetection.delete(id);
 
-    this.emit('memory:deallocated', { allocation, totalUsage: this.currentUsage });
+    this.emit("memory:deallocated", { allocation, totalUsage: this.currentUsage });
     return true;
   }
 
@@ -215,14 +214,14 @@ export class MemoryManager {
    * Get allocations by owner
    */
   public getAllocationsByOwner(owner: string): MemoryAllocation[] {
-    return Array.from(this.allocations.values()).filter(a => a.owner === owner);
+    return Array.from(this.allocations.values()).filter((a) => a.owner === owner);
   }
 
   /**
    * Get allocations by type
    */
-  public getAllocationsByType(type: MemoryAllocation['type']): MemoryAllocation[] {
-    return Array.from(this.allocations.values()).filter(a => a.type === type);
+  public getAllocationsByType(type: MemoryAllocation["type"]): MemoryAllocation[] {
+    return Array.from(this.allocations.values()).filter((a) => a.type === type);
   }
 
   /**
@@ -231,7 +230,7 @@ export class MemoryManager {
   public setQuota(
     owner: string,
     limit: number,
-    priority: MemoryQuota['priority'] = 'normal'
+    priority: MemoryQuota["priority"] = "normal",
   ): void {
     this.quotas.set(owner, {
       owner,
@@ -240,7 +239,7 @@ export class MemoryManager {
       priority,
     });
 
-    this.emit('quota:set', { owner, limit, priority });
+    this.emit("quota:set", { owner, limit, priority });
   }
 
   /**
@@ -271,7 +270,7 @@ export class MemoryManager {
     const clearedIds: string[] = [];
 
     // Get allocations to clear based on strategy
-    let targets = this.getCleanupTargets(strategy);
+    const targets = this.getCleanupTargets(strategy);
 
     // Apply cleanup
     for (const allocation of targets) {
@@ -301,12 +300,12 @@ export class MemoryManager {
       this.cleanupHistory.shift();
     }
 
-    this.emit('memory:cleaned', {
+    this.emit("memory:cleaned", {
       strategy,
       freedMemory,
       allocationsCleared,
       clearedIds,
-      totalUsage: this.currentUsage
+      totalUsage: this.currentUsage,
     });
 
     return { freedMemory, allocationsCleared, strategy };
@@ -344,7 +343,7 @@ export class MemoryManager {
         if (totalSize > quota.limit) {
           leaks.push({
             owner,
-            type: 'quota_exceeded',
+            type: "quota_exceeded",
             size: totalSize - quota.limit,
             duration: 0,
             description: `Owner ${owner} exceeded quota by ${this.formatBytes(totalSize - quota.limit)}`,
@@ -370,35 +369,37 @@ export class MemoryManager {
   /**
    * Get memory pressure events
    */
-  public getMemoryPressureEvents(limit?: number): MemoryPressureEvent[] {
+  public getMemoryPressureEvents(_limit?: number): MemoryPressureEvent[] {
     // This would require storing pressure events
     // For now, return current pressure level
     const usage = this.getMemoryUsage();
-    let level: MemoryPressureEvent['level'] = 'normal';
+    let level: MemoryPressureEvent["level"] = "normal";
 
     if (usage.percentage >= this.pressureThresholds.emergency) {
-      level = 'emergency';
+      level = "emergency";
     } else if (usage.percentage >= this.pressureThresholds.critical) {
-      level = 'critical';
+      level = "critical";
     } else if (usage.percentage >= this.pressureThresholds.warning) {
-      level = 'warning';
+      level = "warning";
     }
 
-    return [{
-      level,
-      usage,
-      timestamp: Date.now(),
-      actions: this.getRecommendedActions(level, usage),
-    }];
+    return [
+      {
+        level,
+        usage,
+        timestamp: Date.now(),
+        actions: this.getRecommendedActions(level, usage),
+      },
+    ];
   }
 
   /**
    * Force garbage collection if available
    */
   public forceGarbageCollection(): boolean {
-    if (typeof window !== 'undefined' && (window as any).gc) {
+    if (typeof window !== "undefined" && (window as any).gc) {
       (window as any).gc();
-      this.emit('gc:forced');
+      this.emit("gc:forced");
       return true;
     }
     return false;
@@ -423,7 +424,7 @@ export class MemoryManager {
     this.leakDetection.clear();
     this.cleanupHistory = [];
 
-    this.emit('memory:reset');
+    this.emit("memory:reset");
   }
 
   /**
@@ -440,20 +441,27 @@ export class MemoryManager {
     cleanupHistory: typeof this.cleanupHistory;
   } {
     const allocations = Array.from(this.allocations.values());
-    const allocationsByType = allocations.reduce((acc, a) => {
-      acc[a.type] = (acc[a.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const allocationsByType = allocations.reduce(
+      (acc, a) => {
+        acc[a.type] = (acc[a.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
-    const allocationsByOwner = allocations.reduce((acc, a) => {
-      acc[a.owner] = (acc[a.owner] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const allocationsByOwner = allocations.reduce(
+      (acc, a) => {
+        acc[a.owner] = (acc[a.owner] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     const totalSize = allocations.reduce((sum, a) => sum + a.size, 0);
     const averageSize = allocations.length > 0 ? totalSize / allocations.length : 0;
-    const largestAllocation = allocations.reduce((max, a) =>
-      a.size > (max?.size || 0) ? a : max, null
+    const largestAllocation = allocations.reduce(
+      (max, a) => (a.size > (max?.size || 0) ? a : max),
+      null,
     );
 
     return {
@@ -468,76 +476,43 @@ export class MemoryManager {
     };
   }
 
-  /**
-   * Private methods
-   */
-  private startMonitoring(): void {
-    this.monitoringInterval = setInterval(() => {
-      this.checkMemoryPressure();
-      this.detectAndHandleLeaks();
-    }, 5000); // Check every 5 seconds
-  }
-
-  private setupMemoryListeners(): void {
-    if (typeof window !== 'undefined') {
-      // Listen for memory pressure events
-      window.addEventListener('memorypressure', (event: any) => {
-        this.handleBrowserMemoryPressure(event);
-      });
-
-      // Listen for page visibility changes to cleanup
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-          this.handlePageHidden();
-        }
-      });
-
-      // Listen for beforeunload to cleanup
-      window.addEventListener('beforeunload', () => {
-        this.handlePageUnload();
-      });
-    }
-  }
-
   private checkMemoryPressure(): void {
     const usage = this.getMemoryUsage();
-    let level: MemoryPressureEvent['level'] = 'normal';
+    let level: MemoryPressureEvent["level"] = "normal";
     let actions: string[] = [];
 
     if (usage.percentage >= this.pressureThresholds.emergency) {
-      level = 'emergency';
+      level = "emergency";
       actions = [
-        'Force immediate cleanup',
-        'Deallocate non-persistent memory',
-        'Trigger garbage collection',
-        'Alert user about memory issues',
+        "Force immediate cleanup",
+        "Deallocate non-persistent memory",
+        "Trigger garbage collection",
+        "Alert user about memory issues",
       ];
 
       // Auto-cleanup for emergency
       this.performEmergencyCleanup();
-
     } else if (usage.percentage >= this.pressureThresholds.critical) {
-      level = 'critical';
+      level = "critical";
       actions = [
-        'Perform aggressive cleanup',
-        'Deallocate old allocations',
-        'Consider user notification',
+        "Perform aggressive cleanup",
+        "Deallocate old allocations",
+        "Consider user notification",
       ];
 
       // Auto-cleanup for critical
       this.performCriticalCleanup();
-
     } else if (usage.percentage >= this.pressureThresholds.warning) {
-      level = 'warning';
+      level = "warning";
       actions = [
-        'Monitor memory usage',
-        'Consider lightweight cleanup',
-        'Prepare for potential issues',
+        "Monitor memory usage",
+        "Consider lightweight cleanup",
+        "Prepare for potential issues",
       ];
     }
 
-    if (level !== 'normal') {
-      this.emit('memory:pressure', {
+    if (level !== "normal") {
+      this.emit("memory:pressure", {
         level,
         usage,
         actions,
@@ -548,7 +523,7 @@ export class MemoryManager {
 
   private performEmergencyCleanup(): void {
     const strategy: CleanupStrategy = {
-      type: 'priority',
+      type: "priority",
       targetReduction: 50, // Free 50% of memory
       maxAge: 0, // Clear everything non-persistent
       preservePersistent: true,
@@ -559,7 +534,7 @@ export class MemoryManager {
 
   private performCriticalCleanup(): void {
     const strategy: CleanupStrategy = {
-      type: 'lru',
+      type: "lru",
       targetReduction: 30, // Free 30% of memory
       maxAge: 10 * 60 * 1000, // Clear allocations older than 10 minutes
       preservePersistent: true,
@@ -568,92 +543,38 @@ export class MemoryManager {
     this.cleanup(strategy);
   }
 
-  private detectAndHandleLeaks(): void {
-    const leaks = this.detectLeaks();
-
-    if (leaks.length > 0) {
-      this.emit('memory:leaks_detected', { leaks, timestamp: Date.now() });
-
-      // Auto-cleanup detected leaks
-      for (const leak of leaks) {
-        if (leak.type !== 'quota_exceeded') {
-          this.cleanupLeakedAllocation(leak);
-        }
-      }
-    }
-  }
-
-  private cleanupLeakedAllocation(leak: MemoryLeak): void {
-    const leakAllocations = this.getAllocationsByOwner(leak.owner)
-      .filter(a => a.type === leak.type);
-
-    for (const allocation of leakAllocations) {
-      if (!allocation.persistent) {
-        this.deallocate(allocation.id);
-      }
-    }
-  }
-
-  private handleBrowserMemoryPressure(event: any): void {
-    this.emit('browser:memory_pressure', { event, timestamp: Date.now() });
-
-    // Perform cleanup based on browser pressure level
-    const strategy: CleanupStrategy = {
-      type: 'lru',
-      targetReduction: 25,
-      preservePersistent: true,
-    };
-
-    this.cleanup(strategy);
-  }
-
-  private handlePageHidden(): void {
-    // Perform cleanup when page is hidden
-    const strategy: CleanupStrategy = {
-      type: 'lru',
-      targetReduction: 40,
-      maxAge: 5 * 60 * 1000, // Clear allocations older than 5 minutes
-      preservePersistent: true,
-    };
-
-    this.cleanup(strategy);
-  }
-
-  private handlePageUnload(): void {
-    // Cleanup everything except persistent data
-    this.reset();
-  }
-
   private getCleanupTargets(strategy: CleanupStrategy): MemoryAllocation[] {
     let candidates = Array.from(this.allocations.values());
 
     // Filter by age if specified
     if (strategy.maxAge) {
       const cutoff = Date.now() - strategy.maxAge;
-      candidates = candidates.filter(a => a.createdAt < cutoff);
+      candidates = candidates.filter((a) => a.createdAt < cutoff);
     }
 
     // Sort based on strategy
     switch (strategy.type) {
-      case 'lru':
+      case "lru":
         candidates.sort((a, b) => a.lastAccessed - b.lastAccessed);
         break;
-      case 'lfu':
+      case "lfu":
         candidates.sort((a, b) => a.accessCount - b.accessCount);
         break;
-      case 'fifo':
+      case "fifo":
         candidates.sort((a, b) => a.createdAt - b.createdAt);
         break;
-      case 'priority':
+      case "priority":
         candidates.sort((a, b) => {
           const aQuota = this.quotas.get(a.owner);
           const bQuota = this.quotas.get(b.owner);
-          const aPriority = aQuota?.priority || 'normal';
-          const bPriority = bQuota?.priority || 'normal';
+          const aPriority = aQuota?.priority || "normal";
+          const bPriority = bQuota?.priority || "normal";
 
           const priorityOrder = { critical: 4, high: 3, normal: 2, low: 1 };
-          return priorityOrder[aPriority as keyof typeof priorityOrder] -
-                 priorityOrder[bPriority as keyof typeof priorityOrder];
+          return (
+            priorityOrder[aPriority as keyof typeof priorityOrder] -
+            priorityOrder[bPriority as keyof typeof priorityOrder]
+          );
         });
         break;
     }
@@ -688,7 +609,7 @@ export class MemoryManager {
 
   private getOwnerUsage(owner: string): number {
     return Array.from(this.allocations.values())
-      .filter(a => a.owner === owner)
+      .filter((a) => a.owner === owner)
       .reduce((sum, a) => sum + a.size, 0);
   }
 
@@ -699,7 +620,7 @@ export class MemoryManager {
     }
   }
 
-  private trackLeakDetection(owner: string, type: string, size: number): void {
+  private trackLeakDetection(owner: string, type: string, _size: number): void {
     const key = `${owner}:${type}`;
     this.leakDetection.set(key, (this.leakDetection.get(key) || 0) + 1);
   }
@@ -708,10 +629,10 @@ export class MemoryManager {
     // Simplified size calculation
     if (data === null || data === undefined) return 0;
 
-    if (typeof data === 'string') return data.length * 2;
-    if (typeof data === 'number') return 8;
-    if (typeof data === 'boolean') return 4;
-    if (typeof data === 'object') {
+    if (typeof data === "string") return data.length * 2;
+    if (typeof data === "number") return 8;
+    if (typeof data === "boolean") return 4;
+    if (typeof data === "object") {
       if (data instanceof ArrayBuffer) return data.byteLength;
       if (data instanceof Blob) return data.size;
       if (data instanceof ImageData) return data.data.length;
@@ -725,18 +646,18 @@ export class MemoryManager {
   private cleanupData(allocation: MemoryAllocation): void {
     // Specific cleanup based on type
     switch (allocation.type) {
-      case 'blob':
+      case "blob":
         if (allocation.data instanceof Blob) {
           URL.revokeObjectURL(URL.createObjectURL(allocation.data));
         }
         break;
-      case 'canvas':
+      case "canvas":
         if (allocation.data instanceof HTMLCanvasElement) {
           allocation.width = 0;
           allocation.height = 0;
         }
         break;
-      case 'wasm':
+      case "wasm":
         // WASM cleanup would be specific to the runtime
         break;
     }
@@ -748,7 +669,7 @@ export class MemoryManager {
   }
 
   private getBrowserMemory(): any {
-    if (typeof performance !== 'undefined' && (performance as any).memory) {
+    if (typeof performance !== "undefined" && (performance as any).memory) {
       return {
         usedJSHeapSize: (performance as any).memory.usedJSHeapSize,
         totalJSHeapSize: (performance as any).memory.totalJSHeapSize,
@@ -758,27 +679,22 @@ export class MemoryManager {
     return null;
   }
 
-  private getRecommendedActions(level: MemoryPressureEvent['level'], usage: MemoryUsage): string[] {
+  private getRecommendedActions(
+    level: MemoryPressureEvent["level"],
+    _usage: MemoryUsage,
+  ): string[] {
     switch (level) {
-      case 'emergency':
+      case "emergency":
         return [
-          'Force immediate cleanup',
-          'Clear all non-essential memory',
-          'Alert user about critical memory usage',
-          'Consider reloading the page',
+          "Force immediate cleanup",
+          "Clear all non-essential memory",
+          "Alert user about critical memory usage",
+          "Consider reloading the page",
         ];
-      case 'critical':
-        return [
-          'Perform aggressive cleanup',
-          'Clear cached data',
-          'Monitor memory usage closely',
-        ];
-      case 'warning':
-        return [
-          'Monitor memory usage',
-          'Consider lightweight cleanup',
-          'Optimize memory usage',
-        ];
+      case "critical":
+        return ["Perform aggressive cleanup", "Clear cached data", "Monitor memory usage closely"];
+      case "warning":
+        return ["Monitor memory usage", "Consider lightweight cleanup", "Optimize memory usage"];
       default:
         return [];
     }
@@ -789,11 +705,11 @@ export class MemoryManager {
   }
 
   private formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }
 
   /**
@@ -803,7 +719,7 @@ export class MemoryManager {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
-    this.eventListeners.get(event)!.push(listener);
+    this.eventListeners.get(event)?.push(listener);
   }
 
   public off(event: string, listener: Function): void {
@@ -818,7 +734,7 @@ export class MemoryManager {
 
   private emit(event: string, data: any): void {
     const listeners = this.eventListeners.get(event) || [];
-    listeners.forEach(listener => {
+    listeners.forEach((listener) => {
       try {
         listener(data);
       } catch (error) {
@@ -838,7 +754,7 @@ export class MemoryManager {
 
     this.reset();
     this.eventListeners.clear();
-    this.emit('memory:disposed');
+    this.emit("memory:disposed");
   }
 }
 

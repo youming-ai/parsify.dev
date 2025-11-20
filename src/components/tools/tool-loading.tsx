@@ -1,6 +1,6 @@
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
-import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 
 interface ToolLoadingProps {
   message?: string;

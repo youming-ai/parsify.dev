@@ -7,7 +7,7 @@ export interface ToolMetadata {
   id: string;
   name: string;
   description: string;
-  category: 'json' | 'crypto' | 'image' | 'network' | 'security' | 'text' | 'code' | 'utility';
+  category: "json" | "crypto" | "image" | "network" | "security" | "text" | "code" | "utility";
   version: string;
   bundleSize: number;
   loadTime: number;
@@ -33,11 +33,10 @@ export interface ToolRegistryConfig {
   preloadPriority: number;
   maxConcurrentLoads: number;
   retryAttempts: number;
-  cacheStrategy: 'memory' | 'localStorage' | 'none';
+  cacheStrategy: "memory" | "localStorage" | "none";
 }
 
 export class ToolRegistry {
-  private static instance: ToolRegistry;
   private tools: Map<string, ToolConfig>;
   private config: ToolRegistryConfig;
   private lazyLoader: any;
@@ -50,7 +49,7 @@ export class ToolRegistry {
       preloadPriority: 1,
       maxConcurrentLoads: 3,
       retryAttempts: 3,
-      cacheStrategy: 'memory',
+      cacheStrategy: "memory",
       ...config,
     };
     this.eventListeners = new Map();
@@ -67,19 +66,6 @@ export class ToolRegistry {
   }
 
   /**
-   * Initialize lazy loading infrastructure
-   */
-  private async initializeLazyLoader(): Promise<void> {
-    if (this.config.enableLazyLoading) {
-      const { LazyLoader } = await import('../performance/lazy-loader');
-      this.lazyLoader = LazyLoader.getInstance({
-        maxConcurrentLoads: this.config.maxConcurrentLoads,
-        retryAttempts: this.config.retryAttempts,
-      });
-    }
-  }
-
-  /**
    * Register a new tool
    */
   public registerTool(config: ToolConfig): void {
@@ -93,30 +79,26 @@ export class ToolRegistry {
 
     // Register with lazy loader if enabled
     if (this.lazyLoader && this.config.enableLazyLoading) {
-      this.lazyLoader.registerTool(
-        metadata.id,
-        config.importer,
-        {
-          priority: metadata.priority,
-          onSuccess: (module: any, result: any) => {
-            this.emit('tool:loaded', { toolId: metadata.id, module, result });
-          },
-          onError: (error: Error) => {
-            this.emit('tool:error', { toolId: metadata.id, error });
-          },
-        }
-      );
+      this.lazyLoader.registerTool(metadata.id, config.importer, {
+        priority: metadata.priority,
+        onSuccess: (module: any, result: any) => {
+          this.emit("tool:loaded", { toolId: metadata.id, module, result });
+        },
+        onError: (error: Error) => {
+          this.emit("tool:error", { toolId: metadata.id, error });
+        },
+      });
     }
 
     // Emit registration event
-    this.emit('tool:registered', { toolId: metadata.id, metadata });
+    this.emit("tool:registered", { toolId: metadata.id, metadata });
   }
 
   /**
    * Validate tool metadata
    */
   private validateToolMetadata(metadata: ToolMetadata): void {
-    const requiredFields = ['id', 'name', 'description', 'category', 'version'];
+    const requiredFields = ["id", "name", "description", "category", "version"];
 
     for (const field of requiredFields) {
       if (!metadata[field as keyof ToolMetadata]) {
@@ -125,12 +107,24 @@ export class ToolRegistry {
     }
 
     // Validate bundle size constraints
-    if (metadata.bundleSize > 200 * 1024) { // 200KB limit
-      throw new Error(`Tool ${metadata.id} bundle size ${metadata.bundleSize} bytes exceeds 200KB limit`);
+    if (metadata.bundleSize > 200 * 1024) {
+      // 200KB limit
+      throw new Error(
+        `Tool ${metadata.id} bundle size ${metadata.bundleSize} bytes exceeds 200KB limit`,
+      );
     }
 
     // Validate category
-    const validCategories = ['json', 'crypto', 'image', 'network', 'security', 'text', 'code', 'utility'];
+    const validCategories = [
+      "json",
+      "crypto",
+      "image",
+      "network",
+      "security",
+      "text",
+      "code",
+      "utility",
+    ];
     if (!validCategories.includes(metadata.category)) {
       throw new Error(`Invalid category ${metadata.category} for tool ${metadata.id}`);
     }
@@ -148,7 +142,7 @@ export class ToolRegistry {
    * Get all tools metadata
    */
   public getAllToolsMetadata(): ToolMetadata[] {
-    return Array.from(this.tools.values()).map(tool => tool.metadata);
+    return Array.from(this.tools.values()).map((tool) => tool.metadata);
   }
 
   /**
@@ -156,8 +150,8 @@ export class ToolRegistry {
    */
   public getToolsByCategory(category: string): ToolMetadata[] {
     return Array.from(this.tools.values())
-      .filter(tool => tool.metadata.category === category)
-      .map(tool => tool.metadata);
+      .filter((tool) => tool.metadata.category === category)
+      .map((tool) => tool.metadata);
   }
 
   /**
@@ -167,16 +161,16 @@ export class ToolRegistry {
     const lowercaseQuery = query.toLowerCase();
 
     return Array.from(this.tools.values())
-      .filter(tool => {
+      .filter((tool) => {
         const { name, description, tags, id } = tool.metadata;
         return (
           name.toLowerCase().includes(lowercaseQuery) ||
           description.toLowerCase().includes(lowercaseQuery) ||
           id.toLowerCase().includes(lowercaseQuery) ||
-          tags.some(tag => tag.toLowerCase().includes(lowercaseQuery))
+          tags.some((tag) => tag.toLowerCase().includes(lowercaseQuery))
         );
       })
-      .map(tool => tool.metadata);
+      .map((tool) => tool.metadata);
   }
 
   /**
@@ -199,7 +193,7 @@ export class ToolRegistry {
     const module = await tool.importer();
     const loadTime = performance.now() - startTime;
 
-    this.emit('tool:loaded', { toolId, module, loadTime });
+    this.emit("tool:loaded", { toolId, module, loadTime });
     return module;
   }
 
@@ -211,7 +205,7 @@ export class ToolRegistry {
 
     // Sort tools by priority (high to low)
     const tools = Array.from(this.tools.values())
-      .filter(tool => tool.metadata.enabled)
+      .filter((tool) => tool.metadata.enabled)
       .sort((a, b) => b.metadata.priority - a.metadata.priority);
 
     // Preload high priority tools
@@ -237,7 +231,7 @@ export class ToolRegistry {
     }
 
     tool.metadata.enabled = enabled;
-    this.emit('tool:updated', { toolId, enabled });
+    this.emit("tool:updated", { toolId, enabled });
   }
 
   /**
@@ -256,7 +250,7 @@ export class ToolRegistry {
     // Validate updated metadata
     this.validateToolMetadata(tool.metadata);
 
-    this.emit('tool:updated', { toolId, metadata: tool.metadata });
+    this.emit("tool:updated", { toolId, metadata: tool.metadata });
   }
 
   /**
@@ -274,7 +268,7 @@ export class ToolRegistry {
       // Remove from registry
       this.tools.delete(toolId);
 
-      this.emit('tool:unregistered', { toolId });
+      this.emit("tool:unregistered", { toolId });
     }
   }
 
@@ -289,12 +283,15 @@ export class ToolRegistry {
     averageBundleSize: number;
   } {
     const tools = Array.from(this.tools.values());
-    const enabledTools = tools.filter(tool => tool.metadata.enabled);
+    const enabledTools = tools.filter((tool) => tool.metadata.enabled);
 
-    const toolsByCategory = tools.reduce((acc, tool) => {
-      acc[tool.metadata.category] = (acc[tool.metadata.category] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const toolsByCategory = tools.reduce(
+      (acc, tool) => {
+        acc[tool.metadata.category] = (acc[tool.metadata.category] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     const totalBundleSize = tools.reduce((sum, tool) => sum + tool.metadata.bundleSize, 0);
     const averageBundleSize = tools.length > 0 ? totalBundleSize / tools.length : 0;
@@ -336,7 +333,7 @@ export class ToolRegistry {
     }
 
     // Register tools (importers need to be provided separately)
-    data.tools.forEach(metadata => {
+    data.tools.forEach((metadata) => {
       // Note: This would require the actual importer functions
       // In a real implementation, you'd need a way to map tool IDs to importers
       console.warn(`Tool ${metadata.id} metadata imported, but importer not provided`);
@@ -350,7 +347,7 @@ export class ToolRegistry {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
-    this.eventListeners.get(event)!.push(listener);
+    this.eventListeners.get(event)?.push(listener);
   }
 
   public off(event: string, listener: Function): void {
@@ -365,7 +362,7 @@ export class ToolRegistry {
 
   private emit(event: string, data: any): void {
     const listeners = this.eventListeners.get(event) || [];
-    listeners.forEach(listener => {
+    listeners.forEach((listener) => {
       try {
         listener(data);
       } catch (error) {

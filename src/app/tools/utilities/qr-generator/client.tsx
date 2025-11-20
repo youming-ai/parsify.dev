@@ -1,9 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import {
+  Copy,
+  Download,
+  Link,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
+  QrCode,
+  RefreshCw,
+  Smartphone,
+  User,
+  Wifi,
+} from "lucide-react";
 import QRCode from "qrcode";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,26 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  QrCode,
-  Download,
-  Smartphone,
-  Wifi,
-  Mail,
-  Phone,
-  MapPin,
-  Share2,
-  Copy,
-  RefreshCw,
-  Image as ImageIcon,
-  User,
-  Link,
-  MessageSquare,
-} from "lucide-react";
 
 interface QRCodeData {
   id: string;
@@ -80,7 +78,7 @@ export default function QRGeneratorClient() {
         case "url":
           dataToEncode = qrContent;
           if (dataToEncode && !dataToEncode.match(/^https?:\/\//)) {
-            dataToEncode = "https://" + dataToEncode;
+            dataToEncode = `https://${dataToEncode}`;
           }
           break;
         case "text":
@@ -98,7 +96,7 @@ export default function QRGeneratorClient() {
         case "wifi":
           dataToEncode = `WIFI:T:${wifiSettings.encryption};S:${wifiSettings.ssid};P:${wifiSettings.password};;`;
           break;
-        case "contact":
+        case "contact": {
           const vcard = `BEGIN:VCARD
 VERSION:3.0
 FN:${contactSettings.name}
@@ -109,6 +107,7 @@ URL:${contactSettings.url}
 END:VCARD`;
           dataToEncode = vcard.replace(/^\s+|\s+$/gm, ""); // Remove extra whitespace
           break;
+        }
         default:
           dataToEncode = qrContent;
       }
@@ -134,7 +133,7 @@ END:VCARD`;
           ...options,
           type: "svg",
         });
-        setQrDataUrl("data:image/svg+xml;base64," + btoa(svgData));
+        setQrDataUrl(`data:image/svg+xml;base64,${btoa(svgData)}`);
       } else {
         const dataUrl = await QRCode.toDataURL(dataToEncode, options);
         setQrDataUrl(dataUrl);

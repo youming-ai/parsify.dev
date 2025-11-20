@@ -89,8 +89,7 @@ class SimplifiedAnalytics {
           (window as any).clarity =
             (window as any).clarity ||
             (() => {
-              ((window as any).clarity.q =
-                (window as any).clarity.q || []).push(arguments);
+              ((window as any).clarity.q = (window as any).clarity.q || []).push(arguments);
             });
 
           // Create and append the Clarity script
@@ -107,7 +106,7 @@ class SimplifiedAnalytics {
 
           // Insert script as first script element for better loading
           const firstScript = document.getElementsByTagName("script")[0];
-          if (firstScript && firstScript.parentNode) {
+          if (firstScript?.parentNode) {
             firstScript.parentNode.insertBefore(script, firstScript);
           } else {
             document.head.appendChild(script);
@@ -176,11 +175,7 @@ class SimplifiedAnalytics {
     this.track("page_view", { path: path || window.location.pathname });
   }
 
-  trackToolUsage(
-    toolId: string,
-    action: string,
-    metadata?: Record<string, unknown>,
-  ): void {
+  trackToolUsage(toolId: string, action: string, metadata?: Record<string, unknown>): void {
     this.track("tool_usage", {
       toolId,
       action,
@@ -241,9 +236,7 @@ class SimplifiedAnalytics {
 // Global analytics instance
 let analyticsInstance: SimplifiedAnalytics | null = null;
 
-export function getSimplifiedAnalytics(
-  config?: Partial<AnalyticsConfig>,
-): SimplifiedAnalytics {
+export function getSimplifiedAnalytics(config?: Partial<AnalyticsConfig>): SimplifiedAnalytics {
   if (!analyticsInstance) {
     analyticsInstance = new SimplifiedAnalytics(config);
   }
@@ -284,12 +277,9 @@ export function useSimplifiedAnalytics(config?: Partial<AnalyticsConfig>) {
     [],
   );
 
-  const trackError = useCallback(
-    (error: Error | string, context?: Record<string, unknown>) => {
-      analyticsRef.current?.trackError(error, context);
-    },
-    [],
-  );
+  const trackError = useCallback((error: Error | string, context?: Record<string, unknown>) => {
+    analyticsRef.current?.trackError(error, context);
+  }, []);
 
   const trackPerformance = useCallback((metric: string, value: number) => {
     analyticsRef.current?.trackPerformance(metric, value);
@@ -306,8 +296,7 @@ export function useSimplifiedAnalytics(config?: Partial<AnalyticsConfig>) {
 }
 
 export function useToolTracking(toolId: string) {
-  const { trackToolUsage, trackError: trackErrorBase } =
-    useSimplifiedAnalytics();
+  const { trackToolUsage, trackError: trackErrorBase } = useSimplifiedAnalytics();
 
   const trackExecute = useCallback(
     (processingTime?: number, inputSize?: number, outputSize?: number) => {

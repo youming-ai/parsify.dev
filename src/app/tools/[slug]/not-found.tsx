@@ -1,22 +1,22 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getPopularTools, getToolsByCategory, categories } from "@/data/tools-data";
 import {
   AlertCircle,
   ArrowLeft,
+  Code,
+  Database,
   FileText,
   Hash,
+  Image,
+  Palette,
   Search,
   Settings,
   Shield,
   Terminal,
   Zap,
-  Code,
-  Image,
-  Palette,
-  Database,
 } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { categories, getPopularTools, getToolsByCategory } from "@/data/tools-data";
 
 export default function ToolNotFound() {
   const popularTools = getPopularTools();

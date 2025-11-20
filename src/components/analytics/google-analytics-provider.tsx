@@ -1,8 +1,8 @@
 "use client";
 
-import { getGoogleAnalyticsService } from "@/lib/analytics/google-analytics";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
+import { getGoogleAnalyticsService } from "@/lib/analytics/google-analytics";
 
 interface GoogleAnalyticsProviderProps {
   children: React.ReactNode;
@@ -42,7 +42,12 @@ function GoogleAnalyticsProviderInner({
         const gaService = getGoogleAnalyticsService();
 
         // Update configuration if provided
-        if (measurementId || enabled !== undefined || debug !== undefined || anonymizeIp !== undefined) {
+        if (
+          measurementId ||
+          enabled !== undefined ||
+          debug !== undefined ||
+          anonymizeIp !== undefined
+        ) {
           gaService.updateConfig({
             measurementId: measurementId || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "",
             enabled: enabled ?? process.env.NODE_ENV !== "development",

@@ -1,14 +1,14 @@
 "use client";
 
+import { FileJson } from "lucide-react";
+import Link from "next/link";
+import * as React from "react";
 import { JsonErrorDisplay } from "@/components/tools/json/json-error-display";
 import { JsonInputEditor } from "@/components/tools/json/json-input-editor";
 import type { JsonValidationResult } from "@/components/tools/json/json-types";
 import { JsonValidator } from "@/components/tools/json/json-validator";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileJson } from "lucide-react";
-import Link from "next/link";
-import * as React from "react";
 
 const sampleValidJson = `{
   "name": "John Doe",

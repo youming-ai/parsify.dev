@@ -13,7 +13,7 @@ export interface PythonPackage {
 export interface PythonExecutionOptions {
   code: string;
   packages?: PythonPackage[];
-  inputFiles?: Array<{name: string; content: string}>;
+  inputFiles?: Array<{ name: string; content: string }>;
   captureGraphics?: boolean;
   environment?: Record<string, string>;
   timeoutMs?: number;
@@ -63,10 +63,10 @@ export class PythonRuntime {
   private async _doInitialize(): Promise<void> {
     try {
       // Load Pyodide
-      const { loadPyodide } = await import('pyodide');
+      const { loadPyodide } = await import("pyodide");
       this.pyodide = await loadPyodide({
         indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/",
-        packages: ['numpy', 'pandas', 'matplotlib'] // Pre-load common packages
+        packages: ["numpy", "pandas", "matplotlib"], // Pre-load common packages
       });
 
       // Configure Python environment
@@ -93,7 +93,7 @@ sys.stderr = io.StringIO()
     await this.initialize();
 
     if (!this.pyodide) {
-      throw new Error('Python runtime not initialized');
+      throw new Error("Python runtime not initialized");
     }
 
     const {
@@ -105,19 +105,19 @@ sys.stderr = io.StringIO()
       timeoutMs = 5000,
       memoryLimitMB = 100,
       enableOutput = true,
-      captureErrors = true
+      captureErrors = true,
     } = options;
 
     const startTime = performance.now();
-    let output = '';
-    let errorOutput = '';
+    let output = "";
+    let errorOutput = "";
     let isComplete = false;
     const graphics: string[] = [];
 
     try {
       // Load additional packages if requested
       if (packages.length > 0) {
-        const packageNames = packages.map(pkg => pkg.name);
+        const packageNames = packages.map((pkg) => pkg.name);
         await this.pyodide.loadPackage(packageNames);
       }
 
@@ -139,7 +139,7 @@ sys.stderr = io.StringIO()
       const timeoutId = setTimeout(() => {
         if (!isComplete) {
           isComplete = true;
-          throw new Error('Python execution timeout');
+          throw new Error("Python execution timeout");
         }
       }, timeoutMs);
 
@@ -195,14 +195,14 @@ figures
             if (figures.length > 0) {
               graphics.push(...figures);
             }
-          } catch (e) {
+          } catch (_e) {
             // Graphics capture failed
           }
         }
 
         const endTime = performance.now();
         const executionTime = endTime - startTime;
-        const exitCode = errorOutput.includes('Error') ? 1 : 0;
+        const exitCode = errorOutput.includes("Error") ? 1 : 0;
 
         return {
           stdout: output,
@@ -211,9 +211,8 @@ figures
           executionTime,
           memoryUsed: this._estimateMemoryUsage(),
           graphics,
-          warnings: []
+          warnings: [],
         };
-
       } catch (error) {
         isComplete = true;
         clearTimeout(timeoutId);
@@ -228,7 +227,7 @@ figures
           executionTime,
           memoryUsed: this._estimateMemoryUsage(),
           error: error instanceof Error ? error : new Error(String(error)),
-          warnings: []
+          warnings: [],
         };
       }
     } finally {
@@ -243,7 +242,7 @@ figures
     await this.initialize();
 
     if (!this.pyodide) {
-      throw new Error('Python runtime not initialized');
+      throw new Error("Python runtime not initialized");
     }
 
     try {
@@ -261,7 +260,7 @@ except:
           name: packageName,
           version: info.version,
           installed: true,
-          files: [] // Would need additional logic to list files
+          files: [], // Would need additional logic to list files
         };
       } else {
         return null;
@@ -284,7 +283,7 @@ if hasattr(sys, 'stdout'):
 if hasattr(sys, 'stderr'):
     sys.stderr = sys.__stderr__
         `);
-      } catch (e) {
+      } catch (_e) {
         // Cleanup failed, but continue
       }
 
@@ -300,9 +299,9 @@ if hasattr(sys, 'stderr'):
   getStatus() {
     return {
       initialized: this.isInitialized,
-      version: '3.11',
-      packages: ['numpy', 'pandas', 'matplotlib'],
-      memoryUsage: this._estimateMemoryUsage()
+      version: "3.11",
+      packages: ["numpy", "pandas", "matplotlib"],
+      memoryUsage: this._estimateMemoryUsage(),
     };
   }
 

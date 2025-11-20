@@ -1,9 +1,10 @@
 "use client";
 
+import { CheckCircle, Copy, Download, Package, RefreshCw, Settings, XCircle } from "lucide-react";
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,21 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Code,
-  Copy,
-  Download,
-  RefreshCw,
-  Settings,
-  FileCode,
-  Zap,
-  CheckCircle,
-  XCircle,
-  Package,
-} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ConversionOptions {
   className: string;
@@ -108,7 +95,7 @@ export default function JavaConverterClient() {
       case "object":
         if (Array.isArray(value)) {
           if (value.length > 0) {
-            const elementType = detectJavaType(value[0], fieldName + "Item");
+            const elementType = detectJavaType(value[0], `${fieldName}Item`);
             return `List<${elementType}>`;
           }
           return "List<Object>";
@@ -121,7 +108,7 @@ export default function JavaConverterClient() {
 
   const toCamelCase = (str: string): string => {
     return str
-      .replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())
+      .replace(/_([a-z])/g, (_match, letter) => letter.toUpperCase())
       .replace(/(?:^|[A-Z])\w/g, (match, index) => (index === 0 ? match.toUpperCase() : match))
       .replace(/^\w/, (c) => c.toUpperCase());
   };
@@ -135,7 +122,7 @@ export default function JavaConverterClient() {
 
     // Ensure it doesn't start with a number
     if (/^\d/.test(fieldName)) {
-      fieldName = "field" + fieldName;
+      fieldName = `field${fieldName}`;
     }
 
     // Handle Java keywords
@@ -193,7 +180,7 @@ export default function JavaConverterClient() {
     ];
 
     if (javaKeywords.includes(fieldName.toLowerCase())) {
-      fieldName = fieldName + "Value";
+      fieldName = `${fieldName}Value`;
     }
 
     return fieldName;
@@ -222,7 +209,7 @@ export default function JavaConverterClient() {
     if (Array.isArray(json)) {
       // Handle arrays - create a class for the array elements
       if (json.length > 0) {
-        const elementType = parseJSONToJavaClass(json[0], className + "Item", depth + 1);
+        const elementType = parseJSONToJavaClass(json[0], `${className}Item`, depth + 1);
         javaClass.nestedClasses.push(elementType);
         javaClass.fields.push({
           name: "items",
@@ -254,7 +241,7 @@ export default function JavaConverterClient() {
           });
         } else if (Array.isArray(value) && value.length > 0 && typeof value[0] === "object") {
           // Array of objects
-          const nestedClassName = toPascalCase(key) + "Item";
+          const nestedClassName = `${toPascalCase(key)}Item`;
           const nestedClass = parseJSONToJavaClass(value[0], nestedClassName, depth + 1);
           javaClass.nestedClasses.push(nestedClass);
 
@@ -412,7 +399,7 @@ export default function JavaConverterClient() {
 
     // Nested classes
     javaClass.nestedClasses.forEach((nested) => {
-      result += generateJavaClass(nested, indent + "    ");
+      result += generateJavaClass(nested, `${indent}    `);
     });
 
     return result;
@@ -440,7 +427,7 @@ export default function JavaConverterClient() {
       // Extract class names for display
       const classNames = [javaClass.className, ...javaClass.nestedClasses.map((c) => c.className)];
       setGeneratedClasses(classNames);
-    } catch (error) {
+    } catch (_error) {
       setIsValidJson(false);
       setJavaOutput("");
       setGeneratedClasses([]);

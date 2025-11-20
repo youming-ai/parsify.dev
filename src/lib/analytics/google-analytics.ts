@@ -56,9 +56,7 @@ export class GoogleAnalyticsService {
     };
     this.debugMode = this.config.debug || false;
     this.measurementId =
-      this.config.measurementId ||
-      process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ||
-      "";
+      this.config.measurementId || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "";
   }
 
   /**
@@ -81,9 +79,7 @@ export class GoogleAnalyticsService {
     }
 
     if (typeof window === "undefined") {
-      this.debug(
-        "Google Analytics can only be initialized in browser environment",
-      );
+      this.debug("Google Analytics can only be initialized in browser environment");
       return;
     }
 
@@ -275,7 +271,7 @@ export class GoogleAnalyticsService {
    */
   trackError(error: Error | string, context?: Record<string, any>): void {
     const errorMessage = error instanceof Error ? error.message : error;
-    const errorStack = error instanceof Error ? error.stack : undefined;
+    const _errorStack = error instanceof Error ? error.stack : undefined;
 
     this.trackEvent("error", {
       description: errorMessage,
@@ -293,7 +289,7 @@ export class GoogleAnalyticsService {
         description: error instanceof Error ? error.message : error,
         fatal: fatal,
       });
-    } catch (e) {
+    } catch (_e) {
       this.debug("Failed to track exception in GA", { error, fatal });
     }
   }
@@ -303,7 +299,7 @@ export class GoogleAnalyticsService {
    */
   disableTracking(): void {
     if (typeof window !== "undefined") {
-      (window as any)["ga-disable-" + this.measurementId] = true;
+      (window as any)[`ga-disable-${this.measurementId}`] = true;
       this.debug("Google Analytics tracking disabled");
     }
   }
@@ -313,7 +309,7 @@ export class GoogleAnalyticsService {
    */
   enableTracking(): void {
     if (typeof window !== "undefined") {
-      delete (window as any)["ga-disable-" + this.measurementId];
+      delete (window as any)[`ga-disable-${this.measurementId}`];
       this.debug("Google Analytics tracking enabled");
     }
   }
@@ -353,8 +349,7 @@ export class GoogleAnalyticsService {
 
     this.eventQueue.forEach((event) => {
       if (event.action === "page_view") {
-        const params =
-          (event.custom_parameters as Record<string, string | undefined>) || {};
+        const params = (event.custom_parameters as Record<string, string | undefined>) || {};
         const { path, title } = params;
         this.trackPageView(path, title);
       } else {
@@ -460,11 +455,7 @@ export function getGoogleAnalyticsService(): GoogleAnalyticsService {
 // Extend Window interface for gtag
 declare global {
   interface Window {
-    gtag: (
-      command: string,
-      targetId: string,
-      config?: Record<string, unknown>,
-    ) => void;
+    gtag: (command: string, targetId: string, config?: Record<string, unknown>) => void;
     dataLayer: unknown[];
   }
 }

@@ -11,7 +11,7 @@ export interface ToolEvent {
   timestamp: number;
   data: any;
   metadata?: {
-    priority: 'low' | 'normal' | 'high' | 'critical';
+    priority: "low" | "normal" | "high" | "critical";
     ttl?: number; // Time to live in milliseconds
     retryCount?: number;
     maxRetries?: number;
@@ -31,8 +31,8 @@ export interface Subscription {
   id: string;
   subscriber: string;
   eventType: string;
-  handler: EventHandler['handler'];
-  filter?: EventHandler['filter'];
+  handler: EventHandler["handler"];
+  filter?: EventHandler["filter"];
   createdAt: number;
   lastTriggered?: number;
   triggerCount: number;
@@ -49,11 +49,9 @@ export interface EventBusMetrics {
 }
 
 export class ToolEventBus {
-  private static instance: ToolEventBus;
   private handlers: Map<string, EventHandler[]>;
   private subscriptions: Map<string, Subscription>;
   private eventQueue: ToolEvent[];
-  private processing: boolean;
   private maxQueueSize: number;
   private defaultTTL: number;
   private metrics: EventBusMetrics;
@@ -61,11 +59,13 @@ export class ToolEventBus {
   private maxHistorySize: number;
   private eventListeners: Map<string, Function[]>;
 
-  private constructor(config: {
-    maxQueueSize?: number;
-    defaultTTL?: number;
-    maxHistorySize?: number;
-  } = {}) {
+  private constructor(
+    config: {
+      maxQueueSize?: number;
+      defaultTTL?: number;
+      maxHistorySize?: number;
+    } = {},
+  ) {
     this.handlers = new Map();
     this.subscriptions = new Map();
     this.eventQueue = [];
@@ -108,13 +108,13 @@ export class ToolEventBus {
   /**
    * Publish an event
    */
-  public publish(event: Omit<ToolEvent, 'id' | 'timestamp'>): string {
+  public publish(event: Omit<ToolEvent, "id" | "timestamp">): string {
     const eventId = this.generateEventId();
     const fullEvent: ToolEvent = {
       id: eventId,
       timestamp: Date.now(),
       metadata: {
-        priority: 'normal',
+        priority: "normal",
         ttl: this.defaultTTL,
         retryCount: 0,
         maxRetries: 3,
@@ -129,7 +129,7 @@ export class ToolEventBus {
     if (this.eventQueue.length >= this.maxQueueSize) {
       // Remove oldest event if queue is full
       const dropped = this.eventQueue.shift();
-      this.emit('event:dropped', { event: dropped });
+      this.emit("event:dropped", { event: dropped });
     }
 
     this.eventQueue.push(fullEvent);
@@ -137,13 +137,15 @@ export class ToolEventBus {
     this.metrics.totalEvents++;
 
     // Update metrics
-    this.metrics.eventsByType[fullEvent.type] = (this.metrics.eventsByType[fullEvent.type] || 0) + 1;
-    this.metrics.eventsBySource[fullEvent.source] = (this.metrics.eventsBySource[fullEvent.source] || 0) + 1;
+    this.metrics.eventsByType[fullEvent.type] =
+      (this.metrics.eventsByType[fullEvent.type] || 0) + 1;
+    this.metrics.eventsBySource[fullEvent.source] =
+      (this.metrics.eventsBySource[fullEvent.source] || 0) + 1;
 
     // Add to history
     this.addToHistory(fullEvent);
 
-    this.emit('event:published', { event: fullEvent });
+    this.emit("event:published", { event: fullEvent });
     return eventId;
   }
 
@@ -153,12 +155,12 @@ export class ToolEventBus {
   public subscribe(
     subscriber: string,
     eventType: string,
-    handler: EventHandler['handler'],
+    handler: EventHandler["handler"],
     options: {
       priority?: number;
       once?: boolean;
       filter?: (event: ToolEvent) => boolean;
-    } = {}
+    } = {},
   ): string {
     const subscriptionId = this.generateSubscriptionId();
 
@@ -189,13 +191,13 @@ export class ToolEventBus {
       filter: options.filter,
     };
 
-    this.handlers.get(eventType)!.push(eventHandler);
+    this.handlers.get(eventType)?.push(eventHandler);
 
     // Sort handlers by priority (high to low)
-    this.handlers.get(eventType)!.sort((a, b) => b.priority - a.priority);
+    this.handlers.get(eventType)?.sort((a, b) => b.priority - a.priority);
 
     this.metrics.activeSubscriptions = this.subscriptions.size;
-    this.emit('subscription:created', { subscriptionId, subscriber, eventType });
+    this.emit("subscription:created", { subscriptionId, subscriber, eventType });
 
     return subscriptionId;
   }
@@ -215,7 +217,7 @@ export class ToolEventBus {
     // Remove from handlers map
     const handlers = this.handlers.get(subscription.eventType);
     if (handlers) {
-      const index = handlers.findIndex(h => h.id === subscriptionId);
+      const index = handlers.findIndex((h) => h.id === subscriptionId);
       if (index !== -1) {
         handlers.splice(index, 1);
       }
@@ -227,7 +229,7 @@ export class ToolEventBus {
     }
 
     this.metrics.activeSubscriptions = this.subscriptions.size;
-    this.emit('subscription:removed', { subscriptionId });
+    this.emit("subscription:removed", { subscriptionId });
     return true;
   }
 
@@ -239,9 +241,9 @@ export class ToolEventBus {
       .filter(([_, sub]) => sub.subscriber === subscriber)
       .map(([id, _]) => id);
 
-    subscriptionIds.forEach(id => this.unsubscribe(id));
+    subscriptionIds.forEach((id) => this.unsubscribe(id));
 
-    this.emit('subscriber:removed', { subscriber, subscriptionIds });
+    this.emit("subscriber:removed", { subscriber, subscriptionIds });
     return subscriptionIds.length;
   }
 
@@ -249,8 +251,9 @@ export class ToolEventBus {
    * Get subscriptions for a subscriber
    */
   public getSubscriptions(subscriber?: string): Subscription[] {
-    return Array.from(this.subscriptions.values())
-      .filter(sub => !subscriber || sub.subscriber === subscriber);
+    return Array.from(this.subscriptions.values()).filter(
+      (sub) => !subscriber || sub.subscriber === subscriber,
+    );
   }
 
   /**
@@ -260,11 +263,11 @@ export class ToolEventBus {
     let history = this.eventHistory;
 
     if (eventType) {
-      history = history.filter(event => event.type === eventType);
+      history = history.filter((event) => event.type === eventType);
     }
 
     if (source) {
-      history = history.filter(event => event.source === source);
+      history = history.filter((event) => event.source === source);
     }
 
     if (limit && limit > 0) {
@@ -277,17 +280,22 @@ export class ToolEventBus {
   /**
    * Send event to specific target
    */
-  public send(target: string, eventType: string, data: any, options: {
-    priority?: ToolEvent['metadata']['priority'];
-    ttl?: number;
-  } = {}): string {
+  public send(
+    target: string,
+    eventType: string,
+    data: any,
+    options: {
+      priority?: ToolEvent["metadata"]["priority"];
+      ttl?: number;
+    } = {},
+  ): string {
     return this.publish({
       type: eventType,
-      source: 'system',
+      source: "system",
       target,
       data,
       metadata: {
-        priority: options.priority || 'normal',
+        priority: options.priority || "normal",
         ttl: options.ttl || this.defaultTTL,
         retryCount: 0,
         maxRetries: 3,
@@ -298,17 +306,21 @@ export class ToolEventBus {
   /**
    * Broadcast event to all subscribers
    */
-  public broadcast(eventType: string, data: any, options: {
-    priority?: ToolEvent['metadata']['priority'];
-    ttl?: number;
-    exclude?: string[];
-  } = {}): string {
+  public broadcast(
+    eventType: string,
+    data: any,
+    options: {
+      priority?: ToolEvent["metadata"]["priority"];
+      ttl?: number;
+      exclude?: string[];
+    } = {},
+  ): string {
     return this.publish({
       type: eventType,
-      source: 'system',
+      source: "system",
       data,
       metadata: {
-        priority: options.priority || 'normal',
+        priority: options.priority || "normal",
         ttl: options.ttl || this.defaultTTL,
         retryCount: 0,
         maxRetries: 3,
@@ -323,7 +335,7 @@ export class ToolEventBus {
     target: string,
     eventType: string,
     data: any,
-    timeout: number = 5000
+    timeout: number = 5000,
   ): Promise<any> {
     const responseEventId = this.generateEventId();
     const responseEventType = `${eventType}:response`;
@@ -331,7 +343,7 @@ export class ToolEventBus {
     return new Promise((resolve, reject) => {
       // Subscribe for response
       const subscriptionId = this.subscribe(
-        'requester',
+        "requester",
         responseEventType,
         (event) => {
           if (event.data.requestId === responseEventId) {
@@ -344,13 +356,13 @@ export class ToolEventBus {
             }
           }
         },
-        { once: true }
+        { once: true },
       );
 
       // Send request
       this.publish({
         type: eventType,
-        source: 'requester',
+        source: "requester",
         target,
         data: {
           ...data,
@@ -384,7 +396,7 @@ export class ToolEventBus {
     const clearedCount = this.eventQueue.length;
     this.eventQueue.length = 0;
     this.metrics.queueSize = 0;
-    this.emit('queue:cleared', { clearedCount });
+    this.emit("queue:cleared", { clearedCount });
     return clearedCount;
   }
 
@@ -393,147 +405,7 @@ export class ToolEventBus {
    */
   public clearHistory(): void {
     this.eventHistory.length = 0;
-    this.emit('history:cleared');
-  }
-
-  /**
-   * Start processing loop
-   */
-  private startProcessingLoop(): void {
-    const processEvents = async () => {
-      if (this.processing || this.eventQueue.length === 0) {
-        setTimeout(processEvents, 10);
-        return;
-      }
-
-      this.processing = true;
-      const startTime = performance.now();
-
-      try {
-        // Process events in priority order
-        this.eventQueue.sort((a, b) => {
-          const priorityOrder = { critical: 4, high: 3, normal: 2, low: 1 };
-          const aPriority = priorityOrder[a.metadata?.priority || 'normal'];
-          const bPriority = priorityOrder[b.metadata?.priority || 'normal'];
-
-          if (aPriority !== bPriority) {
-            return bPriority - aPriority;
-          }
-
-          return a.timestamp - b.timestamp;
-        });
-
-        const eventsToProcess = this.eventQueue.splice(0); // Take all events
-        this.metrics.queueSize = 0;
-
-        for (const event of eventsToProcess) {
-          await this.processEvent(event);
-        }
-      } catch (error) {
-        console.error('Error processing events:', error);
-      } finally {
-        const processingTime = performance.now() - startTime;
-        this.metrics.averageProcessingTime =
-          (this.metrics.averageProcessingTime + processingTime) / 2;
-
-        this.processing = false;
-        setTimeout(processEvents, 1);
-      }
-    };
-
-    setTimeout(processEvents, 1);
-  }
-
-  /**
-   * Process a single event
-   */
-  private async processEvent(event: ToolEvent): Promise<void> {
-    try {
-      // Check TTL
-      if (this.isEventExpired(event)) {
-        this.emit('event:expired', { event });
-        return;
-      }
-
-      // Get handlers for this event type
-      const handlers = this.handlers.get(event.type) || [];
-
-      // If event has a specific target, only process handlers from that target
-      const filteredHandlers = event.target
-        ? handlers.filter(handler => {
-            const subscription = this.subscriptions.get(handler.id);
-            return subscription?.subscriber === event.target;
-          })
-        : handlers;
-
-      // Process handlers
-      for (const handler of filteredHandlers) {
-        try {
-          // Apply filter if present
-          if (handler.filter && !handler.filter(event)) {
-            continue;
-          }
-
-          // Execute handler
-          await handler.handler(event);
-
-          // Update subscription stats
-          const subscription = this.subscriptions.get(handler.id);
-          if (subscription) {
-            subscription.triggerCount++;
-            subscription.lastTriggered = Date.now();
-          }
-
-          // Remove once handlers
-          if (handler.once) {
-            this.unsubscribe(handler.id);
-          }
-
-        } catch (error) {
-          console.error(`Error in event handler for ${event.type}:`, error);
-          this.metrics.failedEvents++;
-          this.emit('handler:error', { handler, event, error });
-        }
-      }
-
-      this.emit('event:processed', { event });
-
-    } catch (error) {
-      console.error('Error processing event:', error);
-      this.metrics.failedEvents++;
-      this.emit('event:error', { event, error });
-    }
-  }
-
-  /**
-   * Check if event is expired
-   */
-  private isEventExpired(event: ToolEvent): boolean {
-    if (!event.metadata?.ttl) return false;
-    return Date.now() - event.timestamp > event.metadata.ttl;
-  }
-
-  /**
-   * Start cleanup loop
-   */
-  private startCleanupLoop(): void {
-    const cleanup = () => {
-      const now = Date.now();
-
-      // Clean up expired subscriptions (optional - implement if needed)
-
-      // Clean up old history
-      if (this.eventHistory.length > this.maxHistorySize) {
-        const excess = this.eventHistory.length - this.maxHistorySize;
-        this.eventHistory.splice(0, excess);
-      }
-
-      // Run cleanup every minute
-      setTimeout(cleanup, 60000);
-    };
-
-    // Run initial cleanup after 1 minute
-    setTimeout(cleanup, 60000);
+    this.emit("history:cleared");
   }
 
   /**
@@ -553,15 +425,15 @@ export class ToolEventBus {
    */
   private validateEvent(event: ToolEvent): void {
     if (!event.type) {
-      throw new Error('Event must have a type');
+      throw new Error("Event must have a type");
     }
 
     if (!event.source) {
-      throw new Error('Event must have a source');
+      throw new Error("Event must have a source");
     }
 
     if (event.metadata?.ttl && event.metadata.ttl <= 0) {
-      throw new Error('Event TTL must be greater than 0');
+      throw new Error("Event TTL must be greater than 0");
     }
   }
 
@@ -583,7 +455,7 @@ export class ToolEventBus {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
-    this.eventListeners.get(event)!.push(listener);
+    this.eventListeners.get(event)?.push(listener);
   }
 
   public off(event: string, listener: Function): void {
@@ -598,7 +470,7 @@ export class ToolEventBus {
 
   private emit(event: string, data: any): void {
     const listeners = this.eventListeners.get(event) || [];
-    listeners.forEach(listener => {
+    listeners.forEach((listener) => {
       try {
         listener(data);
       } catch (error) {
@@ -629,7 +501,7 @@ export class ToolEventBus {
       queueSize: 0,
     };
 
-    this.emit('bus:disposed', {});
+    this.emit("bus:disposed", {});
   }
 }
 

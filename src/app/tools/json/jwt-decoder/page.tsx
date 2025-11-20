@@ -1,11 +1,8 @@
-import { Metadata } from "next";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { AlertCircle, Shield } from "lucide-react";
+import type { Metadata } from "next";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Copy, RefreshCw, Shield, AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import JWTDecoderClient from "./client";
 
 export const metadata: Metadata = {

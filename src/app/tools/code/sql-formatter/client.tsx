@@ -1,9 +1,24 @@
 "use client";
 
+import {
+  CheckCircle,
+  Copy,
+  Database,
+  Download,
+  Maximize2,
+  Minimize2,
+  RefreshCw,
+  Settings,
+  Terminal,
+  XCircle,
+  Zap,
+} from "lucide-react";
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -12,26 +27,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Database,
-  Copy,
-  Download,
-  RefreshCw,
-  Minimize2,
-  Maximize2,
-  Settings,
-  Zap,
-  FileCode,
-  Hash,
-  CheckCircle,
-  XCircle,
-  Terminal,
-} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface FormattingOptions {
   sqlDialect: "standard" | "mysql" | "postgresql" | "sqlserver" | "oracle" | "sqlite";
@@ -252,32 +249,32 @@ export default function SQLFormatterClient() {
         // Handle keywords
         if (isSQLKeyword(token)) {
           if (["SELECT", "FROM", "WHERE", "GROUP", "ORDER", "HAVING"].includes(upperToken)) {
-            result += "\n" + indentChar.repeat(indentLevel) + formatKeyword(token) + " ";
+            result += `\n${indentChar.repeat(indentLevel)}${formatKeyword(token)} `;
           } else if (["AND", "OR", "WHEN", "THEN", "ELSE"].includes(upperToken)) {
-            result += "\n" + indentChar.repeat(indentLevel + 1) + formatKeyword(token) + " ";
+            result += `\n${indentChar.repeat(indentLevel + 1)}${formatKeyword(token)} `;
           } else if (
             ["INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP"].includes(upperToken)
           ) {
-            result += "\n" + indentChar.repeat(indentLevel) + formatKeyword(token) + " ";
+            result += `\n${indentChar.repeat(indentLevel)}${formatKeyword(token)} `;
           } else if (["INNER", "LEFT", "RIGHT", "FULL", "OUTER", "JOIN"].includes(upperToken)) {
-            result += "\n" + indentChar.repeat(indentLevel + 1) + formatKeyword(token) + " ";
+            result += `\n${indentChar.repeat(indentLevel + 1)}${formatKeyword(token)} `;
           } else if (
             upperToken === "ON" &&
             ["INNER", "LEFT", "RIGHT", "FULL", "OUTER", "JOIN"].includes(prevToken.toUpperCase())
           ) {
-            result += formatKeyword(token) + " ";
+            result += `${formatKeyword(token)} `;
           } else if (upperToken === "CASE") {
-            result += "\n" + indentChar.repeat(indentLevel) + formatKeyword(token) + " ";
+            result += `\n${indentChar.repeat(indentLevel)}${formatKeyword(token)} `;
           } else if (upperToken === "END") {
-            result += "\n" + indentChar.repeat(indentLevel) + formatKeyword(token);
+            result += `\n${indentChar.repeat(indentLevel)}${formatKeyword(token)}`;
           } else if (
             upperToken === "BEGIN" ||
             upperToken === "COMMIT" ||
             upperToken === "ROLLBACK"
           ) {
-            result += "\n" + indentChar.repeat(indentLevel) + formatKeyword(token) + " ";
+            result += `\n${indentChar.repeat(indentLevel)}${formatKeyword(token)} `;
           } else {
-            result += formatKeyword(token) + " ";
+            result += `${formatKeyword(token)} `;
           }
         } else if (token === "(") {
           if (prevToken.toUpperCase() === "SELECT" || prevToken.toUpperCase() === "FROM") {
@@ -291,12 +288,12 @@ export default function SQLFormatterClient() {
           result += token;
         } else if (token === ",") {
           if (opts.commaPlacement === "before") {
-            result += "\n" + indentChar.repeat(indentLevel) + token + " ";
+            result += `\n${indentChar.repeat(indentLevel)}${token} `;
           } else {
-            result += token + "\n" + indentChar.repeat(indentLevel + 1);
+            result += `${token}\n${indentChar.repeat(indentLevel + 1)}`;
           }
         } else if (token === ";") {
-          result += token + "\n\n";
+          result += `${token}\n\n`;
           indentLevel = 0;
         } else if (
           token === "=" ||
@@ -307,11 +304,11 @@ export default function SQLFormatterClient() {
           token === "<" ||
           token === ">"
         ) {
-          result += " " + token + " ";
+          result += ` ${token} `;
         } else {
           // Identifiers and values
           if (token.match(/^\w+$/)) {
-            result += formatIdentifier(token) + " ";
+            result += `${formatIdentifier(token)} `;
           } else {
             result += token;
           }
@@ -335,7 +332,7 @@ export default function SQLFormatterClient() {
 
     // Check for basic SQL structure
     const hasSelect = trimmedSql.includes("select");
-    const hasFrom = trimmedSql.includes("from");
+    const _hasFrom = trimmedSql.includes("from");
     const hasInsert = trimmedSql.includes("insert");
     const hasUpdate = trimmedSql.includes("update");
     const hasDelete = trimmedSql.includes("delete");
@@ -622,7 +619,7 @@ export default function SQLFormatterClient() {
                 <Select
                   value={options.maxLineLength.toString()}
                   onValueChange={(value) =>
-                    setOptions({ ...options, maxLineLength: parseInt(value) })
+                    setOptions({ ...options, maxLineLength: parseInt(value, 10) })
                   }
                 >
                   <SelectTrigger>

@@ -1,9 +1,12 @@
 "use client";
 
+import { AlertCircle, CheckCircle, Settings, Shield, XCircle } from "lucide-react";
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,12 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { FileUpload } from "@/components/file-upload/file-upload";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Shield, CheckCircle, XCircle, AlertCircle, Upload, Settings } from "lucide-react";
-import { toast } from "sonner";
 
 export interface ValidationRule {
   id: string;
@@ -146,7 +144,7 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
       switch (format) {
         case "json":
           return JSON.parse(data);
-        case "csv":
+        case "csv": {
           // Simple CSV parsing
           const lines = data.split("\n").filter((line) => line.trim());
           const headers = lines[0].split(",").map((h) => h.trim());
@@ -155,7 +153,8 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
             return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
           });
           return rows;
-        case "xml":
+        }
+        case "xml": {
           // Basic XML parsing - in real implementation, use proper XML parser
           const parser = new DOMParser();
           const doc = parser.parseFromString(data, "text/xml");
@@ -163,10 +162,11 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
             throw new Error("Invalid XML");
           }
           return { xml: data, parsed: true };
+        }
         case "yaml":
           // YAML parsing would require a library
           return { yaml: data, note: "YAML parsing not implemented" };
-        case "form":
+        case "form": {
           // Parse form data (key=value pairs)
           const formObj: any = {};
           data.split("\n").forEach((line) => {
@@ -176,6 +176,7 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
             }
           });
           return formObj;
+        }
         default:
           return data;
       }
@@ -324,7 +325,7 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
                   }
                   break;
                 case "number":
-                  isValid = !isNaN(Number(value));
+                  isValid = !Number.isNaN(Number(value));
                   errorMessage = "Must be a valid number";
                   break;
                 case "custom":

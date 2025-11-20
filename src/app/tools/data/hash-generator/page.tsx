@@ -1,10 +1,10 @@
 "use client";
 
-import { HashGenerator } from "@/components/tools/data/hash-generator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Hash } from "lucide-react";
 import Link from "next/link";
+import { HashGenerator } from "@/components/tools/data/hash-generator";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function HashGeneratorPage() {
   return (

@@ -1,9 +1,22 @@
 "use client";
 
+import {
+  AlertTriangle,
+  ArrowRightLeft,
+  Binary,
+  CheckCircle,
+  Code,
+  Copy,
+  FileText,
+  Hash,
+  RefreshCw,
+  XCircle,
+} from "lucide-react";
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -12,20 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Hash,
-  Copy,
-  RefreshCw,
-  ArrowRightLeft,
-  Code,
-  FileText,
-  Binary,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ConversionResult {
   output: string;
@@ -54,7 +54,6 @@ export default function Base32Client() {
         return BASE32_ALPHABET_HEX;
       case "crockford":
         return BASE32_ALPHABET_CROCKFORD;
-      case "rfc4648":
       default:
         return BASE32_ALPHABET;
     }
@@ -154,7 +153,7 @@ export default function Base32Client() {
 
       let bits = 0;
       let value = 0;
-      let index = 0;
+      const _index = 0;
       const bytes: number[] = [];
 
       for (let i = 0; i < cleanInput.length; i++) {
@@ -249,7 +248,6 @@ export default function Base32Client() {
           description: "Optimized for human use, avoids ambiguous characters",
           alphabet: BASE32_ALPHABET_CROCKFORD,
         };
-      case "rfc4648":
       default:
         return {
           name: "RFC 4648 Base32",

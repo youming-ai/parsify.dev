@@ -1,7 +1,7 @@
+import React, { useCallback, useRef, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import React, { useCallback, useRef, useState } from "react";
 import { FileDropZone } from "./file-drop-zone";
 import { FileListManager } from "./file-list-manager";
 import { FilePreview } from "./file-preview";
@@ -114,7 +114,7 @@ export const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
         onError?.(err);
       }
     },
-    [files, maxSize, accept, multiple, autoUpload, validator, onFilesChange, onError],
+    [files, maxSize, accept, multiple, autoUpload, validator, onFilesChange, onError, uploadFiles],
   );
 
   const uploadFiles = useCallback(

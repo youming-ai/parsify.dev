@@ -38,7 +38,7 @@ export interface OCRResult {
  * Note: This is a placeholder implementation
  * Real implementation would require Tesseract.js integration
  */
-export async function extractTextFromImage(options: OCROptions): Promise<OCRResult> {
+export async function extractTextFromImage(_options: OCROptions): Promise<OCRResult> {
   const startTime = Date.now();
 
   try {
@@ -79,25 +79,26 @@ export async function extractTextFromImage(options: OCROptions): Promise<OCRResu
     */
 
     // Placeholder implementation
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate processing
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate processing
 
     return {
       success: true,
-      text: 'This is placeholder OCR text. Real implementation requires Tesseract.js integration.',
+      text: "This is placeholder OCR text. Real implementation requires Tesseract.js integration.",
       confidence: 85.5,
-      words: [{
-        text: 'Placeholder',
-        confidence: 85.5,
-        bbox: { x0: 10, y0: 10, x1: 100, y1: 30 }
-      }],
-      processingTime: Date.now() - startTime
+      words: [
+        {
+          text: "Placeholder",
+          confidence: 85.5,
+          bbox: { x0: 10, y0: 10, x1: 100, y1: 30 },
+        },
+      ],
+      processingTime: Date.now() - startTime,
     };
-
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'OCR failed',
-      processingTime: Date.now() - startTime
+      error: error instanceof Error ? error.message : "OCR failed",
+      processingTime: Date.now() - startTime,
     };
   }
 }
@@ -113,7 +114,7 @@ export async function extractTextFromRegion(
       width: number;
       height: number;
     };
-  }
+  },
 ): Promise<OCRResult> {
   // In a real implementation, you would crop the image first
   // then run OCR on the cropped region
@@ -126,7 +127,7 @@ export async function extractTextFromRegion(
  */
 export async function batchOCR(
   files: File[],
-  options?: Omit<OCROptions, 'file'>
+  options?: Omit<OCROptions, "file">,
 ): Promise<OCRResult[]> {
   const results: OCRResult[] = [];
 
@@ -149,7 +150,7 @@ export async function extractTextWithPreprocessing(
       noiseRemoval?: boolean;
       contrastEnhancement?: boolean;
     };
-  }
+  },
 ): Promise<OCRResult> {
   // In a real implementation, you would apply preprocessing
   // to the image before running OCR
@@ -163,26 +164,26 @@ export async function extractTextWithPreprocessing(
 export function getSupportedLanguages(): string[] {
   // In a real implementation, you would get this from Tesseract.js
   return [
-    'eng', // English
-    'chi_sim', // Chinese Simplified
-    'chi_tra', // Chinese Traditional
-    'jpn', // Japanese
-    'kor', // Korean
-    'fra', // French
-    'deu', // German
-    'spa', // Spanish
-    'rus', // Russian
-    'ara', // Arabic
-    'hin', // Hindi
-    'por', // Portuguese
-    'ita', // Italian
-    'nld', // Dutch
-    'swe', // Swedish
-    'nor', // Norwegian
-    'dan', // Danish
-    'fin', // Finnish
-    'pol', // Polish
-    'tur', // Turkish
+    "eng", // English
+    "chi_sim", // Chinese Simplified
+    "chi_tra", // Chinese Traditional
+    "jpn", // Japanese
+    "kor", // Korean
+    "fra", // French
+    "deu", // German
+    "spa", // Spanish
+    "rus", // Russian
+    "ara", // Arabic
+    "hin", // Hindi
+    "por", // Portuguese
+    "ita", // Italian
+    "nld", // Dutch
+    "swe", // Swedish
+    "nor", // Norwegian
+    "dan", // Danish
+    "fin", // Finnish
+    "pol", // Polish
+    "tur", // Turkish
   ];
 }
 
@@ -193,15 +194,15 @@ export function validateOCROptions(options: OCROptions): string[] {
   const errors: string[] = [];
 
   if (!options.file) {
-    errors.push('File is required');
+    errors.push("File is required");
   }
 
-  if (options.file && !options.file.type.startsWith('image/')) {
-    errors.push('File must be an image');
+  if (options.file && !options.file.type.startsWith("image/")) {
+    errors.push("File must be an image");
   }
 
   if (options.confidence !== undefined && (options.confidence < 0 || options.confidence > 100)) {
-    errors.push('Confidence must be between 0 and 100');
+    errors.push("Confidence must be between 0 and 100");
   }
 
   return errors;

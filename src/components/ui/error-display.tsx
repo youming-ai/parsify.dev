@@ -3,9 +3,9 @@
  * Consistent error presentation with helpful actions
  */
 
+import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { AlertCircle, ExternalLink, RefreshCw } from "lucide-react";
 
 interface ErrorDisplayProps {
   error: Error | string;

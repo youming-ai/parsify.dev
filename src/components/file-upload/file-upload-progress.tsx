@@ -1,7 +1,7 @@
+import type React from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import type React from "react";
 import type { FileUploadProgress, FileUploadStatus } from "./file-upload-types";
 
 interface FileUploadProgressProps {

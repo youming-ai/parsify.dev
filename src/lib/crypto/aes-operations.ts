@@ -30,25 +30,17 @@ export async function aesEncrypt(options: AESEncryptionOptions): Promise<AESResu
     // Import or generate key
     let cryptoKey: CryptoKey;
 
-    if (typeof options.key === 'string') {
+    if (typeof options.key === "string") {
       // Derive key from password
       const encoder = new TextEncoder();
       const keyData = encoder.encode(options.key);
-      cryptoKey = await crypto.subtle.importKey(
-        'raw',
-        keyData,
-        { name: 'AES-CBC' },
-        false,
-        ['encrypt']
-      );
+      cryptoKey = await crypto.subtle.importKey("raw", keyData, { name: "AES-CBC" }, false, [
+        "encrypt",
+      ]);
     } else {
-      cryptoKey = await crypto.subtle.importKey(
-        'raw',
-        options.key,
-        { name: 'AES-CBC' },
-        false,
-        ['encrypt']
-      );
+      cryptoKey = await crypto.subtle.importKey("raw", options.key, { name: "AES-CBC" }, false, [
+        "encrypt",
+      ]);
     }
 
     // Generate or use provided IV
@@ -56,7 +48,7 @@ export async function aesEncrypt(options: AESEncryptionOptions): Promise<AESResu
 
     // Convert data to ArrayBuffer
     let dataArrayBuffer: ArrayBuffer;
-    if (typeof options.data === 'string') {
+    if (typeof options.data === "string") {
       const encoder = new TextEncoder();
       dataArrayBuffer = encoder.encode(options.data).buffer;
     } else {
@@ -66,22 +58,22 @@ export async function aesEncrypt(options: AESEncryptionOptions): Promise<AESResu
     // Encrypt
     const encryptedData = await crypto.subtle.encrypt(
       {
-        name: 'AES-CBC',
-        iv: iv
+        name: "AES-CBC",
+        iv: iv,
       },
       cryptoKey,
-      dataArrayBuffer
+      dataArrayBuffer,
     );
 
     return {
       success: true,
       data: encryptedData,
-      iv: iv
+      iv: iv,
     };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Encryption failed'
+      error: error instanceof Error ? error.message : "Encryption failed",
     };
   }
 }
@@ -94,44 +86,36 @@ export async function aesDecrypt(options: AESDecryptionOptions): Promise<AESResu
     // Import key
     let cryptoKey: CryptoKey;
 
-    if (typeof options.key === 'string') {
+    if (typeof options.key === "string") {
       const encoder = new TextEncoder();
       const keyData = encoder.encode(options.key);
-      cryptoKey = await crypto.subtle.importKey(
-        'raw',
-        keyData,
-        { name: 'AES-CBC' },
-        false,
-        ['decrypt']
-      );
+      cryptoKey = await crypto.subtle.importKey("raw", keyData, { name: "AES-CBC" }, false, [
+        "decrypt",
+      ]);
     } else {
-      cryptoKey = await crypto.subtle.importKey(
-        'raw',
-        options.key,
-        { name: 'AES-CBC' },
-        false,
-        ['decrypt']
-      );
+      cryptoKey = await crypto.subtle.importKey("raw", options.key, { name: "AES-CBC" }, false, [
+        "decrypt",
+      ]);
     }
 
     // Decrypt
     const decryptedData = await crypto.subtle.decrypt(
       {
-        name: 'AES-CBC',
-        iv: options.iv
+        name: "AES-CBC",
+        iv: options.iv,
       },
       cryptoKey,
-      options.encryptedData
+      options.encryptedData,
     );
 
     return {
       success: true,
-      data: decryptedData
+      data: decryptedData,
     };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Decryption failed'
+      error: error instanceof Error ? error.message : "Decryption failed",
     };
   }
 }
@@ -148,7 +132,7 @@ export function generateAESKey(): ArrayBuffer {
  */
 export function arrayBufferToHex(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
-  return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 /**

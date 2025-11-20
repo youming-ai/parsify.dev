@@ -5,9 +5,9 @@
 
 "use client";
 
-import { useSimplifiedAnalytics } from "@/lib/analytics/simplified";
-import { getGoogleAnalyticsService } from "@/lib/analytics/google-analytics";
 import { useEffect } from "react";
+import { getGoogleAnalyticsService } from "@/lib/analytics/google-analytics";
+import { useSimplifiedAnalytics } from "@/lib/analytics/simplified";
 
 interface AnalyticsInitializerProps {
   children: React.ReactNode;

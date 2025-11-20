@@ -53,7 +53,6 @@ export interface BackupData {
 }
 
 export class ToolStateManager {
-  private static instance: ToolStateManager;
   private currentSession: SessionData | null = null;
   private autoSaveTimer: NodeJS.Timeout | null = null;
   private eventListeners: Map<string, Function[]>;
@@ -79,39 +78,6 @@ export class ToolStateManager {
       ToolStateManager.instance = new ToolStateManager();
     }
     return ToolStateManager.instance;
-  }
-
-  /**
-   * Initialize from localStorage
-   */
-  private initializeFromStorage(): void {
-    try {
-      // Load current session
-      const currentSessionData = localStorage.getItem(
-        this.storageKeys.currentSession,
-      );
-      if (currentSessionData) {
-        this.currentSession = JSON.parse(currentSessionData);
-      } else {
-        this.createNewSession();
-      }
-
-      // Load preferences if not in current session
-      const preferencesData = localStorage.getItem(
-        this.storageKeys.preferences,
-      );
-      if (preferencesData && this.currentSession) {
-        const preferences = JSON.parse(preferencesData);
-        this.currentSession.preferences = {
-          ...this.currentSession.preferences,
-          ...preferences,
-        };
-        this.saveSession();
-      }
-    } catch (error) {
-      console.error("Failed to initialize from storage:", error);
-      this.createNewSession();
-    }
   }
 
   /**
@@ -170,26 +136,24 @@ export class ToolStateManager {
       this.createNewSession();
     }
 
-    const previousData = this.currentSession!.tools[toolId];
+    const previousData = this.currentSession?.tools[toolId];
     const toolState: ToolState = {
       toolId,
       version: "1.0.0",
       lastModified: Date.now(),
       data: this.cloneData(data),
       config: this.cloneData(config),
-      metadata: metadata
-        ? { ...previousData?.metadata, ...metadata }
-        : previousData?.metadata,
+      metadata: metadata ? { ...previousData?.metadata, ...metadata } : previousData?.metadata,
     };
 
-    this.currentSession!.tools[toolId] = toolState;
+    this.currentSession?.tools[toolId] = toolState;
     this.currentSession!.lastModified = Date.now();
 
     this.saveSession();
     this.emit("state:changed", {
       type: previousData ? "updated" : "created",
       toolId,
-      sessionId: this.currentSession!.sessionId,
+      sessionId: this.currentSession?.sessionId,
       timestamp: Date.now(),
       data: toolState,
       previousData: previousData?.data,
@@ -207,21 +171,13 @@ export class ToolStateManager {
     }
 
     const mergedData = this.mergeData(currentState.data, data);
-    this.setToolState(
-      toolId,
-      mergedData,
-      currentState.config,
-      currentState.metadata,
-    );
+    this.setToolState(toolId, mergedData, currentState.config, currentState.metadata);
   }
 
   /**
    * Update tool config
    */
-  public updateToolConfig(
-    toolId: string,
-    config: Partial<Record<string, any>>,
-  ): void {
+  public updateToolConfig(toolId: string, config: Partial<Record<string, any>>): void {
     const currentState = this.getToolState(toolId);
     if (!currentState) {
       this.setToolState(toolId, {}, config);
@@ -229,12 +185,7 @@ export class ToolStateManager {
     }
 
     const mergedConfig = { ...currentState.config, ...config };
-    this.setToolState(
-      toolId,
-      currentState.data,
-      mergedConfig,
-      currentState.metadata,
-    );
+    this.setToolState(toolId, currentState.data, mergedConfig, currentState.metadata);
   }
 
   /**
@@ -276,7 +227,7 @@ export class ToolStateManager {
       this.emit("state:changed", {
         type: "deleted",
         toolId,
-        sessionId: this.currentSession!.sessionId,
+        sessionId: this.currentSession?.sessionId,
         timestamp: Date.now(),
       } as StateChangeEvent);
     });
@@ -298,7 +249,7 @@ export class ToolStateManager {
     }
 
     this.currentSession!.globalConfig = {
-      ...this.currentSession!.globalConfig,
+      ...this.currentSession?.globalConfig,
       ...config,
     };
     this.currentSession!.lastModified = Date.now();
@@ -324,15 +275,13 @@ export class ToolStateManager {
   /**
    * Update user preferences
    */
-  public updatePreferences(
-    preferences: Partial<SessionData["preferences"]>,
-  ): void {
+  public updatePreferences(preferences: Partial<SessionData["preferences"]>): void {
     if (!this.currentSession) {
       this.createNewSession();
     }
 
     this.currentSession!.preferences = {
-      ...this.currentSession!.preferences,
+      ...this.currentSession?.preferences,
       ...preferences,
     };
     this.currentSession!.lastModified = Date.now();
@@ -340,12 +289,12 @@ export class ToolStateManager {
     // Also save to localStorage for persistence across sessions
     localStorage.setItem(
       this.storageKeys.preferences,
-      JSON.stringify(this.currentSession!.preferences),
+      JSON.stringify(this.currentSession?.preferences),
     );
     this.saveSession();
 
     this.emit("preferences:updated", {
-      preferences: this.currentSession!.preferences,
+      preferences: this.currentSession?.preferences,
     });
   }
 
@@ -499,39 +448,18 @@ export class ToolStateManager {
   }
 
   /**
-   * Start auto-save
-   */
-  private startAutoSave(): void {
-    if (this.autoSaveTimer) {
-      clearInterval(this.autoSaveTimer);
-    }
-
-    const checkAutoSave = () => {
-      if (this.currentSession?.preferences.autoSave) {
-        this.saveSession();
-      }
-    };
-
-    // Check every minute
-    this.autoSaveTimer = setInterval(checkAutoSave, 60000);
-  }
-
-  /**
    * Save session to localStorage
    */
   private saveSession(): void {
     if (!this.currentSession) return;
 
     try {
-      localStorage.setItem(
-        this.storageKeys.currentSession,
-        JSON.stringify(this.currentSession),
-      );
+      localStorage.setItem(this.storageKeys.currentSession, JSON.stringify(this.currentSession));
 
       // Also save to sessions list
       const sessions = this.getAllSessions();
       const existingIndex = sessions.findIndex(
-        (s) => s.sessionId === this.currentSession!.sessionId,
+        (s) => s.sessionId === this.currentSession?.sessionId,
       );
 
       if (existingIndex !== -1) {
@@ -620,10 +548,7 @@ export class ToolStateManager {
     );
 
     if (validSessions.length !== sessions.length) {
-      localStorage.setItem(
-        this.storageKeys.sessions,
-        JSON.stringify(validSessions),
-      );
+      localStorage.setItem(this.storageKeys.sessions, JSON.stringify(validSessions));
     }
 
     // Run cleanup every hour
@@ -645,7 +570,7 @@ export class ToolStateManager {
 
     const cloned: any = {};
     for (const key in data) {
-      if (data.hasOwnProperty(key)) {
+      if (Object.hasOwn(data, key)) {
         cloned[key] = this.cloneData(data[key]);
       }
     }
@@ -660,11 +585,7 @@ export class ToolStateManager {
       return [...target, ...source];
     }
 
-    if (
-      typeof target === "object" &&
-      typeof source === "object" &&
-      !Array.isArray(target)
-    ) {
+    if (typeof target === "object" && typeof source === "object" && !Array.isArray(target)) {
       return { ...target, ...source };
     }
 
@@ -703,7 +624,7 @@ export class ToolStateManager {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
-    this.eventListeners.get(event)!.push(listener);
+    this.eventListeners.get(event)?.push(listener);
   }
 
   public off(event: string, listener: Function): void {
@@ -722,10 +643,7 @@ export class ToolStateManager {
       try {
         listener(data);
       } catch (error) {
-        console.error(
-          `Error in state manager event listener for ${event}:`,
-          error,
-        );
+        console.error(`Error in state manager event listener for ${event}:`, error);
       }
     });
   }

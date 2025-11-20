@@ -1,9 +1,14 @@
 "use client";
 
+import { Download, FileText, Info, Settings } from "lucide-react";
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { FileUpload } from "@/components/file-upload/file-upload";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -11,14 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { FileUpload } from "@/components/file-upload/file-upload";
-import { DownloadButton } from "@/components/file-upload/download-button";
-import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { FileText, Download, Settings, Info } from "lucide-react";
 
 export interface ConversionOptions {
   format: string;
@@ -115,7 +114,7 @@ export function FileConverter({
     return supportedFormats[category].output;
   };
 
-  const handleFilesDrop = (newFiles: File[]) => {
+  const _handleFilesDrop = (newFiles: File[]) => {
     const validFiles = newFiles.filter((file) => {
       const extension = getFileExtension(file.name);
       return acceptedFormats.includes(extension) && file.size <= maxFileSize;
@@ -181,23 +180,24 @@ export function FileConverter({
   const convertImage = async (file: File, data: string | ArrayBuffer): Promise<File> => {
     // Simplified image conversion - in real implementation, use canvas or libraries like sharp
     const blob = new Blob([data], { type: `image/${targetFormat}` });
-    const newFilename = file.name.replace(/\.[^/.]+$/, "") + `.${targetFormat}`;
+    const newFilename = `${file.name.replace(/\.[^/.]+$/, "")}.${targetFormat}`;
     return new File([blob], newFilename, { type: `image/${targetFormat}` });
   };
 
   const convertData = async (file: File, data: string | ArrayBuffer): Promise<File> => {
     const text = typeof data === "string" ? data : new TextDecoder().decode(data);
     const inputFormat = getFileExtension(file.name);
-    const newFilename = file.name.replace(/\.[^/.]+$/, "") + `.${targetFormat}`;
+    const newFilename = `${file.name.replace(/\.[^/.]+$/, "")}.${targetFormat}`;
 
     let convertedContent: string;
 
     try {
       switch (inputFormat) {
-        case "json":
+        case "json": {
           const jsonData = JSON.parse(text);
           convertedContent = convertFromJson(jsonData, targetFormat);
           break;
+        }
         case "csv":
           convertedContent = convertFromCsv(text, targetFormat);
           break;
@@ -207,7 +207,7 @@ export function FileConverter({
         default:
           convertedContent = text; // Fallback
       }
-    } catch (error) {
+    } catch (_error) {
       convertedContent = text; // Fallback on parsing error
     }
 
@@ -221,7 +221,7 @@ export function FileConverter({
 
   const convertDocument = async (file: File, data: string | ArrayBuffer): Promise<File> => {
     const text = typeof data === "string" ? data : new TextDecoder().decode(data);
-    const newFilename = file.name.replace(/\.[^/.]+$/, "") + `.${targetFormat}`;
+    const newFilename = `${file.name.replace(/\.[^/.]+$/, "")}.${targetFormat}`;
 
     let convertedContent: string;
     switch (targetFormat) {
@@ -272,7 +272,7 @@ export function FileConverter({
     }
   };
 
-  const convertFromXml = (xml: string, targetFormat: string): string => {
+  const convertFromXml = (xml: string, _targetFormat: string): string => {
     // Simplified XML conversion - in real implementation, use proper XML parser
     try {
       const parser = new DOMParser();

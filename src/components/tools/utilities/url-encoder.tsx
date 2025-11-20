@@ -1,13 +1,13 @@
 "use client";
 
+import { Copy, Globe, Link, Link2 } from "lucide-react";
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Copy, Link, Link2, Globe, Settings } from "lucide-react";
-import { toast } from "sonner";
 
 export interface URLResult {
   operation: "encode" | "decode";
@@ -74,7 +74,7 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
         default:
           return encodeURIComponent(text);
       }
-    } catch (error) {
+    } catch (_error) {
       throw new Error("Failed to encode URL");
     }
   };
@@ -83,7 +83,7 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
   const decodeURL = (text: string): string => {
     try {
       return decodeURIComponent(text);
-    } catch (error) {
+    } catch (_error) {
       // Try fallback decoding
       try {
         return unescape(text);
@@ -134,7 +134,7 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
     try {
       await navigator.clipboard.writeText(text);
       toast.success("Copied to clipboard");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to copy to clipboard");
     }
   };
@@ -181,7 +181,7 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
     } else {
       setOutputText("");
     }
-  }, [inputText, encodingType, activeTab]);
+  }, [inputText, encodingType, activeTab, decodeURL, encodeURL]);
 
   return (
     <div className={className}>

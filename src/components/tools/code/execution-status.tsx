@@ -1,8 +1,3 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
   CheckCircle,
@@ -18,6 +13,11 @@ import {
   Zap,
 } from "lucide-react";
 import * as React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 import type { ExecutionStatus, ExecutionStatusProps } from "./code-types";
 
 interface ExecutionStatusComponentProps extends ExecutionStatusProps {

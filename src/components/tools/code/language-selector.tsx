@@ -1,10 +1,10 @@
+import { Braces, ChevronDown, Code, Database, FileCode, Terminal } from "lucide-react";
+import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Braces, ChevronDown, Code, Database, FileCode, Terminal } from "lucide-react";
-import * as React from "react";
 import type { CodeLanguage, LanguageSelectorProps } from "./code-types";
-import { LANGUAGE_CONFIGS, getLanguageConfig } from "./language-configs";
+import { getLanguageConfig, LANGUAGE_CONFIGS } from "./language-configs";
 
 // Language categories for organization
 const LANGUAGE_CATEGORIES = {

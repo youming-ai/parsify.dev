@@ -29,7 +29,6 @@ export interface LoadQueueItem {
 }
 
 export class LazyLoader {
-  private static instance: LazyLoader;
   private options: Required<LazyLoadOptions>;
   private loadQueue: LoadQueueItem[];
   private activeLoads: Map<string, Promise<any>>;
@@ -41,7 +40,7 @@ export class LazyLoader {
   private constructor(options: LazyLoadOptions = {}) {
     this.options = {
       threshold: options.threshold || 0.1,
-      rootMargin: options.rootMargin || '50px',
+      rootMargin: options.rootMargin || "50px",
       preloadDistance: options.preloadDistance || 200,
       maxConcurrentLoads: options.maxConcurrentLoads || 3,
       retryAttempts: options.retryAttempts || 3,
@@ -55,7 +54,7 @@ export class LazyLoader {
     this.setupIntersectionObserver();
 
     // Import performance tracker
-    import('./bundle-analyzer').then(module => {
+    import("./bundle-analyzer").then((module) => {
       this.performanceTracker = module.BundleAnalyzer.getInstance();
     });
   }
@@ -68,30 +67,6 @@ export class LazyLoader {
   }
 
   /**
-   * Setup intersection observer for viewport-based loading
-   */
-  private setupIntersectionObserver(): void {
-    if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
-      this.intersectionObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              const toolId = entry.target.getAttribute('data-tool-id');
-              if (toolId && this.loadQueue.find(item => item.id === toolId)) {
-                this.loadTool(toolId);
-              }
-            }
-          });
-        },
-        {
-          threshold: this.options.threshold,
-          rootMargin: this.options.rootMargin,
-        }
-      );
-    }
-  }
-
-  /**
    * Register a component for lazy loading
    */
   public registerTool(
@@ -101,7 +76,7 @@ export class LazyLoader {
       priority?: number;
       onSuccess?: (module: any, result: LazyLoadResult) => void;
       onError?: (error: Error) => void;
-    } = {}
+    } = {},
   ): void {
     const queueItem: LoadQueueItem = {
       id: toolId,
@@ -135,7 +110,7 @@ export class LazyLoader {
       return this.loadingPromises.get(toolId) as Promise<LazyLoadResult<T>>;
     }
 
-    const queueItem = this.loadQueue.find(item => item.id === toolId);
+    const queueItem = this.loadQueue.find((item) => item.id === toolId);
     if (!queueItem) {
       throw new Error(`Tool ${toolId} not registered for lazy loading`);
     }
@@ -208,7 +183,6 @@ export class LazyLoader {
       }
 
       return result;
-
     } catch (error) {
       // Remove from active loads
       this.activeLoads.delete(queueItem.id);
@@ -218,7 +192,7 @@ export class LazyLoader {
         queueItem.retries++;
 
         // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, this.options.retryDelay));
+        await new Promise((resolve) => setTimeout(resolve, this.options.retryDelay));
 
         // Retry the load
         return this.executeLoad<T>(queueItem);
@@ -239,10 +213,10 @@ export class LazyLoader {
   public preloadNearbyTools(): void {
     if (!this.intersectionObserver) return;
 
-    const elements = document.querySelectorAll('[data-tool-id]');
-    elements.forEach(element => {
-      const toolId = element.getAttribute('data-tool-id');
-      if (toolId && this.loadQueue.find(item => item.id === toolId)) {
+    const elements = document.querySelectorAll("[data-tool-id]");
+    elements.forEach((element) => {
+      const toolId = element.getAttribute("data-tool-id");
+      if (toolId && this.loadQueue.find((item) => item.id === toolId)) {
         // Add to observation with larger root margin for preloading
         this.intersectionObserver.observe(element);
       }
@@ -253,7 +227,7 @@ export class LazyLoader {
    * Setup viewport intersection for an element
    */
   public observeElement(element: HTMLElement, toolId: string): void {
-    element.setAttribute('data-tool-id', toolId);
+    element.setAttribute("data-tool-id", toolId);
 
     if (this.intersectionObserver) {
       this.intersectionObserver.observe(element);
@@ -314,7 +288,7 @@ export class LazyLoader {
     this.loadingPromises.delete(toolId);
 
     // Remove from queue
-    const queueIndex = this.loadQueue.findIndex(item => item.id === toolId);
+    const queueIndex = this.loadQueue.findIndex((item) => item.id === toolId);
     if (queueIndex !== -1) {
       this.loadQueue.splice(queueIndex, 1);
     }

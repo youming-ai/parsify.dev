@@ -5,8 +5,8 @@
 
 "use client";
 
-import { useSimplifiedAnalytics } from "@/lib/analytics/simplified";
 import { useEffect } from "react";
+import { useSimplifiedAnalytics } from "@/lib/analytics/simplified";
 
 interface PerformanceMonitorProps {
   children: React.ReactNode;
@@ -25,7 +25,7 @@ export function PerformanceMonitor({ children }: PerformanceMonitorProps) {
         const observer = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
             switch (entry.entryType) {
-              case "navigation":
+              case "navigation": {
                 const navEntry = entry as PerformanceNavigationTiming;
                 // Track key navigation metrics
                 trackPerformance(
@@ -38,34 +38,39 @@ export function PerformanceMonitor({ children }: PerformanceMonitorProps) {
                   navEntry.responseStart - navEntry.requestStart,
                 );
                 break;
+              }
 
-              case "paint":
+              case "paint": {
                 const paintEntry = entry as PerformancePaintTiming;
                 if (paintEntry.name === "first-contentful-paint") {
                   trackPerformance("first_contentful_paint", paintEntry.startTime);
                 }
                 break;
+              }
 
-              case "largest-contentful-paint":
+              case "largest-contentful-paint": {
                 const lcpEntry = entry as LargestContentfulPaint;
                 trackPerformance("largest_contentful_paint", lcpEntry.startTime);
                 break;
+              }
 
-              case "first-input":
+              case "first-input": {
                 const fidEntry = entry as PerformanceEventTiming;
                 trackPerformance(
                   "first_input_delay",
                   fidEntry.processingStart - fidEntry.startTime,
                 );
                 break;
+              }
 
-              case "layout-shift":
+              case "layout-shift": {
                 const clsEntry = entry as LayoutShift;
                 if (!clsEntry.hadRecentInput) {
                   // Cumulative Layout Shift needs to be accumulated
                   trackPerformance("cumulative_layout_shift", clsEntry.value);
                 }
                 break;
+              }
             }
           }
         });
@@ -109,7 +114,7 @@ export function PerformanceMonitor({ children }: PerformanceMonitorProps) {
           trackPerformance("memory_limit", memory.jsHeapSizeLimit);
           trackPerformance("memory_total", memory.totalJSHeapSize);
         }
-      } catch (error) {
+      } catch (_error) {
         // Memory measurement might not be available in all browsers
       }
     };

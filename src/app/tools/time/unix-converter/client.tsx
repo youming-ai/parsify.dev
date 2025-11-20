@@ -1,10 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  ArrowRightLeft,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Copy,
+  Download,
+  Globe,
+  RefreshCw,
+  TrendingUp,
+  Upload,
+  XCircle,
+  Zap,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -12,25 +28,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  Clock,
-  Copy,
-  RefreshCw,
-  Calendar,
-  Globe,
-  ArrowRightLeft,
-  CheckCircle,
-  XCircle,
-  TrendingUp,
-  Download,
-  Upload,
-  Zap,
-} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ConversionResult {
   timestamp: number;
@@ -72,8 +72,8 @@ export default function TimestampConverterClient() {
   const [result, setResult] = useState<ConversionResult | null>(null);
   const [batchInput, setBatchInput] = useState("");
   const [batchResults, setBatchResults] = useState<BatchResult[]>([]);
-  const [copied, setCopied] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [_copied, setCopied] = useState(false);
+  const [_isProcessing, _setIsProcessing] = useState(false);
 
   // Update current time every second
   useEffect(() => {
@@ -128,7 +128,7 @@ export default function TimestampConverterClient() {
       }
 
       return new Intl.DateTimeFormat("en-US", options).format(date);
-    } catch (error) {
+    } catch (_error) {
       return date.toISOString();
     }
   };
@@ -139,7 +139,7 @@ export default function TimestampConverterClient() {
     if (!cleanInput) return null;
 
     const num = parseInt(cleanInput, 10);
-    if (isNaN(num)) return null;
+    if (Number.isNaN(num)) return null;
 
     // Determine if it's milliseconds or seconds
     if (useMilliseconds) {
@@ -157,33 +157,32 @@ export default function TimestampConverterClient() {
 
       // Try parsing as ISO string first
       let date = new Date(cleanInput);
-      if (!isNaN(date.getTime())) {
+      if (!Number.isNaN(date.getTime())) {
         return date;
       }
 
       // Try parsing as MM/DD/YYYY, DD/MM/YYYY, etc.
-      const dateRegex =
-        /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/;
+      const dateRegex = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/;
       const match = cleanInput.match(dateRegex);
 
       if (match) {
         const [, month, day, year, hour, minute, second] = match;
         date = new Date(
-          parseInt(year),
-          parseInt(month) - 1,
-          parseInt(day),
-          hour ? parseInt(hour) : 0,
-          minute ? parseInt(minute) : 0,
-          second ? parseInt(second) : 0,
+          parseInt(year, 10),
+          parseInt(month, 10) - 1,
+          parseInt(day, 10),
+          hour ? parseInt(hour, 10) : 0,
+          minute ? parseInt(minute, 10) : 0,
+          second ? parseInt(second, 10) : 0,
         );
 
-        if (!isNaN(date.getTime())) {
+        if (!Number.isNaN(date.getTime())) {
           return date;
         }
       }
 
       return null;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   };
@@ -255,7 +254,7 @@ export default function TimestampConverterClient() {
     });
   };
 
-  const swapInputs = () => {
+  const _swapInputs = () => {
     setTimestamp(date);
     setDate(timestamp);
     setResult(null);

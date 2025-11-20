@@ -1,9 +1,10 @@
 "use client";
 
+import { CheckCircle, Copy, Download, Package, RefreshCw, Settings, XCircle } from "lucide-react";
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,21 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Code,
-  Copy,
-  Download,
-  RefreshCw,
-  Settings,
-  FileCode,
-  Zap,
-  CheckCircle,
-  XCircle,
-  Package,
-} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ConversionOptions {
   className: string;
@@ -102,7 +89,7 @@ export default function PythonConverterClient() {
 
     // Ensure it doesn't start with a number
     if (/^\d/.test(fieldName)) {
-      fieldName = "field_" + fieldName;
+      fieldName = `field_${fieldName}`;
     }
 
     // Handle Python keywords
@@ -143,7 +130,7 @@ export default function PythonConverterClient() {
     ];
 
     if (pythonKeywords.includes(fieldName)) {
-      fieldName = fieldName + "_value";
+      fieldName = `${fieldName}_value`;
     }
 
     return fieldName;
@@ -173,7 +160,7 @@ export default function PythonConverterClient() {
       case "object":
         if (Array.isArray(value)) {
           if (value.length > 0) {
-            const elementType = detectPythonType(value[0], fieldName + "_item");
+            const elementType = detectPythonType(value[0], `${fieldName}_item`);
             return `List[${elementType}]`;
           }
           return "List[str]";
@@ -211,7 +198,7 @@ export default function PythonConverterClient() {
     if (Array.isArray(json)) {
       // Handle arrays - create a class for the array elements
       if (json.length > 0) {
-        const elementClass = parseJSONToPythonClass(json[0], className + "Item", depth + 1);
+        const elementClass = parseJSONToPythonClass(json[0], `${className}Item`, depth + 1);
         pythonClass.nestedClasses.push(elementClass);
 
         pythonClass.fields.push({
@@ -245,7 +232,7 @@ export default function PythonConverterClient() {
           });
         } else if (Array.isArray(value) && value.length > 0 && typeof value[0] === "object") {
           // Array of objects
-          const nestedClassName = toPascalCase(key) + "Item";
+          const nestedClassName = `${toPascalCase(key)}Item`;
           const nestedClass = parseJSONToPythonClass(value[0], nestedClassName, depth + 1);
           pythonClass.nestedClasses.push(nestedClass);
 
@@ -283,12 +270,12 @@ export default function PythonConverterClient() {
     // Add imports
     if (options.importsStyle === "grouped") {
       const uniqueImports = [...new Set(pythonClass.imports)];
-      result += uniqueImports.join("\n") + "\n\n";
+      result += `${uniqueImports.join("\n")}\n\n`;
     }
 
     // Generate nested classes first
     pythonClass.nestedClasses.forEach((nested) => {
-      result += generatePythonClass(nested, indent) + "\n\n";
+      result += `${generatePythonClass(nested, indent)}\n\n`;
     });
 
     // Class declaration
@@ -301,13 +288,13 @@ export default function PythonConverterClient() {
     }
 
     if (options.classType === "standard") {
-      result += indent + '    """\n';
-      result += indent + `    ${pythonClass.className} data structure\n`;
-      result += indent + '    """\n\n';
+      result += `${indent}    """\n`;
+      result += `${indent}    ${pythonClass.className} data structure\n`;
+      result += `${indent}    """\n\n`;
 
       // Constructor for standard class
       if (options.includeConstructors) {
-        result += indent + "    def __init__(self";
+        result += `${indent}    def __init__(self`;
         pythonClass.fields.forEach((field, index) => {
           const comma = index < pythonClass.fields.length - 1 ? ", " : "";
           const typeHint = options.useTypeHints ? `: ${field.type}` : "";
@@ -316,7 +303,7 @@ export default function PythonConverterClient() {
         result += "):\n";
 
         pythonClass.fields.forEach((field) => {
-          result += indent + `        self.${field.name} = ${field.name}\n`;
+          result += `${indent}        self.${field.name} = ${field.name}\n`;
         });
         result += "\n";
       }
@@ -326,17 +313,17 @@ export default function PythonConverterClient() {
     if (options.classType === "pydantic") {
       pythonClass.fields.forEach((field) => {
         const typeHint = options.useTypeHints ? `: ${field.type}` : "";
-        result += indent + `    ${field.name}${typeHint}${field.defaultValue}\n`;
+        result += `${indent}    ${field.name}${typeHint}${field.defaultValue}\n`;
       });
     } else if (options.classType === "dataclass") {
       pythonClass.fields.forEach((field) => {
         const typeHint = options.useTypeHints ? `: ${field.type}` : "";
-        result += indent + `    ${field.name}${typeHint}${field.defaultValue}\n`;
+        result += `${indent}    ${field.name}${typeHint}${field.defaultValue}\n`;
       });
     } else if (options.classType === "standard" && !options.includeConstructors) {
       pythonClass.fields.forEach((field) => {
         const typeHint = options.useTypeHints ? `: ${field.type}` : "";
-        result += indent + `    ${field.name}${typeHint}${field.defaultValue}\n`;
+        result += `${indent}    ${field.name}${typeHint}${field.defaultValue}\n`;
       });
       result += "\n";
     }
@@ -346,50 +333,50 @@ export default function PythonConverterClient() {
       // Getters and setters
       if (options.includeGettersSetters) {
         pythonClass.fields.forEach((field) => {
-          const capitalizedName = toPascalCase(field.name);
+          const _capitalizedName = toPascalCase(field.name);
 
           // Getter
-          result += indent + `    def get_${field.name}(self):\n`;
-          result += indent + `        return self.${field.name}\n\n`;
+          result += `${indent}    def get_${field.name}(self):\n`;
+          result += `${indent}        return self.${field.name}\n\n`;
 
           // Setter
-          result += indent + `    def set_${field.name}(self, value):\n`;
-          result += indent + `        self.${field.name} = value\n\n`;
+          result += `${indent}    def set_${field.name}(self, value):\n`;
+          result += `${indent}        self.${field.name} = value\n\n`;
         });
       }
 
       // to_dict method
       if (options.includeToDict) {
-        result += indent + "    def to_dict(self):\n";
-        result += indent + "        return {\n";
+        result += `${indent}    def to_dict(self):\n`;
+        result += `${indent}        return {\n`;
         pythonClass.fields.forEach((field, index) => {
           const comma = index < pythonClass.fields.length - 1 ? "," : "";
-          result += indent + `            '${field.name}': self.${field.name}${comma}\n`;
+          result += `${indent}            '${field.name}': self.${field.name}${comma}\n`;
         });
-        result += indent + "        }\n\n";
+        result += `${indent}        }\n\n`;
       }
 
       // from_dict class method
       if (options.includeFromDict) {
-        result += indent + "    @classmethod\n";
-        result += indent + `    def from_dict(cls, data):\n`;
-        result += indent + `        return cls(\n`;
+        result += `${indent}    @classmethod\n`;
+        result += `${indent}    def from_dict(cls, data):\n`;
+        result += `${indent}        return cls(\n`;
         pythonClass.fields.forEach((field, index) => {
           const comma = index < pythonClass.fields.length - 1 ? "," : "";
-          result += indent + `            ${field.name} = data.get('${field.name}')${comma}\n`;
+          result += `${indent}            ${field.name} = data.get('${field.name}')${comma}\n`;
         });
-        result += indent + "        )\n\n";
+        result += `${indent}        )\n\n`;
       }
 
       // __str__ method
       if (options.includeToString) {
-        result += indent + "    def __str__(self):\n";
-        result += indent + `        return f"${pythonClass.className}({`;
+        result += `${indent}    def __str__(self):\n`;
+        result += `${indent}        return f"${pythonClass.className}({`;
         pythonClass.fields.forEach((field, index) => {
           const comma = index < pythonClass.fields.length - 1 ? ", " : "";
           result += `${field.name}={self.${field.name}}${comma}`;
         });
-        result += indent + '})"\n\n';
+        result += `${indent}})"\n\n`;
       }
     }
 
@@ -421,7 +408,7 @@ export default function PythonConverterClient() {
         ...pythonClass.nestedClasses.map((c) => c.className),
       ];
       setGeneratedClasses(classNames);
-    } catch (error) {
+    } catch (_error) {
       setIsValidJson(false);
       setPythonOutput("");
       setGeneratedClasses([]);

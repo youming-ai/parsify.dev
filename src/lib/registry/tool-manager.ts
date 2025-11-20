@@ -3,8 +3,8 @@
  * High-level interface for managing tools, registration, and lifecycle
  */
 
-import { ToolRegistry, type ToolMetadata, type ToolConfig } from './tool-registry';
-import { ToolDiscovery, type DiscoveredTool } from './tool-discovery';
+import { type DiscoveredTool, ToolDiscovery } from "./tool-discovery";
+import { type ToolConfig, type ToolMetadata, ToolRegistry } from "./tool-registry";
 
 export interface ToolManagerConfig {
   autoDiscover: boolean;
@@ -15,14 +15,13 @@ export interface ToolManagerConfig {
 }
 
 export interface ToolLifecycleEvent {
-  type: 'register' | 'unregister' | 'load' | 'unload' | 'enable' | 'disable' | 'error';
+  type: "register" | "unregister" | "load" | "unload" | "enable" | "disable" | "error";
   toolId: string;
   timestamp: number;
   data?: any;
 }
 
 export class ToolManager {
-  private static instance: ToolManager;
   private toolRegistry: ToolRegistry;
   private toolDiscovery: ToolDiscovery;
   private config: ToolManagerConfig;
@@ -59,34 +58,6 @@ export class ToolManager {
   }
 
   /**
-   * Setup event listeners for tool registry and discovery
-   */
-  private setupEventListeners(): void {
-    this.toolRegistry.on('tool:registered', (data: any) => {
-      this.recordLifecycleEvent('register', data.toolId, data);
-    });
-
-    this.toolRegistry.on('tool:unregistered', (data: any) => {
-      this.recordLifecycleEvent('unregister', data.toolId, data);
-    });
-
-    this.toolRegistry.on('tool:loaded', (data: any) => {
-      this.recordLifecycleEvent('load', data.toolId, data);
-    });
-
-    this.toolRegistry.on('tool:error', (data: any) => {
-      this.recordLifecycleEvent('error', data.toolId, data);
-    });
-
-    this.toolRegistry.on('tool:updated', (data: any) => {
-      if (data.enabled !== undefined) {
-        const eventType = data.enabled ? 'enable' : 'disable';
-        this.recordLifecycleEvent(eventType, data.toolId, data);
-      }
-    });
-  }
-
-  /**
    * Initialize the tool manager
    */
   public async initialize(): Promise<void> {
@@ -101,9 +72,9 @@ export class ToolManager {
         await this.toolRegistry.preloadTools();
       }
 
-      console.log('Tool Manager initialized successfully');
+      console.log("Tool Manager initialized successfully");
     } catch (error) {
-      console.error('Failed to initialize Tool Manager:', error);
+      console.error("Failed to initialize Tool Manager:", error);
       throw error;
     }
   }
@@ -205,7 +176,7 @@ export class ToolManager {
    */
   public getCategories(): string[] {
     const tools = this.getAllTools();
-    const categories = new Set(tools.map(tool => tool.category));
+    const categories = new Set(tools.map((tool) => tool.category));
     return Array.from(categories).sort();
   }
 
@@ -214,7 +185,7 @@ export class ToolManager {
    */
   public getTags(): string[] {
     const tools = this.getAllTools();
-    const tags = new Set(tools.flatMap(tool => tool.tags));
+    const tags = new Set(tools.flatMap((tool) => tool.tags));
     return Array.from(tags).sort();
   }
 
@@ -222,7 +193,7 @@ export class ToolManager {
    * Get tools that require WASM
    */
   public getWasmTools(): ToolMetadata[] {
-    return this.getAllTools().filter(tool => tool.requiresWasm);
+    return this.getAllTools().filter((tool) => tool.requiresWasm);
   }
 
   /**
@@ -230,7 +201,7 @@ export class ToolManager {
    */
   public getToolsByPriority(minPriority: number = 0): ToolMetadata[] {
     return this.getAllTools()
-      .filter(tool => tool.priority >= minPriority)
+      .filter((tool) => tool.priority >= minPriority)
       .sort((a, b) => b.priority - a.priority);
   }
 
@@ -256,11 +227,11 @@ export class ToolManager {
     };
   } {
     const tools = this.getAllTools();
-    const enabledTools = tools.filter(tool => tool.enabled);
+    const _enabledTools = tools.filter((tool) => tool.enabled);
 
     // Category statistics
     const categoryMap = new Map<string, number>();
-    tools.forEach(tool => {
+    tools.forEach((tool) => {
       categoryMap.set(tool.category, (categoryMap.get(tool.category) || 0) + 1);
     });
     const categories = Array.from(categoryMap.entries())
@@ -270,24 +241,29 @@ export class ToolManager {
     // Bundle size statistics
     const totalBundleSize = tools.reduce((sum, tool) => sum + tool.bundleSize, 0);
     const averageBundleSize = tools.length > 0 ? totalBundleSize / tools.length : 0;
-    const largest = tools.reduce((prev, current) =>
-      current.bundleSize > (prev?.bundleSize || 0) ? current : prev, null);
+    const largest = tools.reduce(
+      (prev, current) => (current.bundleSize > (prev?.bundleSize || 0) ? current : prev),
+      null,
+    );
 
     // Performance statistics
     const averageLoadTime = tools.reduce((sum, tool) => sum + tool.loadTime, 0) / tools.length;
-    const slowestLoad = tools.reduce((prev, current) =>
-      current.loadTime > (prev?.loadTime || 0) ? current : prev, null);
+    const slowestLoad = tools.reduce(
+      (prev, current) => (current.loadTime > (prev?.loadTime || 0) ? current : prev),
+      null,
+    );
 
     // Compliance statistics
-    const constitutionalCompliant = tools.filter(tool =>
-      tool.bundleSize <= 200 * 1024 && tool.enabled).length;
+    const constitutionalCompliant = tools.filter(
+      (tool) => tool.bundleSize <= 200 * 1024 && tool.enabled,
+    ).length;
     const totalSizeCompliant = totalBundleSize <= 2 * 1024 * 1024 ? 1 : 0;
 
     const issues: string[] = [];
     if (totalBundleSize > 2 * 1024 * 1024) {
       issues.push(`Total bundle size exceeds 2MB: ${this.formatBytes(totalBundleSize)}`);
     }
-    tools.forEach(tool => {
+    tools.forEach((tool) => {
       if (tool.bundleSize > 200 * 1024) {
         issues.push(`Tool ${tool.id} exceeds 200KB: ${this.formatBytes(tool.bundleSize)}`);
       }
@@ -340,73 +316,52 @@ export class ToolManager {
     const lifecycleEvents = this.lifecycleEvents.slice(-10); // Last 10 events
 
     const report = [
-      '# Tool Manager System Report',
-      '',
+      "# Tool Manager System Report",
+      "",
       `Generated: ${new Date().toISOString()}`,
-      '',
-      '## System Overview',
+      "",
+      "## System Overview",
       `- **Total Tools**: ${stats.tools.totalTools}`,
       `- **Enabled Tools**: ${stats.tools.enabledTools}`,
       `- **Categories**: ${stats.categories.length}`,
       `- **Total Bundle Size**: ${this.formatBytes(stats.bundleSize.total)}`,
-      '',
-      '## Categories',
-      ...stats.categories.map(cat => `- **${cat.name}**: ${cat.count} tools`),
-      '',
-      '## Bundle Size Analysis',
+      "",
+      "## Categories",
+      ...stats.categories.map((cat) => `- **${cat.name}**: ${cat.count} tools`),
+      "",
+      "## Bundle Size Analysis",
       `- **Total**: ${this.formatBytes(stats.bundleSize.total)}`,
       `- **Average**: ${this.formatBytes(stats.bundleSize.average)}`,
-      `- **Largest**: ${stats.bundleSize.largest ? `${stats.bundleSize.largest.name} (${this.formatBytes(stats.bundleSize.largest.bundleSize)})` : 'N/A'}`,
-      '',
-      '## Performance',
+      `- **Largest**: ${stats.bundleSize.largest ? `${stats.bundleSize.largest.name} (${this.formatBytes(stats.bundleSize.largest.bundleSize)})` : "N/A"}`,
+      "",
+      "## Performance",
       `- **Average Load Time**: ${Math.round(stats.performance.averageLoadTime)}ms`,
-      `- **Slowest Loading**: ${stats.performance.slowestLoad ? `${stats.performance.slowestLoad.name} (${stats.performance.slowestLoad.loadTime}ms)` : 'N/A'}`,
-      '',
-      '## Constitutional Compliance',
+      `- **Slowest Loading**: ${stats.performance.slowestLoad ? `${stats.performance.slowestLoad.name} (${stats.performance.slowestLoad.loadTime}ms)` : "N/A"}`,
+      "",
+      "## Constitutional Compliance",
       `- **Compliant Tools**: ${stats.compliance.constitutionalCompliant}/${stats.tools.totalTools}`,
-      `- **Total Size Compliant**: ${stats.compliance.totalSizeCompliant ? '✅' : '❌'}`,
-      '',
-      '### Compliance Issues',
-      stats.compliance.issues.length > 0 ?
-        stats.compliance.issues.map(issue => `- ${issue}`).join('\n') :
-        'No compliance issues detected',
-      '',
-      '## Recent Activity',
-      ...lifecycleEvents.map(event =>
-        `- ${new Date(event.timestamp).toLocaleTimeString()}: ${event.type} - ${event.toolId}`
+      `- **Total Size Compliant**: ${stats.compliance.totalSizeCompliant ? "✅" : "❌"}`,
+      "",
+      "### Compliance Issues",
+      stats.compliance.issues.length > 0
+        ? stats.compliance.issues.map((issue) => `- ${issue}`).join("\n")
+        : "No compliance issues detected",
+      "",
+      "## Recent Activity",
+      ...lifecycleEvents.map(
+        (event) =>
+          `- ${new Date(event.timestamp).toLocaleTimeString()}: ${event.type} - ${event.toolId}`,
       ),
-      '',
-      '## Configuration',
-      `- **Auto Discover**: ${this.config.autoDiscover ? '✅' : '❌'}`,
-      `- **Auto Register**: ${this.config.autoRegister ? '✅' : '❌'}`,
-      `- **Preload High Priority**: ${this.config.preloadHighPriority ? '✅' : '❌'}`,
-      `- **Performance Monitoring**: ${this.config.enablePerformanceMonitoring ? '✅' : '❌'}`,
-      `- **Constitutional Compliance**: ${this.config.constitutionalCompliance ? '✅' : '❌'}`,
+      "",
+      "## Configuration",
+      `- **Auto Discover**: ${this.config.autoDiscover ? "✅" : "❌"}`,
+      `- **Auto Register**: ${this.config.autoRegister ? "✅" : "❌"}`,
+      `- **Preload High Priority**: ${this.config.preloadHighPriority ? "✅" : "❌"}`,
+      `- **Performance Monitoring**: ${this.config.enablePerformanceMonitoring ? "✅" : "❌"}`,
+      `- **Constitutional Compliance**: ${this.config.constitutionalCompliance ? "✅" : "❌"}`,
     ];
 
-    return report.join('\n');
-  }
-
-  /**
-   * Record lifecycle event
-   */
-  private recordLifecycleEvent(type: ToolLifecycleEvent['type'], toolId: string, data?: any): void {
-    const event: ToolLifecycleEvent = {
-      type,
-      toolId,
-      timestamp: Date.now(),
-      data,
-    };
-
-    this.lifecycleEvents.push(event);
-
-    // Keep only last 100 events
-    if (this.lifecycleEvents.length > 100) {
-      this.lifecycleEvents = this.lifecycleEvents.slice(-100);
-    }
-
-    // Emit to external listeners
-    this.emit('lifecycle', event);
+    return report.join("\n");
   }
 
   /**
@@ -416,7 +371,7 @@ export class ToolManager {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
-    this.eventListeners.get(event)!.push(listener);
+    this.eventListeners.get(event)?.push(listener);
   }
 
   public off(event: string, listener: Function): void {
@@ -429,26 +384,15 @@ export class ToolManager {
     }
   }
 
-  private emit(event: string, data: any): void {
-    const listeners = this.eventListeners.get(event) || [];
-    listeners.forEach(listener => {
-      try {
-        listener(data);
-      } catch (error) {
-        console.error(`Error in Tool Manager event listener for ${event}:`, error);
-      }
-    });
-  }
-
   /**
    * Format bytes to human readable format
    */
   private formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }
 
   /**

@@ -1,10 +1,10 @@
 "use client";
 
-import { TextProcessor } from "@/components/tools/file/text-processor";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { FileText } from "lucide-react";
 import Link from "next/link";
+import { TextProcessor } from "@/components/tools/file/text-processor";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function TextProcessorPage() {
   return (

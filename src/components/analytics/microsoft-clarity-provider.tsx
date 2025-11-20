@@ -1,8 +1,8 @@
 "use client";
 
-import { getMicrosoftClarityService } from "@/lib/analytics/clarity";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
+import { getMicrosoftClarityService } from "@/lib/analytics/clarity";
 
 interface MicrosoftClarityProviderProps {
   children: React.ReactNode;

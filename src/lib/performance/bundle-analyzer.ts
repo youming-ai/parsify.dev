@@ -29,7 +29,6 @@ export interface ToolPerformanceMetrics {
 }
 
 export class BundleAnalyzer {
-  private static instance: BundleAnalyzer;
   private metrics: BundleMetrics;
   private performanceMetrics: PerformanceMetrics;
   private toolMetrics: Map<string, ToolPerformanceMetrics>;
@@ -64,39 +63,6 @@ export class BundleAnalyzer {
   }
 
   /**
-   * Setup performance observer to collect core web vitals
-   */
-  private setupPerformanceObserver(): void {
-    if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
-      this.observer = new PerformanceObserver((list) => {
-        list.getEntries().forEach((entry) => {
-          switch (entry.entryType) {
-            case 'paint':
-              if (entry.name === 'first-contentful-paint') {
-                this.performanceMetrics.fcp = entry.startTime;
-              }
-              break;
-            case 'largest-contentful-paint':
-              this.performanceMetrics.lcp = entry.startTime;
-              break;
-            case 'first-input':
-              this.performanceMetrics.fid = (entry as PerformanceEventTiming).processingStart - entry.startTime;
-              break;
-            case 'layout-shift':
-              this.performanceMetrics.cls += (entry as PerformanceEntry).duration;
-              break;
-            case 'navigation':
-              this.performanceMetrics.ttfb = (entry as PerformanceNavigationTiming).responseStart - entry.startTime;
-              break;
-          }
-        });
-      });
-
-      this.observer.observe({ entryTypes: ['paint', 'largest-contentful-paint', 'first-input', 'layout-shift', 'navigation'] });
-    }
-  }
-
-  /**
    * Track tool bundle size
    */
   public trackToolBundleSize(toolId: string, size: number): void {
@@ -122,7 +88,7 @@ export class BundleAnalyzer {
    * Measure memory usage
    */
   public measureMemoryUsage(): number {
-    if (typeof window !== 'undefined' && 'memory' in performance) {
+    if (typeof window !== "undefined" && "memory" in performance) {
       const memory = (performance as any).memory;
       this.metrics.memoryUsage = memory.usedJSHeapSize;
       return memory.usedJSHeapSize;
@@ -168,26 +134,36 @@ export class BundleAnalyzer {
     const warnings: string[] = [];
 
     // Check total bundle size
-    if (this.metrics.totalSize > 2 * 1024 * 1024) { // > 2MB
-      criticalIssues.push(`Total bundle size (${this.formatBytes(this.metrics.totalSize)}) exceeds 2MB limit`);
-    } else if (this.metrics.totalSize > 1024 * 1024) { // > 1MB
+    if (this.metrics.totalSize > 2 * 1024 * 1024) {
+      // > 2MB
+      criticalIssues.push(
+        `Total bundle size (${this.formatBytes(this.metrics.totalSize)}) exceeds 2MB limit`,
+      );
+    } else if (this.metrics.totalSize > 1024 * 1024) {
+      // > 1MB
       warnings.push(`Total bundle size (${this.formatBytes(this.metrics.totalSize)}) is large`);
     }
 
     // Check individual tool sizes
     Object.entries(this.metrics.toolSizes).forEach(([toolId, size]) => {
-      if (size > 200 * 1024) { // > 200KB
-        criticalIssues.push(`Tool ${toolId} bundle size (${this.formatBytes(size)}) exceeds 200KB limit`);
-      } else if (size > 100 * 1024) { // > 100KB
+      if (size > 200 * 1024) {
+        // > 200KB
+        criticalIssues.push(
+          `Tool ${toolId} bundle size (${this.formatBytes(size)}) exceeds 200KB limit`,
+        );
+      } else if (size > 100 * 1024) {
+        // > 100KB
         warnings.push(`Tool ${toolId} bundle size (${this.formatBytes(size)}) is large`);
       }
     });
 
     // Check loading times
     Object.entries(this.metrics.loadingTimes).forEach(([toolId, loadTime]) => {
-      if (loadTime > 3000) { // > 3 seconds
+      if (loadTime > 3000) {
+        // > 3 seconds
         criticalIssues.push(`Tool ${toolId} load time (${loadTime}ms) exceeds 3 seconds`);
-      } else if (loadTime > 1000) { // > 1 second
+      } else if (loadTime > 1000) {
+        // > 1 second
         warnings.push(`Tool ${toolId} load time (${loadTime}ms) is slow`);
       }
     });
@@ -211,10 +187,10 @@ export class BundleAnalyzer {
 
     // Generate recommendations
     if (criticalIssues.length > 0 || warnings.length > 0) {
-      recommendations.push('Consider implementing code splitting for large tools');
-      recommendations.push('Optimize images and assets to reduce bundle size');
-      recommendations.push('Implement lazy loading for non-critical tools');
-      recommendations.push('Use compression and minification for production builds');
+      recommendations.push("Consider implementing code splitting for large tools");
+      recommendations.push("Optimize images and assets to reduce bundle size");
+      recommendations.push("Implement lazy loading for non-critical tools");
+      recommendations.push("Use compression and minification for production builds");
     }
 
     return {
@@ -228,11 +204,11 @@ export class BundleAnalyzer {
    * Format bytes to human readable format
    */
   private formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }
 
   /**

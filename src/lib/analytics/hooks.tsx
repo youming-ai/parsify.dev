@@ -21,7 +21,7 @@ import {
 export function useAnalytics(config?: Partial<AnalyticsConfig>) {
   const [client, setClient] = useState<CloudflareAnalyticsClient | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const router = useRouter();
+  const _router = useRouter();
 
   useEffect(() => {
     const analyticsClient = createAnalyticsClient(config);
@@ -210,8 +210,7 @@ export function usePerformanceTracking() {
         trackPerformance({
           fcp: navigation.responseStart - navigation.requestStart,
           ttfb: navigation.responseStart - navigation.requestStart,
-          domContentLoaded:
-            navigation.domContentLoadedEventEnd - navigation.fetchStart,
+          domContentLoaded: navigation.domContentLoadedEventEnd - navigation.fetchStart,
           load: navigation.loadEventEnd - navigation.fetchStart,
         });
       }

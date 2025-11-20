@@ -1,5 +1,5 @@
-import { ToolsLayout as ToolsLayoutComponent } from "@/components/layout/tools-layout";
 import type { Metadata } from "next";
+import { ToolsLayout as ToolsLayoutComponent } from "@/components/layout/tools-layout";
 
 export const metadata: Metadata = {
   title: "Developer Tools - Parsify.dev",

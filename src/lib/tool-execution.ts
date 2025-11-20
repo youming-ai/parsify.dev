@@ -93,21 +93,15 @@ export interface ToolExecutor {
 
   // Lifecycle hooks
   onBeforeExecute?(request: ExecutionRequest): Promise<void>;
-  onAfterExecute?(
-    request: ExecutionRequest,
-    result: ExecutionResult,
-  ): Promise<void>;
+  onAfterExecute?(request: ExecutionRequest, result: ExecutionResult): Promise<void>;
   onError?(request: ExecutionRequest, error: Error): Promise<void>;
 }
 
 export class ToolExecutionService {
-  private static instance: ToolExecutionService;
   private executors: Map<string, ToolExecutor>;
   private activeExecutions: Map<string, AbortController>;
   private executionQueue: ExecutionRequest[];
   private maxConcurrentExecutions: number;
-  private defaultTimeout: number;
-  private defaultMemoryLimit: number;
   private eventListeners: Map<string, Function[]>;
 
   private constructor(
@@ -208,7 +202,7 @@ export class ToolExecutionService {
 
       // Wait for execution
       return new Promise((resolve, reject) => {
-        const originalExecute = executor.execute.bind(executor);
+        const _originalExecute = executor.execute.bind(executor);
         const executeWithCleanup = async (req: ExecutionRequest) => {
           try {
             const result = await this.executeWithMonitoring(req, executor);
@@ -247,10 +241,7 @@ export class ToolExecutionService {
       if (executor.getResourceRequirements) {
         const requirements = executor.getResourceRequirements();
 
-        if (
-          requirements.maxMemory &&
-          requirements.maxMemory > request.context.memoryLimit!
-        ) {
+        if (requirements.maxMemory && requirements.maxMemory > request.context.memoryLimit!) {
           throw new Error(
             `Tool requires ${requirements.maxMemory} bytes, but limit is ${request.context.memoryLimit} bytes`,
           );
@@ -268,14 +259,9 @@ export class ToolExecutionService {
 
       // Validate input if validator exists
       if (executor.validate) {
-        const validation = await executor.validate(
-          request.input,
-          request.config,
-        );
+        const validation = await executor.validate(request.input, request.config);
         if (!validation.valid) {
-          throw new Error(
-            `Input validation failed: ${validation.errors.join(", ")}`,
-          );
+          throw new Error(`Input validation failed: ${validation.errors.join(", ")}`);
         }
       }
 
@@ -288,9 +274,7 @@ export class ToolExecutionService {
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
           abortController.abort();
-          reject(
-            new Error(`Execution timeout after ${request.context.timeout}ms`),
-          );
+          reject(new Error(`Execution timeout after ${request.context.timeout}ms`));
         }, request.context.timeout);
       });
 
@@ -371,15 +355,6 @@ export class ToolExecutionService {
   }
 
   /**
-   * Start execution loop for queue processing
-   */
-  private startExecutionLoop(): void {
-    setInterval(() => {
-      this.processQueue();
-    }, 100); // Check queue every 100ms
-  }
-
-  /**
    * Cancel execution
    */
   public cancelExecution(executionId: string): boolean {
@@ -392,9 +367,7 @@ export class ToolExecutionService {
     }
 
     // Also remove from queue if pending
-    const queueIndex = this.executionQueue.findIndex(
-      (req) => req.id === executionId,
-    );
+    const queueIndex = this.executionQueue.findIndex((req) => req.id === executionId);
     if (queueIndex !== -1) {
       this.executionQueue.splice(queueIndex, 1);
       this.emit("execution:cancelled", { executionId });
@@ -485,7 +458,7 @@ export class ToolExecutionService {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
-    this.eventListeners.get(event)!.push(listener);
+    this.eventListeners.get(event)?.push(listener);
   }
 
   public off(event: string, listener: Function): void {
@@ -504,10 +477,7 @@ export class ToolExecutionService {
       try {
         listener(data);
       } catch (error) {
-        console.error(
-          `Error in execution service event listener for ${event}:`,
-          error,
-        );
+        console.error(`Error in execution service event listener for ${event}:`, error);
       }
     });
   }
@@ -534,7 +504,7 @@ export class ToolExecutionService {
    */
   public dispose(): void {
     // Cancel all active executions
-    this.activeExecutions.forEach((controller, id) => {
+    this.activeExecutions.forEach((controller, _id) => {
       controller.abort();
     });
     this.activeExecutions.clear();

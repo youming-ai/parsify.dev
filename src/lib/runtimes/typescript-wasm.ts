@@ -6,16 +6,16 @@
 export interface TypeScriptSourceFile {
   name: string;
   content: string;
-  type: 'ts';
+  type: "ts";
 }
 
 export interface TypeScriptExecutionOptions {
   entryPoint?: string;
   sourceFiles: TypeScriptSourceFile[];
   tsConfig?: any;
-  outputFormat?: 'esm' | 'commonjs' | 'iife';
-  target?: 'es2020' | 'es2018' | 'esnext';
-  module?: 'es6' | 'commonjs' | 'umd' | 'system';
+  outputFormat?: "esm" | "commonjs" | "iife";
+  target?: "es2020" | "es2018" | "esnext";
+  module?: "es6" | "commonjs" | "umd" | "system";
   strict?: boolean;
   timeoutMs?: number;
   memoryLimitMB?: number;
@@ -55,7 +55,7 @@ export class TypeScriptRuntime {
   private async _doInitialize(): Promise<void> {
     try {
       // Deno would need to be loaded and configured
-      console.log('Initializing TypeScript runtime with Deno...');
+      console.log("Initializing TypeScript runtime with Deno...");
 
       // Initialize Deno configuration
       this.deno = {
@@ -63,7 +63,7 @@ export class TypeScriptRuntime {
         run: this._runStub.bind(this),
         transpileAndRun: this._transpileAndRunStub.bind(this),
         getDenoInfo: this._getDenoInfoStub.bind(this),
-        getStatus: this._getStatusStub.bind(this)
+        getStatus: this._getStatusStub.bind(this),
       };
 
       this.isInitialized = true;
@@ -79,20 +79,20 @@ export class TypeScriptRuntime {
     await this.initialize();
 
     if (!this.deno) {
-      throw new Error('TypeScript runtime not initialized');
+      throw new Error("TypeScript runtime not initialized");
     }
 
     const {
-      entryPoint = 'index.ts',
+      entryPoint = "index.ts",
       sourceFiles,
       tsConfig = {},
-      outputFormat = 'esm',
-      target = 'esnext',
-      module = 'es6',
+      outputFormat = "esm",
+      target = "esnext",
+      module = "es6",
       strict = true,
       timeoutMs = 5000,
       memoryLimitMB = 100,
-      captureOutput = true
+      captureOutput = true,
     } = options;
 
     const startTime = performance.now();
@@ -110,42 +110,38 @@ export class TypeScriptRuntime {
         outputFormat,
         target,
         module,
-        strict
+        strict,
       });
 
-      const executionResult = await this.deno.run(
-        transpileResult,
-        {
-          captureOutput
-        }
-      );
+      const executionResult = await this.deno.run(transpileResult, {
+        captureOutput,
+      });
 
       const endTime = performance.now();
       const executionTime = endTime - startTime;
 
       return {
-        stdout: executionResult.stdout || '',
-        stderr: executionResult.stderr || '',
+        stdout: executionResult.stdout || "",
+        stderr: executionResult.stderr || "",
         exitCode: executionResult.exitCode || 0,
         executionTime,
         memoryUsed: this._estimateMemoryUsage(),
         outputFiles: transpileResult.outputFiles || [],
         warnings: executionResult.warnings || [],
-        error: executionResult.error
+        error: executionResult.error,
       };
-
     } catch (error) {
       const endTime = performance.now();
       const executionTime = endTime - startTime;
 
       return {
-        stdout: '',
+        stdout: "",
         stderr: error instanceof Error ? error.message : String(error),
         exitCode: 1,
         executionTime,
         memoryUsed: this._estimateMemoryUsage(),
         error: error instanceof Error ? error : new Error(String(error)),
-        warnings: []
+        warnings: [],
       };
     }
   }
@@ -168,34 +164,34 @@ export class TypeScriptRuntime {
   getStatus() {
     return {
       initialized: this.isInitialized,
-      version: '5.0.0',
-      compiler: 'Deno',
+      version: "5.0.0",
+      compiler: "Deno",
       performance: {
         rps: 105200, // Deno's reported performance
-        startupTime: 100
+        startupTime: 100,
       },
-      memoryUsage: this._estimateMemoryUsage()
+      memoryUsage: this._estimateMemoryUsage(),
     };
   }
 
   // Stub implementations (would be replaced with real Deno functionality)
-  private _transpileStub(sourceFiles: TypeScriptSourceFile[], options?: any): any {
+  private _transpileStub(_sourceFiles: TypeScriptSourceFile[], options?: any): any {
     return {
       success: true,
-      outputFiles: ['index.js'],
+      outputFiles: ["index.js"],
       transpileTime: 50,
       warnings: [],
-      outputFormat: options?.outputFormat || 'esm',
-      target: options?.target || 'esnext'
+      outputFormat: options?.outputFormat || "esm",
+      target: options?.target || "esnext",
     };
   }
 
-  private _runStub(transpileResult: any, options?: any): any {
+  private _runStub(_transpileResult: any, _options?: any): any {
     return {
-      stdout: 'TypeScript execution completed (simulated)',
-      stderr: '',
+      stdout: "TypeScript execution completed (simulated)",
+      stderr: "",
       exitCode: 0,
-      warnings: []
+      warnings: [],
     };
   }
 
@@ -206,22 +202,22 @@ export class TypeScriptRuntime {
 
   private _getDenoInfoStub(): any {
     return {
-      version: '2.4.4',
-      v8Engine: '12.19.287.8',
-      typescript: '5.0.0',
-      supportedTargets: ['es2020', 'es2021', 'es2022', 'esnext', 'deno.window', 'deno.worker']
+      version: "2.4.4",
+      v8Engine: "12.19.287.8",
+      typescript: "5.0.0",
+      supportedTargets: ["es2020", "es2021", "es2022", "esnext", "deno.window", "deno.worker"],
     };
   }
 
   private _getStatusStub(): any {
     return {
       available: true,
-      version: '2.4.4',
-      features: ['TypeScript', 'ES Modules', 'WebAssembly', 'Top Level Await', 'Fetch API'],
+      version: "2.4.4",
+      features: ["TypeScript", "ES Modules", "WebAssembly", "Top Level Await", "Fetch API"],
       performance: {
-        startup: 'Fast',
-        execution: 'Very Fast (105K RPS)'
-      }
+        startup: "Fast",
+        execution: "Very Fast (105K RPS)",
+      },
     };
   }
 

@@ -1,9 +1,25 @@
 "use client";
 
+import {
+  AlertTriangle,
+  CheckCircle,
+  Code,
+  Copy,
+  Download,
+  FileCode,
+  Maximize2,
+  Minimize2,
+  RefreshCw,
+  Settings,
+  XCircle,
+  Zap,
+} from "lucide-react";
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -12,26 +28,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  FileCode,
-  Copy,
-  Download,
-  RefreshCw,
-  Minimize2,
-  Maximize2,
-  Settings,
-  Zap,
-  Hash,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  Code,
-} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface FormattingOptions {
   indentSize: number;
@@ -121,11 +119,7 @@ export default function XMLFormatterClient() {
           inTag = false;
 
           if (currentTag.startsWith("!")) {
-            // Comment or DOCTYPE
-            continue;
           } else if (currentTag.startsWith("?")) {
-            // Processing instruction
-            continue;
           } else if (currentTag.startsWith("/")) {
             // Closing tag
             const tagName = currentTag.slice(1);
@@ -149,7 +143,7 @@ export default function XMLFormatterClient() {
             }
           } else if (currentTag.endsWith("/")) {
             // Self-closing tag
-            const tagName = currentTag.slice(0, -1).split(" ")[0];
+            const _tagName = currentTag.slice(0, -1).split(" ")[0];
           } else {
             // Opening tag
             const tagName = currentTag.split(" ")[0];
@@ -201,32 +195,32 @@ export default function XMLFormatterClient() {
 
       // Format the XML structure
       const lines = formatted.split("\n").filter((line) => line.trim());
-      let result = xmlDeclaration ? xmlDeclaration + "\n" : "";
+      let result = xmlDeclaration ? `${xmlDeclaration}\n` : "";
       let indentLevel = 0;
-      let inTag = false;
+      const _inTag = false;
       let currentIndent = "";
 
       for (let i = 0; i < lines.length; i++) {
-        let line = lines[i].trim();
+        const line = lines[i].trim();
 
         // Skip empty lines if option is set
         if (!line && opts.removeEmptyLines) continue;
 
         // Handle comments
         if (line.startsWith("<!--") && line.endsWith("-->")) {
-          result += currentIndent + line + "\n";
+          result += `${currentIndent + line}\n`;
           continue;
         }
 
         // Handle CDATA
         if (line.startsWith("<![CDATA[") && line.endsWith("]]>")) {
-          result += currentIndent + line + "\n";
+          result += `${currentIndent + line}\n`;
           continue;
         }
 
         // Handle self-closing tags
         if (line.includes("/>")) {
-          result += currentIndent + line + "\n";
+          result += `${currentIndent + line}\n`;
           continue;
         }
 
@@ -234,7 +228,7 @@ export default function XMLFormatterClient() {
         if (line.startsWith("</")) {
           indentLevel = Math.max(0, indentLevel - 1);
           currentIndent = indentChar.repeat(indentLevel);
-          result += currentIndent + line + "\n";
+          result += `${currentIndent + line}\n`;
           continue;
         }
 
@@ -252,28 +246,28 @@ export default function XMLFormatterClient() {
               let formattedAttrs = "";
 
               if (opts.attributeAlignment === "align") {
-                formattedAttrs = "\n" + currentIndent + attributeIndentChar;
-                formattedAttrs += attrArray.join("\n" + currentIndent + attributeIndentChar);
+                formattedAttrs = `\n${currentIndent}${attributeIndentChar}`;
+                formattedAttrs += attrArray.join(`\n${currentIndent}${attributeIndentChar}`);
               } else {
-                formattedAttrs = " " + attrArray.join(" ");
+                formattedAttrs = ` ${attrArray.join(" ")}`;
               }
 
               // Sort attributes if requested
               if (opts.sortAttributes) {
                 const attrPairs = formattedAttrs.match(/(\w+)=(["'])(.*?)\2/g) || [];
                 attrPairs.sort();
-                formattedAttrs = " " + attrPairs.join(" ");
+                formattedAttrs = ` ${attrPairs.join(" ")}`;
               }
 
-              result += currentIndent + "<" + tagName + formattedAttrs + ">\n";
+              result += `${currentIndent}<${tagName}${formattedAttrs}>\n`;
             } else {
-              result += currentIndent + line + "\n";
+              result += `${currentIndent + line}\n`;
             }
 
             indentLevel++;
             currentIndent = indentChar.repeat(indentLevel);
           } else {
-            result += currentIndent + line + "\n";
+            result += `${currentIndent + line}\n`;
             indentLevel++;
             currentIndent = indentChar.repeat(indentLevel);
           }
@@ -283,12 +277,12 @@ export default function XMLFormatterClient() {
 
         // Handle text content
         if (!line.startsWith("<")) {
-          result += currentIndent + line + "\n";
+          result += `${currentIndent + line}\n`;
           continue;
         }
 
         // Default case
-        result += currentIndent + line + "\n";
+        result += `${currentIndent + line}\n`;
       }
 
       return result.trim();

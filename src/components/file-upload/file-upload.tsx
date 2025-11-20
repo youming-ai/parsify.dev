@@ -1,12 +1,12 @@
 "use client";
 
+import { File as FileIcon, X } from "lucide-react";
 import * as React from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { FileDropZone } from "./file-drop-zone";
 import { cn } from "@/lib/utils";
-import { Upload, X, File as FileIcon } from "lucide-react";
+import { FileDropZone } from "./file-drop-zone";
 
 export interface FileUploadProps {
   files: File[];
@@ -29,7 +29,7 @@ export function FileUpload({
   multiple = true,
   disabled = false,
 }: FileUploadProps) {
-  const [isDragOver, setIsDragOver] = React.useState(false);
+  const [_isDragOver, _setIsDragOver] = React.useState(false);
   const [uploadProgress, setUploadProgress] = React.useState<Record<string, number>>({});
 
   const handleFilesDrop = (newFiles: File[]) => {
@@ -89,7 +89,7 @@ export function FileUpload({
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
   return (

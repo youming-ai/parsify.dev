@@ -75,9 +75,7 @@ export class JavaRuntime {
   /**
    * Compile and execute Java code
    */
-  async compileAndExecute(
-    options: JavaExecutionOptions,
-  ): Promise<JavaExecutionResult> {
+  async compileAndExecute(options: JavaExecutionOptions): Promise<JavaExecutionResult> {
     await this.initialize();
 
     if (!this.teavm) {
@@ -187,7 +185,7 @@ export class JavaRuntime {
   }
 
   // Stub implementations (would be replaced with real TeaVM functionality)
-  private _compileStub(sourceFiles: JavaSourceFile[], options?: any): any {
+  private _compileStub(_sourceFiles: JavaSourceFile[], _options?: any): any {
     return {
       success: true,
       bytecode: "simulated-bytecode",
@@ -196,7 +194,7 @@ export class JavaRuntime {
     };
   }
 
-  private _runStub(compilationResult: any, options?: any): any {
+  private _runStub(_compilationResult: any, _options?: any): any {
     return {
       stdout: "Java execution completed (simulated)",
       stderr: "",
@@ -205,10 +203,7 @@ export class JavaRuntime {
     };
   }
 
-  private _compileAndRunStub(
-    sourceFiles: JavaSourceFile[],
-    options?: any,
-  ): any {
+  private _compileAndRunStub(sourceFiles: JavaSourceFile[], options?: any): any {
     const compilationResult = this._compileStub(sourceFiles);
     return this._runStub(compilationResult, options);
   }

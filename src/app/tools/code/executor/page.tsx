@@ -1,10 +1,10 @@
 "use client";
 
+import { Terminal } from "lucide-react";
+import Link from "next/link";
 import { CodeToolComplete } from "@/components/tools/code/code-tool-complete";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Terminal } from "lucide-react";
-import Link from "next/link";
 
 export default function CodeExecutorPage() {
   return (

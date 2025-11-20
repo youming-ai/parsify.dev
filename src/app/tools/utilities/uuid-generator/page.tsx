@@ -1,8 +1,8 @@
-import { Metadata } from "next";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Hash } from "lucide-react";
+import type { Metadata } from "next";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { RefreshCw, Hash, Copy, CheckCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import UUIDGeneratorClient from "./client";
 
 export const metadata: Metadata = {

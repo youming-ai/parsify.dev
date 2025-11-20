@@ -1,9 +1,23 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Download,
+  Eye,
+  EyeOff,
+  FileImage,
+  Image,
+  RefreshCw,
+  Settings,
+  Trash2,
+  TrendingDown,
+  Upload,
+  Zap,
+} from "lucide-react";
+import { useCallback, useRef, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -11,24 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
-import {
-  Image,
-  Download,
-  RefreshCw,
-  Upload,
-  Zap,
-  TrendingDown,
-  Settings,
-  CheckCircle,
-  XCircle,
-  Trash2,
-  Eye,
-  EyeOff,
-  FileImage,
-} from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 
 interface ImageData {
   id: string;
@@ -62,7 +59,7 @@ export default function ImageCompressionClient() {
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
   const getImageFormat = (file: File): string => {
@@ -179,7 +176,7 @@ export default function ImageCompressionClient() {
         handleFileSelect(files);
       }
     },
-    [globalQuality, outputFormat],
+    [handleFileSelect],
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {

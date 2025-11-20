@@ -12,8 +12,9 @@
  * - Integration with execution sandbox
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as monaco from 'monaco-editor';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Output entry interface
 interface OutputEntry {
@@ -155,7 +156,6 @@ export const useConsoleCapture = (source: string) => {
         return exportToHTML(data);
       case 'md':
         return exportToMarkdown(data);
-      case 'txt':
       default:
         return exportToText(data);
     }
@@ -211,7 +211,6 @@ const getDefaultStyles = (level: OutputEntry['level']): OutputEntry['styles'] =>
       return { color: '#dc3545', fontWeight: 'bold' };
     case 'stderr':
       return { color: '#dc3545' };
-    case 'stdout':
     default:
       return { color: '#fff' };
   }
@@ -323,7 +322,7 @@ export const ConsoleDisplay: React.FC<ConsoleDisplayProps> = ({
     showSource: true
   };
 
-  const [currentConfig, setCurrentConfig] = useState<ConsoleConfig>({ ...defaultConfig, ...config });
+  const [currentConfig, _setCurrentConfig] = useState<ConsoleConfig>({ ...defaultConfig, ...config });
   const [filter, setFilter] = useState<OutputFilter>({
     levels: new Set(['debug', 'info', 'warn', 'error', 'stdout', 'stderr']),
     sources: new Set(),
@@ -361,7 +360,7 @@ export const ConsoleDisplay: React.FC<ConsoleDisplayProps> = ({
           searchRegex.test(entry.message) ||
           searchRegex.test(entry.source)
         );
-      } catch (error) {
+      } catch (_error) {
         // Invalid regex, fall back to plain text search
         const searchTextLower = filter.searchText.toLowerCase();
         filtered = filtered.filter(entry =>
@@ -374,8 +373,8 @@ export const ConsoleDisplay: React.FC<ConsoleDisplayProps> = ({
     // Date range filter
     if (filter.dateRange) {
       filtered = filtered.filter(entry =>
-        entry.timestamp >= filter.dateRange!.start.getTime() &&
-        entry.timestamp <= filter.dateRange!.end.getTime()
+        entry.timestamp >= filter.dateRange?.start.getTime() &&
+        entry.timestamp <= filter.dateRange?.end.getTime()
       );
     }
 
@@ -463,7 +462,7 @@ export const ConsoleDisplay: React.FC<ConsoleDisplayProps> = ({
   }, [filter, onFilterChange]);
 
   // Toggle level filter
-  const toggleLevel = useCallback((level: string) => {
+  const _toggleLevel = useCallback((level: string) => {
     const newLevels = new Set(filter.levels);
     if (newLevels.has(level)) {
       newLevels.delete(level);
@@ -474,10 +473,10 @@ export const ConsoleDisplay: React.FC<ConsoleDisplayProps> = ({
   }, [filter.levels, updateFilter]);
 
   // Get available sources
-  const availableSources = Array.from(new Set(entries.map(entry => entry.source))).sort();
+  const _availableSources = Array.from(new Set(entries.map(entry => entry.source))).sort();
 
   // Toggle source filter
-  const toggleSource = useCallback((source: string) => {
+  const _toggleSource = useCallback((source: string) => {
     const newSources = new Set(filter.sources);
     if (newSources.has(source)) {
       newSources.delete(source);
@@ -494,11 +493,11 @@ export const ConsoleDisplay: React.FC<ConsoleDisplayProps> = ({
         <div className="flex flex-wrap items-center gap-3">
           {/* Level filters */}
           <div className="flex gap-2">
-            {(['debug', 'info', 'warn', 'error', 'stdout', 'stderr'] as const).map(level => (
-              <button
-                key={level}
-                onClick={() => toggleLevel(level)}
-                className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+            {(['debug', 'info', 'warn', 'error', 'stdout', 'stderr'] _as const).map(level => (
+              <_button
+                _key={level}
+                _onClick={() => toggleLevel(level)}
+                _className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
                   filter.levels.has(level)
                     ? level === 'error' || level === 'stderr'
                       ? 'bg-red-600 text-white'

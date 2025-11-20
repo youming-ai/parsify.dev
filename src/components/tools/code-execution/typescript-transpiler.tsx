@@ -12,12 +12,13 @@
  * - Integration with the constitutional compliance layer
  */
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
 import * as monaco from "monaco-editor";
-import { ToolWrapper } from "../common/ToolWrapper";
-import { usePerformanceMonitor } from "../../../hooks/usePerformanceMonitor";
-import { useMemoryManagement } from "../../../hooks/useMemoryManagement";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useConstitutionalCompliance } from "../../../hooks/useConstitutionalCompliance";
+import { useMemoryManagement } from "../../../hooks/useMemoryManagement";
+import { usePerformanceMonitor } from "../../../hooks/usePerformanceMonitor";
+import { ToolWrapper } from "../common/ToolWrapper";
 
 interface TypeScriptExecutorProps {
   onComplete: (result: string) => void;
@@ -286,9 +287,7 @@ console.log(\`Final results - Sum: \${sum}, Product: \${product}\`);`,
   },
 ];
 
-export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
-  onComplete,
-}) => {
+export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({ onComplete }) => {
   // Editor and execution state
   const [code, setCode] = useState(typescriptPresets[0].code);
   const [output, setOutput] = useState("");
@@ -331,17 +330,14 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
   });
 
   // Module imports
-  const [moduleImports, setModuleImports] = useState([
-    "https://deno.land/std@0.177.0/mod.ts",
-  ]);
+  const [moduleImports, setModuleImports] = useState(["https://deno.land/std@0.177.0/mod.ts"]);
 
   // Editor reference
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const outputRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
   // Custom hooks
-  const { startMonitoring, stopMonitoring, getMetrics } =
-    usePerformanceMonitor();
+  const { startMonitoring, stopMonitoring, getMetrics } = usePerformanceMonitor();
   const { checkMemoryUsage, getMemoryStats } = useMemoryManagement();
   const { validateAction } = useConstitutionalCompliance();
 
@@ -423,9 +419,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
 
         const errors = result.diagnostics
           .filter((diag) => diag.category === ts.DiagnosticCategory.Error)
-          .map((diag) =>
-            ts.flattenDiagnosticMessageText(diag.messageText, "\n"),
-          );
+          .map((diag) => ts.flattenDiagnosticMessageText(diag.messageText, "\n"));
 
         return {
           js: result.outputText,
@@ -433,9 +427,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
         };
       } catch (error) {
         // Fallback if typescript package is not available
-        console.warn(
-          "TypeScript compiler not available, using basic compilation",
-        );
+        console.warn("TypeScript compiler not available, using basic compilation");
         return {
           js: sourceCode
             .replace(/: string/g, "")
@@ -463,9 +455,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
     });
 
     if (!isCompliant) {
-      setOutput(
-        "❌ Code execution blocked: Constitutional compliance check failed",
-      );
+      setOutput("❌ Code execution blocked: Constitutional compliance check failed");
       return;
     }
 
@@ -479,9 +469,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
       // Check memory usage
       const memoryCheck = await checkMemoryUsage();
       if (!memoryCheck.safe) {
-        setOutput(
-          `❌ Memory limit exceeded: ${memoryCheck.usage.toFixed(2)}MB used`,
-        );
+        setOutput(`❌ Memory limit exceeded: ${memoryCheck.usage.toFixed(2)}MB used`);
         return;
       }
 
@@ -501,8 +489,8 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
       }
 
       setJsCode(compileResult.js);
-      setOutput((prev) => prev + "✅ Compilation successful!\n\n");
-      setOutput((prev) => prev + "🚀 Executing JavaScript...\n");
+      setOutput((prev) => `${prev}✅ Compilation successful!\n\n`);
+      setOutput((prev) => `${prev}🚀 Executing JavaScript...\n`);
 
       // Capture console output
       const originalLog = console.log;
@@ -513,11 +501,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
       console.log = (...args) => {
         logs.push(
           args
-            .map((arg) =>
-              typeof arg === "object"
-                ? JSON.stringify(arg, null, 2)
-                : String(arg),
-            )
+            .map((arg) => (typeof arg === "object" ? JSON.stringify(arg, null, 2) : String(arg)))
             .join(" "),
         );
       };
@@ -553,10 +537,10 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
         // Format output
         let finalOutput = "";
         if (logs.length > 0) {
-          finalOutput += "📋 Output:\n" + logs.join("\n") + "\n\n";
+          finalOutput += `📋 Output:\n${logs.join("\n")}\n\n`;
         }
         if (errors.length > 0) {
-          finalOutput += "❌ Errors:\n" + errors.join("\n") + "\n\n";
+          finalOutput += `❌ Errors:\n${errors.join("\n")}\n\n`;
         }
 
         finalOutput += "✅ Execution completed successfully!";
@@ -568,25 +552,18 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
         console.log = originalLog;
         console.error = originalError;
 
-        const errorMessage =
-          execError instanceof Error ? execError.message : String(execError);
-        setOutput((prev) => prev + `❌ Runtime error: ${errorMessage}`);
+        const errorMessage = execError instanceof Error ? execError.message : String(execError);
+        setOutput((prev) => `${prev}❌ Runtime error: ${errorMessage}`);
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       setOutput(`❌ Compilation or execution error: ${errorMessage}`);
     } finally {
       const metrics = getMetrics();
       const memoryStats = getMemoryStats();
 
-      setOutput(
-        (prev) =>
-          prev + `\n\n⏱️ Execution time: ${metrics.executionTime.toFixed(2)}ms`,
-      );
-      setOutput(
-        (prev) => prev + `\n💾 Memory usage: ${memoryStats.used.toFixed(2)}MB`,
-      );
+      setOutput((prev) => `${prev}\n\n⏱️ Execution time: ${metrics.executionTime.toFixed(2)}ms`);
+      setOutput((prev) => `${prev}\n💾 Memory usage: ${memoryStats.used.toFixed(2)}MB`);
 
       stopMonitoring();
       setIsRunning(false);
@@ -605,23 +582,20 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
   ]);
 
   // Handle file import
-  const importFile = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (file && file.name.endsWith(".ts")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const content = e.target?.result as string;
-          setCode(content);
-          setOutput(`✅ Imported ${file.name}`);
-        };
-        reader.readAsText(file);
-      } else {
-        setOutput("❌ Please select a valid TypeScript file (.ts)");
-      }
-    },
-    [],
-  );
+  const importFile = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file?.name.endsWith(".ts")) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        setCode(content);
+        setOutput(`✅ Imported ${file.name}`);
+      };
+      reader.readAsText(file);
+    } else {
+      setOutput("❌ Please select a valid TypeScript file (.ts)");
+    }
+  }, []);
 
   // Handle file export
   const exportFile = useCallback(() => {
@@ -640,7 +614,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
   // Insert module import
   const insertModuleImport = useCallback(() => {
     const importStatement = `import { } from '';`;
-    const newCode = importStatement + "\n\n" + code;
+    const newCode = `${importStatement}\n\n${code}`;
     setCode(newCode);
   }, [code]);
 
@@ -714,12 +688,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
           <label className="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 cursor-pointer flex items-center gap-2">
             <span className="w-4 h-4">📁</span>
             Import .ts
-            <input
-              type="file"
-              accept=".ts"
-              onChange={importFile}
-              className="hidden"
-            />
+            <input type="file" accept=".ts" onChange={importFile} className="hidden" />
           </label>
 
           <button
@@ -762,9 +731,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
             <input
               type="checkbox"
               checked={tsConfig.strict}
-              onChange={(e) =>
-                setTsConfig((prev) => ({ ...prev, strict: e.target.checked }))
-              }
+              onChange={(e) => setTsConfig((prev) => ({ ...prev, strict: e.target.checked }))}
               className="rounded"
             />
             Strict Mode
@@ -804,21 +771,14 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
 
         {/* Module Configuration */}
         <div className="bg-gray-800 rounded p-3">
-          <div className="text-white text-sm font-semibold mb-2">
-            Module Imports:
-          </div>
+          <div className="text-white text-sm font-semibold mb-2">Module Imports:</div>
           <div className="flex flex-wrap gap-2">
             {moduleImports.map((module, index) => (
-              <span
-                key={index}
-                className="px-2 py-1 bg-gray-700 text-gray-300 rounded text-xs"
-              >
+              <span key={index} className="px-2 py-1 bg-gray-700 text-gray-300 rounded text-xs">
                 {module}
                 <button
                   onClick={() => {
-                    setModuleImports((prev) =>
-                      prev.filter((_, i) => i !== index),
-                    );
+                    setModuleImports((prev) => prev.filter((_, i) => i !== index));
                   }}
                   className="ml-2 text-red-400 hover:text-red-300"
                 >
@@ -832,9 +792,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
         {/* Compilation Errors */}
         {compilationErrors.length > 0 && (
           <div className="bg-red-900 bg-opacity-20 border border-red-500 rounded p-3">
-            <div className="text-red-400 text-sm font-semibold mb-2">
-              Compilation Errors:
-            </div>
+            <div className="text-red-400 text-sm font-semibold mb-2">Compilation Errors:</div>
             {compilationErrors.map((error, index) => (
               <div key={index} className="text-red-300 text-sm font-mono">
                 • {error}
@@ -844,14 +802,10 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
         )}
 
         {/* Main Content */}
-        <div
-          className={`grid ${showCompiledJS ? "grid-cols-3" : "grid-cols-2"} gap-4`}
-        >
+        <div className={`grid ${showCompiledJS ? "grid-cols-3" : "grid-cols-2"} gap-4`}>
           {/* Code Editor */}
           <div className="space-y-2">
-            <div className="text-white text-sm font-semibold">
-              TypeScript Code:
-            </div>
+            <div className="text-white text-sm font-semibold">TypeScript Code:</div>
             <div className="border border-gray-600 rounded-lg overflow-hidden">
               <div
                 style={{ height: "500px" }}
@@ -877,9 +831,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
           {/* Compiled JavaScript */}
           {showCompiledJS && (
             <div className="space-y-2">
-              <div className="text-white text-sm font-semibold">
-                Compiled JavaScript:
-              </div>
+              <div className="text-white text-sm font-semibold">Compiled JavaScript:</div>
               <div className="border border-gray-600 rounded-lg overflow-hidden">
                 <div
                   style={{ height: "500px" }}
@@ -921,14 +873,10 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
 
         {/* Info Panel */}
         <div className="bg-gray-800 rounded-lg p-4">
-          <h3 className="text-white font-semibold mb-2">
-            📚 TypeScript Transpiler Features
-          </h3>
+          <h3 className="text-white font-semibold mb-2">📚 TypeScript Transpiler Features</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
             <div>
-              <h4 className="font-semibold text-white mb-1">
-                Language Features:
-              </h4>
+              <h4 className="font-semibold text-white mb-1">Language Features:</h4>
               <ul className="space-y-1">
                 <li>• Strong static typing with type inference</li>
                 <li>• Interface and type definitions</li>
@@ -940,9 +888,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-white mb-1">
-                Compiler Options:
-              </h4>
+              <h4 className="font-semibold text-white mb-1">Compiler Options:</h4>
               <ul className="space-y-1">
                 <li>• Target ES version selection</li>
                 <li>• Module system configuration</li>

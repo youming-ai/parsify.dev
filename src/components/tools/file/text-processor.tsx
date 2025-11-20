@@ -1,10 +1,11 @@
 "use client";
 
+import { Download, FileText, Replace, Search, Settings } from "lucide-react";
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileUpload } from "@/components/file-upload/file-upload";
+import { CodeEditor } from "@/components/tools/code/code-editor";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -15,11 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { CodeEditor } from "@/components/tools/code/code-editor";
-import { FileUpload } from "@/components/file-upload/file-upload";
-import { DownloadButton } from "@/components/file-upload/download-button";
-
-import { FileText, Search, Replace, Settings, Download } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Define types locally
 export type SearchType = "normal" | "regex" | "case-insensitive" | "whole-word";
@@ -227,7 +224,18 @@ export function TextProcessor({ value, onChange, height = 400, className }: Text
       setResult(errorResult);
       onChange?.(errorResult);
     }
-  }, [text, options, onChange]);
+  }, [
+    text,
+    options,
+    onChange,
+    buildSearchRegex,
+    convertCase,
+    decodeText,
+    encodeText,
+    formatText,
+    normalizeLineEndings,
+    normalizeText,
+  ]);
 
   const buildSearchRegex = (): RegExp => {
     let pattern = options.searchText;
@@ -352,7 +360,7 @@ export function TextProcessor({ value, onChange, height = 400, className }: Text
     }
   };
 
-  const handleFilesDrop = (newFiles: File[]) => {
+  const _handleFilesDrop = (newFiles: File[]) => {
     const textFiles = newFiles.filter(
       (file) =>
         file.type.startsWith("text/") ||
@@ -363,7 +371,7 @@ export function TextProcessor({ value, onChange, height = 400, className }: Text
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target?.result as string;
-        setText((prev) => (prev ? prev + "\n\n" + content : content));
+        setText((prev) => (prev ? `${prev}\n\n${content}` : content));
       };
       reader.readAsText(file);
     });

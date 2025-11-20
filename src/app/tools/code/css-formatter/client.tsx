@@ -1,9 +1,21 @@
 "use client";
 
+import {
+  Code2,
+  Copy,
+  Download,
+  Hash,
+  Maximize2,
+  Minimize2,
+  RefreshCw,
+  Settings,
+  Zap,
+} from "lucide-react";
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -12,24 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Code2,
-  Copy,
-  Download,
-  RefreshCw,
-  Minimize2,
-  Maximize2,
-  Settings,
-  Zap,
-  FileText,
-  Hash,
-  CheckCircle,
-} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface FormattingOptions {
   indentSize: number;
@@ -70,9 +66,9 @@ export default function CSSFormatterClient() {
   const [copied, setCopied] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const cssColorRegex = /#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/g;
-  const rgbRegex = /rgba?\([^)]+\)/g;
-  const hslRegex = /hsla?\([^)]+\)/g;
+  const _cssColorRegex = /#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/g;
+  const _rgbRegex = /rgba?\([^)]+\)/g;
+  const _hslRegex = /hsla?\([^)]+\)/g;
 
   const formatCSS = (css: string, opts: FormattingOptions): string => {
     try {
@@ -122,7 +118,7 @@ export default function CSSFormatterClient() {
             const [property, ...values] = prop.split(":").map((part) => part.trim());
             const value = values.join(":");
 
-            formattedProps += indentChar + property + ": " + value;
+            formattedProps += `${indentChar + property}: ${value}`;
 
             if (opts.optimizeShorthand) {
               // Simple shorthand optimization (could be enhanced)
@@ -140,12 +136,12 @@ export default function CSSFormatterClient() {
 
           // Apply brace style
           if (opts.braceStyle === "allman") {
-            result += selector + "\n{\n" + formattedProps + "\n}\n";
+            result += `${selector}\n{\n${formattedProps}\n}\n`;
           } else if (opts.braceStyle === "1tbs") {
-            result += selector + " {\n" + formattedProps + "\n}\n";
+            result += `${selector} {\n${formattedProps}\n}\n`;
           } else {
             // k&r
-            result += selector + " {\n" + formattedProps + "\n}\n";
+            result += `${selector} {\n${formattedProps}\n}\n`;
           }
 
           // Add spacing between rules
@@ -156,13 +152,13 @@ export default function CSSFormatterClient() {
           // Minify mode
           selector = selector.replace(/\s+/g, " ");
           properties = properties.replace(/\s+/g, " ");
-          result += selector + "{" + properties + "}";
+          result += `${selector}{${properties}}`;
         }
       });
 
       // Handle imports, media queries, etc.
       if (mode === "format") {
-        result = result.replace(/@([a-z-]+)\s+/gi, (match, atRule) => "@" + atRule + " ");
+        result = result.replace(/@([a-z-]+)\s+/gi, (_match, atRule) => `@${atRule} `);
       }
 
       return result.trim();
@@ -262,7 +258,7 @@ export default function CSSFormatterClient() {
   const beautifyCSS = () => {
     if (!cssInput.trim()) return;
 
-    let beautified = cssInput
+    const beautified = cssInput
       .replace(/}/g, "}\n")
       .replace(/\{/g, " {\n")
       .replace(/;/g, ";\n")
@@ -270,7 +266,7 @@ export default function CSSFormatterClient() {
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line)
-      .map((line) => (line.startsWith("{") || line.startsWith("}") ? line : "  " + line))
+      .map((line) => (line.startsWith("{") || line.startsWith("}") ? line : `  ${line}`))
       .join("\n");
 
     setCssInput(beautified);
@@ -472,7 +468,7 @@ export default function CSSFormatterClient() {
                 <Select
                   value={options.maxLineLength.toString()}
                   onValueChange={(value) =>
-                    setOptions({ ...options, maxLineLength: parseInt(value) })
+                    setOptions({ ...options, maxLineLength: parseInt(value, 10) })
                   }
                 >
                   <SelectTrigger>

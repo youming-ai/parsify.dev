@@ -1,8 +1,8 @@
+import { Copy, Download, Play, Settings2 } from "lucide-react";
+import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Copy, Download, Play, Settings2 } from "lucide-react";
-import * as React from "react";
 import type { JsonFormatOptions, JsonFormatterProps } from "./json-types";
 import { copyToClipboard, downloadFile, formatJson } from "./json-utils";
 

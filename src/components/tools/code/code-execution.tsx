@@ -1,8 +1,3 @@
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
   CheckCircle,
@@ -17,6 +12,11 @@ import {
   XCircle,
 } from "lucide-react";
 import * as React from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import type { CodeExecutionProps, CodeExecutionResult, ExecutionStatus } from "./code-types";
 import { getLanguageConfig } from "./language-configs";
 

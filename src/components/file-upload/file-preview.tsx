@@ -1,9 +1,9 @@
+import type React from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type React from "react";
-import { useEffect, useMemo, useState } from "react";
 import type { FilePreviewOptions, UploadedFile } from "./file-upload-types";
 
 interface FilePreviewProps {

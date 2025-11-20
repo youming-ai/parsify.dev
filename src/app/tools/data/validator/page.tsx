@@ -1,10 +1,10 @@
 "use client";
 
-import { DataValidator } from "@/components/tools/data/data-validator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Shield } from "lucide-react";
 import Link from "next/link";
+import { DataValidator } from "@/components/tools/data/data-validator";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DataValidatorPage() {
   return (

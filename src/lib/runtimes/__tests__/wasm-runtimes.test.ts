@@ -2,7 +2,7 @@
  * WASM Runtimes Unit Tests
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock Pyodide
 const mockPyodide = {
@@ -15,19 +15,19 @@ const mockPyodide = {
 };
 
 // Mock TeaVM runtime
-const mockTeaVM = {
+const _mockTeaVM = {
   compile: vi.fn(),
   run: vi.fn(),
 };
 
 // Mock TinyGo runtime
-const mockTinyGo = {
+const _mockTinyGo = {
   build: vi.fn(),
   run: vi.fn(),
 };
 
 // Mock Rust runtime
-const mockRust = {
+const _mockRust = {
   compile: vi.fn(),
   run: vi.fn(),
 };
@@ -38,17 +38,17 @@ const mockDeno = {
   run: vi.fn(),
 };
 
-describe('Python WASM Runtime', () => {
+describe("Python WASM Runtime", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Setup global Pyodide mock
     global.pyodide = mockPyodide;
   });
 
-  it('should handle Python code execution', async () => {
-    mockPyodide.runPythonAsync.mockResolvedValue('Hello from Python');
+  it("should handle Python code execution", async () => {
+    mockPyodide.runPythonAsync.mockResolvedValue("Hello from Python");
 
-    const pythonWasm = await import('../python-wasm');
+    const pythonWasm = await import("../python-wasm");
     const result = await pythonWasm.executePython({
       code: 'print("Hello from Python")',
       timeout: 5000,
@@ -56,35 +56,35 @@ describe('Python WASM Runtime', () => {
 
     expect(mockPyodide.runPythonAsync).toHaveBeenCalledWith('print("Hello from Python")');
     expect(result.success).toBe(true);
-    expect(result.output).toBe('Hello from Python');
+    expect(result.output).toBe("Hello from Python");
   });
 
-  it('should handle Python execution errors', async () => {
-    mockPyodide.runPythonAsync.mockRejectedValue(new Error('Python error'));
+  it("should handle Python execution errors", async () => {
+    mockPyodide.runPythonAsync.mockRejectedValue(new Error("Python error"));
 
-    const pythonWasm = await import('../python-wasm');
+    const pythonWasm = await import("../python-wasm");
     const result = await pythonWasm.executePython({
-      code: 'invalid python code',
+      code: "invalid python code",
       timeout: 5000,
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toContain('Python error');
+    expect(result.error).toContain("Python error");
   });
 });
 
-describe('TypeScript WASM Runtime', () => {
+describe("TypeScript WASM Runtime", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should transpile TypeScript to JavaScript', async () => {
+  it("should transpile TypeScript to JavaScript", async () => {
     mockDeno.transpile.mockResolvedValue({
       code: 'console.log("Hello from TS");',
-      map: '',
+      map: "",
     });
 
-    const tsWasm = await import('../typescript-wasm');
+    const tsWasm = await import("../typescript-wasm");
     const result = await tsWasm.executeTypeScript({
       code: 'const message: string = "Hello"; console.log(message);',
       timeout: 5000,
@@ -94,29 +94,29 @@ describe('TypeScript WASM Runtime', () => {
     expect(result.success).toBe(true);
   });
 
-  it('should handle TypeScript syntax errors', async () => {
-    mockDeno.transpile.mockRejectedValue(new Error('TypeScript syntax error'));
+  it("should handle TypeScript syntax errors", async () => {
+    mockDeno.transpile.mockRejectedValue(new Error("TypeScript syntax error"));
 
-    const tsWasm = await import('../typescript-wasm');
+    const tsWasm = await import("../typescript-wasm");
     const result = await tsWasm.executeTypeScript({
-      code: 'invalid typescript code',
+      code: "invalid typescript code",
       timeout: 5000,
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toContain('TypeScript syntax error');
+    expect(result.error).toContain("TypeScript syntax error");
   });
 });
 
-describe('WASM Runtime Security', () => {
+describe("WASM Runtime Security", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should validate WASM runtime security constraints', () => {
+  it("should validate WASM runtime security constraints", () => {
     const mockRuntime = {
       validateCode: vi.fn(() => ({ valid: true, violations: [] })),
-      executeInSandbox: vi.fn(() => ({ success: true, output: 'Safe output' })),
+      executeInSandbox: vi.fn(() => ({ success: true, output: "Safe output" })),
     };
 
     const code = 'console.log("Safe code")';
@@ -129,33 +129,33 @@ describe('WASM Runtime Security', () => {
     expect(execution.success).toBe(true);
   });
 
-  it('should detect unsafe WASM code patterns', () => {
+  it("should detect unsafe WASM code patterns", () => {
     const mockRuntime = {
       validateCode: vi.fn(() => ({
         valid: false,
-        violations: ['Infinite loop detected', 'Dangerous API access']
+        violations: ["Infinite loop detected", "Dangerous API access"],
       })),
     };
 
-    const unsafeCode = 'while(true) { crypto.subtle.generateKey(...); }';
+    const unsafeCode = "while(true) { crypto.subtle.generateKey(...); }";
     const validation = mockRuntime.validateCode(unsafeCode);
 
     expect(validation.valid).toBe(false);
-    expect(validation.violations).toContain('Infinite loop detected');
-    expect(validation.violations).toContain('Dangerous API access');
+    expect(validation.violations).toContain("Infinite loop detected");
+    expect(validation.violations).toContain("Dangerous API access");
   });
 });
 
-describe('Performance Monitoring', () => {
+describe("Performance Monitoring", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should track execution time', async () => {
+  it("should track execution time", async () => {
     const mockRuntime = {
       executeWithTiming: vi.fn(async () => {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        return { success: true, output: 'Output', executionTime: 100 };
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        return { success: true, output: "Output", executionTime: 100 };
       }),
     };
 
@@ -165,11 +165,11 @@ describe('Performance Monitoring', () => {
     expect(result.executionTime).toBe(100);
   });
 
-  it('should handle execution timeouts', async () => {
+  it("should handle execution timeouts", async () => {
     const mockRuntime = {
       executeWithTimeout: vi.fn(async () => {
         return new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Execution timeout')), 1000);
+          setTimeout(() => reject(new Error("Execution timeout")), 1000);
         });
       }),
     };
@@ -178,7 +178,7 @@ describe('Performance Monitoring', () => {
       await mockRuntime.executeWithTimeout();
     } catch (error) {
       expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toContain('Execution timeout');
+      expect((error as Error).message).toContain("Execution timeout");
     }
   });
 });

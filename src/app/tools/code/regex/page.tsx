@@ -1,10 +1,10 @@
 "use client";
 
-import { RegexTester } from "@/components/tools/code/regex-tester";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Code } from "lucide-react";
 import Link from "next/link";
+import { RegexTester } from "@/components/tools/code/regex-tester";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function RegexTesterPage() {
   return (
