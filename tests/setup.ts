@@ -1,5 +1,5 @@
-import "@testing-library/jest-dom";
-import { beforeAll, afterEach, afterAll } from "vitest";
+import '@testing-library/jest-dom';
+import { afterAll, afterEach, beforeAll } from 'vitest';
 
 // Mock WebAssembly APIs for WASM runtime testing
 beforeAll(() => {
@@ -12,7 +12,7 @@ beforeAll(() => {
   } as any;
 
   // Mock crypto APIs for security tools
-  Object.defineProperty(global, "crypto", {
+  Object.defineProperty(global, 'crypto', {
     value: {
       subtle: {
         encrypt: vi.fn(),
@@ -31,7 +31,7 @@ beforeAll(() => {
   });
 
   // Mock performance APIs for performance monitoring
-  Object.defineProperty(global, "performance", {
+  Object.defineProperty(global, 'performance', {
     value: {
       now: vi.fn(() => Date.now()),
       mark: vi.fn(),
@@ -51,7 +51,7 @@ beforeAll(() => {
     length: 0,
     key: vi.fn(),
   };
-  Object.defineProperty(window, "localStorage", {
+  Object.defineProperty(window, 'localStorage', {
     value: localStorageMock,
   });
 
@@ -65,7 +65,7 @@ beforeAll(() => {
     deleteDatabase: vi.fn(),
     databases: vi.fn(() => Promise.resolve([])),
   };
-  Object.defineProperty(window, "indexedDB", {
+  Object.defineProperty(window, 'indexedDB', {
     value: indexedDBMock,
   });
 
@@ -109,9 +109,9 @@ beforeAll(() => {
   })) as any;
 
   // Mock URL.createObjectURL
-  Object.defineProperty(global, "URL", {
+  Object.defineProperty(global, 'URL', {
     value: {
-      createObjectURL: vi.fn(() => "mock-url"),
+      createObjectURL: vi.fn(() => 'mock-url'),
       revokeObjectURL: vi.fn(),
     },
     writable: true,

@@ -46,6 +46,23 @@ export interface NLPResult<T = any> {
   metadata: Record<string, any>;
 }
 
+export type AggregationStrategy =
+  | 'average'
+  | 'majority'
+  | 'consensus'
+  | 'confidence-weighted'
+  | 'weighted';
+
+export type OutputFormat = 'json' | 'csv' | 'xml' | 'text';
+
+export interface ProcessingOperation {
+  id?: string;
+  type: string;
+  tool: string;
+  config?: Record<string, any>;
+  enabled: boolean;
+}
+
 export interface NLPConfig {
   language?: string;
   confidence?: number;
@@ -74,7 +91,7 @@ export interface ModelConfig {
   maxSequenceLength?: number;
 }
 
-export interface BatchRequest<T = any> {
+export interface BatchRequest<_T = any> {
   id: string;
   text: string;
   config?: Partial<NLPConfig>;
@@ -98,14 +115,14 @@ export interface ProcessingPipeline {
 
 export interface ProcessingStep {
   id: string;
-  type: "preprocessing" | "analysis" | "enhancement" | "classification" | "multilingual";
+  type: 'preprocessing' | 'analysis' | 'enhancement' | 'classification' | 'multilingual';
   name: string;
   tool: string;
   config?: Record<string, any>;
   dependsOn?: string[]; // IDs of steps this step depends on
 }
 
-export type TaskStatus = "pending" | "processing" | "completed" | "failed" | "cancelled";
+export type TaskStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
 
 export interface Task<T = any> {
   id: string;
@@ -135,16 +152,16 @@ export class NLPError extends Error {
     message: string,
     public code: string,
     public tool?: string,
-    public recoverable: boolean = true,
+    public recoverable = true
   ) {
     super(message);
-    this.name = "NLPError";
+    this.name = 'NLPError';
   }
 }
 
 export class ModelLoadError extends NLPError {
   constructor(modelId: string, originalError?: Error) {
-    super(`Failed to load model: ${modelId}`, "MODEL_LOAD_ERROR", "model-loader", false);
+    super(`Failed to load model: ${modelId}`, 'MODEL_LOAD_ERROR', 'model-loader', false);
     if (originalError) {
       this.cause = originalError;
     }
@@ -153,23 +170,17 @@ export class ModelLoadError extends NLPError {
 
 export class ProcessingTimeoutError extends NLPError {
   constructor(timeout: number) {
-    super(`Processing timed out after ${timeout}ms`, "PROCESSING_TIMEOUT", "processor", true);
+    super(`Processing timed out after ${timeout}ms`, 'PROCESSING_TIMEOUT', 'processor', true);
   }
 }
 
 export class ResourceExhaustedError extends NLPError {
   constructor(resource: string) {
-    super(`Resource exhausted: ${resource}`, "RESOURCE_EXHAUSTED", "system", true);
+    super(`Resource exhausted: ${resource}`, 'RESOURCE_EXHAUSTED', 'system', true);
   }
 }
 
 // Utility types
-export type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
-
-export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
-
 export type OptionalFields<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 // Performance monitoring types
@@ -202,17 +213,17 @@ export interface CacheStats {
 
 // Event types
 export type NLPEventType =
-  | "model_loaded"
-  | "model_unloaded"
-  | "analysis_started"
-  | "analysis_completed"
-  | "analysis_failed"
-  | "cache_hit"
-  | "cache_miss"
-  | "batch_started"
-  | "batch_completed"
-  | "memory_warning"
-  | "performance_warning";
+  | 'model_loaded'
+  | 'model_unloaded'
+  | 'analysis_started'
+  | 'analysis_completed'
+  | 'analysis_failed'
+  | 'cache_hit'
+  | 'cache_miss'
+  | 'batch_started'
+  | 'batch_completed'
+  | 'memory_warning'
+  | 'performance_warning';
 
 export interface NLPEvent {
   type: NLPEventType;

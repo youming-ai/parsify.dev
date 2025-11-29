@@ -3,7 +3,7 @@
  * Manages Web Worker pool for NLP operations with load balancing and fault tolerance
  */
 
-import { NlpWorker, WorkerMessage, WorkerResponse } from "./nlp-worker";
+import type { WorkerMessage, WorkerResponse } from './nlp-worker';
 
 export interface WorkerConfig {
   maxWorkers: number;
@@ -13,7 +13,7 @@ export interface WorkerConfig {
   retryDelay: number;
   healthCheckInterval: number;
   maxMemoryUsage: number;
-  loadBalancing: "round-robin" | "least-loaded" | "random";
+  loadBalancing: 'round-robin' | 'least-loaded' | 'random';
 }
 
 export interface WorkerInstance {
@@ -22,7 +22,7 @@ export interface WorkerInstance {
   busy: boolean;
   createdAt: Date;
   lastUsed: Date;
-  healthStatus: "healthy" | "unhealthy" | "checking";
+  healthStatus: 'healthy' | 'unhealthy' | 'checking';
   operations: number;
   memoryUsage: number;
   errorCount: number;
@@ -59,7 +59,7 @@ export interface WorkerManagerStats {
   successfulOperations: number;
   failedOperations: number;
   averageProcessingTime: number;
-  workerHealthStatus: Record<string, WorkerInstance["healthStatus"]>;
+  workerHealthStatus: Record<string, WorkerInstance['healthStatus']>;
   memoryUsage: {
     total: number;
     average: number;
@@ -87,13 +87,13 @@ export class NlpWorkerManager {
   constructor(config: Partial<WorkerConfig> = {}) {
     this.config = {
       maxWorkers: Math.min(navigator.hardwareConcurrency || 4, 8),
-      workerUrl: "/workers/nlp-worker.js",
+      workerUrl: '/workers/nlp-worker.js',
       timeoutMs: 30000,
       retryAttempts: 2,
       retryDelay: 1000,
       healthCheckInterval: 30000, // 30 seconds
       maxMemoryUsage: 50 * 1024 * 1024, // 50MB per worker
-      loadBalancing: "least-loaded",
+      loadBalancing: 'least-loaded',
       ...config,
     };
   }
@@ -112,9 +112,7 @@ export class NlpWorkerManager {
       this.startHealthMonitoring();
 
       this.isInitialized = true;
-      console.log(
-        `NLP Worker Manager initialized with ${this.config.maxWorkers} max workers`,
-      );
+      console.log(`NLP Worker Manager initialized with ${this.config.maxWorkers} max workers`);
     } catch (error) {
       throw new Error(`Failed to initialize worker manager: ${error}`);
     }
@@ -123,9 +121,7 @@ export class NlpWorkerManager {
   /**
    * Execute a task using worker pool
    */
-  public async executeTask<T = any, R = any>(
-    task: TaskRequest<T>,
-  ): Promise<TaskResult<R>> {
+  public async executeTask<T = any, R = any>(task: TaskRequest<T>): Promise<TaskResult<R>> {
     if (!this.isInitialized) {
       await this.initialize();
     }
@@ -153,19 +149,15 @@ export class NlpWorkerManager {
   /**
    * Load model in a worker
    */
-  public async loadModel(
-    modelId: string,
-    modelUrl?: string,
-    modelConfig?: any,
-  ): Promise<void> {
+  public async loadModel(modelId: string, modelUrl?: string, modelConfig?: any): Promise<void> {
     const worker = await this.getAvailableWorker();
 
     return new Promise<void>((resolve, reject) => {
       const taskId = this.generateId();
       const message: WorkerMessage = {
         id: taskId,
-        type: "load_model",
-        operation: "load_model",
+        type: 'load_model',
+        operation: 'load_model',
         data: {
           modelId,
           modelUrl,
@@ -198,7 +190,7 @@ export class NlpWorkerManager {
    * Initialize all workers
    */
   public async initializeWorkers(): Promise<void> {
-    const promises: Promise<void>[] = [];
+    const promises: Promise<WorkerInstance>[] = [];
 
     for (let i = 1; i < this.config.maxWorkers; i++) {
       promises.push(this.createWorker());
@@ -212,14 +204,13 @@ export class NlpWorkerManager {
    */
   public getStats(): WorkerManagerStats {
     const workers = Array.from(this.workers.values());
-    const activeWorkers = workers.filter((w) => w.healthStatus === "healthy");
+    const activeWorkers = workers.filter((w) => w.healthStatus === 'healthy');
     const busyWorkers = workers.filter((w) => w.busy);
 
     const totalOperations = workers.reduce((sum, w) => sum + w.operations, 0);
     const memoryUsages = workers.map((w) => w.memoryUsage);
     const totalMemory = memoryUsages.reduce((sum, mem) => sum + mem, 0);
-    const averageMemory =
-      memoryUsages.length > 0 ? totalMemory / memoryUsages.length : 0;
+    const averageMemory = memoryUsages.length > 0 ? totalMemory / memoryUsages.length : 0;
     const peakMemory = memoryUsages.length > 0 ? Math.max(...memoryUsages) : 0;
 
     return {
@@ -235,7 +226,7 @@ export class NlpWorkerManager {
           status[worker.id] = worker.healthStatus;
           return status;
         },
-        {} as Record<string, WorkerInstance["healthStatus"]>,
+        {} as Record<string, WorkerInstance['healthStatus']>
       ),
       memoryUsage: {
         total: totalMemory,
@@ -279,7 +270,7 @@ export class NlpWorkerManager {
 
     // Dispose all workers
     const disposePromises = Array.from(this.workers.values()).map((worker) =>
-      this.disposeWorker(worker),
+      this.disposeWorker(worker)
     );
 
     await Promise.allSettled(disposePromises);
@@ -294,7 +285,7 @@ export class NlpWorkerManager {
 
   private async createWorker(): Promise<WorkerInstance> {
     if (this.workers.size >= this.config.maxWorkers) {
-      throw new Error("Maximum worker limit reached");
+      throw new Error('Maximum worker limit reached');
     }
 
     const workerId = this.generateId();
@@ -303,14 +294,14 @@ export class NlpWorkerManager {
     try {
       // Create worker from blob for inline worker
       const workerCode = this.getWorkerCode();
-      const blob = new Blob([workerCode], { type: "application/javascript" });
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
       const workerUrl = URL.createObjectURL(blob);
 
       worker = new Worker(workerUrl);
 
       // Clean up blob URL after worker is created
       setTimeout(() => URL.revokeObjectURL(workerUrl), 1000);
-    } catch (error) {
+    } catch (_error) {
       // Fallback to external worker file
       worker = new Worker(this.config.workerUrl);
     }
@@ -321,21 +312,21 @@ export class NlpWorkerManager {
       busy: false,
       createdAt: new Date(),
       lastUsed: new Date(),
-      healthStatus: "checking",
+      healthStatus: 'checking',
       operations: 0,
       memoryUsage: 0,
       errorCount: 0,
     };
 
     // Set up message handler
-    worker.addEventListener("message", (event) => {
+    worker.addEventListener('message', (event) => {
       this.handleWorkerMessage(workerInstance, event.data);
     });
 
-    worker.addEventListener("error", (error) => {
+    worker.addEventListener('error', (error) => {
       console.error(`Worker ${workerId} error:`, error);
       workerInstance.errorCount++;
-      workerInstance.healthStatus = "unhealthy";
+      workerInstance.healthStatus = 'unhealthy';
     });
 
     this.workers.set(workerId, workerInstance);
@@ -351,32 +342,32 @@ export class NlpWorkerManager {
       const initId = this.generateId();
       const message: WorkerMessage = {
         id: initId,
-        type: "init",
-        operation: "init",
+        type: 'init',
+        operation: 'init',
         data: {},
         timestamp: Date.now(),
       };
 
       const timeout = setTimeout(() => {
-        reject(new Error("Worker initialization timeout"));
+        reject(new Error('Worker initialization timeout'));
       }, this.config.timeoutMs);
 
       const handleInitMessage = (event: MessageEvent<WorkerResponse>) => {
         if (event.data.id === initId) {
           clearTimeout(timeout);
-          worker.worker.removeEventListener("message", handleInitMessage);
+          worker.worker.removeEventListener('message', handleInitMessage);
 
-          if (event.data.type === "initialized") {
-            worker.healthStatus = "healthy";
+          if (event.data.type === 'initialized') {
+            worker.healthStatus = 'healthy';
             resolve();
           } else {
-            worker.healthStatus = "unhealthy";
-            reject(new Error("Worker initialization failed"));
+            worker.healthStatus = 'unhealthy';
+            reject(new Error('Worker initialization failed'));
           }
         }
       };
 
-      worker.worker.addEventListener("message", handleInitMessage);
+      worker.worker.addEventListener('message', handleInitMessage);
       worker.worker.postMessage(message);
     });
   }
@@ -387,38 +378,38 @@ export class NlpWorkerManager {
       try {
         return await this.createWorker();
       } catch (error) {
-        console.warn("Failed to create new worker:", error);
+        console.warn('Failed to create new worker:', error);
       }
     }
 
     // Find available worker based on load balancing strategy
     const availableWorkers = Array.from(this.workers.values()).filter(
-      (w) => w.healthStatus === "healthy" && !w.busy,
+      (w) => w.healthStatus === 'healthy' && !w.busy
     );
 
     if (availableWorkers.length === 0) {
-      throw new Error("No available workers");
+      throw new Error('No available workers');
     }
 
     let selectedWorker: WorkerInstance;
 
     switch (this.config.loadBalancing) {
-      case "round-robin":
-        selectedWorker =
-          availableWorkers[this.nextWorkerIndex % availableWorkers.length];
+      case 'round-robin':
+        selectedWorker = availableWorkers[this.nextWorkerIndex % availableWorkers.length];
         this.nextWorkerIndex++;
         break;
 
-      case "least-loaded":
+      case 'least-loaded':
         selectedWorker = availableWorkers.reduce((least, current) =>
-          current.operations < least.operations ? current : least,
+          current.operations < least.operations ? current : least
         );
         break;
 
-      case "random":
+      case 'random': {
         const randomIndex = Math.floor(Math.random() * availableWorkers.length);
         selectedWorker = availableWorkers[randomIndex];
         break;
+      }
 
       default:
         selectedWorker = availableWorkers[0];
@@ -438,16 +429,13 @@ export class NlpWorkerManager {
 
         await this.executeTaskOnWorker(worker, task);
       } catch (error) {
-        console.warn("Error processing queue:", error);
+        console.warn('Error processing queue:', error);
         break;
       }
     }
   }
 
-  private async executeTaskOnWorker(
-    worker: WorkerInstance,
-    task: TaskRequest,
-  ): Promise<void> {
+  private async executeTaskOnWorker(worker: WorkerInstance, task: TaskRequest): Promise<void> {
     worker.busy = true;
     worker.lastUsed = new Date();
     worker.currentTask = {
@@ -458,14 +446,14 @@ export class NlpWorkerManager {
 
     const message: WorkerMessage = {
       id: task.id,
-      type: "process",
+      type: 'process',
       operation: task.operation,
       data: task.data,
       timestamp: Date.now(),
     };
 
     // Set up timeout
-    const timeout = setTimeout(() => {
+    const _timeout = setTimeout(() => {
       this.handleTaskTimeout(task.id);
     }, task.timeoutMs);
 
@@ -476,27 +464,25 @@ export class NlpWorkerManager {
   private setupWorkerMessageHandler(worker: Worker, taskId: string): void {
     const handler = (event: MessageEvent<WorkerResponse>) => {
       if (event.data.id === taskId) {
-        worker.removeEventListener("message", handler);
+        worker.removeEventListener('message', handler);
         this.handleWorkerResponse(event.data);
       }
     };
-    worker.addEventListener("message", handler);
+    worker.addEventListener('message', handler);
   }
 
-  private handleWorkerMessage(
-    worker: WorkerInstance,
-    response: WorkerResponse,
-  ): void {
+  private handleWorkerMessage(_worker: WorkerInstance, response: WorkerResponse): void {
     switch (response.type) {
-      case "progress":
+      case 'progress': {
         const pending = this.pendingTasks.get(response.id);
         if (pending?.onProgress) {
           pending.onProgress(response.data);
         }
         break;
+      }
 
-      case "success":
-      case "error":
+      case 'success':
+      case 'error':
         this.handleWorkerResponse(response);
         break;
     }
@@ -509,16 +495,14 @@ export class NlpWorkerManager {
     this.pendingTasks.delete(response.id);
 
     // Update worker state
-    const worker = Array.from(this.workers.values()).find(
-      (w) => w.currentTask?.id === response.id,
-    );
+    const worker = Array.from(this.workers.values()).find((w) => w.currentTask?.id === response.id);
     if (worker) {
       worker.busy = false;
       worker.operations++;
       worker.currentTask = undefined;
       worker.lastUsed = new Date();
 
-      if (response.type === "success") {
+      if (response.type === 'success') {
         worker.errorCount = Math.max(0, worker.errorCount - 1); // Decrement errors on success
       } else {
         worker.errorCount++;
@@ -529,17 +513,17 @@ export class NlpWorkerManager {
     this.processQueue();
 
     // Resolve or reject promise
-    if (response.type === "success") {
+    if (response.type === 'success') {
       const taskResult: TaskResult = {
         id: response.id,
         result: response.data,
-        workerId: worker?.id || "unknown",
+        workerId: worker?.id || 'unknown',
         processingTime: response.processingTime || 0,
         timestamp: new Date(response.timestamp),
       };
       pending.resolve(taskResult);
     } else {
-      const error = new Error(response.error?.message || "Task failed");
+      const error = new Error(response.error?.message || 'Task failed');
       (error as any).code = response.error?.code;
       (error as any).stack = response.error?.stack;
       pending.reject(error);
@@ -553,16 +537,14 @@ export class NlpWorkerManager {
     this.pendingTasks.delete(taskId);
 
     // Update worker state
-    const worker = Array.from(this.workers.values()).find(
-      (w) => w.currentTask?.id === taskId,
-    );
+    const worker = Array.from(this.workers.values()).find((w) => w.currentTask?.id === taskId);
     if (worker) {
       worker.busy = false;
       worker.currentTask = undefined;
       worker.errorCount++;
     }
 
-    pending.reject(new Error("Task timeout"));
+    pending.reject(new Error('Task timeout'));
 
     // Process queue for next task
     this.processQueue();
@@ -572,8 +554,8 @@ export class NlpWorkerManager {
     try {
       worker.worker.postMessage({
         id: this.generateId(),
-        type: "dispose",
-        operation: "dispose",
+        type: 'dispose',
+        operation: 'dispose',
         data: {},
         timestamp: Date.now(),
       });
@@ -581,13 +563,13 @@ export class NlpWorkerManager {
       // Wait a bit for disposal
       await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error) {
-      console.warn("Error disposing worker:", error);
+      console.warn('Error disposing worker:', error);
     }
 
     try {
       worker.worker.terminate();
     } catch (error) {
-      console.warn("Error terminating worker:", error);
+      console.warn('Error terminating worker:', error);
     }
   }
 
@@ -610,24 +592,24 @@ export class NlpWorkerManager {
 
       try {
         const healthCheckId = this.generateId();
-        worker.healthStatus = "checking";
+        worker.healthStatus = 'checking';
 
         worker.worker.postMessage({
           id: healthCheckId,
-          type: "health_check",
-          operation: "health_check",
+          type: 'health_check',
+          operation: 'health_check',
           data: {},
           timestamp: Date.now(),
         });
 
         // Set timeout for health check
         setTimeout(() => {
-          if (worker.healthStatus === "checking") {
-            worker.healthStatus = "unhealthy";
+          if (worker.healthStatus === 'checking') {
+            worker.healthStatus = 'unhealthy';
           }
         }, 5000);
-      } catch (error) {
-        worker.healthStatus = "unhealthy";
+      } catch (_error) {
+        worker.healthStatus = 'unhealthy';
         worker.errorCount++;
       }
     }
@@ -638,7 +620,7 @@ export class NlpWorkerManager {
 
   private async replaceUnhealthyWorkers(): Promise<void> {
     const unhealthyWorkers = Array.from(this.workers.values()).filter(
-      (w) => w.healthStatus === "unhealthy" && w.errorCount > 3,
+      (w) => w.healthStatus === 'unhealthy' && w.errorCount > 3
     );
 
     for (const worker of unhealthyWorkers) {
@@ -647,7 +629,7 @@ export class NlpWorkerManager {
         this.workers.delete(worker.id);
         await this.createWorker();
       } catch (error) {
-        console.warn("Failed to replace unhealthy worker:", error);
+        console.warn('Failed to replace unhealthy worker:', error);
       }
     }
   }

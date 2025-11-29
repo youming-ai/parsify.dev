@@ -14,29 +14,31 @@
  * - Path-based navigation with breadcrumbs
  */
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+'use client';
+
 import {
-  Search,
-  Copy,
-  ChevronRight,
+  Calendar,
   ChevronDown,
+  ChevronRight,
+  Copy,
   File,
   Folder,
   Hash,
-  Type,
-  Calendar,
+  Key,
+  Search,
   ToggleLeft,
   ToggleRight,
-  Key,
+  Type,
   X,
-} from "lucide-react";
-import { Button } from "../../ui/button";
-import { Input } from "../../ui/input";
-import { Badge } from "../../ui/badge";
-import { ScrollArea } from "../../ui/scroll-area";
-import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
-import { Alert, AlertDescription } from "../../ui/alert";
-import { cn } from "../../../lib/utils";
+} from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { cn } from '../../../lib/utils';
+import { Alert, AlertDescription } from '../../ui/alert';
+import { Badge } from '../../ui/badge';
+import { Button } from '../../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
+import { Input } from '../../ui/input';
+import { ScrollArea } from '../../ui/scroll-area';
 
 // Types for JSON Hero Viewer
 type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
@@ -50,7 +52,7 @@ interface JsonNode {
   depth: number;
   expanded: boolean;
   isLeaf: boolean;
-  type: "string" | "number" | "boolean" | "null" | "object" | "array";
+  type: 'string' | 'number' | 'boolean' | 'null' | 'object' | 'array';
   index?: number;
   parent?: JsonNode;
   children?: JsonNode[];
@@ -67,7 +69,7 @@ interface JsonHeroViewerProps {
   showCopyButton?: boolean;
   showSearch?: boolean;
   maxVisibleItems?: number;
-  theme?: "light" | "dark" | "auto";
+  theme?: 'light' | 'dark' | 'auto';
   onCopyNode?: (path: string, value: JsonValue) => void;
 }
 
@@ -76,79 +78,82 @@ const MAX_VISIBLE_ITEMS_DEFAULT = 1000;
 const SEARCH_DEBOUNCE_MS = 300;
 
 // Utility functions
-const getValueType = (value: JsonValue): JsonNode["type"] => {
-  if (value === null) return "null";
-  if (Array.isArray(value)) return "array";
-  return typeof value as JsonNode["type"];
+const getValueType = (value: JsonValue): JsonNode['type'] => {
+  if (value === null) return 'null';
+  if (Array.isArray(value)) return 'array';
+  return typeof value as JsonNode['type'];
 };
 
-const formatValue = (value: JsonValue, type: JsonNode["type"]): string => {
+const formatValue = (value: JsonValue, type: JsonNode['type']): string => {
   switch (type) {
-    case "string":
-      return typeof value === "string" ? `"${value}"` : String(value);
-    case "number":
+    case 'string':
+      return typeof value === 'string' ? `"${value}"` : String(value);
+    case 'number':
       return String(value);
-    case "boolean":
+    case 'boolean':
       return String(value);
-    case "null":
-      return "null";
-    case "object":
-      return Array.isArray(value)
-        ? `Array(${value.length})`
-        : `Object(${Object.keys(value).length})`;
+    case 'null':
+      return 'null';
+    case 'object':
+      if (value && typeof value === 'object') {
+        return Array.isArray(value)
+          ? `Array(${value.length})`
+          : `Object(${Object.keys(value).length})`;
+      }
+      return 'Object(0)';
     default:
       return String(value);
   }
 };
 
-const getSyntaxHighlightClass = (type: JsonNode["type"]): string => {
+const getSyntaxHighlightClass = (type: JsonNode['type']): string => {
   switch (type) {
-    case "string":
-      return "text-green-600 dark:text-green-400";
-    case "number":
-      return "text-blue-600 dark:text-blue-400";
-    case "boolean":
-      return "text-purple-600 dark:text-purple-400";
-    case "null":
-      return "text-gray-500 dark:text-gray-400";
-    case "object":
-      return "text-orange-600 dark:text-orange-400";
-    case "array":
-      return "text-cyan-600 dark:text-cyan-400";
+    case 'string':
+      return 'text-green-600 dark:text-green-400';
+    case 'number':
+      return 'text-blue-600 dark:text-blue-400';
+    case 'boolean':
+      return 'text-purple-600 dark:text-purple-400';
+    case 'null':
+      return 'text-gray-500 dark:text-gray-400';
+    case 'object':
+      return 'text-orange-600 dark:text-orange-400';
+    case 'array':
+      return 'text-cyan-600 dark:text-cyan-400';
     default:
-      return "text-gray-700 dark:text-gray-300";
+      return 'text-gray-700 dark:text-gray-300';
   }
 };
 
-const getTypeIcon = (type: JsonNode["type"]) => {
+const _getTypeIcon = (type: JsonNode['type']) => {
   switch (type) {
-    case "string":
-      return <Type className="w-4 h-4" />;
-    case "number":
-      return <Hash className="w-4 h-4" />;
-    case "boolean":
-      return <ToggleLeft className="w-4 h-4" />;
-    case "null":
-      return <X className="w-4 h-4" />;
-    case "object":
-      return <Folder className="w-4 h-4" />;
-    case "array":
-      return <File className="w-4 h-4" />;
+    case 'string':
+      return <Type className="h-4 w-4" />;
+    case 'number':
+      return <Hash className="h-4 w-4" />;
+    case 'boolean':
+      return <ToggleLeft className="h-4 w-4" />;
+    case 'null':
+      return <X className="h-4 w-4" />;
+    case 'object':
+      return <Folder className="h-4 w-4" />;
+    case 'array':
+      return <File className="h-4 w-4" />;
     default:
-      return <Key className="w-4 h-4" />;
+      return <Key className="h-4 w-4" />;
   }
 };
 
 // Parse JSON data into tree nodes
 const parseJsonToTree = (
   data: JsonValue,
-  key = "root",
-  path = "",
+  key = 'root',
+  path = '',
   depth = 0,
-  parent?: JsonNode,
+  parent?: JsonNode
 ): JsonNode => {
   const type = getValueType(data);
-  const isLeaf = type !== "object" && type !== "array";
+  const isLeaf = type !== 'object' && type !== 'array';
   const nodePath = path ? `${path}.${key}` : key;
 
   const node: JsonNode = {
@@ -169,12 +174,12 @@ const parseJsonToTree = (
       data.forEach((item, index) => {
         const childNode = parseJsonToTree(item, `[${index}]`, nodePath, depth + 1, node);
         childNode.index = index;
-        node.children!.push(childNode);
+        node.children?.push(childNode);
       });
-    } else if (typeof data === "object" && data !== null) {
+    } else if (typeof data === 'object' && data !== null) {
       Object.entries(data).forEach(([childKey, childValue]) => {
         const childNode = parseJsonToTree(childValue, childKey, nodePath, depth + 1, node);
-        node.children!.push(childNode);
+        node.children?.push(childNode);
       });
     }
   }
@@ -189,7 +194,7 @@ const filterTree = (node: JsonNode, searchTerm: string): JsonNode | null => {
   // Check if current node matches
   const keyMatches = node.key.toLowerCase().includes(searchLower);
   const valueMatches =
-    typeof node.value === "string" && node.value.toLowerCase().includes(searchLower);
+    typeof node.value === 'string' && node.value.toLowerCase().includes(searchLower);
 
   let filteredChildren: JsonNode[] = [];
   if (node.children) {
@@ -221,21 +226,21 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
   showCopyButton = true,
   showSearch = true,
   maxVisibleItems = MAX_VISIBLE_ITEMS_DEFAULT,
-  theme = "auto",
+  theme = 'auto',
   onCopyNode,
 }) => {
   const [tree, setTree] = useState<JsonNode | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [filteredTree, setFilteredTree] = useState<JsonNode | null>(null);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
-  const [selectedPath, setSelectedPath] = useState<string>("");
-  const [copiedPath, setCopiedPath] = useState<string>("");
+  const [selectedPath, setSelectedPath] = useState<string>('');
+  const [copiedPath, setCopiedPath] = useState<string>('');
   const [breadcrumbPath, setBreadcrumbPath] = useState<string[]>([]);
   const [visibleNodes, setVisibleNodes] = useState<JsonNode[]>([]);
   const [renderedCount, setRenderedCount] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Parse JSON data into tree
   useEffect(() => {
@@ -255,7 +260,7 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
       markExpanded(parsedTree, 0);
       setExpandedNodes(initialExpanded);
     } catch (error) {
-      console.error("Failed to parse JSON data:", error);
+      console.error('Failed to parse JSON data:', error);
       setTree(null);
       setFilteredTree(null);
     }
@@ -270,7 +275,7 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
     searchTimeoutRef.current = setTimeout(() => {
       if (!tree) return;
 
-      if (searchTerm.trim() === "") {
+      if (searchTerm.trim() === '') {
         setFilteredTree(tree);
       } else {
         const filtered = filterTree(tree, searchTerm);
@@ -301,11 +306,11 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
           nodes.push({
             key: `... ${node.children.length - maxVisibleItems} more items`,
             value: null,
-            path: node.path + ".truncated",
+            path: `${node.path}.truncated`,
             depth: node.depth + 1,
             expanded: false,
             isLeaf: true,
-            type: "null",
+            type: 'null',
           });
         }
       }
@@ -319,7 +324,7 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
   // Update breadcrumb when selected path changes
   useEffect(() => {
     if (selectedPath) {
-      const parts = selectedPath.split(".").filter((part) => part && part !== "root");
+      const parts = selectedPath.split('.').filter((part) => part && part !== 'root');
       setBreadcrumbPath(parts);
     } else {
       setBreadcrumbPath([]);
@@ -357,7 +362,7 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
       // Call external handler
       onNodeClick?.(node);
     },
-    [onNodeClick, toggleNodeExpansion],
+    [onNodeClick, toggleNodeExpansion]
   );
 
   // Copy node value to clipboard
@@ -373,21 +378,21 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
         onCopyNode?.(node.path, node.value);
 
         // Clear copied state after 2 seconds
-        setTimeout(() => setCopiedPath(""), 2000);
+        setTimeout(() => setCopiedPath(''), 2000);
       } catch (error) {
-        console.error("Failed to copy to clipboard:", error);
+        console.error('Failed to copy to clipboard:', error);
       }
     },
-    [onCopyNode],
+    [onCopyNode]
   );
 
   // Navigate to breadcrumb path
   const navigateToBreadcrumb = useCallback(
     (index: number) => {
-      const targetPath = breadcrumbPath.slice(0, index + 1).join(".");
+      const targetPath = breadcrumbPath.slice(0, index + 1).join('.');
       setSelectedPath(targetPath);
     },
-    [breadcrumbPath],
+    [breadcrumbPath]
   );
 
   // Expand all nodes
@@ -416,33 +421,33 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
       if (!containerRef.current?.contains(document.activeElement)) return;
 
       switch (event.key) {
-        case "ArrowRight":
+        case 'ArrowRight':
           // Expand selected node
           if (selectedPath && !expandedNodes.has(selectedPath)) {
             toggleNodeExpansion(selectedPath);
           }
           break;
-        case "ArrowLeft":
+        case 'ArrowLeft':
           // Collapse selected node
           if (selectedPath && expandedNodes.has(selectedPath)) {
             toggleNodeExpansion(selectedPath);
           }
           break;
-        case "ArrowDown":
-        case "ArrowUp":
+        case 'ArrowDown':
+        case 'ArrowUp':
           // Navigate through visible nodes (implementation would need more logic)
           event.preventDefault();
           break;
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [selectedPath, expandedNodes, toggleNodeExpansion]);
 
   if (!filteredTree) {
     return (
-      <Card className={cn("w-full", className)}>
+      <Card className={cn('w-full', className)}>
         <CardContent className="p-6">
           <Alert>
             <AlertDescription>
@@ -455,10 +460,10 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
   }
 
   return (
-    <Card className={cn("w-full", className)}>
+    <Card className={cn('w-full', className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">JSON Hero Viewer</CardTitle>
+          <CardTitle className="font-semibold text-lg">JSON Hero Viewer</CardTitle>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
               {renderedCount} nodes
@@ -469,7 +474,7 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
                 size="sm"
                 onClick={expandedNodes.size > 0 ? collapseAll : expandAll}
               >
-                {expandedNodes.size > 0 ? "Collapse All" : "Expand All"}
+                {expandedNodes.size > 0 ? 'Collapse All' : 'Expand All'}
               </Button>
             )}
           </div>
@@ -477,7 +482,7 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
 
         {showSearch && (
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
             <Input
               placeholder="Search JSON..."
               value={searchTerm}
@@ -488,18 +493,18 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
         )}
 
         {breadcrumbPath.length > 0 && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <span>Path:</span>
             <div className="flex items-center gap-1">
               {breadcrumbPath.map((part, index) => (
                 <React.Fragment key={index}>
                   <button
-                    className="hover:text-foreground transition-colors"
+                    className="transition-colors hover:text-foreground"
                     onClick={() => navigateToBreadcrumb(index)}
                   >
                     {part}
                   </button>
-                  {index < breadcrumbPath.length - 1 && <ChevronRight className="w-3 h-3" />}
+                  {index < breadcrumbPath.length - 1 && <ChevronRight className="h-3 w-3" />}
                 </React.Fragment>
               ))}
             </div>
@@ -520,46 +525,45 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
                 <div
                   key={node.path}
                   className={cn(
-                    "group flex items-start py-1 px-2 rounded cursor-pointer hover:bg-muted/50 transition-colors",
-                    isSelected && "bg-muted",
-                    "focus:outline-none focus:ring-2 focus:ring-ring",
+                    'group flex cursor-pointer items-start rounded px-2 py-1 transition-colors hover:bg-muted/50',
+                    isSelected && 'bg-muted',
+                    'focus:outline-none focus:ring-2 focus:ring-ring'
                   )}
                   style={{ paddingLeft: `${indent + 8}px` }}
                   onClick={(e) => handleNodeClick(node, e)}
-                  tabIndex={0}
                   role="treeitem"
                   aria-expanded={isExpanded}
                   aria-selected={isSelected}
                 >
                   {showLineNumbers && (
-                    <span className="mr-4 text-xs text-muted-foreground w-8 text-right">
+                    <span className="mr-4 w-8 text-right text-muted-foreground text-xs">
                       {index + 1}
                     </span>
                   )}
 
                   {!node.isLeaf && (
                     <button
-                      className="mr-1 p-0.5 hover:bg-muted-foreground/10 rounded"
+                      className="mr-1 rounded p-0.5 hover:bg-muted-foreground/10"
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleNodeExpansion(node.path);
                       }}
                     >
                       {isExpanded ? (
-                        <ChevronDown className="w-4 h-4" />
+                        <ChevronDown className="h-4 w-4" />
                       ) : (
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="h-4 w-4" />
                       )}
                     </button>
                   )}
 
-                  {node.isLeaf && <span className="w-5 mr-1" />}
+                  {node.isLeaf && <span className="mr-1 w-5" />}
 
-                  <span className="mr-2 text-blue-600 dark:text-blue-400 font-medium">
-                    {typeof node.index === "number" ? `[${node.index}]` : node.key}:
+                  <span className="mr-2 font-medium text-blue-600 dark:text-blue-400">
+                    {typeof node.index === 'number' ? `[${node.index}]` : node.key}:
                   </span>
 
-                  <span className={cn("flex-1", getSyntaxHighlightClass(node.type))}>
+                  <span className={cn('flex-1', getSyntaxHighlightClass(node.type))}>
                     {formatValue(node.value, node.type)}
                   </span>
 
@@ -573,11 +577,11 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                      className="ml-2 p-1 opacity-0 transition-opacity group-hover:opacity-100"
                       onClick={(e) => handleCopyNode(node, e)}
-                      title={isCopied ? "Copied!" : "Copy value"}
+                      title={isCopied ? 'Copied!' : 'Copy value'}
                     >
-                      <Copy className={cn("w-3 h-3", isCopied && "text-green-600")} />
+                      <Copy className={cn('h-3 w-3', isCopied && 'text-green-600')} />
                     </Button>
                   )}
                 </div>
@@ -585,7 +589,7 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
             })}
 
             {renderedCount > maxVisibleItems && (
-              <div className="text-center py-4 text-muted-foreground text-sm">
+              <div className="py-4 text-center text-muted-foreground text-sm">
                 Showing {maxVisibleItems} of {renderedCount} nodes
               </div>
             )}

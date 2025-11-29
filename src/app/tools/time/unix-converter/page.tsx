@@ -1,40 +1,28 @@
-import { Shield } from "lucide-react";
-import type { Metadata } from "next";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import TimestampConverterClient from "./client";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Shield } from 'lucide-react';
+import type { Metadata } from 'next';
+import TimestampConverterClient from './client';
 
 export const metadata: Metadata = {
-  title: "Unix Timestamp Converter - Convert Timestamps Instantly",
+  title: 'Unix Timestamp Converter - Convert Timestamps Instantly',
   description:
-    "Convert Unix timestamps to human-readable dates and vice versa. Support for milliseconds and multiple timezones.",
+    'Convert Unix timestamps to human-readable dates and vice versa. Support for milliseconds and multiple timezones.',
   keywords: [
-    "Unix timestamp",
-    "epoch time",
-    "date converter",
-    "time converter",
-    "timezone",
-    "milliseconds",
+    'Unix timestamp',
+    'epoch time',
+    'date converter',
+    'time converter',
+    'timezone',
+    'milliseconds',
   ],
 };
 
 export default function UnixConverterPage() {
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4">Unix Timestamp Converter</h1>
-          <p className="text-xl text-muted-foreground mb-4">
-            Convert between Unix timestamps and human-readable dates instantly
-          </p>
-          <div className="flex justify-center gap-2 mb-4">
-            <Badge variant="secondary">Real-Time</Badge>
-            <Badge variant="outline">Multiple Timezones</Badge>
-            <Badge variant="default">Accurate</Badge>
-          </div>
-        </div>
-
+    <div className="container mx-auto px-4 py-8">
+      <div className="mx-auto max-w-4xl">
         <Alert className="mb-6">
           <Shield className="h-4 w-4" />
           <AlertDescription>
@@ -51,7 +39,7 @@ export default function UnixConverterPage() {
               <CardTitle>Supported Formats</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-muted-foreground text-sm">
                 <li>• Unix timestamps (seconds since epoch)</li>
                 <li>• Millisecond timestamps</li>
                 <li>• ISO 8601 date strings</li>
@@ -67,7 +55,7 @@ export default function UnixConverterPage() {
               <CardTitle>Features</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-muted-foreground text-sm">
                 <li>• Multiple timezone support</li>
                 <li>• Real-time current timestamp</li>
                 <li>• Date format customization</li>

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Activity,
@@ -14,20 +14,20 @@ import {
   TrendingUp,
   Users,
   Zap,
-} from "lucide-react";
-import * as React from "react";
+} from 'lucide-react';
+import * as React from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export interface PerformanceMetrics {
   timestamp: number;
@@ -74,14 +74,14 @@ export interface ToolPerformance {
   memoryUsage: number;
   usage: number;
   errors: number;
-  status: "healthy" | "warning" | "error";
+  status: 'healthy' | 'warning' | 'error';
   lastUsed: number;
 }
 
 export interface PerformanceAlert {
   id: string;
-  type: "cpu" | "memory" | "network" | "bundle" | "tool" | "error";
-  severity: "info" | "warning" | "error" | "critical";
+  type: 'cpu' | 'memory' | 'network' | 'bundle' | 'tool' | 'error';
+  severity: 'info' | 'warning' | 'error' | 'critical';
   title: string;
   message: string;
   timestamp: number;
@@ -119,16 +119,16 @@ const generateMockMetrics = (): PerformanceMetrics => ({
     loaded: 45 + Math.floor(Math.random() * 20),
     total: 70,
     loadTimes: {
-      "json-formatter": 120 + Math.random() * 50,
-      "code-executor": 250 + Math.random() * 100,
-      "image-converter": 180 + Math.random() * 80,
-      "password-generator": 45 + Math.random() * 20,
+      'json-formatter': 120 + Math.random() * 50,
+      'code-executor': 250 + Math.random() * 100,
+      'image-converter': 180 + Math.random() * 80,
+      'password-generator': 45 + Math.random() * 20,
     },
     memoryUsage: {
-      "json-formatter": 12 + Math.random() * 5,
-      "code-executor": 35 + Math.random() * 15,
-      "image-converter": 28 + Math.random() * 10,
-      "password-generator": 8 + Math.random() * 4,
+      'json-formatter': 12 + Math.random() * 5,
+      'code-executor': 35 + Math.random() * 15,
+      'image-converter': 28 + Math.random() * 10,
+      'password-generator': 8 + Math.random() * 4,
     },
   },
   user: {
@@ -141,90 +141,90 @@ const generateMockMetrics = (): PerformanceMetrics => ({
 
 const generateMockTools = (): ToolPerformance[] => [
   {
-    id: "json-formatter",
-    name: "JSON Formatter",
-    category: "JSON",
+    id: 'json-formatter',
+    name: 'JSON Formatter',
+    category: 'JSON',
     bundleSize: 125000,
     loadTime: 120,
     memoryUsage: 15,
     usage: 85,
     errors: 0,
-    status: "healthy",
+    status: 'healthy',
     lastUsed: Date.now() - 1000 * 60 * 5,
   },
   {
-    id: "code-executor",
-    name: "Code Executor",
-    category: "Code",
+    id: 'code-executor',
+    name: 'Code Executor',
+    category: 'Code',
     bundleSize: 180000,
     loadTime: 280,
     memoryUsage: 42,
     usage: 92,
     errors: 1,
-    status: "warning",
+    status: 'warning',
     lastUsed: Date.now() - 1000 * 60 * 2,
   },
   {
-    id: "image-converter",
-    name: "Image Converter",
-    category: "Image",
+    id: 'image-converter',
+    name: 'Image Converter',
+    category: 'Image',
     bundleSize: 156000,
     loadTime: 195,
     memoryUsage: 38,
     usage: 78,
     errors: 0,
-    status: "healthy",
+    status: 'healthy',
     lastUsed: Date.now() - 1000 * 60 * 15,
   },
   {
-    id: "password-generator",
-    name: "Password Generator",
-    category: "Security",
+    id: 'password-generator',
+    name: 'Password Generator',
+    category: 'Security',
     bundleSize: 45000,
     loadTime: 45,
     memoryUsage: 8,
     usage: 65,
     errors: 0,
-    status: "healthy",
+    status: 'healthy',
     lastUsed: Date.now() - 1000 * 60 * 30,
   },
   {
-    id: "text-analyzer",
-    name: "Text Analyzer",
-    category: "Text",
+    id: 'text-analyzer',
+    name: 'Text Analyzer',
+    category: 'Text',
     bundleSize: 98000,
     loadTime: 88,
     memoryUsage: 22,
     usage: 45,
     errors: 3,
-    status: "error",
+    status: 'error',
     lastUsed: Date.now() - 1000 * 60 * 60,
   },
 ];
 
 const generateMockAlerts = (): PerformanceAlert[] => [
   {
-    id: "1",
-    type: "memory",
-    severity: "warning",
-    title: "High Memory Usage",
-    message: "Memory usage exceeds 80% threshold",
+    id: '1',
+    type: 'memory',
+    severity: 'warning',
+    title: 'High Memory Usage',
+    message: 'Memory usage exceeds 80% threshold',
     timestamp: Date.now() - 1000 * 60 * 10,
   },
   {
-    id: "2",
-    type: "tool",
-    severity: "error",
-    title: "Tool Error",
-    message: "Text Analyzer encountered 3 errors in the last hour",
+    id: '2',
+    type: 'tool',
+    severity: 'error',
+    title: 'Tool Error',
+    message: 'Text Analyzer encountered 3 errors in the last hour',
     timestamp: Date.now() - 1000 * 60 * 30,
   },
   {
-    id: "3",
-    type: "bundle",
-    severity: "info",
-    title: "Bundle Optimization Available",
-    message: "Code Executor bundle can be optimized by 15%",
+    id: '3',
+    type: 'bundle',
+    severity: 'info',
+    title: 'Bundle Optimization Available',
+    message: 'Code Executor bundle can be optimized by 15%',
     timestamp: Date.now() - 1000 * 60 * 45,
   },
 ];
@@ -233,8 +233,8 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
   const [metrics, setMetrics] = React.useState<PerformanceMetrics>(generateMockMetrics());
   const [tools, setTools] = React.useState<ToolPerformance[]>(generateMockTools());
   const [alerts, setAlerts] = React.useState<PerformanceAlert[]>(generateMockAlerts());
-  const [timeRange, setTimeRange] = React.useState("1h");
-  const [refreshInterval, setRefreshInterval] = React.useState(5000);
+  const [timeRange, setTimeRange] = React.useState('1h');
+  const [refreshInterval, _setRefreshInterval] = React.useState(5000);
   const [isLive, setIsLive] = React.useState(true);
 
   // Update metrics periodically
@@ -258,38 +258,38 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
 
   const getStatusColor = React.useCallback((status: string) => {
     switch (status) {
-      case "healthy":
-        return "text-green-600";
-      case "warning":
-        return "text-yellow-600";
-      case "error":
-        return "text-red-600";
+      case 'healthy':
+        return 'text-green-600';
+      case 'warning':
+        return 'text-yellow-600';
+      case 'error':
+        return 'text-red-600';
       default:
-        return "text-gray-600";
+        return 'text-gray-600';
     }
   }, []);
 
   const getSeverityColor = React.useCallback((severity: string) => {
     switch (severity) {
-      case "info":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "warning":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "error":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "critical":
-        return "bg-purple-100 text-purple-800 border-purple-200";
+      case 'info':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'warning':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'error':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'critical':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   }, []);
 
   const formatBytes = React.useCallback((bytes: number): string => {
-    if (bytes === 0) return "0 B";
+    if (bytes === 0) return '0 B';
     const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB"];
+    const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }, []);
 
   const formatDuration = React.useCallback((ms: number): string => {
@@ -306,9 +306,9 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
       alerts,
     };
 
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = url;
     link.download = `performance-report-${Date.now()}.json`;
     document.body.appendChild(link);
@@ -318,7 +318,7 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
   }, [metrics, tools, alerts]);
 
   const criticalAlerts = alerts.filter(
-    (a) => a.severity === "critical" || a.severity === "error",
+    (a) => a.severity === 'critical' || a.severity === 'error'
   ).length;
   const totalBundleSize = tools.reduce((sum, tool) => sum + tool.bundleSize, 0);
   const averageLoadTime = tools.reduce((sum, tool) => sum + tool.loadTime, 0) / tools.length;
@@ -329,7 +329,7 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Performance Dashboard</h1>
+            <h1 className="font-bold text-3xl text-gray-900">Performance Dashboard</h1>
             <p className="text-gray-600">Real-time monitoring and optimization insights</p>
           </div>
           <div className="flex items-center gap-4">
@@ -345,28 +345,28 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
               </SelectContent>
             </Select>
 
-            <Button variant={isLive ? "default" : "outline"} onClick={() => setIsLive(!isLive)}>
-              <Activity className="h-4 w-4 mr-2" />
-              {isLive ? "Live" : "Paused"}
+            <Button variant={isLive ? 'default' : 'outline'} onClick={() => setIsLive(!isLive)}>
+              <Activity className="mr-2 h-4 w-4" />
+              {isLive ? 'Live' : 'Paused'}
             </Button>
 
             <Button variant="outline" onClick={downloadReport}>
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="mr-2 h-4 w-4" />
               Export Report
             </Button>
           </div>
         </div>
 
         {/* Key Metrics */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Active Users</p>
-                  <p className="text-2xl font-bold">{metrics.user.activeUsers}</p>
+                  <p className="text-gray-600 text-sm">Active Users</p>
+                  <p className="font-bold text-2xl">{metrics.user.activeUsers}</p>
                   <div className="flex items-center text-sm">
-                    <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
+                    <TrendingUp className="mr-1 h-4 w-4 text-green-500" />
                     <span className="text-green-600">+12%</span>
                   </div>
                 </div>
@@ -379,16 +379,16 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">CPU Usage</p>
-                  <p className="text-2xl font-bold">{metrics.cpu.usage.toFixed(1)}%</p>
+                  <p className="text-gray-600 text-sm">CPU Usage</p>
+                  <p className="font-bold text-2xl">{metrics.cpu.usage.toFixed(1)}%</p>
                   <div className="flex items-center text-sm">
                     {metrics.cpu.usage > 80 ? (
-                      <TrendingUp className="h-4 w-4 text-red-500 mr-1" />
+                      <TrendingUp className="mr-1 h-4 w-4 text-red-500" />
                     ) : (
-                      <TrendingDown className="h-4 w-4 text-green-500 mr-1" />
+                      <TrendingDown className="mr-1 h-4 w-4 text-green-500" />
                     )}
-                    <span className={metrics.cpu.usage > 80 ? "text-red-600" : "text-green-600"}>
-                      {metrics.cpu.usage > 80 ? "High" : "Normal"}
+                    <span className={metrics.cpu.usage > 80 ? 'text-red-600' : 'text-green-600'}>
+                      {metrics.cpu.usage > 80 ? 'High' : 'Normal'}
                     </span>
                   </div>
                 </div>
@@ -401,12 +401,12 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Memory Usage</p>
-                  <p className="text-2xl font-bold">{metrics.memory.percentage.toFixed(1)}%</p>
+                  <p className="text-gray-600 text-sm">Memory Usage</p>
+                  <p className="font-bold text-2xl">{metrics.memory.percentage.toFixed(1)}%</p>
                   <div className="flex items-center text-sm">
-                    <MemoryStick className="h-4 w-4 text-purple-500 mr-1" />
+                    <MemoryStick className="mr-1 h-4 w-4 text-purple-500" />
                     <span className="text-gray-600">
-                      {formatBytes(metrics.memory.used * 1024 * 1024)} /{" "}
+                      {formatBytes(metrics.memory.used * 1024 * 1024)} /{' '}
                       {formatBytes(metrics.memory.total * 1024 * 1024)}
                     </span>
                   </div>
@@ -420,12 +420,12 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Critical Alerts</p>
-                  <p className="text-2xl font-bold">{criticalAlerts}</p>
+                  <p className="text-gray-600 text-sm">Critical Alerts</p>
+                  <p className="font-bold text-2xl">{criticalAlerts}</p>
                   <div className="flex items-center text-sm">
-                    <AlertTriangle className="h-4 w-4 text-red-500 mr-1" />
-                    <span className={criticalAlerts > 0 ? "text-red-600" : "text-green-600"}>
-                      {criticalAlerts > 0 ? "Action Required" : "All Clear"}
+                    <AlertTriangle className="mr-1 h-4 w-4 text-red-500" />
+                    <span className={criticalAlerts > 0 ? 'text-red-600' : 'text-green-600'}>
+                      {criticalAlerts > 0 ? 'Action Required' : 'All Clear'}
                     </span>
                   </div>
                 </div>
@@ -449,7 +449,7 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
                 {alerts.slice(0, 5).map((alert) => (
                   <div
                     key={alert.id}
-                    className={`p-3 rounded-lg border ${getSeverityColor(alert.severity)}`}
+                    className={`rounded-lg border p-3 ${getSeverityColor(alert.severity)}`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -460,7 +460,7 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
                         <Badge variant="outline" className="capitalize">
                           {alert.severity}
                         </Badge>
-                        <div className="text-xs mt-1 opacity-70">
+                        <div className="mt-1 text-xs opacity-70">
                           {formatDuration(Date.now() - alert.timestamp)} ago
                         </div>
                       </div>
@@ -482,25 +482,25 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid gap-4 md:grid-cols-2">
               <Card>
                 <CardHeader>
                   <CardTitle>System Resources</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <div className="flex justify-between text-sm mb-1">
+                    <div className="mb-1 flex justify-between text-sm">
                       <span>CPU Usage</span>
                       <span>{metrics.cpu.usage.toFixed(1)}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="h-2 w-full rounded-full bg-gray-200">
                       <div
                         className={`h-2 rounded-full ${
                           metrics.cpu.usage > 80
-                            ? "bg-red-500"
+                            ? 'bg-red-500'
                             : metrics.cpu.usage > 60
-                              ? "bg-yellow-500"
-                              : "bg-green-500"
+                              ? 'bg-yellow-500'
+                              : 'bg-green-500'
                         }`}
                         style={{ width: `${metrics.cpu.usage}%` }}
                       />
@@ -508,18 +508,18 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
                   </div>
 
                   <div>
-                    <div className="flex justify-between text-sm mb-1">
+                    <div className="mb-1 flex justify-between text-sm">
                       <span>Memory Usage</span>
                       <span>{metrics.memory.percentage.toFixed(1)}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="h-2 w-full rounded-full bg-gray-200">
                       <div
                         className={`h-2 rounded-full ${
                           metrics.memory.percentage > 80
-                            ? "bg-red-500"
+                            ? 'bg-red-500'
                             : metrics.memory.percentage > 60
-                              ? "bg-yellow-500"
-                              : "bg-green-500"
+                              ? 'bg-yellow-500'
+                              : 'bg-green-500'
                         }`}
                         style={{ width: `${metrics.memory.percentage}%` }}
                       />
@@ -528,18 +528,18 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
 
                   {metrics.cpu.temperature && (
                     <div>
-                      <div className="flex justify-between text-sm mb-1">
+                      <div className="mb-1 flex justify-between text-sm">
                         <span>CPU Temperature</span>
                         <span>{metrics.cpu.temperature.toFixed(1)}°C</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="h-2 w-full rounded-full bg-gray-200">
                         <div
                           className={`h-2 rounded-full ${
                             metrics.cpu.temperature > 70
-                              ? "bg-red-500"
+                              ? 'bg-red-500'
                               : metrics.cpu.temperature > 50
-                                ? "bg-yellow-500"
-                                : "bg-green-500"
+                                ? 'bg-yellow-500'
+                                : 'bg-green-500'
                           }`}
                           style={{ width: `${(metrics.cpu.temperature / 100) * 100}%` }}
                         />
@@ -584,15 +584,15 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
                   <span>Tool Performance ({tools.length} tools)</span>
                   <div className="flex gap-2 text-sm">
                     <span className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-green-500 rounded-full" />
+                      <div className="h-3 w-3 rounded-full bg-green-500" />
                       Healthy
                     </span>
                     <span className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full" />
+                      <div className="h-3 w-3 rounded-full bg-yellow-500" />
                       Warning
                     </span>
                     <span className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-red-500 rounded-full" />
+                      <div className="h-3 w-3 rounded-full bg-red-500" />
                       Error
                     </span>
                   </div>
@@ -601,27 +601,27 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
               <CardContent>
                 <div className="space-y-3">
                   {tools.map((tool) => (
-                    <div key={tool.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
+                    <div key={tool.id} className="rounded-lg border p-4">
+                      <div className="mb-2 flex items-center justify-between">
                         <div>
                           <h4 className="font-semibold">{tool.name}</h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-gray-600 text-sm">
                             {tool.category} • {formatBytes(tool.bundleSize)}
                           </p>
                         </div>
                         <div className="text-right">
                           <Badge className={getStatusColor(tool.status)}>{tool.status}</Badge>
-                          <div className="text-sm text-gray-600 mt-1">
+                          <div className="mt-1 text-gray-600 text-sm">
                             {formatDuration(tool.loadTime)} load time
                           </div>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
                         <div>
                           <span className="text-gray-600">Usage:</span>
                           <div className="flex items-center gap-1">
-                            <div className="flex-1 bg-gray-200 rounded-full h-1">
+                            <div className="h-1 flex-1 rounded-full bg-gray-200">
                               <div
                                 className="h-1 rounded-full bg-blue-500"
                                 style={{ width: `${tool.usage}%` }}
@@ -636,7 +636,7 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
                         </div>
                         <div>
                           <span className="text-gray-600">Errors:</span>
-                          <div className={tool.errors > 0 ? "text-red-600" : "text-green-600"}>
+                          <div className={tool.errors > 0 ? 'text-red-600' : 'text-green-600'}>
                             {tool.errors}
                           </div>
                         </div>
@@ -653,7 +653,7 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
           </TabsContent>
 
           <TabsContent value="bundle" className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid gap-4 md:grid-cols-2">
               <Card>
                 <CardHeader>
                   <CardTitle>Bundle Size Analysis</CardTitle>
@@ -680,19 +680,19 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
                     </span>
                   </div>
 
-                  <div className="pt-4 border-t">
-                    <div className="flex justify-between text-sm mb-2">
+                  <div className="border-t pt-4">
+                    <div className="mb-2 flex justify-between text-sm">
                       <span>Bundle Size vs 200KB Limit</span>
                       <span>{((totalBundleSize / (200 * 1024)) * 100).toFixed(1)}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="h-2 w-full rounded-full bg-gray-200">
                       <div
                         className={`h-2 rounded-full ${
                           totalBundleSize > 200 * 1024
-                            ? "bg-red-500"
+                            ? 'bg-red-500'
                             : totalBundleSize > 150 * 1024
-                              ? "bg-yellow-500"
-                              : "bg-green-500"
+                              ? 'bg-yellow-500'
+                              : 'bg-green-500'
                         }`}
                         style={{
                           width: `${Math.min((totalBundleSize / (200 * 1024)) * 100, 100)}%`,
@@ -715,13 +715,13 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
                       .map((tool, index) => (
                         <div
                           key={tool.id}
-                          className="flex justify-between items-center p-2 bg-gray-50 rounded"
+                          className="flex items-center justify-between rounded bg-gray-50 p-2"
                         >
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">#{index + 1}</span>
+                            <span className="font-medium text-sm">#{index + 1}</span>
                             <span>{tool.name}</span>
                           </div>
-                          <span className="text-sm font-semibold">
+                          <span className="font-semibold text-sm">
                             {formatBytes(tool.bundleSize)}
                           </span>
                         </div>
@@ -733,7 +733,7 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
           </TabsContent>
 
           <TabsContent value="network" className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid gap-4 md:grid-cols-2">
               <Card>
                 <CardHeader>
                   <CardTitle>Network Performance</CardTitle>
@@ -776,20 +776,20 @@ export function PerformanceDashboard({ className }: PerformanceDashboardProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
                       <h4 className="font-semibold text-blue-800">Bundle Splitting</h4>
-                      <p className="text-sm text-blue-700">
+                      <p className="text-blue-700 text-sm">
                         Consider splitting {tools.filter((t) => t.bundleSize > 150000).length} large
                         tools for better loading performance
                       </p>
                     </div>
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="rounded-lg border border-green-200 bg-green-50 p-3">
                       <h4 className="font-semibold text-green-800">Caching Strategy</h4>
-                      <p className="text-sm text-green-700">
+                      <p className="text-green-700 text-sm">
                         Implement aggressive caching for static assets to reduce load times
                       </p>
                     </div>
-                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3">
                       <h4 className="font-semibold text-yellow-800">Image Optimization</h4>
                       <p className="text-sm text-yellow-700">
                         Compress and optimize images to reduce bundle size by up to 30%

@@ -1,19 +1,36 @@
-/**
- * Password Generator
- * Generate secure passwords with customizable complexity, length, and character sets
- */
+'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { RefreshCw, Copy, Shield, Eye, EyeOff, Settings, Check, X } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
+import {
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Copy,
+  Database,
+  Eye,
+  EyeOff,
+  Info,
+  Key,
+  Lock,
+  RefreshCw,
+  Shield,
+  ShieldCheck,
+  ShieldX,
+  Zap,
+} from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface PasswordOptions {
   length: number;
@@ -24,562 +41,492 @@ interface PasswordOptions {
   excludeSimilar: boolean;
   excludeAmbiguous: boolean;
   customCharacters: string;
+  useCustomOnly: boolean;
 }
 
 interface PasswordStrength {
   score: number;
-  level: 'weak' | 'fair' | 'good' | 'strong' | 'very-strong';
+  level: 'Very Weak' | 'Weak' | 'Fair' | 'Good' | 'Strong' | 'Very Strong';
+  color: string;
   feedback: string[];
+  estimatedCrackTime: string;
   entropy: number;
 }
 
-const DEFAULT_OPTIONS: PasswordOptions = {
-  length: 16,
-  includeUppercase: true,
-  includeLowercase: true,
-  includeNumbers: true,
-  includeSymbols: false,
-  excludeSimilar: false,
-  excludeAmbiguous: false,
-  customCharacters: '',
-};
-
-const PASSWORD_PRESETS = [
-  {
-    name: 'PIN Code',
-    options: { ...DEFAULT_OPTIONS, length: 4, includeUppercase: false, includeLowercase: false, includeSymbols: false },
-  },
-  {
-    name: 'Simple',
-    options: { ...DEFAULT_OPTIONS, length: 8, includeSymbols: false, excludeSimilar: false, excludeAmbiguous: false },
-  },
-  {
-    name: 'Strong',
-    options: { ...DEFAULT_OPTIONS, length: 16, includeSymbols: true, excludeSimilar: true, excludeAmbiguous: false },
-  },
-  {
-    name: 'Very Strong',
-    options: { ...DEFAULT_OPTIONS, length: 24, includeSymbols: true, excludeSimilar: true, excludeAmbiguous: true },
-  },
-  {
-    name: 'Maximum Security',
-    options: { ...DEFAULT_OPTIONS, length: 32, includeSymbols: true, excludeSimilar: true, excludeAmbiguous: true },
-  }
-];
-
-const CHARACTER_SETS = {
-  uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-  lowercase: 'abcdefghijklmnopqrstuvwxyz',
-  numbers: '0123456789',
-  symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?',
-  similar: 'ilLo01O',
-  ambiguous: '{}[]()<>;/\\\'"`~',
-};
-
-export const PasswordGenerator: React.FC = () => {
+const PasswordGenerator: React.FC = () => {
   const [password, setPassword] = useState('');
-  const [options, setOptions] = useState<PasswordOptions>(DEFAULT_OPTIONS);
-  const [passwordHistory, setPasswordHistory] = useState<string[]>([]);
-  const [strength, setStrength] = useState<PasswordStrength | null>(null);
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [customCharset, setCustomCharset] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordHistory, setPasswordHistory] = useState<string[]>([]);
+  const [copied, setCopied] = useState(false);
+  const [strength, setStrength] = useState<PasswordStrength | null>(null);
+  const [options, setOptions] = useState<PasswordOptions>({
+    length: 16,
+    includeUppercase: true,
+    includeLowercase: true,
+    includeNumbers: true,
+    includeSymbols: true,
+    excludeSimilar: false,
+    excludeAmbiguous: false,
+    customCharacters: '',
+    useCustomOnly: false,
+  });
 
-  // Generate random bytes using Web Crypto API
-  const getRandomBytes = (length: number): Uint8Array => {
-    const array = new Uint8Array(length);
-    crypto.getRandomValues(array);
-    return array;
+  const similarChars = 'il1Lo0O';
+  const ambiguousChars = '{}[]()/\\\'"`~,;.<>';
+
+  const characterSets = {
+    uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    lowercase: 'abcdefghijklmnopqrstuvwxyz',
+    numbers: '0123456789',
+    symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?',
   };
 
-  // Calculate password entropy
-  const calculateEntropy = useCallback((password: string, opts: PasswordOptions): number => {
-    let charsetSize = 0;
-
-    if (opts.includeUppercase) charsetSize += CHARACTER_SETS.uppercase.length;
-    if (opts.includeLowercase) charsetSize += CHARACTER_SETS.lowercase.length;
-    if (opts.includeNumbers) charsetSize += CHARACTER_SETS.numbers.length;
-    if (opts.includeSymbols) charsetSize += CHARACTER_SETS.symbols.length;
-    if (opts.customCharacters) charsetSize += opts.customCharacters.length;
-
-    if (charsetSize === 0) return 0;
-
-    const entropy = password.length * Math.log2(charsetSize);
-    return Math.round(entropy * 100) / 100; // Round to 2 decimal places
-  }, []);
-
-  // Analyze password strength
-  const analyzeStrength = useCallback((password: string, opts: PasswordOptions): PasswordStrength => {
-    const feedback: string[] = [];
-    let score = 0;
-
-    // Length scoring
-    if (password.length < 8) {
-      feedback.push('Password is too short (minimum 8 characters recommended)');
-      score += 10;
-    } else if (password.length < 12) {
-      feedback.push('Consider using a longer password (12+ characters recommended)');
-      score += 30;
-    } else if (password.length >= 16) {
-      score += 40;
-    } else {
-      score += 35;
-    }
-
-    // Character variety scoring
-    const hasUppercase = /[A-Z]/.test(password);
-    const hasLowercase = /[a-z]/.test(password);
-    const hasNumbers = /\d/.test(password);
-    const hasSymbols = /[^A-Za-z0-9]/.test(password);
-
-    const varietyCount = [hasUppercase, hasLowercase, hasNumbers, hasSymbols].filter(Boolean).length;
-
-    if (varietyCount === 4) {
-      score += 30;
-    } else if (varietyCount === 3) {
-      score += 25;
-    } else if (varietyCount === 2) {
-      score += 15;
-      feedback.push('Add more character types for better security');
-    } else {
-      feedback.push('Use multiple character types (uppercase, lowercase, numbers, symbols)');
-      score += 5;
-    }
-
-    // Common patterns
-    const commonPatterns = [
-      /123/i, /abc/i, /qwerty/i, /password/i, /admin/i,
-      /(.)\1{2,}/i, // Repeated characters
-      /^(.)\1+$/i, // All same character
-      /012/i, /987/i
-    ];
-
-    for (const pattern of commonPatterns) {
-      if (pattern.test(password)) {
-        score -= 20;
-        feedback.push('Avoid common patterns and sequences');
-        break;
-      }
-    }
-
-    // Entropy calculation
-    const entropy = calculateEntropy(password, opts);
-
-    let level: PasswordStrength['level'];
-    if (score >= 80 || entropy >= 60) {
-      level = 'very-strong';
-    } else if (score >= 65 || entropy >= 50) {
-      level = 'strong';
-    } else if (score >= 45 || entropy >= 35) {
-      level = 'good';
-    } else if (score >= 25 || entropy >= 20) {
-      level = 'fair';
-    } else {
-      level = 'weak';
-    }
-
-    return {
-      score: Math.min(100, Math.max(0, score)),
-      level,
-      feedback,
-      entropy
-    };
-  }, [calculateEntropy]);
-
-  // Build character set based on options
-  const buildCharacterSet = useCallback((opts: PasswordOptions): string => {
+  const generatePassword = useCallback(() => {
     let charset = '';
 
-    if (opts.includeUppercase) {
-      charset += CHARACTER_SETS.uppercase;
-    }
-    if (opts.includeLowercase) {
-      charset += CHARACTER_SETS.lowercase;
-    }
-    if (opts.includeNumbers) {
-      charset += CHARACTER_SETS.numbers;
-    }
-    if (opts.includeSymbols) {
-      charset += CHARACTER_SETS.symbols;
-    }
-    if (opts.customCharacters) {
-      charset += opts.customCharacters;
+    if (options.useCustomOnly && options.customCharacters) {
+      charset = options.customCharacters;
+    } else {
+      if (options.includeUppercase) charset += characterSets.uppercase;
+      if (options.includeLowercase) charset += characterSets.lowercase;
+      if (options.includeNumbers) charset += characterSets.numbers;
+      if (options.includeSymbols) charset += characterSets.symbols;
     }
 
-    if (opts.excludeSimilar) {
-      charset = charset.split('').filter(char => !CHARACTER_SETS.similar.includes(char)).join('');
+    if (options.excludeSimilar) {
+      charset = charset
+        .split('')
+        .filter((char) => !similarChars.includes(char))
+        .join('');
     }
 
-    if (opts.excludeAmbiguous) {
-      charset = charset.split('').filter(char => !CHARACTER_SETS.ambiguous.includes(char)).join('');
+    if (options.excludeAmbiguous) {
+      charset = charset
+        .split('')
+        .filter((char) => !ambiguousChars.includes(char))
+        .join('');
     }
 
-    return charset;
-  }, []);
-
-  // Generate password
-  const generatePassword = useCallback(() => {
-    const charset = buildCharacterSet(options);
-
-    if (charset.length === 0) {
-      setStrength({
-        score: 0,
-        level: 'weak',
-        feedback: ['No character sets selected'],
-        entropy: 0
-      });
+    if (!charset) {
+      setPassword('Error: No valid characters selected');
       return;
     }
 
-    const randomBytes = getRandomBytes(options.length);
     let newPassword = '';
+    const array = new Uint32Array(options.length);
+    crypto.getRandomValues(array);
 
     for (let i = 0; i < options.length; i++) {
-      const randomIndex = randomBytes[i] % charset.length;
-      newPassword += charset[randomIndex];
+      newPassword += charset[array[i] % charset.length];
     }
 
     setPassword(newPassword);
-    const newStrength = analyzeStrength(newPassword, options);
-    setStrength(newStrength);
+    updatePasswordHistory(newPassword);
+  }, [options]);
 
-    // Add to history (keep last 10)
-    setPasswordHistory(prev => {
-      const updated = [newPassword, ...prev.filter(p => p !== newPassword)].slice(0, 10);
+  const updatePasswordHistory = (newPassword: string) => {
+    setPasswordHistory((prev) => {
+      const updated = [newPassword, ...prev.filter((p) => p !== newPassword)].slice(0, 10);
       return updated;
     });
-  }, [options, buildCharacterSet, analyzeStrength]);
+  };
 
-  // Generate password on mount and when options change
+  const analyzeStrength = useCallback((password: string): PasswordStrength => {
+    if (!password || password.length === 0) {
+      return {
+        score: 0,
+        level: 'Very Weak',
+        color: 'bg-red-600',
+        feedback: ['Please enter a password'],
+        estimatedCrackTime: 'Instant',
+        entropy: 0,
+      };
+    }
+
+    let score = 0;
+    const feedback: string[] = [];
+
+    // Length scoring
+    if (password.length >= 8) score += 20;
+    if (password.length >= 12) score += 20;
+    if (password.length >= 16) score += 20;
+    if (password.length < 8) feedback.push('Password should be at least 8 characters long');
+
+    // Character variety
+    if (/[a-z]/.test(password)) score += 10;
+    else feedback.push('Include lowercase letters');
+
+    if (/[A-Z]/.test(password)) score += 10;
+    else feedback.push('Include uppercase letters');
+
+    if (/[0-9]/.test(password)) score += 10;
+    else feedback.push('Include numbers');
+
+    if (/[^a-zA-Z0-9]/.test(password)) score += 10;
+    else feedback.push('Include special characters');
+
+    // Pattern detection
+    if (!/(.)\1{2,}/.test(password))
+      score += 10; // No repeated characters
+    else feedback.push('Avoid repeated characters');
+
+    if (!/^[a-zA-Z]+$/.test(password) && !/^[0-9]+$/.test(password))
+      score += 10; // Not just letters or numbers
+    else feedback.push('Mix character types');
+
+    // Common patterns
+    const commonPatterns = ['123456', 'password', 'qwerty', 'admin', 'welcome'];
+    const hasCommonPattern = commonPatterns.some((pattern) =>
+      password.toLowerCase().includes(pattern.toLowerCase())
+    );
+    if (hasCommonPattern) {
+      score -= 20;
+      feedback.push('Avoid common patterns');
+    }
+
+    // Calculate entropy
+    let charsetSize = 0;
+    if (/[a-z]/.test(password)) charsetSize += 26;
+    if (/[A-Z]/.test(password)) charsetSize += 26;
+    if (/[0-9]/.test(password)) charsetSize += 10;
+    if (/[^a-zA-Z0-9]/.test(password)) charsetSize += 32;
+
+    const entropy = password.length * Math.log2(charsetSize);
+
+    // Determine level and color
+    let level: PasswordStrength['level'];
+    let color: string;
+
+    if (score >= 90) {
+      level = 'Very Strong';
+      color = 'bg-green-600';
+    } else if (score >= 75) {
+      level = 'Strong';
+      color = 'bg-green-500';
+    } else if (score >= 60) {
+      level = 'Good';
+      color = 'bg-yellow-600';
+    } else if (score >= 45) {
+      level = 'Fair';
+      color = 'bg-yellow-500';
+    } else if (score >= 30) {
+      level = 'Weak';
+      color = 'bg-orange-600';
+    } else {
+      level = 'Very Weak';
+      color = 'bg-red-600';
+    }
+
+    // Estimate crack time
+    const guessesPerSecond = 1000000000000; // 1 trillion guesses per second
+    const combinations = charsetSize ** password.length;
+    const secondsToCrack = combinations / (2 * guessesPerSecond);
+    const crackTime = formatTime(secondsToCrack);
+
+    return {
+      score: Math.max(0, Math.min(100, score)),
+      level,
+      color,
+      feedback: feedback.length > 0 ? feedback : ['Strong password!'],
+      estimatedCrackTime: crackTime,
+      entropy: Math.round(entropy),
+    };
+  }, []);
+
+  const formatTime = (seconds: number): string => {
+    if (seconds < 1) return 'Instant';
+    if (seconds < 60) return `${Math.round(seconds)} seconds`;
+    if (seconds < 3600) return `${Math.round(seconds / 60)} minutes`;
+    if (seconds < 86400) return `${Math.round(seconds / 3600)} hours`;
+    if (seconds < 2592000) return `${Math.round(seconds / 86400)} days`;
+    if (seconds < 31536000) return `${Math.round(seconds / 2592000)} months`;
+    if (seconds < 315360000) return `${Math.round(seconds / 31536000)} years`;
+    return 'Centuries';
+  };
+
   useEffect(() => {
     generatePassword();
-  }, [options.length]); // Only regenerate when length changes
+  }, []);
 
-  // Copy password to clipboard
-  const copyToClipboard = async (text: string, index?: number) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedIndex(index ?? null);
-      setTimeout(() => setCopiedIndex(null), 2000);
-    } catch (err) {
-      console.error('Failed to copy to clipboard:', err);
+  useEffect(() => {
+    if (password) {
+      setStrength(analyzeStrength(password));
     }
+  }, [password, analyzeStrength]);
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(password);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  // Apply preset
-  const applyPreset = (preset: typeof PASSWORD_PRESETS[0]) => {
-    setOptions(preset.options);
-  };
-
-  // Get strength color
-  const getStrengthColor = (level: PasswordStrength['level']) => {
-    switch (level) {
-      case 'very-strong': return 'text-green-600';
-      case 'strong': return 'text-blue-600';
-      case 'good': return 'text-yellow-600';
-      case 'fair': return 'text-orange-600';
-      case 'weak': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-  // Get strength badge variant
-  const getStrengthBadgeVariant = (level: PasswordStrength['level']) => {
-    switch (level) {
-      case 'very-strong': return 'default';
-      case 'strong': return 'secondary';
-      case 'good': return 'outline';
-      case 'fair': return 'secondary';
-      case 'weak': return 'destructive';
-      default: return 'outline';
-    }
+  const copyPasswordToClipboard = (pwd: string) => {
+    navigator.clipboard.writeText(pwd);
   };
 
   return (
     <div className="space-y-6">
-      {/* Password Display */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              Generated Password
-            </span>
-            <div className="flex items-center gap-2">
-              {strength && (
-                <Badge variant={getStrengthBadgeVariant(strength.level)} className={getStrengthColor(strength.level)}>
-                  {strength.level.replace('-', ' ')} ({strength.score}/100)
-                </Badge>
-              )}
-              {strength && (
-                <Badge variant="outline">
-                  {strength.entropy} bits entropy
-                </Badge>
-              )}
-            </div>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Advanced Password Generator & Strength Checker
           </CardTitle>
+          <CardDescription>
+            Generate strong, secure passwords and analyze their strength in real-time
+          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
+          {/* Generated Password */}
           <div className="space-y-4">
+            <Label className="font-medium text-lg">Generated Password</Label>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  readOnly
-                  className="font-mono text-lg pr-10"
-                  placeholder="Click Generate to create a password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pr-20 font-mono text-lg"
+                  placeholder="Click Generate to create password"
                 />
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+                  className="-translate-y-1/2 absolute top-1/2 right-1"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => copyToClipboard(password)}
-              >
-                {copiedIndex === null ? (
-                  <>
-                    <Copy className="w-4 h-4 mr-1" />
-                    Copy
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4 mr-1" />
-                    Copied
-                  </>
-                )}
+              <Button onClick={copyToClipboard} className="px-4">
+                {copied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </Button>
-              <Button onClick={generatePassword} className="bg-blue-600 hover:bg-blue-700">
-                <RefreshCw className="w-4 h-4 mr-1" />
-                Generate
+              <Button onClick={generatePassword} className="px-4">
+                <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
 
+            {/* Password Strength */}
+            {strength && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-sm">Password Strength</span>
+                  <Badge className={`${strength.color} border-0 text-white`}>
+                    {strength.level}
+                  </Badge>
+                </div>
+                <Progress value={strength.score} className="h-2 w-full" />
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-gray-500" />
+                    <span>
+                      Crack Time: <strong>{strength.estimatedCrackTime}</strong>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-gray-500" />
+                    <span>
+                      Entropy: <strong>{strength.entropy} bits</strong>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Lock className="h-4 w-4 text-gray-500" />
+                    <span>
+                      Score: <strong>{strength.score}/100</strong>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Feedback */}
             {strength && strength.feedback.length > 0 && (
               <Alert>
-                <Settings className="h-4 w-4" />
+                <Info className="h-4 w-4" />
                 <AlertDescription>
                   <div className="space-y-1">
-                    {strength.feedback.map((feedback, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <X className="h-3 w-3 text-orange-500" />
-                        {feedback}
-                      </div>
-                    ))}
+                    <strong>Recommendations:</strong>
+                    <ul className="list-inside list-disc space-y-1">
+                      {strength.feedback.map((feedback, index) => (
+                        <li key={index} className="text-sm">
+                          {feedback}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </AlertDescription>
               </Alert>
             )}
           </div>
-        </CardContent>
-      </Card>
 
-      <Tabs defaultValue="options" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="options">Options</TabsTrigger>
-          <TabsTrigger value="presets">Presets</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
-        </TabsList>
+          <Separator />
 
-        {/* Options Tab */}
-        <TabsContent value="options">
-          <Card>
-            <CardHeader>
-              <CardTitle>Password Options</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+          {/* Configuration Options */}
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="basic">Basic Options</TabsTrigger>
+              <TabsTrigger value="advanced">Advanced Options</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="basic" className="space-y-4">
               {/* Length Slider */}
-              <div>
-                <Label>Length: {options.length}</Label>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Label>Password Length</Label>
+                  <Badge variant="outline">{options.length}</Badge>
+                </div>
                 <Slider
                   value={[options.length]}
-                  onValueChange={([value]) => setOptions(prev => ({ ...prev, length: value }))}
+                  onValueChange={(value) => setOptions((prev) => ({ ...prev, length: value[0] }))}
                   min={4}
-                  max={64}
+                  max={128}
                   step={1}
-                  className="mt-2"
+                  className="w-full"
                 />
-                <div className="flex justify-between text-sm text-gray-600 mt-1">
+                <div className="flex justify-between text-gray-500 text-xs">
                   <span>4</span>
+                  <span>16</span>
+                  <span>32</span>
                   <span>64</span>
+                  <span>128</span>
                 </div>
               </div>
 
-              {/* Character Options */}
-              <div className="space-y-4">
-                <Label>Character Types</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="uppercase">Uppercase (A-Z)</Label>
-                    <Switch
-                      id="uppercase"
-                      checked={options.includeUppercase}
-                      onCheckedChange={(checked) => setOptions(prev => ({ ...prev, includeUppercase: checked }))}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="lowercase">Lowercase (a-z)</Label>
-                    <Switch
-                      id="lowercase"
-                      checked={options.includeLowercase}
-                      onCheckedChange={(checked) => setOptions(prev => ({ ...prev, includeLowercase: checked }))}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="numbers">Numbers (0-9)</Label>
-                    <Switch
-                      id="numbers"
-                      checked={options.includeNumbers}
-                      onCheckedChange={(checked) => setOptions(prev => ({ ...prev, includeNumbers: checked }))}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="symbols">Symbols (!@#$%^&*)</Label>
-                    <Switch
-                      id="symbols"
-                      checked={options.includeSymbols}
-                      onCheckedChange={(checked) => setOptions(prev => ({ ...prev, includeSymbols: checked }))}
-                    />
-                  </div>
+              {/* Character Types */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="uppercase"
+                    checked={options.includeUppercase}
+                    onCheckedChange={(checked) =>
+                      setOptions((prev) => ({ ...prev, includeUppercase: checked }))
+                    }
+                  />
+                  <Label htmlFor="uppercase">Uppercase (A-Z)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="lowercase"
+                    checked={options.includeLowercase}
+                    onCheckedChange={(checked) =>
+                      setOptions((prev) => ({ ...prev, includeLowercase: checked }))
+                    }
+                  />
+                  <Label htmlFor="lowercase">Lowercase (a-z)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="numbers"
+                    checked={options.includeNumbers}
+                    onCheckedChange={(checked) =>
+                      setOptions((prev) => ({ ...prev, includeNumbers: checked }))
+                    }
+                  />
+                  <Label htmlFor="numbers">Numbers (0-9)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="symbols"
+                    checked={options.includeSymbols}
+                    onCheckedChange={(checked) =>
+                      setOptions((prev) => ({ ...prev, includeSymbols: checked }))
+                    }
+                  />
+                  <Label htmlFor="symbols">Symbols (!@#$%)</Label>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="advanced" className="space-y-4">
+              {/* Advanced Options */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="exclude-similar"
+                    checked={options.excludeSimilar}
+                    onCheckedChange={(checked) =>
+                      setOptions((prev) => ({ ...prev, excludeSimilar: checked }))
+                    }
+                  />
+                  <Label htmlFor="exclude-similar">Exclude Similar ({similarChars})</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="exclude-ambiguous"
+                    checked={options.excludeAmbiguous}
+                    onCheckedChange={(checked) =>
+                      setOptions((prev) => ({ ...prev, excludeAmbiguous: checked }))
+                    }
+                  />
+                  <Label htmlFor="exclude-ambiguous">Exclude Ambiguous</Label>
                 </div>
               </div>
 
               {/* Custom Characters */}
-              <div>
-                <Label htmlFor="custom-chars">Custom Characters</Label>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="use-custom"
+                    checked={options.useCustomOnly}
+                    onCheckedChange={(checked) =>
+                      setOptions((prev) => ({ ...prev, useCustomOnly: checked }))
+                    }
+                  />
+                  <Label htmlFor="use-custom">Use Custom Characters Only</Label>
+                </div>
                 <Input
-                  id="custom-chars"
-                  value={customCharset}
-                  onChange={(e) => setCustomCharset(e.target.value)}
-                  onBlur={(e) => setOptions(prev => ({ ...prev, customCharacters: e.target.value }))}
-                  placeholder="Enter custom characters to include..."
-                  className="font-mono text-sm"
+                  value={options.customCharacters}
+                  onChange={(e) =>
+                    setOptions((prev) => ({ ...prev, customCharacters: e.target.value }))
+                  }
+                  placeholder="Enter custom characters..."
+                  disabled={!options.useCustomOnly}
+                  className="font-mono"
                 />
               </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
 
-              {/* Exclusions */}
-              <div className="space-y-4">
-                <Label>Exclusions</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="exclude-similar">Exclude Similar (i, l, L, 1, 0, O)</Label>
-                    <Switch
-                      id="exclude-similar"
-                      checked={options.excludeSimilar}
-                      onCheckedChange={(checked) => setOptions(prev => ({ ...prev, excludeSimilar: checked }))}
-                    />
+      {/* Password History */}
+      {passwordHistory.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Recent Passwords
+            </CardTitle>
+            <CardDescription>Click any password to copy it to clipboard</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[200px]">
+              <div className="space-y-2">
+                {passwordHistory.map((pwd, index) => (
+                  <div
+                    key={index}
+                    className="flex cursor-pointer items-center justify-between rounded-lg bg-gray-50 p-2 transition-colors hover:bg-gray-100"
+                    onClick={() => copyPasswordToClipboard(pwd)}
+                  >
+                    <code className="flex-1 truncate font-mono text-sm">{pwd}</code>
+                    <div className="flex items-center gap-2">
+                      {analyzeStrength(pwd).score >= 60 ? (
+                        <ShieldCheck className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <ShieldX className="h-4 w-4 text-red-600" />
+                      )}
+                      <Copy className="h-4 w-4 text-gray-500" />
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="exclude-ambiguous">Exclude Ambiguous ({, }, [ ], ( ), <, >)</Label>
-                    <Switch
-                      id="exclude-ambiguous"
-                      checked={options.excludeAmbiguous}
-                      onCheckedChange={(checked) => setOptions(prev => ({ ...prev, excludeAmbiguous: checked }))}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setOptions(DEFAULT_OPTIONS)}>
-                  Reset to Default
-                </Button>
-                <Button onClick={generatePassword}>
-                  <RefreshCw className="w-4 h-4 mr-1" />
-                  Generate New Password
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Presets Tab */}
-        <TabsContent value="presets">
-          <Card>
-            <CardHeader>
-              <CardTitle>Password Presets</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {PASSWORD_PRESETS.map((preset) => (
-                  <Card key={preset.name} className="cursor-pointer hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold mb-2">{preset.name}</h3>
-                      <div className="space-y-2 text-sm text-gray-600">
-                        <div>Length: {preset.options.length}</div>
-                        <div>Uppercase: {preset.options.includeUppercase ? 'Yes' : 'No'}</div>
-                        <div>Lowercase: {preset.options.includeLowercase ? 'Yes' : 'No'}</div>
-                        <div>Numbers: {preset.options.includeNumbers ? 'Yes' : 'No'}</div>
-                        <div>Symbols: {preset.options.includeSymbols ? 'Yes' : 'No'}</div>
-                        <div>Exclude Similar: {preset.options.excludeSimilar ? 'Yes' : 'No'}</div>
-                      </div>
-                      <Button
-                        className="w-full mt-3"
-                        variant="outline"
-                        onClick={() => applyPreset(preset)}
-                      >
-                        Apply Preset
-                      </Button>
-                    </CardContent>
-                  </Card>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* History Tab */}
-        <TabsContent value="history">
-          <Card>
-            <CardHeader>
-              <CardTitle>Password History</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {passwordHistory.length > 0 ? (
-                <div className="space-y-2">
-                  {passwordHistory.map((pass, index) => (
-                    <div key={index} className="flex items-center gap-2 p-2 border rounded">
-                      <code className="flex-1 font-mono text-sm truncate">{pass}</code>
-                      <Badge variant="outline" className="text-xs">
-                        {pass.length} chars
-                      </Badge>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyToClipboard(pass, index)}
-                      >
-                        {copiedIndex === index ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setPassword(pass)}
-                      >
-                        Use
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-center text-gray-500 py-8">
-                  No passwords generated yet. Click "Generate" to create your first password.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
+
+export default PasswordGenerator;

@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { FileJson } from "lucide-react";
-import Link from "next/link";
-import * as React from "react";
-import { JsonErrorDisplay } from "@/components/tools/json/json-error-display";
-import { JsonInputEditor } from "@/components/tools/json/json-input-editor";
-import type { JsonValidationResult } from "@/components/tools/json/json-types";
-import { JsonValidator } from "@/components/tools/json/json-validator";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { JsonErrorDisplay } from '@/components/tools/json/json-error-display';
+import { JsonInputEditor } from '@/components/tools/json/json-input-editor';
+import type { JsonValidationResult } from '@/components/tools/json/json-types';
+import { JsonValidator } from '@/components/tools/json/json-validator';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileJson } from 'lucide-react';
+import Link from 'next/link';
+import * as React from 'react';
 
 const sampleValidJson = `{
   "name": "John Doe",
@@ -52,7 +52,7 @@ const sampleInvalidJson = `{
 }`;
 
 export default function JsonValidatorPage() {
-  const [jsonInput, setJsonInput] = React.useState("");
+  const [jsonInput, setJsonInput] = React.useState('');
   const [validationResult, setValidationResult] = React.useState<JsonValidationResult>({
     isValid: false,
     errors: [],
@@ -65,34 +65,8 @@ export default function JsonValidatorPage() {
   return (
     <div className="container mx-auto py-6">
       {/* Breadcrumb Navigation */}
-      <nav className="mb-6 flex items-center space-x-2 text-gray-600 text-sm">
-        <Link href="/" className="hover:text-gray-900">
-          Home
-        </Link>
-        <span>/</span>
-        <Link href="/tools" className="hover:text-gray-900">
-          Tools
-        </Link>
-        <span>/</span>
-        <span className="font-medium text-gray-900">JSON Validator</span>
-      </nav>
 
       {/* Tool Header */}
-      <div className="mb-6">
-        <div className="mb-4 flex items-center gap-3">
-          <FileJson className="h-8 w-8 text-blue-600" />
-          <div>
-            <h1 className="font-bold text-3xl text-gray-900 dark:text-white">JSON Validator</h1>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">Beginner</Badge>
-              <Badge variant="default">Stable</Badge>
-            </div>
-          </div>
-        </div>
-        <p className="text-gray-600 dark:text-gray-400">
-          Comprehensive JSON validation with detailed error messages and schema support
-        </p>
-      </div>
 
       {/* Tool Component */}
       <div className="space-y-6">
@@ -147,17 +121,17 @@ export default function JsonValidatorPage() {
                   {/* Validation Status */}
                   <div className="flex items-center gap-2">
                     <div
-                      className={`h-3 w-3 rounded-full ${validationResult.isValid ? "bg-green-500" : "bg-red-500"}`}
+                      className={`h-3 w-3 rounded-full ${validationResult.isValid ? 'bg-green-500' : 'bg-red-500'}`}
                     />
                     <span className="font-medium">
-                      {validationResult.isValid ? "Valid JSON" : "Invalid JSON"}
+                      {validationResult.isValid ? 'Valid JSON' : 'Invalid JSON'}
                     </span>
                   </div>
 
                   {/* Validation Summary */}
                   <div className="text-gray-600 text-sm">
                     {validationResult.errors.length} error
-                    {validationResult.errors.length !== 1 ? "s" : ""} found
+                    {validationResult.errors.length !== 1 ? 's' : ''} found
                   </div>
 
                   {/* Error Details */}
@@ -166,9 +140,9 @@ export default function JsonValidatorPage() {
                   )}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="py-8 text-center text-gray-500">
                   <p>Enter JSON data to validate</p>
-                  <p className="text-sm mt-1">
+                  <p className="mt-1 text-sm">
                     The validator will check for syntax errors in real-time
                   </p>
                 </div>
@@ -193,19 +167,19 @@ export default function JsonValidatorPage() {
             <CardContent>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">
-                  <div className="mt-1 h-2 w-2 rounded-full bg-blue-600"></div>
+                  <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
                   <span className="text-gray-700 dark:text-gray-300">Syntax Validation</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <div className="mt-1 h-2 w-2 rounded-full bg-blue-600"></div>
+                  <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
                   <span className="text-gray-700 dark:text-gray-300">Schema Validation</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <div className="mt-1 h-2 w-2 rounded-full bg-blue-600"></div>
+                  <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
                   <span className="text-gray-700 dark:text-gray-300">Detailed Errors</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <div className="mt-1 h-2 w-2 rounded-full bg-blue-600"></div>
+                  <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
                   <span className="text-gray-700 dark:text-gray-300">Real-time Validation</span>
                 </li>
               </ul>
@@ -218,15 +192,15 @@ export default function JsonValidatorPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <span className="font-medium text-gray-900 dark:text-white">Category:</span>{" "}
+                <span className="font-medium text-gray-900 dark:text-white">Category:</span>{' '}
                 <span className="text-gray-600 dark:text-gray-400">JSON Processing</span>
               </div>
               <div>
-                <span className="font-medium text-gray-900 dark:text-white">Processing:</span>{" "}
+                <span className="font-medium text-gray-900 dark:text-white">Processing:</span>{' '}
                 <span className="text-gray-600 dark:text-gray-400">Client Side</span>
               </div>
               <div>
-                <span className="font-medium text-gray-900 dark:text-white">Security:</span>{" "}
+                <span className="font-medium text-gray-900 dark:text-white">Security:</span>{' '}
                 <span className="text-gray-600 dark:text-gray-400">Local Only</span>
               </div>
             </CardContent>

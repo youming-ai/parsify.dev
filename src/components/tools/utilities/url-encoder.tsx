@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { Copy, Globe, Link, Link2 } from "lucide-react";
-import * as React from "react";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Copy, Globe, Link, Link2 } from 'lucide-react';
+import * as React from 'react';
+import { toast } from 'sonner';
 
 export interface URLResult {
-  operation: "encode" | "decode";
+  operation: 'encode' | 'decode';
   input: string;
   output: string;
-  encodingType: "full" | "component" | "path";
+  encodingType: 'full' | 'component' | 'path';
   timestamp: Date;
 }
 
@@ -25,57 +25,57 @@ interface URLEncoderProps {
 // URL encoding examples
 const urlExamples = [
   {
-    name: "Special Characters",
-    input: "Hello World! How are you? @#$%^&*()",
-    description: "Contains spaces and special characters",
+    name: 'Special Characters',
+    input: 'Hello World! How are you? @#$%^&*()',
+    description: 'Contains spaces and special characters',
   },
   {
-    name: "Query Parameters",
-    input: "https://example.com/search?q=nodejs tutorials&lang=en&page=1",
-    description: "URL with query parameters",
+    name: 'Query Parameters',
+    input: 'https://example.com/search?q=nodejs tutorials&lang=en&page=1',
+    description: 'URL with query parameters',
   },
   {
-    name: "Unicode Characters",
-    input: "https://example.com/search?q=你好世界&emoji=🚀🔥",
-    description: "URL with Unicode characters",
+    name: 'Unicode Characters',
+    input: 'https://example.com/search?q=你好世界&emoji=🚀🔥',
+    description: 'URL with Unicode characters',
   },
   {
-    name: "File Path",
-    input: "/path/to/file with spaces/document.pdf",
-    description: "File path with spaces",
+    name: 'File Path',
+    input: '/path/to/file with spaces/document.pdf',
+    description: 'File path with spaces',
   },
 ];
 
 export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps) {
-  const [inputText, setInputText] = React.useState("");
-  const [outputText, setOutputText] = React.useState("");
-  const [encodingType, setEncodingType] = React.useState<"full" | "component" | "path">("full");
+  const [inputText, setInputText] = React.useState('');
+  const [outputText, setOutputText] = React.useState('');
+  const [encodingType, setEncodingType] = React.useState<'full' | 'component' | 'path'>('full');
   const [results, setResults] = React.useState<URLResult[]>([]);
-  const [activeTab, setActiveTab] = React.useState<"encode" | "decode">("encode");
+  const [activeTab, setActiveTab] = React.useState<'encode' | 'decode'>('encode');
 
   // URL Encode function
-  const encodeURL = (text: string, type: "full" | "component" | "path"): string => {
+  const encodeURL = (text: string, type: 'full' | 'component' | 'path'): string => {
     try {
       switch (type) {
-        case "full":
+        case 'full':
           return encodeURIComponent(text);
-        case "component":
+        case 'component':
           // For component encoding, encode individual parts
           return text
-            .split("/")
+            .split('/')
             .map((part) => encodeURIComponent(part))
-            .join("/");
-        case "path":
+            .join('/');
+        case 'path':
           // For path encoding, preserve slashes but encode other characters
           return text
-            .split("/")
-            .map((part) => (part === "" ? "" : encodeURIComponent(part)))
-            .join("/");
+            .split('/')
+            .map((part) => (part === '' ? '' : encodeURIComponent(part)))
+            .join('/');
         default:
           return encodeURIComponent(text);
       }
     } catch (_error) {
-      throw new Error("Failed to encode URL");
+      throw new Error('Failed to encode URL');
     }
   };
 
@@ -88,7 +88,7 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
       try {
         return unescape(text);
       } catch {
-        throw new Error("Failed to decode URL. The input may be malformed.");
+        throw new Error('Failed to decode URL. The input may be malformed.');
       }
     }
   };
@@ -96,13 +96,13 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
   // Process encoding/decoding
   const processText = () => {
     if (!inputText.trim()) {
-      toast.error("Please enter text to process");
+      toast.error('Please enter text to process');
       return;
     }
 
     try {
       let output: string;
-      if (activeTab === "encode") {
+      if (activeTab === 'encode') {
         output = encodeURL(inputText, encodingType);
       } else {
         output = decodeURL(inputText);
@@ -114,18 +114,18 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
         operation: activeTab,
         input: inputText,
         output,
-        encodingType: activeTab === "encode" ? encodingType : "full",
+        encodingType: activeTab === 'encode' ? encodingType : 'full',
         timestamp: new Date(),
       };
 
       setResults((prev) => [result, ...prev].slice(0, 10)); // Keep last 10 results
       onProcessingComplete?.(result);
 
-      toast.success(`${activeTab === "encode" ? "Encoded" : "Decoded"} successfully`);
+      toast.success(`${activeTab === 'encode' ? 'Encoded' : 'Decoded'} successfully`);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Processing failed";
+      const errorMessage = error instanceof Error ? error.message : 'Processing failed';
       toast.error(errorMessage);
-      setOutputText("");
+      setOutputText('');
     }
   };
 
@@ -133,30 +133,30 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success("Copied to clipboard");
+      toast.success('Copied to clipboard');
     } catch (_error) {
-      toast.error("Failed to copy to clipboard");
+      toast.error('Failed to copy to clipboard');
     }
   };
 
   // Load example
   const loadExample = (example: (typeof urlExamples)[0]) => {
     setInputText(example.input);
-    setActiveTab("encode");
+    setActiveTab('encode');
   };
 
   // Clear all
   const clearAll = () => {
-    setInputText("");
-    setOutputText("");
+    setInputText('');
+    setOutputText('');
   };
 
   // Swap input and output
   const swapInputOutput = () => {
     if (outputText) {
       setInputText(outputText);
-      setOutputText("");
-      setActiveTab(activeTab === "encode" ? "decode" : "encode");
+      setOutputText('');
+      setActiveTab(activeTab === 'encode' ? 'decode' : 'encode');
     }
   };
 
@@ -166,21 +166,20 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
       const timer = setTimeout(() => {
         try {
           let output: string;
-          if (activeTab === "encode") {
+          if (activeTab === 'encode') {
             output = encodeURL(inputText, encodingType);
           } else {
             output = decodeURL(inputText);
           }
           setOutputText(output);
         } catch {
-          setOutputText("");
+          setOutputText('');
         }
       }, 300);
 
       return () => clearTimeout(timer);
-    } else {
-      setOutputText("");
     }
+    setOutputText('');
   }, [inputText, encodingType, activeTab, decodeURL, encodeURL]);
 
   return (
@@ -189,7 +188,7 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
         {/* Operation Selection */}
         <Tabs
           value={activeTab}
-          onValueChange={(value) => setActiveTab(value as "encode" | "decode")}
+          onValueChange={(value) => setActiveTab(value as 'encode' | 'decode')}
         >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="encode" className="flex items-center gap-2">
@@ -213,40 +212,40 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium mb-2">Encoding Type</h4>
-                    <div className="grid md:grid-cols-3 gap-4">
+                    <h4 className="mb-2 font-medium">Encoding Type</h4>
+                    <div className="grid gap-4 md:grid-cols-3">
                       <div
-                        className={`p-3 border rounded cursor-pointer ${
-                          encodingType === "full" ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                        className={`cursor-pointer rounded border p-3 ${
+                          encodingType === 'full' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
                         }`}
-                        onClick={() => setEncodingType("full")}
+                        onClick={() => setEncodingType('full')}
                       >
                         <div className="font-medium">Full URL Encoding</div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-gray-600 text-sm">
                           Encodes all special characters including /, :, ?, #
                         </div>
                       </div>
                       <div
-                        className={`p-3 border rounded cursor-pointer ${
-                          encodingType === "component"
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200"
+                        className={`cursor-pointer rounded border p-3 ${
+                          encodingType === 'component'
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200'
                         }`}
-                        onClick={() => setEncodingType("component")}
+                        onClick={() => setEncodingType('component')}
                       >
                         <div className="font-medium">Component Encoding</div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-gray-600 text-sm">
                           Encodes URL components separately
                         </div>
                       </div>
                       <div
-                        className={`p-3 border rounded cursor-pointer ${
-                          encodingType === "path" ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                        className={`cursor-pointer rounded border p-3 ${
+                          encodingType === 'path' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
                         }`}
-                        onClick={() => setEncodingType("path")}
+                        onClick={() => setEncodingType('path')}
                       >
                         <div className="font-medium">Path Encoding</div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-gray-600 text-sm">
                           Preserves slashes, encodes other characters
                         </div>
                       </div>
@@ -266,8 +265,8 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded">
-                  <p className="text-sm text-blue-800">
+                <div className="rounded border border-blue-200 bg-blue-50 p-4">
+                  <p className="text-blue-800 text-sm">
                     <strong>Note:</strong> Decoding will automatically detect and decode URL-encoded
                     characters including spaces (%20), special characters, and Unicode characters.
                   </p>
@@ -281,7 +280,7 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>{activeTab === "encode" ? "Input Text" : "URL to Decode"}</span>
+              <span>{activeTab === 'encode' ? 'Input Text' : 'URL to Decode'}</span>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={swapInputOutput}>
                   Swap ↔
@@ -298,35 +297,35 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder={
-                  activeTab === "encode"
-                    ? "Enter text to encode or a URL to process..."
-                    : "Enter URL-encoded text to decode..."
+                  activeTab === 'encode'
+                    ? 'Enter text to encode or a URL to process...'
+                    : 'Enter URL-encoded text to decode...'
                 }
                 className="min-h-32 font-mono"
               />
-              <div className="text-sm text-gray-500 mt-1">{inputText.length} characters</div>
+              <div className="mt-1 text-gray-500 text-sm">{inputText.length} characters</div>
             </div>
 
             {outputText && (
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium">
-                    {activeTab === "encode" ? "Encoded Output" : "Decoded Output"}
+                <div className="mb-2 flex items-center justify-between">
+                  <label className="font-medium text-sm">
+                    {activeTab === 'encode' ? 'Encoded Output' : 'Decoded Output'}
                   </label>
                   <Button variant="ghost" size="sm" onClick={() => copyToClipboard(outputText)}>
-                    <Copy className="h-4 w-4 mr-1" />
+                    <Copy className="mr-1 h-4 w-4" />
                     Copy
                   </Button>
                 </div>
-                <div className="p-3 bg-gray-50 border rounded">
-                  <div className="font-mono text-sm break-all">{outputText}</div>
+                <div className="rounded border bg-gray-50 p-3">
+                  <div className="break-all font-mono text-sm">{outputText}</div>
                 </div>
-                <div className="text-sm text-gray-500 mt-1">{outputText.length} characters</div>
+                <div className="mt-1 text-gray-500 text-sm">{outputText.length} characters</div>
               </div>
             )}
 
             <Button onClick={processText} className="w-full">
-              {activeTab === "encode" ? "Encode URL" : "Decode URL"}
+              {activeTab === 'encode' ? 'Encode URL' : 'Decode URL'}
             </Button>
           </CardContent>
         </Card>
@@ -337,11 +336,11 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
             <CardTitle>Examples</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid gap-4 md:grid-cols-2">
               {urlExamples.map((example, index) => (
-                <div key={index} className="p-3 border rounded">
-                  <div className="font-medium mb-1">{example.name}</div>
-                  <div className="text-sm text-gray-600 mb-2">{example.description}</div>
+                <div key={index} className="rounded border p-3">
+                  <div className="mb-1 font-medium">{example.name}</div>
+                  <div className="mb-2 text-gray-600 text-sm">{example.description}</div>
                   <Button variant="outline" size="sm" onClick={() => loadExample(example)}>
                     Load Example
                   </Button>
@@ -357,7 +356,7 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
             <CardTitle>Common URL Encoded Characters</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            <div className="grid gap-4 text-sm md:grid-cols-2 lg:grid-cols-3">
               <div className="space-y-1">
                 <div className="font-medium">Spaces & Special</div>
                 <div>
@@ -416,19 +415,19 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
             <CardContent>
               <div className="space-y-3">
                 {results.map((result, index) => (
-                  <div key={index} className="p-3 border rounded">
-                    <div className="flex items-center justify-between mb-2">
+                  <div key={index} className="rounded border p-3">
+                    <div className="mb-2 flex items-center justify-between">
                       <Badge variant="outline">
-                        {result.operation === "encode" ? "Encoded" : "Decoded"}
+                        {result.operation === 'encode' ? 'Encoded' : 'Decoded'}
                       </Badge>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-gray-500 text-xs">
                         {result.timestamp.toLocaleTimeString()}
                       </span>
                     </div>
                     <div className="text-sm">
-                      <div className="font-mono truncate">{result.input}</div>
+                      <div className="truncate font-mono">{result.input}</div>
                       <div className="text-gray-500">↓</div>
-                      <div className="font-mono truncate">{result.output}</div>
+                      <div className="truncate font-mono">{result.output}</div>
                     </div>
                   </div>
                 ))}

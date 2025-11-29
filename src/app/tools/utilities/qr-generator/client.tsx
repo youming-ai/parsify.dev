@@ -1,5 +1,21 @@
-"use client";
+'use client';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Copy,
   Download,
@@ -13,25 +29,9 @@ import {
   Smartphone,
   User,
   Wifi,
-} from "lucide-react";
-import QRCode from "qrcode";
-import { useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+} from 'lucide-react';
+import QRCode from 'qrcode';
+import { useState } from 'react';
 
 interface QRCodeData {
   id: string;
@@ -42,61 +42,61 @@ interface QRCodeData {
 }
 
 export default function QRGeneratorClient() {
-  const [qrType, setQrType] = useState("url");
-  const [qrContent, setQrContent] = useState("");
+  const [qrType, setQrType] = useState('url');
+  const [qrContent, setQrContent] = useState('');
   const [qrSize, setQrSize] = useState([300]);
-  const [errorCorrection, setErrorCorrection] = useState<"L" | "M" | "Q" | "H">("M");
-  const [qrDataUrl, setQrDataUrl] = useState("");
+  const [errorCorrection, setErrorCorrection] = useState<'L' | 'M' | 'Q' | 'H'>('M');
+  const [qrDataUrl, setQrDataUrl] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [downloadFormat, setDownloadFormat] = useState<"png" | "svg">("png");
+  const [downloadFormat, setDownloadFormat] = useState<'png' | 'svg'>('png');
   const [copied, setCopied] = useState(false);
 
   // Form specific states
   const [wifiSettings, setWifiSettings] = useState({
-    ssid: "",
-    password: "",
-    encryption: "WPA",
+    ssid: '',
+    password: '',
+    encryption: 'WPA',
   });
   const [contactSettings, setContactSettings] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    organization: "",
-    url: "",
+    name: '',
+    phone: '',
+    email: '',
+    organization: '',
+    url: '',
   });
 
   const generateQRCode = async () => {
-    if (!qrContent && qrType !== "wifi" && qrType !== "contact") {
+    if (!qrContent && qrType !== 'wifi' && qrType !== 'contact') {
       return;
     }
 
     setIsGenerating(true);
     try {
-      let dataToEncode = "";
+      let dataToEncode = '';
 
       switch (qrType) {
-        case "url":
+        case 'url':
           dataToEncode = qrContent;
           if (dataToEncode && !dataToEncode.match(/^https?:\/\//)) {
             dataToEncode = `https://${dataToEncode}`;
           }
           break;
-        case "text":
+        case 'text':
           dataToEncode = qrContent;
           break;
-        case "email":
+        case 'email':
           dataToEncode = `mailto:${qrContent}`;
           break;
-        case "phone":
+        case 'phone':
           dataToEncode = `tel:${qrContent}`;
           break;
-        case "sms":
+        case 'sms':
           dataToEncode = `sms:${qrContent}`;
           break;
-        case "wifi":
+        case 'wifi':
           dataToEncode = `WIFI:T:${wifiSettings.encryption};S:${wifiSettings.ssid};P:${wifiSettings.password};;`;
           break;
-        case "contact": {
+        case 'contact': {
           const vcard = `BEGIN:VCARD
 VERSION:3.0
 FN:${contactSettings.name}
@@ -105,7 +105,7 @@ EMAIL:${contactSettings.email}
 ORG:${contactSettings.organization}
 URL:${contactSettings.url}
 END:VCARD`;
-          dataToEncode = vcard.replace(/^\s+|\s+$/gm, ""); // Remove extra whitespace
+          dataToEncode = vcard.replace(/^\s+|\s+$/gm, ''); // Remove extra whitespace
           break;
         }
         default:
@@ -122,16 +122,16 @@ END:VCARD`;
         width: qrSize[0],
         margin: 2,
         color: {
-          dark: "#000000",
-          light: "#FFFFFF",
+          dark: '#000000',
+          light: '#FFFFFF',
         },
         errorCorrectionLevel: errorCorrection,
       };
 
-      if (downloadFormat === "svg") {
+      if (downloadFormat === 'svg') {
         const svgData = await QRCode.toString(dataToEncode, {
           ...options,
-          type: "svg",
+          type: 'svg',
         });
         setQrDataUrl(`data:image/svg+xml;base64,${btoa(svgData)}`);
       } else {
@@ -139,7 +139,7 @@ END:VCARD`;
         setQrDataUrl(dataUrl);
       }
     } catch (error) {
-      console.error("Error generating QR code:", error);
+      console.error('Error generating QR code:', error);
     } finally {
       setIsGenerating(false);
     }
@@ -148,7 +148,7 @@ END:VCARD`;
   const downloadQRCode = () => {
     if (!qrDataUrl) return;
 
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.download = `qrcode-${qrType}-${Date.now()}.${downloadFormat}`;
     link.href = qrDataUrl;
     document.body.appendChild(link);
@@ -171,25 +171,25 @@ END:VCARD`;
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error("Failed to copy QR code:", error);
+      console.error('Failed to copy QR code:', error);
     }
   };
 
   const getQRTypeIcon = (type: string) => {
     switch (type) {
-      case "url":
-      case "link":
+      case 'url':
+      case 'link':
         return Link;
-      case "wifi":
+      case 'wifi':
         return Wifi;
-      case "email":
+      case 'email':
         return Mail;
-      case "phone":
-      case "sms":
+      case 'phone':
+      case 'sms':
         return Phone;
-      case "contact":
+      case 'contact':
         return User;
-      case "location":
+      case 'location':
         return MapPin;
       default:
         return MessageSquare;
@@ -198,16 +198,16 @@ END:VCARD`;
 
   const getErrorCorrectionDescription = (level: string) => {
     switch (level) {
-      case "L":
-        return "Low - ~7% error correction";
-      case "M":
-        return "Medium - ~15% error correction";
-      case "Q":
-        return "Quartile - ~25% error correction";
-      case "H":
-        return "High - ~30% error correction";
+      case 'L':
+        return 'Low - ~7% error correction';
+      case 'M':
+        return 'Medium - ~15% error correction';
+      case 'Q':
+        return 'Quartile - ~25% error correction';
+      case 'H':
+        return 'High - ~30% error correction';
       default:
-        return "";
+        return '';
     }
   };
 
@@ -388,14 +388,14 @@ END:VCARD`;
               step={10}
               className="w-full"
             />
-            <p className="text-xs text-muted-foreground">Adjust QR code size from 100px to 500px</p>
+            <p className="text-muted-foreground text-xs">Adjust QR code size from 100px to 500px</p>
           </div>
 
           <div className="space-y-2">
             <Label>Error Correction Level</Label>
             <Select
               value={errorCorrection}
-              onValueChange={(value: "L" | "M" | "Q" | "H") => setErrorCorrection(value)}
+              onValueChange={(value: 'L' | 'M' | 'Q' | 'H') => setErrorCorrection(value)}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -407,7 +407,7 @@ END:VCARD`;
                 <SelectItem value="H">High (H)</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {getErrorCorrectionDescription(errorCorrection)}
             </p>
           </div>
@@ -416,7 +416,7 @@ END:VCARD`;
             <Label>Download Format</Label>
             <Select
               value={downloadFormat}
-              onValueChange={(value: "png" | "svg") => setDownloadFormat(value)}
+              onValueChange={(value: 'png' | 'svg') => setDownloadFormat(value)}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -429,8 +429,8 @@ END:VCARD`;
           </div>
 
           <Button onClick={generateQRCode} disabled={isGenerating} className="w-full">
-            <RefreshCw className={`h-4 w-4 mr-2 ${isGenerating ? "animate-spin" : ""}`} />
-            {isGenerating ? "Generating..." : "Generate QR Code"}
+            <RefreshCw className={`mr-2 h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+            {isGenerating ? 'Generating...' : 'Generate QR Code'}
           </Button>
         </CardContent>
       </Card>
@@ -447,18 +447,18 @@ END:VCARD`;
         <CardContent className="space-y-4">
           {qrDataUrl ? (
             <>
-              <div className="flex justify-center p-6 bg-muted rounded-lg">
+              <div className="flex justify-center rounded-lg bg-muted p-6">
                 <img
                   src={qrDataUrl}
                   alt="Generated QR Code"
-                  className="max-w-full h-auto"
-                  style={{ maxHeight: "400px" }}
+                  className="h-auto max-w-full"
+                  style={{ maxHeight: '400px' }}
                 />
               </div>
 
               <div className="flex gap-2">
                 <Button onClick={downloadQRCode} className="flex-1">
-                  <Download className="h-4 w-4 mr-2" />
+                  <Download className="mr-2 h-4 w-4" />
                   Download {downloadFormat.toUpperCase()}
                 </Button>
                 <Button
@@ -467,7 +467,7 @@ END:VCARD`;
                   className="flex items-center gap-2"
                 >
                   <Copy className="h-4 w-4" />
-                  {copied ? "Copied!" : "Copy"}
+                  {copied ? 'Copied!' : 'Copy'}
                 </Button>
               </div>
 
@@ -479,8 +479,8 @@ END:VCARD`;
               </Alert>
             </>
           ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              <QrCode className="h-16 w-16 mx-auto mb-4 opacity-50" />
+            <div className="py-12 text-center text-muted-foreground">
+              <QrCode className="mx-auto mb-4 h-16 w-16 opacity-50" />
               <p>Configure your QR code and click "Generate QR Code" to see the preview</p>
             </div>
           )}

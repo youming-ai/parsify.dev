@@ -18,7 +18,7 @@ export interface ToolState {
   name: string;
   description: string;
   category: string;
-  status: "idle" | "loading" | "success" | "error";
+  status: 'idle' | 'loading' | 'success' | 'error';
   input: ToolInput;
   output?: ToolOutput;
   error?: string;
@@ -35,12 +35,12 @@ export interface ToolConfig {
   version?: string;
   features?: string[];
   inputSchema: ToolInputSchema;
-  outputType?: "json" | "text" | "code" | "table" | "custom";
+  outputType?: 'json' | 'text' | 'code' | 'table' | 'custom';
 }
 
 export interface ToolInputSchema {
   [key: string]: {
-    type: "text" | "textarea" | "number" | "select" | "checkbox" | "file";
+    type: 'text' | 'textarea' | 'number' | 'select' | 'checkbox' | 'file';
     label: string;
     placeholder?: string;
     required?: boolean;
@@ -69,7 +69,7 @@ export interface ToolWrapperProps {
   title: string;
   description: string;
   category: string;
-  status?: ToolState["status"];
+  status?: ToolState['status'];
   error?: string;
   className?: string;
   features?: string[];
@@ -89,7 +89,7 @@ export interface ToolErrorProps {
 
 export interface ToolOutputProps {
   output: ToolOutput;
-  outputType?: ToolConfig["outputType"];
+  outputType?: ToolConfig['outputType'];
   className?: string;
 }
 
@@ -104,27 +104,27 @@ export interface ToolInputFormProps {
 
 // Tool categories for organization
 export type ToolCategory =
-  | "json"
-  | "code"
-  | "text"
-  | "data"
-  | "validation"
-  | "conversion"
-  | "utility";
+  | 'json'
+  | 'code'
+  | 'text'
+  | 'data'
+  | 'validation'
+  | 'conversion'
+  | 'utility';
 
 // Tool status indicators
-export type ToolStatus = ToolState["status"];
+export type ToolStatus = ToolState['status'];
 
 // Error types for better error handling
 export interface ToolError {
-  type: "validation" | "execution" | "network" | "unknown";
+  type: 'validation' | 'execution' | 'network' | 'unknown';
   message: string;
   details?: unknown;
 }
 
 // Event types for tool interactions
 export interface ToolEvent {
-  type: "execute" | "reset" | "input_change" | "output_change";
+  type: 'execute' | 'reset' | 'input_change' | 'output_change';
   payload?: unknown;
   timestamp: Date;
 }

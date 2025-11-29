@@ -29,7 +29,7 @@ export interface UploadedFile {
   metadata?: Record<string, string | number | boolean>;
 }
 
-export type FileUploadStatus = "pending" | "uploading" | "success" | "error" | "cancelled";
+export type FileUploadStatus = 'pending' | 'uploading' | 'success' | 'error' | 'cancelled';
 
 export interface FileUploadProgress {
   loaded: number;
@@ -40,7 +40,7 @@ export interface FileUploadProgress {
 }
 
 export interface FileValidationError {
-  code: "size" | "type" | "count" | "custom";
+  code: 'size' | 'type' | 'count' | 'custom';
   message: string;
   file?: File;
 }
@@ -64,7 +64,7 @@ export interface FilePreviewOptions {
   /** Whether to show line numbers */
   showLineNumbers?: boolean;
   /** Theme for code preview */
-  theme?: "light" | "dark";
+  theme?: 'light' | 'dark';
 }
 
 export interface FileDownloadOptions {
@@ -95,42 +95,42 @@ export interface FileUploadConfig extends FileUploadOptions, FileUploadEvents {}
 
 // Default configuration
 export const DEFAULT_FILE_UPLOAD_CONFIG: Required<
-  Omit<FileUploadConfig, "validator" | keyof FileUploadEvents>
+  Omit<FileUploadConfig, 'validator' | keyof FileUploadEvents>
 > = {
   maxSize: 10 * 1024 * 1024, // 10MB
   accept: [],
   multiple: false,
   autoUpload: true,
-  endpoint: "/api/files/upload",
+  endpoint: '/api/files/upload',
   headers: {},
 };
 
 // Common MIME types
 export const COMMON_MIME_TYPES = {
-  JSON: ["application/json", "text/json"],
-  TEXT: ["text/plain", "text/csv", "text/markdown", "text/html"],
-  IMAGE: ["image/jpeg", "image/png", "image/gif", "image/webp"],
+  JSON: ['application/json', 'text/json'],
+  TEXT: ['text/plain', 'text/csv', 'text/markdown', 'text/html'],
+  IMAGE: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   DOCUMENT: [
-    "application/pdf",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   ],
   SPREADSHEET: [
-    "application/vnd.ms-excel",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   ],
-  ARCHIVE: ["application/zip", "application/x-rar-compressed", "application/x-7z-compressed"],
+  ARCHIVE: ['application/zip', 'application/x-rar-compressed', 'application/x-7z-compressed'],
 } as const;
 
 // File type icons
 export const FILE_TYPE_ICONS = {
-  json: "📄",
-  text: "📝",
-  image: "🖼️",
-  document: "📄",
-  spreadsheet: "📊",
-  archive: "📦",
-  default: "📁",
+  json: '📄',
+  text: '📝',
+  image: '🖼️',
+  document: '📄',
+  spreadsheet: '📊',
+  archive: '📦',
+  default: '📁',
 } as const;
 
 export type FileTypeCategory = keyof typeof COMMON_MIME_TYPES;

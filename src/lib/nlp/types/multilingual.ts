@@ -2,7 +2,7 @@
  * Multilingual Types - Types for multilingual text processing operations
  */
 
-import { NLPResult } from "./core";
+import type { NLPResult } from './core';
 
 // Translation Types
 export interface Translation {
@@ -80,7 +80,7 @@ export interface Transliteration {
 export interface Script {
   code: string; // ISO 15924 script code
   name: string;
-  direction: "ltr" | "rtl" | "ttb";
+  direction: 'ltr' | 'rtl' | 'ttb';
   unicodeRange?: string;
   family: string;
 }
@@ -95,7 +95,7 @@ export interface PronunciationInfo {
 
 export interface StressPattern {
   syllable: number;
-  stress: "primary" | "secondary" | "none";
+  stress: 'primary' | 'secondary' | 'none';
 }
 
 export interface TransliterationAlternative {
@@ -138,7 +138,7 @@ export interface CrossLingualAnalysis {
   texts: CrossLingualText[];
   comparisons: CrossLingualComparison[];
   alignments: CrossLingualAlignment[];
-  consistency: ConsistencyAnalysis;
+  consistency: MultilingualConsistencyAnalysis;
   gaps: AnalysisGap[];
 }
 
@@ -151,7 +151,7 @@ export interface CrossLingualText {
 }
 
 export interface TextAnalysis {
-  sentiment: SentimentAnalysis;
+  sentiment: MultilingualSentimentAnalysis;
   topics: string[];
   entities: EntityReference[];
   keywords: string[];
@@ -159,7 +159,7 @@ export interface TextAnalysis {
   complexity: number;
 }
 
-export interface SentimentAnalysis {
+export interface MultilingualSentimentAnalysis {
   score: number; // -1 to 1
   confidence: number; // 0-1
   emotions: Record<string, number>;
@@ -182,12 +182,12 @@ export interface CrossLingualComparison {
 }
 
 export type ComparisonType =
-  | "sentiment_similarity"
-  | "topic_similarity"
-  | "entity_overlap"
-  | "keyword_similarity"
-  | "structural_similarity"
-  | "semantic_similarity";
+  | 'sentiment_similarity'
+  | 'topic_similarity'
+  | 'entity_overlap'
+  | 'keyword_similarity'
+  | 'structural_similarity'
+  | 'semantic_similarity';
 
 export interface ComparisonDetails {
   commonElements: string[];
@@ -204,7 +204,7 @@ export interface Discrepancy {
   element: string;
   sourceValue: string;
   targetValue: string;
-  severity: "minor" | "moderate" | "major";
+  severity: 'minor' | 'moderate' | 'major';
   explanation: string;
 }
 
@@ -216,7 +216,7 @@ export interface CrossLingualAlignment {
   relationship: AlignmentRelationship;
 }
 
-export type AlignmentType = "sentence" | "phrase" | "word" | "entity" | "topic" | "semantic";
+export type AlignmentType = 'sentence' | 'phrase' | 'word' | 'entity' | 'topic' | 'semantic';
 
 export interface TextSegment {
   text: string;
@@ -226,15 +226,15 @@ export interface TextSegment {
 }
 
 export type AlignmentRelationship =
-  | "equivalent"
-  | "partial_equivalent"
-  | "broader"
-  | "narrower"
-  | "related"
-  | "contradictory"
-  | "missing";
+  | 'equivalent'
+  | 'partial_equivalent'
+  | 'broader'
+  | 'narrower'
+  | 'related'
+  | 'contradictory'
+  | 'missing';
 
-export interface ConsistencyAnalysis {
+export interface MultilingualConsistencyAnalysis {
   overall: number; // 0-1 consistency score
   dimensions: ConsistencyDimension[];
   inconsistencies: Inconsistency[];
@@ -250,7 +250,7 @@ export interface ConsistencyDimension {
 export interface Inconsistency {
   type: string;
   description: string;
-  severity: "minor" | "moderate" | "major";
+  severity: 'minor' | 'moderate' | 'major';
   location: {
     source: string;
     target: string;
@@ -369,29 +369,29 @@ export interface CulturalSensitivity {
   type: SensitivityType;
   content: string;
   description: string;
-  severity: "low" | "medium" | "high";
+  severity: 'low' | 'medium' | 'high';
   recommendation: string;
   alternatives: string[];
 }
 
 export type SensitivityType =
-  | "religious"
-  | "political"
-  | "cultural"
-  | "historical"
-  | "social"
-  | "gender"
-  | "age"
-  | "ethnicity"
-  | "disability"
-  | "economic";
+  | 'religious'
+  | 'political'
+  | 'cultural'
+  | 'historical'
+  | 'social'
+  | 'gender'
+  | 'age'
+  | 'ethnicity'
+  | 'disability'
+  | 'economic';
 
 export interface CulturalNorm {
   domain: string; // 'communication', 'business', 'social', etc.
   norm: string;
   explanation: string;
   examples: string[];
-  importance: "low" | "medium" | "high";
+  importance: 'low' | 'medium' | 'high';
 }
 
 export interface CulturalReference {
@@ -421,10 +421,10 @@ export interface AdaptationLevel {
 }
 
 export interface CulturalRecommendation {
-  type: "adapt" | "explain" | "avoid" | "research";
+  type: 'adapt' | 'explain' | 'avoid' | 'research';
   description: string;
-  priority: "critical" | "high" | "medium" | "low";
-  effort: "low" | "medium" | "high";
+  priority: 'critical' | 'high' | 'medium' | 'low';
+  effort: 'low' | 'medium' | 'high';
   impact: string;
 }
 
@@ -463,7 +463,7 @@ export interface MultilingualConfig {
   };
   culturalAnalysis?: {
     targetCulture: string;
-    sensitivityLevel: "conservative" | "moderate" | "liberal";
+    sensitivityLevel: 'conservative' | 'moderate' | 'liberal';
     adaptationRequired: boolean;
     includeRecommendations: boolean;
   };

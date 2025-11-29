@@ -47,16 +47,15 @@ export class GoogleAnalyticsService {
 
   constructor(config?: Partial<GoogleAnalyticsConfig>) {
     this.config = {
-      enabled: process.env.NODE_ENV !== "development",
-      debug: process.env.NODE_ENV === "development",
+      enabled: process.env.NODE_ENV !== 'development',
+      debug: process.env.NODE_ENV === 'development',
       anonymizeIp: true,
       allowAdPersonalization: false,
       sendPageView: true,
       ...config,
     };
     this.debugMode = this.config.debug || false;
-    this.measurementId =
-      this.config.measurementId || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "";
+    this.measurementId = this.config.measurementId || '';
   }
 
   /**
@@ -64,22 +63,22 @@ export class GoogleAnalyticsService {
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
-      this.debug("Google Analytics already initialized");
+      this.debug('Google Analytics already initialized');
       return;
     }
 
     if (!this.config.enabled) {
-      this.debug("Google Analytics is disabled");
+      this.debug('Google Analytics is disabled');
       return;
     }
 
     if (!this.measurementId) {
-      this.debug("Google Analytics measurement ID not provided");
+      this.debug('Google Analytics measurement ID not provided');
       return;
     }
 
-    if (typeof window === "undefined") {
-      this.debug("Google Analytics can only be initialized in browser environment");
+    if (typeof window === 'undefined') {
+      this.debug('Google Analytics can only be initialized in browser environment');
       return;
     }
 
@@ -90,7 +89,7 @@ export class GoogleAnalyticsService {
       }
 
       // Configure gtag
-      window.gtag("config", this.measurementId, {
+      window.gtag('config', this.measurementId, {
         debug_mode: this.debugMode,
         anonymize_ip: this.config.anonymizeIp,
         allow_google_signals: this.config.allowAdPersonalization,
@@ -102,17 +101,17 @@ export class GoogleAnalyticsService {
       this.processEventQueue();
 
       this.isInitialized = true;
-      this.debug("Google Analytics initialized successfully", {
+      this.debug('Google Analytics initialized successfully', {
         measurementId: this.measurementId,
       });
 
       // Track initialization event
-      this.trackEvent("ga_initialized", {
+      this.trackEvent('ga_initialized', {
         measurement_id: this.measurementId,
         timestamp: Date.now(),
       });
     } catch (error) {
-      this.debug("Failed to initialize Google Analytics", error);
+      this.debug('Failed to initialize Google Analytics', error);
       throw error;
     }
   }
@@ -121,13 +120,13 @@ export class GoogleAnalyticsService {
    * Inject gtag script into the page
    */
   private injectGtagScript(): void {
-    const script = document.createElement("script");
+    const script = document.createElement('script');
     script.async = true;
     script.src = `https://www.googletagmanager.com/gtag/js?id=${this.measurementId}`;
 
     // Add error handling
     script.onerror = () => {
-      this.debug("Failed to load Google Analytics script");
+      this.debug('Failed to load Google Analytics script');
     };
 
     document.head.appendChild(script);
@@ -154,10 +153,10 @@ export class GoogleAnalyticsService {
         custom_map: parameters?.custom_map || {},
       };
 
-      window.gtag("event", action, eventParams);
-      this.debug("Event tracked in GA", { action, parameters: eventParams });
+      window.gtag('event', action, eventParams);
+      this.debug('Event tracked in GA', { action, parameters: eventParams });
     } catch (error) {
-      this.debug("Failed to track event in GA", {
+      this.debug('Failed to track event in GA', {
         action,
         parameters,
         error,
@@ -178,18 +177,18 @@ export class GoogleAnalyticsService {
       const pagePath = path || window.location.pathname;
       const pageTitle = title || document.title;
 
-      window.gtag("config", this.measurementId, {
+      window.gtag('config', this.measurementId, {
         page_path: pagePath,
         page_title: pageTitle,
         page_location: window.location.href,
       });
 
-      this.debug("Page view tracked in GA", {
+      this.debug('Page view tracked in GA', {
         path: pagePath,
         title: pageTitle,
       });
     } catch (error) {
-      this.debug("Failed to track page view in GA", { path, title, error });
+      this.debug('Failed to track page view in GA', { path, title, error });
     }
   }
 
@@ -198,17 +197,17 @@ export class GoogleAnalyticsService {
    */
   setUserId(userId: string): void {
     if (!this.isInitialized) {
-      this.debug("Cannot set user ID - GA not initialized");
+      this.debug('Cannot set user ID - GA not initialized');
       return;
     }
 
     try {
-      window.gtag("config", this.measurementId, {
+      window.gtag('config', this.measurementId, {
         user_id: userId,
       });
-      this.debug("User ID set in GA", { userId });
+      this.debug('User ID set in GA', { userId });
     } catch (error) {
-      this.debug("Failed to set user ID in GA", { userId, error });
+      this.debug('Failed to set user ID in GA', { userId, error });
     }
   }
 
@@ -217,17 +216,17 @@ export class GoogleAnalyticsService {
    */
   setUserProperties(properties: Record<string, any>): void {
     if (!this.isInitialized) {
-      this.debug("Cannot set user properties - GA not initialized");
+      this.debug('Cannot set user properties - GA not initialized');
       return;
     }
 
     try {
-      window.gtag("config", this.measurementId, {
+      window.gtag('config', this.measurementId, {
         custom_map: properties,
       });
-      this.debug("User properties set in GA", properties);
+      this.debug('User properties set in GA', properties);
     } catch (error) {
-      this.debug("Failed to set user properties in GA", {
+      this.debug('Failed to set user properties in GA', {
         properties,
         error,
       });
@@ -241,9 +240,9 @@ export class GoogleAnalyticsService {
     toolId: string,
     toolName: string,
     action: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, any>
   ): void {
-    this.trackEvent("tool_usage", {
+    this.trackEvent('tool_usage', {
       tool_id: toolId,
       tool_name: toolName,
       action,
@@ -257,9 +256,9 @@ export class GoogleAnalyticsService {
   trackInteraction(
     interactionType: string,
     elementId?: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, any>
   ): void {
-    this.trackEvent("user_interaction", {
+    this.trackEvent('user_interaction', {
       interaction_type: interactionType,
       element_id: elementId,
       ...metadata,
@@ -273,7 +272,7 @@ export class GoogleAnalyticsService {
     const errorMessage = error instanceof Error ? error.message : error;
     const _errorStack = error instanceof Error ? error.stack : undefined;
 
-    this.trackEvent("error", {
+    this.trackEvent('error', {
       description: errorMessage,
       fatal: false,
       ...context,
@@ -283,14 +282,14 @@ export class GoogleAnalyticsService {
   /**
    * Track exception
    */
-  trackException(error: Error | string, fatal: boolean = false): void {
+  trackException(error: Error | string, fatal = false): void {
     try {
-      (window as any).gtag("event", "exception", {
+      (window as any).gtag('event', 'exception', {
         description: error instanceof Error ? error.message : error,
         fatal: fatal,
       });
     } catch (_e) {
-      this.debug("Failed to track exception in GA", { error, fatal });
+      this.debug('Failed to track exception in GA', { error, fatal });
     }
   }
 
@@ -298,9 +297,9 @@ export class GoogleAnalyticsService {
    * Disable tracking for user privacy
    */
   disableTracking(): void {
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       (window as any)[`ga-disable-${this.measurementId}`] = true;
-      this.debug("Google Analytics tracking disabled");
+      this.debug('Google Analytics tracking disabled');
     }
   }
 
@@ -308,9 +307,9 @@ export class GoogleAnalyticsService {
    * Enable tracking
    */
   enableTracking(): void {
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       delete (window as any)[`ga-disable-${this.measurementId}`];
-      this.debug("Google Analytics tracking enabled");
+      this.debug('Google Analytics tracking enabled');
     }
   }
 
@@ -322,7 +321,7 @@ export class GoogleAnalyticsService {
       action,
       custom_parameters: parameters || {},
     });
-    this.debug("Event queued for GA", { action, parameters });
+    this.debug('Event queued for GA', { action, parameters });
   }
 
   /**
@@ -330,13 +329,13 @@ export class GoogleAnalyticsService {
    */
   private queuePageView(path?: string, title?: string): void {
     this.eventQueue.push({
-      action: "page_view",
+      action: 'page_view',
       custom_parameters: {
         path: path || window.location.pathname,
         title: title || document.title,
       },
     });
-    this.debug("Page view queued for GA", { path, title });
+    this.debug('Page view queued for GA', { path, title });
   }
 
   /**
@@ -345,10 +344,10 @@ export class GoogleAnalyticsService {
   private processEventQueue(): void {
     if (this.eventQueue.length === 0) return;
 
-    this.debug("Processing queued events", { count: this.eventQueue.length });
+    this.debug('Processing queued events', { count: this.eventQueue.length });
 
     this.eventQueue.forEach((event) => {
-      if (event.action === "page_view") {
+      if (event.action === 'page_view') {
         const params = (event.custom_parameters as Record<string, string | undefined>) || {};
         const { path, title } = params;
         this.trackPageView(path, title);
@@ -380,12 +379,18 @@ export class GoogleAnalyticsService {
    */
   updateConfig(newConfig: Partial<GoogleAnalyticsConfig>): void {
     if (this.isInitialized) {
-      this.debug("Cannot update config - GA already initialized");
+      this.debug('Cannot update config - GA already initialized');
       return;
     }
 
     this.config = { ...this.config, ...newConfig };
-    this.debug("Google Analytics configuration updated", {
+    if (newConfig.measurementId) {
+      this.measurementId = newConfig.measurementId;
+    }
+    if (newConfig.debug !== undefined) {
+      this.debugMode = newConfig.debug;
+    }
+    this.debug('Google Analytics configuration updated', {
       config: this.config,
     });
   }
@@ -411,9 +416,9 @@ export class GoogleAnalyticsService {
       try {
         // Google Analytics doesn't provide a destroy method
         // This would be for cleanup if needed in future versions
-        this.debug("Google Analytics service destroyed");
+        this.debug('Google Analytics service destroyed');
       } catch (error) {
-        this.debug("Error during GA cleanup", error);
+        this.debug('Error during GA cleanup', error);
       }
     }
 
@@ -426,14 +431,14 @@ export class GoogleAnalyticsService {
  * Create and initialize a Google Analytics service instance
  */
 export function createGoogleAnalyticsService(
-  config?: Partial<GoogleAnalyticsConfig>,
+  config?: Partial<GoogleAnalyticsConfig>
 ): GoogleAnalyticsService {
   const service = new GoogleAnalyticsService(config);
 
   // Auto-initialize if we're in a browser environment
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     service.initialize().catch((error) => {
-      console.error("Failed to initialize Google Analytics:", error);
+      console.error('Failed to initialize Google Analytics:', error);
     });
   }
 

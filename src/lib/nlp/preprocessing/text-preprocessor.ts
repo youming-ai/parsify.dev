@@ -3,7 +3,7 @@
  * Comprehensive text preprocessing pipeline for NLP operations
  */
 
-import { PreprocessingInfo, LanguageInfo, NLPConfig } from "../types";
+import { type LanguageInfo, NLPConfig, PreprocessingInfo } from '../types';
 
 export interface PreprocessorConfig {
   normalizeText: boolean;
@@ -21,7 +21,7 @@ export interface PreprocessorConfig {
   customStopwords: string[];
   preserveEntities: boolean;
   preserveCase: boolean;
-  unicodeNormalization: "NFC" | "NFD" | "NFKC" | "NFKD";
+  unicodeNormalization: 'NFC' | 'NFD' | 'NFKC' | 'NFKD';
   tokenPattern: string;
 }
 
@@ -38,35 +38,35 @@ export interface Token {
 }
 
 export type TokenType =
-  | "word"
-  | "punctuation"
-  | "number"
-  | "whitespace"
-  | "entity"
-  | "url"
-  | "email"
-  | "hashtag"
-  | "mention"
-  | "emoji"
-  | "symbol"
-  | "unknown";
+  | 'word'
+  | 'punctuation'
+  | 'number'
+  | 'whitespace'
+  | 'entity'
+  | 'url'
+  | 'email'
+  | 'hashtag'
+  | 'mention'
+  | 'emoji'
+  | 'symbol'
+  | 'unknown';
 
 export type PartOfSpeech =
-  | "noun"
-  | "verb"
-  | "adjective"
-  | "adverb"
-  | "pronoun"
-  | "preposition"
-  | "conjunction"
-  | "interjection"
-  | "determiner"
-  | "auxiliary"
-  | "particle"
-  | "noun_phrase"
-  | "verb_phrase"
-  | "adjective_phrase"
-  | "unknown";
+  | 'noun'
+  | 'verb'
+  | 'adjective'
+  | 'adverb'
+  | 'pronoun'
+  | 'preposition'
+  | 'conjunction'
+  | 'interjection'
+  | 'determiner'
+  | 'auxiliary'
+  | 'particle'
+  | 'noun_phrase'
+  | 'verb_phrase'
+  | 'adjective_phrase'
+  | 'unknown';
 
 export interface EntityInfo {
   type: string;
@@ -121,12 +121,12 @@ export class TextPreprocessor {
   private config: PreprocessorConfig;
   private stopWords: Set<string> = new Set();
   private contractions: Map<string, string> = new Map();
-  private punctuationRegex: RegExp;
-  private urlRegex: RegExp;
-  private emailRegex: RegExp;
-  private hashtagRegex: RegExp;
-  private mentionRegex: RegExp;
-  private emojiRegex: RegExp;
+  private punctuationRegex!: RegExp;
+  private urlRegex!: RegExp;
+  private emailRegex!: RegExp;
+  private hashtagRegex!: RegExp;
+  private mentionRegex!: RegExp;
+  private emojiRegex!: RegExp;
 
   constructor(config: Partial<PreprocessorConfig> = {}) {
     this.config = {
@@ -145,8 +145,8 @@ export class TextPreprocessor {
       customStopwords: [],
       preserveEntities: false,
       preserveCase: false,
-      unicodeNormalization: "NFC",
-      tokenPattern: "\\w+|[^\\w\\s]",
+      unicodeNormalization: 'NFC',
+      tokenPattern: '\\w+|[^\\w\\s]',
       ...config,
     };
 
@@ -160,7 +160,7 @@ export class TextPreprocessor {
    */
   async process(
     text: string,
-    options: Partial<PreprocessorConfig> = {},
+    options: Partial<PreprocessorConfig> = {}
   ): Promise<PreprocessedText> {
     const config = { ...this.config, ...options };
 
@@ -203,7 +203,7 @@ export class TextPreprocessor {
       metadata: {
         config,
         processingTime: Date.now(),
-        version: "1.0.0",
+        version: '1.0.0',
       },
     };
   }
@@ -216,7 +216,7 @@ export class TextPreprocessor {
     const tokens: Token[] = [];
 
     // Use regex for basic tokenization
-    const regex = new RegExp(mergedConfig.tokenPattern, "g");
+    const regex = new RegExp(mergedConfig.tokenPattern, 'g');
     let match;
 
     while ((match = regex.exec(text)) !== null) {
@@ -256,13 +256,13 @@ export class TextPreprocessor {
     if (mergedConfig.removeStopwords) {
       const stopWords = new Set([...this.stopWords, ...mergedConfig.customStopwords]);
       processedTokens = processedTokens.filter(
-        (token) => token.type !== "word" || !stopWords.has(token.text.toLowerCase()),
+        (token) => token.type !== 'word' || !stopWords.has(token.text.toLowerCase())
       );
     }
 
     // Filter by word length
     processedTokens = processedTokens.filter((token) => {
-      if (token.type !== "word") return true;
+      if (token.type !== 'word') return true;
       const length = token.text.length;
       return length >= mergedConfig.minWordLength && length <= mergedConfig.maxWordLength;
     });
@@ -271,7 +271,7 @@ export class TextPreprocessor {
     if (mergedConfig.stemWords) {
       processedTokens = processedTokens.map((token) => ({
         ...token,
-        stem: token.type === "word" ? this.stem(token.text) : undefined,
+        stem: token.type === 'word' ? this.stem(token.text) : undefined,
       }));
     }
 
@@ -279,7 +279,7 @@ export class TextPreprocessor {
     if (mergedConfig.lemmatize) {
       processedTokens = processedTokens.map((token) => ({
         ...token,
-        lemma: token.type === "word" ? this.lemmatize(token.text) : undefined,
+        lemma: token.type === 'word' ? this.lemmatize(token.text) : undefined,
       }));
     }
 
@@ -336,13 +336,13 @@ export class TextPreprocessor {
 
     return tokens
       .filter((token) => {
-        if (mergedConfig.removePunctuation && token.type === "punctuation") return false;
-        if (mergedConfig.removeNumbers && token.type === "number") return false;
+        if (mergedConfig.removePunctuation && token.type === 'punctuation') return false;
+        if (mergedConfig.removeNumbers && token.type === 'number') return false;
         return true;
       })
       .map((token) => token.text)
-      .join(" ")
-      .replace(/\s+/g, " ")
+      .join(' ')
+      .replace(/\s+/g, ' ')
       .trim();
   }
 
@@ -350,7 +350,7 @@ export class TextPreprocessor {
    * Calculate text statistics
    */
   calculateStatistics(tokens: Token[], sentences: Sentence[]): TextStatistics {
-    const wordTokens = tokens.filter((token) => token.type === "word");
+    const wordTokens = tokens.filter((token) => token.type === 'word');
     const uniqueWords = new Set(wordTokens.map((token) => token.text.toLowerCase()));
     const stopWords = wordTokens.filter((token) => this.stopWords.has(token.text.toLowerCase()));
 
@@ -366,13 +366,13 @@ export class TextPreprocessor {
           : 0,
       uniqueWords: uniqueWords.size,
       stopWordCount: stopWords.length,
-      punctuationCount: tokens.filter((token) => token.type === "punctuation").length,
-      numberCount: tokens.filter((token) => token.type === "number").length,
-      urlCount: tokens.filter((token) => token.type === "url").length,
-      emailCount: tokens.filter((token) => token.type === "email").length,
-      hashtagCount: tokens.filter((token) => token.type === "hashtag").length,
-      mentionCount: tokens.filter((token) => token.type === "mention").length,
-      emojiCount: tokens.filter((token) => token.type === "emoji").length,
+      punctuationCount: tokens.filter((token) => token.type === 'punctuation').length,
+      numberCount: tokens.filter((token) => token.type === 'number').length,
+      urlCount: tokens.filter((token) => token.type === 'url').length,
+      emailCount: tokens.filter((token) => token.type === 'email').length,
+      hashtagCount: tokens.filter((token) => token.type === 'hashtag').length,
+      mentionCount: tokens.filter((token) => token.type === 'mention').length,
+      emojiCount: tokens.filter((token) => token.type === 'emoji').length,
     };
   }
 
@@ -392,7 +392,7 @@ export class TextPreprocessor {
       ru: /[\u0400-\u04ff]/,
     };
 
-    let detectedLanguage = "en";
+    let detectedLanguage = 'en';
     let maxMatches = 0;
 
     for (const [lang, pattern] of Object.entries(patterns)) {
@@ -420,19 +420,26 @@ export class TextPreprocessor {
   /**
    * Validate preprocessing configuration
    */
-  validateConfig(config: Partial<PreprocessorConfig>): { valid: boolean; errors: string[] } {
+  validateConfig(config: Partial<PreprocessorConfig>): {
+    valid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
     if (config.minWordLength && config.minWordLength < 1) {
-      errors.push("minWordLength must be at least 1");
+      errors.push('minWordLength must be at least 1');
     }
 
-    if (config.maxWordLength && config.maxWordLength < config.minWordLength) {
-      errors.push("maxWordLength must be greater than minWordLength");
+    if (
+      config.maxWordLength &&
+      config.minWordLength &&
+      config.maxWordLength < config.minWordLength
+    ) {
+      errors.push('maxWordLength must be greater than minWordLength');
     }
 
     if (config.tokenPattern && !this.isValidRegex(config.tokenPattern)) {
-      errors.push("tokenPattern is not a valid regular expression");
+      errors.push('tokenPattern is not a valid regular expression');
     }
 
     return {
@@ -454,7 +461,7 @@ export class TextPreprocessor {
   updateConfig(newConfig: Partial<PreprocessorConfig>): void {
     const validation = this.validateConfig(newConfig);
     if (!validation.valid) {
-      throw new Error(`Invalid configuration: ${validation.errors.join(", ")}`);
+      throw new Error(`Invalid configuration: ${validation.errors.join(', ')}`);
     }
 
     this.config = { ...this.config, ...newConfig };
@@ -481,69 +488,69 @@ export class TextPreprocessor {
   private initializeStopWords(): void {
     // Basic English stop words
     const englishStopWords = [
-      "a",
-      "an",
-      "and",
-      "are",
-      "as",
-      "at",
-      "be",
-      "but",
-      "by",
-      "for",
-      "if",
-      "in",
-      "into",
-      "is",
-      "it",
-      "no",
-      "not",
-      "of",
-      "on",
-      "or",
-      "such",
-      "that",
-      "the",
-      "their",
-      "then",
-      "there",
-      "these",
-      "they",
-      "this",
-      "to",
-      "was",
-      "will",
-      "with",
-      "the",
-      "i",
-      "me",
-      "my",
-      "myself",
-      "we",
-      "our",
-      "ours",
-      "ourselves",
-      "you",
-      "your",
-      "yours",
-      "yourself",
-      "yourselves",
-      "he",
-      "him",
-      "his",
-      "himself",
-      "she",
-      "her",
-      "hers",
-      "herself",
-      "it",
-      "its",
-      "itself",
-      "they",
-      "them",
-      "their",
-      "theirs",
-      "themselves",
+      'a',
+      'an',
+      'and',
+      'are',
+      'as',
+      'at',
+      'be',
+      'but',
+      'by',
+      'for',
+      'if',
+      'in',
+      'into',
+      'is',
+      'it',
+      'no',
+      'not',
+      'of',
+      'on',
+      'or',
+      'such',
+      'that',
+      'the',
+      'their',
+      'then',
+      'there',
+      'these',
+      'they',
+      'this',
+      'to',
+      'was',
+      'will',
+      'with',
+      'the',
+      'i',
+      'me',
+      'my',
+      'myself',
+      'we',
+      'our',
+      'ours',
+      'ourselves',
+      'you',
+      'your',
+      'yours',
+      'yourself',
+      'yourselves',
+      'he',
+      'him',
+      'his',
+      'himself',
+      'she',
+      'her',
+      'hers',
+      'herself',
+      'it',
+      'its',
+      'itself',
+      'they',
+      'them',
+      'their',
+      'theirs',
+      'themselves',
     ];
 
     this.stopWords = new Set(englishStopWords);
@@ -551,59 +558,59 @@ export class TextPreprocessor {
 
   private initializeContractions(): void {
     const commonContractions: [string, string][] = [
-      ["won't", "will not"],
-      ["can't", "cannot"],
-      ["n't", " not"],
-      ["'re", " are"],
-      ["'ve", " have"],
-      ["'ll", " will"],
-      ["'d", " would"],
-      ["'m", " am"],
-      ["let's", "let us"],
-      ["don't", "do not"],
-      ["doesn't", "does not"],
-      ["didn't", "did not"],
-      ["isn't", "is not"],
-      ["aren't", "are not"],
-      ["wasn't", "was not"],
-      ["weren't", "were not"],
-      ["haven't", "have not"],
-      ["hasn't", "has not"],
-      ["hadn't", "had not"],
-      ["shouldn't", "should not"],
-      ["couldn't", "could not"],
-      ["wouldn't", "would not"],
-      ["mightn't", "might not"],
-      ["mustn't", "must not"],
+      ["won't", 'will not'],
+      ["can't", 'cannot'],
+      ["n't", ' not'],
+      ["'re", ' are'],
+      ["'ve", ' have'],
+      ["'ll", ' will'],
+      ["'d", ' would'],
+      ["'m", ' am'],
+      ["let's", 'let us'],
+      ["don't", 'do not'],
+      ["doesn't", 'does not'],
+      ["didn't", 'did not'],
+      ["isn't", 'is not'],
+      ["aren't", 'are not'],
+      ["wasn't", 'was not'],
+      ["weren't", 'were not'],
+      ["haven't", 'have not'],
+      ["hasn't", 'has not'],
+      ["hadn't", 'had not'],
+      ["shouldn't", 'should not'],
+      ["couldn't", 'could not'],
+      ["wouldn't", 'would not'],
+      ["mightn't", 'might not'],
+      ["mustn't", 'must not'],
     ];
 
     this.contractions = new Map(commonContractions);
   }
 
   private classifyToken(text: string): TokenType {
-    if (this.urlRegex.test(text)) return "url";
-    if (this.emailRegex.test(text)) return "email";
-    if (this.hashtagRegex.test(text)) return "hashtag";
-    if (this.mentionRegex.test(text)) return "mention";
-    if (this.emojiRegex.test(text)) return "emoji";
-    if (this.punctuationRegex.test(text)) return "punctuation";
-    if (/^\d+$/.test(text)) return "number";
-    if (/^\s+$/.test(text)) return "whitespace";
-    if (/^[a-zA-Z]+$/.test(text)) return "word";
-    return "unknown";
+    if (this.urlRegex.test(text)) return 'url';
+    if (this.emailRegex.test(text)) return 'email';
+    if (this.hashtagRegex.test(text)) return 'hashtag';
+    if (this.mentionRegex.test(text)) return 'mention';
+    if (this.emojiRegex.test(text)) return 'emoji';
+    if (this.punctuationRegex.test(text)) return 'punctuation';
+    if (/^\d+$/.test(text)) return 'number';
+    if (/^\s+$/.test(text)) return 'whitespace';
+    if (/^[a-zA-Z]+$/.test(text)) return 'word';
+    return 'unknown';
   }
 
   private isSentenceBoundary(token: Token, tokens: Token[], index: number): boolean {
-    if (token.type === "punctuation" && /[.!?]/.test(token.text)) {
+    if (token.type === 'punctuation' && /[.!?]/.test(token.text)) {
       return true;
     }
 
     // Check for common sentence patterns
-    if (token.type === "punctuation" && token.text === ".") {
+    if (token.type === 'punctuation' && token.text === '.') {
       // Check if it's not an abbreviation
       if (index > 0) {
         const prevToken = tokens[index - 1];
-        const abbreviations = ["mr", "mrs", "dr", "prof", "sr", "jr", "st", "ave", "blvd", "rd"];
+        const abbreviations = ['mr', 'mrs', 'dr', 'prof', 'sr', 'jr', 'st', 'ave', 'blvd', 'rd'];
         if (!abbreviations.includes(prevToken.text.toLowerCase())) {
           return true;
         }
@@ -618,8 +625,8 @@ export class TextPreprocessor {
 
     for (const [contraction, expansion] of this.contractions) {
       expanded = expanded.replace(
-        new RegExp(contraction.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"),
-        expansion,
+        new RegExp(contraction.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'),
+        expansion
       );
     }
 
@@ -628,16 +635,16 @@ export class TextPreprocessor {
 
   private stem(word: string): string {
     // Simple stemming rule
-    if (word.endsWith("ing")) {
+    if (word.endsWith('ing')) {
       return word.slice(0, -3);
     }
-    if (word.endsWith("ed")) {
+    if (word.endsWith('ed')) {
       return word.slice(0, -2);
     }
-    if (word.endsWith("ly")) {
+    if (word.endsWith('ly')) {
       return word.slice(0, -2);
     }
-    if (word.endsWith("s")) {
+    if (word.endsWith('s')) {
       return word.slice(0, -1);
     }
     return word;
@@ -646,42 +653,42 @@ export class TextPreprocessor {
   private lemmatize(word: string): string {
     // Basic lemmatization rules
     const irregulars: Record<string, string> = {
-      am: "be",
-      is: "be",
-      are: "be",
-      was: "be",
-      were: "be",
-      be: "be",
-      being: "be",
-      been: "be",
-      have: "have",
-      has: "have",
-      had: "have",
-      do: "do",
-      does: "do",
-      did: "do",
-      go: "go",
-      goes: "go",
-      went: "go",
-      gone: "go",
-      get: "get",
-      gets: "get",
-      got: "get",
-      gotten: "get",
-      make: "make",
-      makes: "make",
-      made: "make",
-      come: "come",
-      comes: "come",
-      came: "come",
-      see: "see",
-      sees: "see",
-      saw: "see",
-      seen: "see",
-      take: "take",
-      takes: "take",
-      took: "take",
-      taken: "take",
+      am: 'be',
+      is: 'be',
+      are: 'be',
+      was: 'be',
+      were: 'be',
+      be: 'be',
+      being: 'be',
+      been: 'be',
+      have: 'have',
+      has: 'have',
+      had: 'have',
+      do: 'do',
+      does: 'do',
+      did: 'do',
+      go: 'go',
+      goes: 'go',
+      went: 'go',
+      gone: 'go',
+      get: 'get',
+      gets: 'get',
+      got: 'get',
+      gotten: 'get',
+      make: 'make',
+      makes: 'make',
+      made: 'make',
+      come: 'come',
+      comes: 'come',
+      came: 'come',
+      see: 'see',
+      sees: 'see',
+      saw: 'see',
+      seen: 'see',
+      take: 'take',
+      takes: 'take',
+      took: 'take',
+      taken: 'take',
     };
 
     return irregulars[word.toLowerCase()] || word;
@@ -706,30 +713,30 @@ export class TextPreprocessor {
 
   private getLanguageName(code: string): string {
     const names: Record<string, string> = {
-      en: "English",
-      es: "Spanish",
-      fr: "French",
-      de: "German",
-      zh: "Chinese",
-      ja: "Japanese",
-      ar: "Arabic",
-      ru: "Russian",
+      en: 'English',
+      es: 'Spanish',
+      fr: 'French',
+      de: 'German',
+      zh: 'Chinese',
+      ja: 'Japanese',
+      ar: 'Arabic',
+      ru: 'Russian',
     };
-    return names[code] || "Unknown";
+    return names[code] || 'Unknown';
   }
 
   private getScript(code: string): string {
     const scripts: Record<string, string> = {
-      en: "Latin",
-      es: "Latin",
-      fr: "Latin",
-      de: "Latin",
-      zh: "Han",
-      ja: "Japanese",
-      ar: "Arabic",
-      ru: "Cyrillic",
+      en: 'Latin',
+      es: 'Latin',
+      fr: 'Latin',
+      de: 'Latin',
+      zh: 'Han',
+      ja: 'Japanese',
+      ar: 'Arabic',
+      ru: 'Cyrillic',
     };
-    return scripts[code] || "Unknown";
+    return scripts[code] || 'Unknown';
   }
 
   private isValidRegex(pattern: string): boolean {

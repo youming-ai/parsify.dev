@@ -8,7 +8,7 @@ export interface JsonValidationError {
   line: number;
   column: number;
   message: string;
-  severity: "error" | "warning";
+  severity: 'error' | 'warning';
 }
 
 export interface JsonFormatOptions {
@@ -19,7 +19,7 @@ export interface JsonFormatOptions {
 }
 
 export interface JsonConversionOptions {
-  targetFormat: "xml" | "yaml" | "csv";
+  targetFormat: 'xml' | 'yaml' | 'csv';
   rootElement?: string;
   arrayItemName?: string;
   flatten?: boolean;
@@ -29,14 +29,14 @@ export interface JsonConversionOptions {
 export interface TreeNode {
   key: string;
   value: unknown;
-  type: "object" | "array" | "string" | "number" | "boolean" | "null";
+  type: 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null';
   path: string;
   children?: TreeNode[];
   isExpanded?: boolean;
   level: number;
 }
 
-export type JsonParsingStatus = "idle" | "parsing" | "valid" | "error";
+export type JsonParsingStatus = 'idle' | 'parsing' | 'valid' | 'error';
 
 export interface JsonEditorState {
   content: string;
@@ -74,7 +74,7 @@ export interface ValidationError {
   message: string;
   line?: number;
   column?: number;
-  severity?: "error" | "warning";
+  severity?: 'error' | 'warning';
 }
 
 export interface JsonViewerProps {

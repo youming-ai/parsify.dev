@@ -1,33 +1,21 @@
-import { AlertCircle, Shield } from "lucide-react";
-import type { Metadata } from "next";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import JWTDecoderClient from "./client";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, Shield } from 'lucide-react';
+import type { Metadata } from 'next';
+import JWTDecoderClient from './client';
 
 export const metadata: Metadata = {
-  title: "JWT Decoder - Parse & Decode JSON Web Tokens",
+  title: 'JWT Decoder - Parse & Decode JSON Web Tokens',
   description:
-    "Decode and verify JSON Web Tokens (JWT) instantly. View header, payload, and signature information.",
-  keywords: ["JWT", "JSON Web Token", "decoder", "parser", "authentication", "token"],
+    'Decode and verify JSON Web Tokens (JWT) instantly. View header, payload, and signature information.',
+  keywords: ['JWT', 'JSON Web Token', 'decoder', 'parser', 'authentication', 'token'],
 };
 
 export default function JWTDecoderPage() {
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4">JWT Decoder</h1>
-          <p className="text-xl text-muted-foreground mb-4">
-            Decode and verify JSON Web Tokens (JWT) instantly
-          </p>
-          <div className="flex justify-center gap-2 mb-4">
-            <Badge variant="secondary">Client-Side</Badge>
-            <Badge variant="outline">Secure</Badge>
-            <Badge variant="default">Fast</Badge>
-          </div>
-        </div>
-
+    <div className="container mx-auto px-4 py-8">
+      <div className="mx-auto max-w-4xl">
         <Alert className="mb-6">
           <Shield className="h-4 w-4" />
           <AlertDescription>
@@ -47,14 +35,14 @@ export default function JWTDecoderPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="mb-4 text-muted-foreground text-sm">
                 JSON Web Token (JWT) is an open standard (RFC 7519) that defines a compact and
                 self-contained way for securely transmitting information between parties as a JSON
                 object.
               </p>
               <div className="space-y-2">
                 <h4 className="font-semibold text-sm">JWT Structure:</h4>
-                <div className="text-xs font-mono bg-muted p-2 rounded">
+                <div className="rounded bg-muted p-2 font-mono text-xs">
                   header.payload.signature
                 </div>
               </div>
@@ -66,7 +54,7 @@ export default function JWTDecoderPage() {
               <CardTitle>Common Use Cases</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-muted-foreground text-sm">
                 <li>• Authentication in web applications</li>
                 <li>• Information exchange between services</li>
                 <li>• API access tokens</li>

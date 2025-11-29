@@ -1,10 +1,10 @@
-import type React from "react";
-import { useEffect, useMemo, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import type { FilePreviewOptions, UploadedFile } from "./file-upload-types";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { FilePreviewOptions, UploadedFile } from './file-upload-types';
 
 interface FilePreviewProps {
   /** File to preview */
@@ -34,42 +34,42 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   onCopy,
   onDownload,
 }) => {
-  const [content, setContent] = useState<string>("");
+  const [content, setContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
 
-  const { maxLength = 10000, showLineNumbers = true, theme = "light" } = options;
+  const { maxLength = 10000, showLineNumbers = true, theme = 'light' } = options;
 
   const isTextFile = useMemo(() => {
     const textMimeTypes = [
-      "text/plain",
-      "text/json",
-      "application/json",
-      "text/csv",
-      "text/markdown",
-      "text/html",
-      "text/xml",
-      "application/xml",
-      "text/javascript",
-      "application/javascript",
-      "text/css",
-      "text/yaml",
-      "application/x-yaml",
+      'text/plain',
+      'text/json',
+      'application/json',
+      'text/csv',
+      'text/markdown',
+      'text/html',
+      'text/xml',
+      'application/xml',
+      'text/javascript',
+      'application/javascript',
+      'text/css',
+      'text/yaml',
+      'application/x-yaml',
     ];
 
     const fileName = file.name.toLowerCase();
     const textExtensions = [
-      ".txt",
-      ".json",
-      ".csv",
-      ".md",
-      ".html",
-      ".xml",
-      ".js",
-      ".css",
-      ".yaml",
-      ".yml",
+      '.txt',
+      '.json',
+      '.csv',
+      '.md',
+      '.html',
+      '.xml',
+      '.js',
+      '.css',
+      '.yaml',
+      '.yml',
     ];
 
     return (
@@ -78,7 +78,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   }, [file.type, file.name]);
 
   const isImageFile = useMemo(() => {
-    return file.type.startsWith("image/");
+    return file.type.startsWith('image/');
   }, [file.type]);
 
   useEffect(() => {
@@ -100,7 +100,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
             const url = URL.createObjectURL(file);
             setContent(url);
           }
-        } else if ("url" in file && file.url) {
+        } else if ('url' in file && file.url) {
           if (isTextFile) {
             const response = await fetch(file.url);
             const text = await response.text();
@@ -108,11 +108,11 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
           } else if (isImageFile) {
             setContent(file.url);
           }
-        } else if ("preview" in file && file.preview) {
+        } else if ('preview' in file && file.preview) {
           setContent(file.preview);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load file content");
+        setError(err instanceof Error ? err.message : 'Failed to load file content');
       } finally {
         setIsLoading(false);
       }
@@ -131,7 +131,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
-      console.error("Failed to copy to clipboard:", err);
+      console.error('Failed to copy to clipboard:', err);
     }
   };
 
@@ -140,60 +140,60 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
   const getLanguageFromFileName = (fileName: string): string => {
-    const ext = fileName.toLowerCase().split(".").pop();
+    const ext = fileName.toLowerCase().split('.').pop();
     const languageMap: Record<string, string> = {
-      js: "javascript",
-      jsx: "jsx",
-      ts: "typescript",
-      tsx: "tsx",
-      json: "json",
-      xml: "xml",
-      html: "html",
-      css: "css",
-      scss: "scss",
-      less: "less",
-      md: "markdown",
-      yaml: "yaml",
-      yml: "yaml",
-      sql: "sql",
-      py: "python",
-      java: "java",
-      c: "c",
-      cpp: "cpp",
-      cs: "csharp",
-      php: "php",
-      rb: "ruby",
-      go: "go",
-      rs: "rust",
-      swift: "swift",
-      kt: "kotlin",
-      scala: "scala",
-      sh: "bash",
-      bash: "bash",
-      zsh: "bash",
-      fish: "fish",
-      ps1: "powershell",
-      bat: "batch",
-      cmd: "batch",
-      dockerfile: "dockerfile",
-      tf: "hcl",
-      hcl: "hcl",
-      toml: "toml",
-      ini: "ini",
-      conf: "ini",
-      log: "log",
-      txt: "text",
-      csv: "csv",
+      js: 'javascript',
+      jsx: 'jsx',
+      ts: 'typescript',
+      tsx: 'tsx',
+      json: 'json',
+      xml: 'xml',
+      html: 'html',
+      css: 'css',
+      scss: 'scss',
+      less: 'less',
+      md: 'markdown',
+      yaml: 'yaml',
+      yml: 'yaml',
+      sql: 'sql',
+      py: 'python',
+      java: 'java',
+      c: 'c',
+      cpp: 'cpp',
+      cs: 'csharp',
+      php: 'php',
+      rb: 'ruby',
+      go: 'go',
+      rs: 'rust',
+      swift: 'swift',
+      kt: 'kotlin',
+      scala: 'scala',
+      sh: 'bash',
+      bash: 'bash',
+      zsh: 'bash',
+      fish: 'fish',
+      ps1: 'powershell',
+      bat: 'batch',
+      cmd: 'batch',
+      dockerfile: 'dockerfile',
+      tf: 'hcl',
+      hcl: 'hcl',
+      toml: 'toml',
+      ini: 'ini',
+      conf: 'ini',
+      log: 'log',
+      txt: 'text',
+      csv: 'csv',
     };
-    return languageMap[ext || ""] || "text";
+    return languageMap[ext || ''] || 'text';
   };
 
   const renderPreview = () => {
@@ -251,7 +251,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
               />
             </svg>
             <p className="text-sm">Preview not available</p>
-            <p className="mt-1 text-xs">File type: {file.type || "Unknown"}</p>
+            <p className="mt-1 text-xs">File type: {file.type || 'Unknown'}</p>
           </div>
         </div>
       );
@@ -271,14 +271,14 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 
     if (isTextFile && content) {
       const language = getLanguageFromFileName(file.name);
-      const lines = content.split("\n");
+      const lines = content.split('\n');
 
       return (
         <div className="relative">
           <div className="absolute top-2 right-2 z-10 flex space-x-2">
             {showCopyButton && (
               <Button variant="outline" size="sm" onClick={handleCopy} className="text-xs">
-                {isCopied ? "Copied!" : "Copy"}
+                {isCopied ? 'Copied!' : 'Copy'}
               </Button>
             )}
             {showDownloadButton && (
@@ -291,18 +291,18 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
           <div className="overflow-auto" style={{ maxHeight }}>
             <pre
               className={cn(
-                "rounded-lg p-4 text-sm",
-                theme === "dark" ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900",
+                'rounded-lg p-4 text-sm',
+                theme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'
               )}
             >
               {showLineNumbers ? (
                 <div className="flex">
                   <div
                     className={cn(
-                      "select-none border-r pr-4 text-right",
-                      theme === "dark"
-                        ? "border-gray-700 text-gray-500"
-                        : "border-gray-300 text-gray-400",
+                      'select-none border-r pr-4 text-right',
+                      theme === 'dark'
+                        ? 'border-gray-700 text-gray-500'
+                        : 'border-gray-300 text-gray-400'
                     )}
                   >
                     {lines.map((_, index) => (
@@ -328,13 +328,13 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   };
 
   return (
-    <Card className={cn("w-full", className)}>
+    <Card className={cn('w-full', className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <CardTitle className="truncate font-medium text-lg">{file.name}</CardTitle>
             <Badge variant="secondary" className="text-xs">
-              {file.type || "Unknown"}
+              {file.type || 'Unknown'}
             </Badge>
           </div>
           <div className="text-gray-500 text-sm">{formatFileSize(file.size)}</div>

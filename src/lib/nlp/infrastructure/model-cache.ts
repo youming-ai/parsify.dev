@@ -22,8 +22,8 @@ export interface CacheConfig {
 }
 
 export class ModelCache {
-  private dbName = "nlp-model-cache";
-  private storeName = "models";
+  private dbName = 'nlp-model-cache';
+  private storeName = 'models';
   private db: IDBDatabase | null = null;
   private config: CacheConfig;
   private cleanupTimer: NodeJS.Timeout | null = null;
@@ -45,7 +45,7 @@ export class ModelCache {
       this.db = await this.openDatabase();
       this.startCleanupTimer();
     } catch (error) {
-      console.warn("Failed to initialize model cache:", error);
+      console.warn('Failed to initialize model cache:', error);
     }
   }
 
@@ -60,13 +60,13 @@ export class ModelCache {
         const db = (event.target as IDBOpenDBRequest).result;
 
         if (!db.objectStoreNames.contains(this.storeName)) {
-          const store = db.createObjectStore(this.storeName, { keyPath: "id" });
+          const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
 
           // Create indexes for efficient querying
-          store.createIndex("url", "url", { unique: false });
-          store.createIndex("lastAccessed", "lastAccessed", { unique: false });
-          store.createIndex("downloadDate", "downloadDate", { unique: false });
-          store.createIndex("size", "size", { unique: false });
+          store.createIndex('url', 'url', { unique: false });
+          store.createIndex('lastAccessed', 'lastAccessed', { unique: false });
+          store.createIndex('downloadDate', 'downloadDate', { unique: false });
+          store.createIndex('size', 'size', { unique: false });
         }
       };
     });
@@ -75,7 +75,7 @@ export class ModelCache {
   /**
    * Store a model in cache
    */
-  async set(id: string, url: string, data: ArrayBuffer, version: string = "1.0.0"): Promise<void> {
+  async set(id: string, url: string, data: ArrayBuffer, version = '1.0.0'): Promise<void> {
     if (!this.db) return;
 
     const entry: ModelCacheEntry = {
@@ -94,7 +94,7 @@ export class ModelCache {
       await this.ensureSpace(entry.size);
 
       // Store the model
-      const transaction = this.db.transaction([this.storeName], "readwrite");
+      const transaction = this.db.transaction([this.storeName], 'readwrite');
       const store = transaction.objectStore(this.storeName);
       await store.put(entry);
 
@@ -111,7 +111,7 @@ export class ModelCache {
     if (!this.db) return null;
 
     try {
-      const transaction = this.db.transaction([this.storeName], "readwrite");
+      const transaction = this.db.transaction([this.storeName], 'readwrite');
       const store = transaction.objectStore(this.storeName);
       const request = store.get(id);
 
@@ -148,7 +148,7 @@ export class ModelCache {
     if (!this.db) return false;
 
     try {
-      const transaction = this.db.transaction([this.storeName], "readonly");
+      const transaction = this.db.transaction([this.storeName], 'readonly');
       const store = transaction.objectStore(this.storeName);
       const request = store.get(id);
 
@@ -174,7 +174,7 @@ export class ModelCache {
     if (!this.db) return;
 
     try {
-      const transaction = this.db.transaction([this.storeName], "readwrite");
+      const transaction = this.db.transaction([this.storeName], 'readwrite');
       const store = transaction.objectStore(this.storeName);
       await store.delete(id);
 
@@ -191,13 +191,13 @@ export class ModelCache {
     if (!this.db) return;
 
     try {
-      const transaction = this.db.transaction([this.storeName], "readwrite");
+      const transaction = this.db.transaction([this.storeName], 'readwrite');
       const store = transaction.objectStore(this.storeName);
       await store.clear();
 
-      console.log("Model cache cleared");
+      console.log('Model cache cleared');
     } catch (error) {
-      console.warn("Failed to clear model cache:", error);
+      console.warn('Failed to clear model cache:', error);
     }
   }
 
@@ -215,7 +215,7 @@ export class ModelCache {
     }
 
     try {
-      const transaction = this.db.transaction([this.storeName], "readonly");
+      const transaction = this.db.transaction([this.storeName], 'readonly');
       const store = transaction.objectStore(this.storeName);
 
       const entries = await this.getAllEntries(store);
@@ -229,7 +229,7 @@ export class ModelCache {
 
       return { totalEntries, totalSize, oldestEntry, newestEntry };
     } catch (error) {
-      console.warn("Failed to get cache stats:", error);
+      console.warn('Failed to get cache stats:', error);
       return { totalEntries: 0, totalSize: 0, oldestEntry: null, newestEntry: null };
     }
   }
@@ -256,7 +256,7 @@ export class ModelCache {
     if (!this.db) return;
 
     try {
-      const transaction = this.db.transaction([this.storeName], "readwrite");
+      const transaction = this.db.transaction([this.storeName], 'readwrite');
       const store = transaction.objectStore(this.storeName);
 
       const entries = await this.getAllEntries(store);
@@ -284,10 +284,10 @@ export class ModelCache {
       }
 
       console.log(
-        `Model cache cleanup completed. Removed ${expired.length + (remaining.length > this.config.maxEntries ? remaining.length - this.config.maxEntries : 0)} entries.`,
+        `Model cache cleanup completed. Removed ${expired.length + (remaining.length > this.config.maxEntries ? remaining.length - this.config.maxEntries : 0)} entries.`
       );
     } catch (error) {
-      console.warn("Failed to cleanup model cache:", error);
+      console.warn('Failed to cleanup model cache:', error);
     }
   }
 
@@ -330,13 +330,13 @@ export class ModelCache {
    * Format bytes to human readable format
    */
   private formatBytes(bytes: number): string {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
 
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }
 
   /**
@@ -352,9 +352,9 @@ export class ModelCache {
 
     try {
       await indexedDB.deleteDatabase(this.dbName);
-      console.log("Model cache destroyed");
+      console.log('Model cache destroyed');
     } catch (error) {
-      console.warn("Failed to destroy model cache:", error);
+      console.warn('Failed to destroy model cache:', error);
     }
   }
 }

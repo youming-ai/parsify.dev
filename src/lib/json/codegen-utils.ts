@@ -12,18 +12,7 @@ export interface CodeTemplate {
   language: string;
   version: string;
   author: string;
-  templates: {
-    class: TemplateDefinition;
-    interface: TemplateDefinition;
-    enum: TemplateDefinition;
-    typeAlias: TemplateDefinition;
-    function: TemplateDefinition;
-    property: TemplateDefinition;
-    method: TemplateDefinition;
-    constructor: TemplateDefinition;
-    getter: TemplateDefinition;
-    setter: TemplateDefinition;
-  };
+  templates: TemplateCollection;
   settings: CodeGenerationSettings;
   dependencies: string[];
 }
@@ -35,6 +24,19 @@ export interface TemplateDefinition {
   loops: TemplateLoop[];
   placeholders: TemplatePlaceholder[];
 }
+
+export type TemplateCollection = Record<string, TemplateDefinition> & {
+  class: TemplateDefinition;
+  interface: TemplateDefinition;
+  enum: TemplateDefinition;
+  typeAlias: TemplateDefinition;
+  function: TemplateDefinition;
+  property: TemplateDefinition;
+  method: TemplateDefinition;
+  constructor: TemplateDefinition;
+  getter: TemplateDefinition;
+  setter: TemplateDefinition;
+};
 
 export interface TemplateVariable {
   name: string;
@@ -64,8 +66,37 @@ export interface TemplatePlaceholder {
   replacement: string | ((match: RegExpMatchArray, context: CodeGenerationContext) => string);
 }
 
+const createEmptyTemplate = (): TemplateDefinition => ({
+  template: '',
+  variables: [],
+  conditions: [],
+  loops: [],
+  placeholders: [],
+});
+
+const createTemplateBase = (): TemplateCollection => ({
+  class: createEmptyTemplate(),
+  interface: createEmptyTemplate(),
+  enum: createEmptyTemplate(),
+  typeAlias: createEmptyTemplate(),
+  function: createEmptyTemplate(),
+  property: createEmptyTemplate(),
+  method: createEmptyTemplate(),
+  constructor: createEmptyTemplate(),
+  getter: createEmptyTemplate(),
+  setter: createEmptyTemplate(),
+});
+
+const withBaseTemplates = (
+  templates: Partial<Record<string, TemplateDefinition>>
+): TemplateCollection =>
+  ({
+    ...createTemplateBase(),
+    ...templates,
+  }) as TemplateCollection;
+
 export interface CodeGenerationSettings {
-  namingConvention: NamingConvention;
+  namingConvention: NamingConventionOptions;
   indentStyle: IndentStyle;
   lineWidth: number;
   generateComments: boolean;
@@ -81,7 +112,7 @@ export interface CodeGenerationSettings {
   encoding: 'utf8' | 'utf16' | 'ascii';
 }
 
-export interface NamingConvention {
+export interface NamingConventionOptions {
   caseStyle: 'camelCase' | 'PascalCase' | 'snake_case' | 'kebab-case' | 'UPPER_CASE' | 'lowercase';
   prefix?: string;
   suffix?: string;
@@ -101,6 +132,7 @@ export interface CodeGenerationContext {
   namespace?: string;
   packageName?: string;
   parentClass?: string;
+  implements?: string | string[];
   imports: string[];
   generatedClasses: GeneratedClass[];
   currentDepth: number;
@@ -177,47 +209,113 @@ const BUILTIN_TEMPLATES: Record<string, CodeTemplate> = {
     language: 'typescript',
     version: '4.9+',
     author: 'JSON Tools Platform',
-    templates: {
+    templates: withBaseTemplates({
       class: {
         template: `export class {{className}} {{#if.extends}}extends {{extends}} {{/if}}{{#if.implements}}implements {{implements}} {{/if}}{
 {{#if.properties}}{{properties}}{{/if}}}`,
         variables: [
-          { name: 'className', type: 'string', required: true, description: 'Class name' },
-          { name: 'extends', type: 'string', required: false, description: 'Parent class' },
-          { name: 'implements', type: 'string', required: false, description: 'Implemented interfaces' },
-          { name: 'properties', type: 'object', required: false, description: 'Class properties' }
+          {
+            name: 'className',
+            type: 'string',
+            required: true,
+            description: 'Class name',
+          },
+          {
+            name: 'extends',
+            type: 'string',
+            required: false,
+            description: 'Parent class',
+          },
+          {
+            name: 'implements',
+            type: 'string',
+            required: false,
+            description: 'Implemented interfaces',
+          },
+          {
+            name: 'properties',
+            type: 'object',
+            required: false,
+            description: 'Class properties',
+          },
         ],
         conditions: [],
         loops: [],
-        placeholders: []
+        placeholders: [],
       },
       interface: {
         template: `export interface {{className}} {{#if.extends}}extends {{extends}} {{/if}}{{#if.implements}}implements {{implements}} {{/if}}{
 {{#if.properties}}{{properties}}{{/if}}}`,
         variables: [
-          { name: 'className', type: 'string', required: true, description: 'Interface name' },
-          { name: 'extends', type: 'string', required: false, description: 'Parent interface' },
-          { name: 'implements', type: 'string', required: false, description: 'Implemented interfaces' },
-          { name: 'properties', type: 'object', required: false, description: 'Interface properties' }
+          {
+            name: 'className',
+            type: 'string',
+            required: true,
+            description: 'Interface name',
+          },
+          {
+            name: 'extends',
+            type: 'string',
+            required: false,
+            description: 'Parent interface',
+          },
+          {
+            name: 'implements',
+            type: 'string',
+            required: false,
+            description: 'Implemented interfaces',
+          },
+          {
+            name: 'properties',
+            type: 'object',
+            required: false,
+            description: 'Interface properties',
+          },
         ],
         conditions: [],
         loops: [],
-        placeholders: []
+        placeholders: [],
       },
       property: {
-        template: '{{#if.annotations}}{{annotations}} {{/if}}{{name}}{{#if.isOptional}}?{{/if}}: {{type}};{{#if.description}} // {{description}}{{/if}}',
+        template:
+          '{{#if.annotations}}{{annotations}} {{/if}}{{name}}{{#if.isOptional}}?{{/if}}: {{type}};{{#if.description}} // {{description}}{{/if}}',
         variables: [
-          { name: 'annotations', type: 'array', required: false, description: 'Property annotations' },
-          { name: 'name', type: 'string', required: true, description: 'Property name' },
-          { name: 'isOptional', type: 'boolean', required: true, description: 'Whether property is optional' },
-          { name: 'type', type: 'string', required: true, description: 'Property type' },
-          { name: 'description', type: 'string', required: false, description: 'Property description' }
+          {
+            name: 'annotations',
+            type: 'array',
+            required: false,
+            description: 'Property annotations',
+          },
+          {
+            name: 'name',
+            type: 'string',
+            required: true,
+            description: 'Property name',
+          },
+          {
+            name: 'isOptional',
+            type: 'boolean',
+            required: true,
+            description: 'Whether property is optional',
+          },
+          {
+            name: 'type',
+            type: 'string',
+            required: true,
+            description: 'Property type',
+          },
+          {
+            name: 'description',
+            type: 'string',
+            required: false,
+            description: 'Property description',
+          },
         ],
         conditions: [],
         loops: [],
-        placeholders: []
-      }
-    },
+        placeholders: [],
+      },
+    }),
     settings: {
       namingConvention: {
         caseStyle: 'PascalCase',
@@ -229,9 +327,9 @@ const BUILTIN_TEMPLATES: Record<string, CodeTemplate> = {
           xml: 'XML',
           html: 'HTML',
           http: 'HTTP',
-          https: 'HTTPS'
+          https: 'HTTPS',
         },
-        reservedWords: ['class', 'interface', 'type', 'enum', 'import', 'export']
+        reservedWords: ['class', 'interface', 'type', 'enum', 'import', 'export'],
       },
       indentStyle: { type: 'spaces', size: 2 },
       lineWidth: 120,
@@ -245,7 +343,7 @@ const BUILTIN_TEMPLATES: Record<string, CodeTemplate> = {
       generateDocumentation: true,
       fileHeader: '',
       lineEnding: 'lf',
-      encoding: 'utf8'
+      encoding: 'utf8',
     },
     dependencies: [],
   },
@@ -255,7 +353,7 @@ const BUILTIN_TEMPLATES: Record<string, CodeTemplate> = {
     language: 'javascript',
     version: 'ES2022',
     author: 'JSON Tools Platform',
-    templates: {
+    templates: withBaseTemplates({
       class: {
         template: `class {{className}} {{#if.extends}}extends {{extends}} {{/if}}{
   constructor({{#if.constructorParams}}{{constructorParams}}{{/if}}) {
@@ -263,28 +361,68 @@ const BUILTIN_TEMPLATES: Record<string, CodeTemplate> = {
   }
 {{#if.methods}}{{methods}}{{/if}}}`,
         variables: [
-          { name: 'className', type: 'string', required: true, description: 'Class name' },
-          { name: 'extends', type: 'string', required: false, description: 'Parent class' },
-          { name: 'constructorParams', type: 'string', required: false, description: 'Constructor parameters' },
-          { name: 'constructorBody', type: 'string', required: false, description: 'Constructor body' },
-          { name: 'methods', type: 'string', required: false, description: 'Class methods' }
+          {
+            name: 'className',
+            type: 'string',
+            required: true,
+            description: 'Class name',
+          },
+          {
+            name: 'extends',
+            type: 'string',
+            required: false,
+            description: 'Parent class',
+          },
+          {
+            name: 'constructorParams',
+            type: 'string',
+            required: false,
+            description: 'Constructor parameters',
+          },
+          {
+            name: 'constructorBody',
+            type: 'string',
+            required: false,
+            description: 'Constructor body',
+          },
+          {
+            name: 'methods',
+            type: 'string',
+            required: false,
+            description: 'Class methods',
+          },
         ],
         conditions: [],
         loops: [],
-        placeholders: []
+        placeholders: [],
       },
       property: {
         template: '  {{name}} = {{defaultValue}};{{#if.description}} // {{description}}{{/if}}',
         variables: [
-          { name: 'name', type: 'string', required: true, description: 'Property name' },
-          { name: 'defaultValue', type: 'string', required: true, description: 'Default value' },
-          { name: 'description', type: 'string', required: false, description: 'Property description' }
+          {
+            name: 'name',
+            type: 'string',
+            required: true,
+            description: 'Property name',
+          },
+          {
+            name: 'defaultValue',
+            type: 'string',
+            required: true,
+            description: 'Default value',
+          },
+          {
+            name: 'description',
+            type: 'string',
+            required: false,
+            description: 'Property description',
+          },
         ],
         conditions: [],
         loops: [],
-        placeholders: []
-      }
-    },
+        placeholders: [],
+      },
+    }),
     settings: {
       namingConvention: {
         caseStyle: 'camelCase',
@@ -293,9 +431,9 @@ const BUILTIN_TEMPLATES: Record<string, CodeTemplate> = {
           url: 'url',
           uri: 'uri',
           json: 'json',
-          xml: 'xml'
+          xml: 'xml',
         },
-        reservedWords: ['class', 'function', 'var', 'let', 'const', 'import', 'export']
+        reservedWords: ['class', 'function', 'var', 'let', 'const', 'import', 'export'],
       },
       indentStyle: { type: 'spaces', size: 2 },
       lineWidth: 120,
@@ -309,9 +447,9 @@ const BUILTIN_TEMPLATES: Record<string, CodeTemplate> = {
       generateDocumentation: true,
       fileHeader: '',
       lineEnding: 'lf',
-      encoding: 'utf8'
+      encoding: 'utf8',
     },
-    dependencies: []
+    dependencies: [],
   },
   python: {
     name: 'Python',
@@ -319,7 +457,7 @@ const BUILTIN_TEMPLATES: Record<string, CodeTemplate> = {
     language: 'python',
     version: '3.11',
     author: 'JSON Tools Platform',
-    templates: {
+    templates: withBaseTemplates({
       class: {
         template: `{{#if.fileHeader}}{{fileHeader}}
 {{/if}}class {{className}}:
@@ -333,39 +471,89 @@ const BUILTIN_TEMPLATES: Record<string, CodeTemplate> = {
 {{methods}}
 {{/if}}`,
         variables: [
-          { name: 'fileHeader', type: 'string', required: false, description: 'File header comment' },
-          { name: 'className', type: 'string', required: true, description: 'Class name' },
-          { name: 'description', type: 'string', required: false, description: 'Class docstring' },
-          { name: 'parentClass', type: 'string', required: false, description: 'Parent class' },
-          { name: 'constructorParams', type: 'string', required: false, description: 'Constructor parameters' },
-          { name: 'constructorBody', type: 'string', required: false, description: 'Constructor body' },
-          { name: 'methods', type: 'string', required: false, description: 'Class methods' }
+          {
+            name: 'fileHeader',
+            type: 'string',
+            required: false,
+            description: 'File header comment',
+          },
+          {
+            name: 'className',
+            type: 'string',
+            required: true,
+            description: 'Class name',
+          },
+          {
+            name: 'description',
+            type: 'string',
+            required: false,
+            description: 'Class docstring',
+          },
+          {
+            name: 'parentClass',
+            type: 'string',
+            required: false,
+            description: 'Parent class',
+          },
+          {
+            name: 'constructorParams',
+            type: 'string',
+            required: false,
+            description: 'Constructor parameters',
+          },
+          {
+            name: 'constructorBody',
+            type: 'string',
+            required: false,
+            description: 'Constructor body',
+          },
+          {
+            name: 'methods',
+            type: 'string',
+            required: false,
+            description: 'Class methods',
+          },
         ],
         conditions: [],
         loops: [],
-        placeholders: []
+        placeholders: [],
       },
       property: {
         template: '    {{name}}: {{type}}{{#if.defaultValue}} = {{defaultValue}}{{/if}}',
         variables: [
-          { name: 'name', type: 'string', required: true, description: 'Property name' },
-          { name: 'type', type: 'string', required: true, description: 'Property type' },
-          { name: 'defaultValue', type: 'string', required: false, description: 'Default value' }
+          {
+            name: 'name',
+            type: 'string',
+            required: true,
+            description: 'Property name',
+          },
+          {
+            name: 'type',
+            type: 'string',
+            required: true,
+            description: 'Property type',
+          },
+          {
+            name: 'defaultValue',
+            type: 'string',
+            required: false,
+            description: 'Default value',
+          },
         ],
         conditions: [],
         loops: [],
-        placeholders: []
-      }
-    },
+        placeholders: [],
+      },
+    }),
     settings: {
       namingConvention: {
         caseStyle: 'PascalCase',
         abbreviations: {
           id: 'ID',
           url: 'URL',
-          uri: 'URI'
+          uri: 'URI',
         },
-        reservedWords: ['class', 'def', 'if', 'else', 'for', 'while', 'import', 'from']
+        reservedWords: ['class', 'def', 'if', 'else', 'for', 'while', 'import', 'from'],
       },
       indentStyle: { type: 'spaces', size: 4 },
       lineWidth: 88,
@@ -379,9 +567,9 @@ const BUILTIN_TEMPLATES: Record<string, CodeTemplate> = {
       generateDocumentation: true,
       fileHeader: '# -*- coding: utf-8 -*-\n',
       lineEnding: 'lf',
-      encoding: 'utf8'
+      encoding: 'utf8',
     },
-    dependencies: []
+    dependencies: [],
   },
   go: {
     name: 'Go',
@@ -389,43 +577,112 @@ const BUILTIN_TEMPLATES: Record<string, CodeTemplate> = {
     language: 'go',
     version: '1.21+',
     author: 'JSON Tools Platform',
-    templates: {
+    templates: withBaseTemplates({
+      class: {
+        template: `// {{name}} represents {{description}}
+type {{name}} struct {
+{{#if.properties}}{{properties}}{{/if}}}`,
+        variables: [
+          {
+            name: 'name',
+            type: 'string',
+            required: false,
+            description: 'Struct name',
+          },
+          {
+            name: 'description',
+            type: 'string',
+            required: false,
+            description: 'Struct description',
+          },
+          {
+            name: 'properties',
+            type: 'string',
+            required: false,
+            description: 'Struct properties',
+          },
+        ],
+        conditions: [],
+        loops: [],
+        placeholders: [],
+      },
       struct: {
         template: `// {{name}} represents {{description}}
 type {{name}} struct {
 {{#if.properties}}{{properties}}{{/if}}}`,
         variables: [
-          { name: 'name', type: 'string', required: false, description: 'Struct name' },
-          { name: 'description', type: 'string', required: false, description: 'Struct description' },
-          { name: 'properties', type: 'string', required: false, description: 'Struct properties' }
+          {
+            name: 'name',
+            type: 'string',
+            required: false,
+            description: 'Struct name',
+          },
+          {
+            name: 'description',
+            type: 'string',
+            required: false,
+            description: 'Struct description',
+          },
+          {
+            name: 'properties',
+            type: 'string',
+            required: false,
+            description: 'Struct properties',
+          },
         ],
         conditions: [],
         loops: [],
-        placeholders: []
+        placeholders: [],
       },
       property: {
-        template: '  {{name}} {{type}} \`json:"{{jsonName}}"\`{{#if.tag}} \`{{tag}}\`{{/if}}{{#if.comment}} // {{comment}}{{/if}}',
+        template:
+          '  {{name}} {{type}} `json:"{{jsonName}}"`{{#if.tag}} `{{tag}}`{{/if}}{{#if.comment}} // {{comment}}{{/if}}',
         variables: [
-          { name: 'name', type: 'string', required: true, description: 'Property name' },
-          { name: 'type', type: 'string', required: true, description: 'Property type' },
-          { name: 'jsonName', type: 'string', required: true, description: 'JSON field name' },
-          { name: 'tag', type: 'string', required: false, description: 'Struct tag' },
-          { name: 'comment', type: 'string', required: false, description: 'Property comment' }
+          {
+            name: 'name',
+            type: 'string',
+            required: true,
+            description: 'Property name',
+          },
+          {
+            name: 'type',
+            type: 'string',
+            required: true,
+            description: 'Property type',
+          },
+          {
+            name: 'jsonName',
+            type: 'string',
+            required: true,
+            description: 'JSON field name',
+          },
+          {
+            name: 'tag',
+            type: 'string',
+            required: false,
+            description: 'Struct tag',
+          },
+          {
+            name: 'comment',
+            type: 'string',
+            required: false,
+            description: 'Property comment',
+          },
         ],
         conditions: [],
         loops: [],
-        placeholders: []
-      }
-    },
+        placeholders: [],
+      },
+    }),
     settings: {
       namingConvention: {
         caseStyle: 'PascalCase',
         abbreviations: {
           id: 'ID',
           url: 'URL',
-          uri: 'URI'
+          uri: 'URI',
         },
-        reservedWords: ['type', 'struct', 'interface', 'func', 'var', 'const', 'import', 'package']
+        reservedWords: ['type', 'struct', 'interface', 'func', 'var', 'const', 'import', 'package'],
       },
       indentStyle: { type: 'tabs', size: 1 },
       lineWidth: 100,
@@ -439,9 +696,9 @@ type {{name}} struct {
       generateDocumentation: true,
       fileHeader: '// Code generated by JSON Tools Platform\n',
       lineEnding: 'lf',
-      encoding: 'utf8'
+      encoding: 'utf8',
     },
-    dependencies: []
+    dependencies: [],
   },
   rust: {
     name: 'Rust',
@@ -449,43 +706,139 @@ type {{name}} struct {
     language: 'rust',
     version: '1.70+',
     author: 'JSON Tools Platform',
-    templates: {
+    templates: withBaseTemplates({
+      class: {
+        template: `{{#if.annotations}}{{annotations}}
+{{/if}}{{#if.derive}}#[derive({{derive}})]
+{{/if}}pub struct {{name}} {
+{{#if.fields}}{{fields}}{{/if}}}`,
+        variables: [
+          {
+            name: 'annotations',
+            type: 'array',
+            required: false,
+            description: 'Struct annotations',
+          },
+          {
+            name: 'derive',
+            type: 'string',
+            required: false,
+            description: 'Derive macros',
+          },
+          {
+            name: 'name',
+            type: 'string',
+            required: true,
+            description: 'Struct name',
+          },
+          {
+            name: 'fields',
+            type: 'string',
+            required: false,
+            description: 'Struct fields',
+          },
+        ],
+        conditions: [],
+        loops: [],
+        placeholders: [],
+      },
       struct: {
         template: `{{#if.annotations}}{{annotations}}
 {{/if}}{{#if.derive}}#[derive({{derive}})]
 {{/if}}pub struct {{name}} {
 {{#if.fields}}{{fields}}{{/if}}}`,
         variables: [
-          { name: 'annotations', type: 'array', required: false, description: 'Struct annotations' },
-          { name: 'derive', type: 'string', required: false, description: 'Derive macros' },
-          { name: 'name', type: 'string', required: true, description: 'Struct name' },
-          { name: 'fields', type: 'string', required: false, description: 'Struct fields' }
+          {
+            name: 'annotations',
+            type: 'array',
+            required: false,
+            description: 'Struct annotations',
+          },
+          {
+            name: 'derive',
+            type: 'string',
+            required: false,
+            description: 'Derive macros',
+          },
+          {
+            name: 'name',
+            type: 'string',
+            required: true,
+            description: 'Struct name',
+          },
+          {
+            name: 'fields',
+            type: 'string',
+            required: false,
+            description: 'Struct fields',
+          },
         ],
         conditions: [],
         loops: [],
-        placeholders: []
+        placeholders: [],
+      },
+      property: {
+        template: '    {{name}}: {{type}},{{#if.comment}} // {{comment}}{{/if}}',
+        variables: [
+          {
+            name: 'name',
+            type: 'string',
+            required: true,
+            description: 'Field name',
+          },
+          {
+            name: 'type',
+            type: 'string',
+            required: true,
+            description: 'Field type',
+          },
+          {
+            name: 'comment',
+            type: 'string',
+            required: false,
+            description: 'Field comment',
+          },
+        ],
+        conditions: [],
+        loops: [],
+        placeholders: [],
       },
       field: {
         template: '    {{name}}: {{type}},{{#if.comment}} // {{comment}}{{/if}}',
         variables: [
-          { name: 'name', type: 'string', required: true, description: 'Field name' },
-          { name: 'type', type: 'string', required: true, description: 'Field type' },
-          { name: 'comment', type: 'string', required: false, description: 'Field comment' }
+          {
+            name: 'name',
+            type: 'string',
+            required: true,
+            description: 'Field name',
+          },
+          {
+            name: 'type',
+            type: 'string',
+            required: true,
+            description: 'Field type',
+          },
+          {
+            name: 'comment',
+            type: 'string',
+            required: false,
+            description: 'Field comment',
+          },
         ],
         conditions: [],
         loops: [],
-        placeholders: []
-      }
-    },
+        placeholders: [],
+      },
+    }),
     settings: {
       namingConvention: {
         caseStyle: 'PascalCase',
         abbreviations: {
           id: 'Id',
           url: 'Url',
-          uri: 'Uri'
+          uri: 'Uri',
         },
-        reservedWords: ['type', 'struct', 'impl', 'fn', 'let', 'mut', 'const', 'use']
+        reservedWords: ['type', 'struct', 'impl', 'fn', 'let', 'mut', 'const', 'use'],
       },
       indentStyle: { type: 'spaces', size: 4 },
       lineWidth: 100,
@@ -499,10 +852,10 @@ type {{name}} struct {
       generateDocumentation: true,
       fileHeader: '// Code generated by JSON Tools Platform\n',
       lineEnding: 'lf',
-      encoding: 'utf8'
+      encoding: 'utf8',
     },
-    dependencies: []
-  }
+    dependencies: [],
+  },
 };
 
 // Template engine
@@ -530,52 +883,81 @@ export class TemplateEngine {
   /**
    * Process a template with context
    */
-  processTemplate(template: string, context: CodeGenerationContext): string {
-    let result = template;
+  processTemplate(template: TemplateDefinition | string, context: CodeGenerationContext): string {
+    const templateDef: TemplateDefinition =
+      typeof template === 'string'
+        ? {
+            template,
+            variables: [],
+            conditions: [],
+            loops: [],
+            placeholders: [],
+          }
+        : template;
+
+    let result = templateDef.template;
 
     // Process conditions
-    for (const condition of template.conditions || []) {
+    for (const condition of templateDef.conditions || []) {
       const shouldInclude = this.evaluateCondition(condition, context);
       if (shouldInclude) {
-        result = result.replace(new RegExp(`{{#${condition.variable}}}}[^{{#${condition.variable}}}*{{#${condition.variable}}}`, 'gs'), condition.template);
+        result = result.replace(
+          new RegExp(
+            `{{#${condition.variable}}}}[^{{#${condition.variable}}}*{{#${condition.variable}}}`,
+            'gs'
+          ),
+          condition.template
+        );
       } else {
-        result = result.replace(new RegExp(`{{#${condition.variable}}[^{{#${condition.variable}}}*{{#${condition.variable}}}`, 'gs'), '');
+        result = result.replace(
+          new RegExp(
+            `{{#${condition.variable}}[^{{#${condition.variable}}}*{{#${condition.variable}}}`,
+            'gs'
+          ),
+          ''
+        );
       }
     }
 
     // Process loops
-    for (const loop of template.loops || []) {
+    for (const loop of templateDef.loops || []) {
       const array = this.getValue(loop.variable, context);
       if (Array.isArray(array) && array.length > 0) {
-        const loopResult = array.map((item, index) => {
-          return this.processTemplate(loop.template, {
-            ...context,
-            templateData: {
-              ...context.templateData,
-              item,
-              index,
-              first: index === 0,
-              last: index === array.length - 1
-            }
-          });
-        }).join(loop.separator || '');
+        const loopResult = array
+          .map((item, index) => {
+            return this.processTemplate(loop.template, {
+              ...context,
+              templateData: {
+                ...context.templateData,
+                item,
+                index,
+                first: index === 0,
+                last: index === array.length - 1,
+              },
+            });
+          })
+          .join(loop.separator || '');
 
         const emptyTemplate = loop.emptyTemplate || '';
-        result = result.replace(new RegExp(`{{@${loop.variable}}}}.*{{/@${loop.variable}}}`, 'gs'), array.length > 0 ? loopResult : emptyTemplate);
+        result = result.replace(
+          new RegExp(`{{@${loop.variable}}}}.*{{/@${loop.variable}}}`, 'gs'),
+          array.length > 0 ? loopResult : emptyTemplate
+        );
       }
     }
 
     // Process simple variables
-    result = result.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
+    result = result.replace(/\{\{(\w+)\}\}/g, (_match, varName) => {
       const value = this.getValue(varName, context);
       return value !== undefined ? String(value) : '';
     });
 
     // Process placeholders
-    for (const placeholder of template.placeholders || []) {
+    for (const placeholder of templateDef.placeholders || []) {
       result = result.replace(placeholder.pattern, (match, ...args) => {
         if (typeof placeholder.replacement === 'function') {
-          return placeholder.replacement(match, ...args);
+          const matches = [match, ...args] as unknown as RegExpMatchArray;
+          return placeholder.replacement(matches, context);
         }
         return placeholder.replacement;
       });
@@ -596,13 +978,23 @@ export class TemplateEngine {
       case 'not_equals':
         return value !== condition.value;
       case 'contains':
-        return Array.isArray(value) ? value.includes(condition.value) : String(value).includes(String(condition.value));
+        return Array.isArray(value)
+          ? value.includes(condition.value)
+          : String(value).includes(String(condition.value));
       case 'not_contains':
-        return Array.isArray(value) ? !value.includes(condition.value) : !String(value).includes(String(condition.value));
+        return Array.isArray(value)
+          ? !value.includes(condition.value)
+          : !String(value).includes(String(condition.value));
       case 'empty':
-        return !value || (Array.isArray(value) ? value.length === 0 : Object.keys(value).length === 0);
+        return (
+          !value || (Array.isArray(value) ? value.length === 0 : Object.keys(value).length === 0)
+        );
       case 'not_empty':
-        return value && (!Array.isArray(value) || value.length > 0) && (!typeof value === 'object' || Object.keys(value).length > 0);
+        return (
+          Boolean(value) &&
+          (!Array.isArray(value) || value.length > 0) &&
+          (typeof value !== 'object' || value === null || Object.keys(value).length > 0)
+        );
       default:
         return false;
     }
@@ -645,8 +1037,12 @@ export class TypeInferrer {
     }
 
     if (Array.isArray(value)) {
-      const elementTypes = new Set(value.map(item => this.inferType(item)));
-      return `Array<${elementTypes.size === 1 ? Array.from(elementTypes)[0] : `(${Array.from(elementTypes).join(' | ')}`)}>`;
+      const elementTypes = new Set(value.map((item) => this.inferType(item)));
+      return `Array<${
+        elementTypes.size === 1
+          ? Array.from(elementTypes)[0]
+          : `(${Array.from(elementTypes).join(' | ')})`
+      }>`;
     }
 
     if (typeof value === 'object') {
@@ -718,141 +1114,141 @@ export class TypeInferrer {
 
   private mapToTypeScriptType(type: string): string {
     const typeMap: Record<string, string> = {
-      'string': 'string',
-      'number': 'number',
-      'integer': 'number',
-      'boolean': 'boolean',
-      'Date': 'Date',
-      'DateTime': 'Date',
-      'object': 'object',
-      'any': 'any',
-      'unknown': 'any'
+      string: 'string',
+      number: 'number',
+      integer: 'number',
+      boolean: 'boolean',
+      Date: 'Date',
+      DateTime: 'Date',
+      object: 'object',
+      any: 'any',
+      unknown: 'any',
     };
     return typeMap[type] || 'any';
   }
 
   private mapToPythonType(type: string): string {
     const typeMap: Record<string, string> = {
-      'string': 'str',
-      'number': 'float',
-      'integer': 'int',
-      'boolean': 'bool',
-      'Date': 'datetime.datetime',
-      'DateTime': 'datetime.datetime',
-      'object': 'dict',
-      'any': 'Any'
+      string: 'str',
+      number: 'float',
+      integer: 'int',
+      boolean: 'bool',
+      Date: 'datetime.datetime',
+      DateTime: 'datetime.datetime',
+      object: 'dict',
+      any: 'Any',
     };
     return typeMap[type] || 'Any';
   }
 
   private mapToGoType(type: string): string {
     const typeMap: Record<string, string> = {
-      'string': 'string',
-      'number': 'float64',
-      'integer': 'int',
-      'boolean': 'bool',
-      'Date': 'time.Time',
-      'DateTime': 'time.Time',
-      'object': 'interface{}',
-      'any': 'interface{}'
+      string: 'string',
+      number: 'float64',
+      integer: 'int',
+      boolean: 'bool',
+      Date: 'time.Time',
+      DateTime: 'time.Time',
+      object: 'interface{}',
+      any: 'interface{}',
     };
     return typeMap[type] || 'interface{}';
   }
 
   private mapToRustType(type: string): string {
     const typeMap: Record<string, string> = {
-      'string': 'String',
-      'number': 'f64',
-      'integer': 'i64',
-      'boolean': 'bool',
-      'Date': 'chrono::DateTime<chrono::Utc>',
-      'DateTime': 'chrono::DateTime<chrono::Utc>',
-      'object': 'serde_json::Value',
-      'any': 'serde_json::Value'
+      string: 'String',
+      number: 'f64',
+      integer: 'i64',
+      boolean: 'bool',
+      Date: 'chrono::DateTime<chrono::Utc>',
+      DateTime: 'chrono::DateTime<chrono::Utc>',
+      object: 'serde_json::Value',
+      any: 'serde_json::Value',
     };
     return typeMap[type] || 'serde_json::Value';
   }
 
   private mapToJavaType(type: string): string {
     const typeMap: Record<string, string> = {
-      'string': 'String',
-      'number': 'Double',
-      'integer': 'Integer',
-      'boolean': 'Boolean',
-      'Date': 'LocalDateTime',
-      'DateTime': 'LocalDateTime',
-      'object': 'Object',
-      'any': 'Object'
+      string: 'String',
+      number: 'Double',
+      integer: 'Integer',
+      boolean: 'Boolean',
+      Date: 'LocalDateTime',
+      DateTime: 'LocalDateTime',
+      object: 'Object',
+      any: 'Object',
     };
     return typeMap[type] || 'Object';
   }
 
   private mapToCSharpType(type: string): string {
     const typeMap: Record<string, string> = {
-      'string': 'string',
-      'number': 'double',
-      'integer': 'int',
-      'boolean': 'bool',
-      'Date': 'DateTime',
-      'DateTime': 'DateTime',
-      'object': 'object',
-      'any': 'object'
+      string: 'string',
+      number: 'double',
+      integer: 'int',
+      boolean: 'bool',
+      Date: 'DateTime',
+      DateTime: 'DateTime',
+      object: 'object',
+      any: 'object',
     };
     return typeMap[type] || 'object';
   }
 
   private mapToCppType(type: string): string {
     const typeMap: Record<string, string> = {
-      'string': 'std::string',
-      'number': 'double',
-      'integer': 'int64_t',
-      'boolean': 'bool',
-      'Date': 'std::chrono::system_clock::time_point',
-      'DateTime': 'std::chrono::system_clock::time_point',
-      'object': 'nlohmann::json',
-      'any': 'nlohmann::json'
+      string: 'std::string',
+      number: 'double',
+      integer: 'int64_t',
+      boolean: 'bool',
+      Date: 'std::chrono::system_clock::time_point',
+      DateTime: 'std::chrono::system_clock::time_point',
+      object: 'nlohmann::json',
+      any: 'nlohmann::json',
     };
     return typeMap[type] || 'nlohmann::json';
   }
 
   private mapToSwiftType(type: string): string {
     const typeMap: Record<string, string> = {
-      'string': 'String',
-      'number': 'Double',
-      'integer': 'Int',
-      'boolean': 'Bool',
-      'Date': 'Date',
-      'DateTime': 'Date',
-      'object': 'Any',
-      'any': 'Any'
+      string: 'String',
+      number: 'Double',
+      integer: 'Int',
+      boolean: 'Bool',
+      Date: 'Date',
+      DateTime: 'Date',
+      object: 'Any',
+      any: 'Any',
     };
     return typeMap[type] || 'Any';
   }
 
   private mapToKotlinType(type: string): string {
     const typeMap: Record<string, string> = {
-      'string': 'String',
-      'number': 'Double',
-      'integer': 'Int',
-      'boolean': 'Boolean',
-      'Date': 'LocalDateTime',
-      'DateTime': 'LocalDateTime',
-      'object': 'Any',
-      'any': 'Any'
+      string: 'String',
+      number: 'Double',
+      integer: 'Int',
+      boolean: 'Boolean',
+      Date: 'LocalDateTime',
+      DateTime: 'LocalDateTime',
+      object: 'Any',
+      any: 'Any',
     };
     return typeMap[type] || 'Any';
   }
 
   private mapToPHPType(type: string): string {
     const typeMap: Record<string, string> = {
-      'string': 'string',
-      'number': 'float',
-      'integer': 'int',
-      'boolean': 'bool',
-      'Date': 'DateTime',
-      'DateTime': 'DateTime',
-      'object': 'array',
-      'any': 'mixed'
+      string: 'string',
+      number: 'float',
+      integer: 'int',
+      boolean: 'bool',
+      Date: 'DateTime',
+      DateTime: 'DateTime',
+      object: 'array',
+      any: 'mixed',
     };
     return typeMap[type] || 'mixed';
   }
@@ -860,62 +1256,65 @@ export class TypeInferrer {
 
 // Naming convention utilities
 export class NamingConvention {
-  private options: NamingConvention;
+  private options: NamingConventionOptions;
 
-  constructor(options: Partial<NamingConvention> = {}) {
+  constructor(options: Partial<NamingConventionOptions> = {}) {
     this.options = {
       caseStyle: 'PascalCase',
       abbreviations: {},
       reservedWords: [],
-      ...options
+      ...options,
     };
   }
 
   /**
    * Convert string according to naming convention
    */
-  convert(str: string): string {
+  convert(str: string, options: Partial<NamingConventionOptions> = {}): string {
     if (!str) return str;
 
-    // Handle abbreviations first
-    str = this.handleAbbreviations(str);
+    const resolvedOptions = {
+      ...this.options,
+      ...options,
+    };
 
-    let result = str;
+    let result = this.handleAbbreviations(str, resolvedOptions.abbreviations);
 
-    switch (this.options.caseStyle) {
+    switch (resolvedOptions.caseStyle) {
       case 'camelCase':
-        result = str.replace(/(?:^|[\s_-])+(.)/g, (_, char) => char.toUpperCase())
-              .replace(/^./, char => char.toLowerCase());
+        result = result
+          .replace(/(?:^|[\s_-])+(.)/g, (_, char) => char.toUpperCase())
+          .replace(/^./, (char) => char.toLowerCase());
         break;
       case 'PascalCase':
-        result = str.replace(/(?:^|[\s_-])+(.)/g, (_, char) => char.toUpperCase())
-              .replace(/^./, char => char.toUpperCase());
+        result = result
+          .replace(/(?:^|[\s_-])+(.)/g, (_, char) => char.toUpperCase())
+          .replace(/^./, (char) => char.toUpperCase());
         break;
       case 'snake_case':
-        result = str.replace(/[A-Z]/g, char => `_${char.toLowerCase()}`)
-              .replace(/^[_\s-]+/, '');
+        result = result
+          .replace(/[A-Z]/g, (char) => `_${char.toLowerCase()}`)
+          .replace(/^[_\s-]+/, '');
         break;
       case 'kebab-case':
-        result = str.replace(/[A-Z]/g, char => `-${char.toLowerCase()}`)
-              .replace(/^[_\s-]+/, '');
+        result = result
+          .replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`)
+          .replace(/^[_\s-]+/, '');
         break;
       case 'UPPER_CASE':
-        result = str.replace(/[a-z]/g, char => char.toUpperCase())
-              .replace(/[_\s-]+/, '_');
+        result = result.replace(/[a-z]/g, (char) => char.toUpperCase()).replace(/[_\s-]+/, '_');
         break;
       case 'lowercase':
-        result = str.toLowerCase();
+        result = result.toLowerCase();
         break;
     }
 
-    // Handle reserved words
-    if (this.options.reservedWords.includes(result)) {
-      result = this.options.prefix ? `${this.options.prefix}${result}` : `_${result}`;
+    if (resolvedOptions.reservedWords.includes(result)) {
+      result = resolvedOptions.prefix ? `${resolvedOptions.prefix}${result}` : `_${result}`;
     }
 
-    // Add suffix if specified
-    if (this.options.suffix) {
-      result = `${result}${this.options.suffix}`;
+    if (resolvedOptions.suffix) {
+      result = `${result}${resolvedOptions.suffix}`;
     }
 
     return result;
@@ -924,12 +1323,18 @@ export class NamingConvention {
   /**
    * Handle abbreviation conversion
    */
-  private handleAbbreviations(str: string): string {
-    for (const [abbr, full] of Object.entries(this.options.abbreviations)) {
+  private handleAbbreviations(
+    str: string,
+    abbreviations: Record<string, string> = this.options.abbreviations
+  ): string {
+    let result = str;
+
+    for (const [abbr, full] of Object.entries(abbreviations || {})) {
       const regex = new RegExp(`\\b${abbr}\\b`, 'g');
-      str = str.replace(regex, full);
+      result = result.replace(regex, full);
     }
-    return str;
+
+    return result;
   }
 }
 
@@ -956,12 +1361,13 @@ export class CodeGenerator {
 
     const settings: CodeGenerationSettings = {
       ...template.settings,
-      ...options
+      ...options,
     };
 
-    const className = settings.namingConvention.caseStyle === 'PascalCase'
-      ? this.namingConvention.convert('rootObject')
-      : this.namingConvention.convert('rootObject');
+    const className =
+      settings.namingConvention.caseStyle === 'PascalCase'
+        ? this.namingConvention.convert('rootObject')
+        : this.namingConvention.convert('rootObject');
 
     const context: CodeGenerationContext = {
       data,
@@ -979,8 +1385,8 @@ export class CodeGenerator {
         template: template.name,
         generationTime: 0,
         linesGenerated: 0,
-        charactersGenerated: 0
-      }
+        charactersGenerated: 0,
+      },
     };
 
     // Generate class definition
@@ -994,7 +1400,7 @@ export class CodeGenerator {
 
     // Add file header if specified
     if (settings.fileHeader) {
-      code = settings.fileHeader + '\n' + code;
+      code = `${settings.fileHeader}\n${code}`;
     }
 
     // Update metadata
@@ -1008,36 +1414,46 @@ export class CodeGenerator {
   /**
    * Generate class definition
    */
-  private generateClassDefinition(data: any, className: string, template: CodeTemplate, context: CodeGenerationContext): string {
+  private generateClassDefinition(
+    data: any,
+    className: string,
+    template: CodeTemplate,
+    context: CodeGenerationContext
+  ): string {
     const properties = this.extractProperties(data);
     const methods = this.generateMethods(data, context);
 
     // Generate property definitions
-    const propertyDefinitions = properties.map(prop => {
-      const typeInfo = this.typeInferrer.inferLanguageType(prop.value, template.language);
-      const templateVar = {
-        name: this.namingConvention.convert(prop.key),
-        type: typeInfo,
-        defaultValue: prop.defaultValue,
-        description: prop.description,
-        annotations: prop.annotations || [],
-        isOptional: prop.optional,
-        ...prop
-      };
+    const propertyDefinitions = properties
+      .map((prop) => {
+        const typeInfo = this.typeInferrer.inferLanguageType(prop.value, template.language);
+        const { type: originalType, ...propertyData } = prop;
+        const templateVar = {
+          ...propertyData,
+          name: this.namingConvention.convert(prop.key),
+          type: typeInfo || originalType,
+          defaultValue: prop.defaultValue,
+          description: prop.description,
+          annotations: prop.annotations || [],
+          isOptional: prop.optional,
+        };
 
-      return this.templateEngine.processTemplate(template.templates.property.template, {
-        ...context,
-        templateData: templateVar
-      });
-    }).join('\n');
+        return this.templateEngine.processTemplate(template.templates.property, {
+          ...context,
+          templateData: templateVar,
+        });
+      })
+      .join('\n');
 
     // Generate method definitions
-    const methodDefinitions = methods.map(method => {
-      return this.templateEngine.processTemplate(template.templates.method?.template || '', {
-        ...context,
-        templateData: method
-      });
-    }).join('\n\n');
+    const methodDefinitions = methods
+      .map((method) => {
+        return this.templateEngine.processTemplate(template.templates.method?.template || '', {
+          ...context,
+          templateData: method,
+        });
+      })
+      .join('\n\n');
 
     // Build the class template
     const classTemplate = template.templates.class.template;
@@ -1049,8 +1465,8 @@ export class CodeGenerator {
         properties: propertyDefinitions,
         methods: methodDefinitions,
         extends: context.parentClass,
-        implements: context.implements
-      }
+        implements: context.implements,
+      },
     });
   }
 
@@ -1085,7 +1501,7 @@ export class CodeGenerator {
           optional: value === null || value === undefined,
           defaultValue: value === null ? 'null' : value === undefined ? 'undefined' : undefined,
           annotations: [],
-          description: ''
+          description: '',
         });
       }
     }
@@ -1096,7 +1512,10 @@ export class CodeGenerator {
   /**
    * Generate methods for the class
    */
-  private generateMethods(data: any, context: CodeGenerationContext): Array<{
+  private generateMethods(
+    data: any,
+    context: CodeGenerationContext
+  ): Array<{
     name: string;
     returnType: string;
     parameters: Array<{
@@ -1147,7 +1566,10 @@ export class CodeGenerator {
   /**
    * Generate constructor method
    */
-  private generateConstructor(data: any, context: CodeGenerationContext): {
+  private generateConstructor(
+    data: any,
+    context: CodeGenerationContext
+  ): {
     name: string;
     returnType: string;
     parameters: Array<{
@@ -1164,18 +1586,21 @@ export class CodeGenerator {
     description?: string;
   } {
     const properties = this.extractProperties(data);
-    const requiredProps = properties.filter(prop => !prop.optional);
+    const requiredProps = properties.filter((prop) => !prop.optional);
 
-    const parameters = requiredProps.map(prop => ({
+    const parameters = requiredProps.map((prop) => ({
       name: this.namingConvention.convert(prop.key),
       type: this.typeInferrer.inferLanguageType(prop.value, context.metadata.language),
       optional: false,
-      description: prop.description
+      description: prop.description,
     }));
 
-    const body = requiredProps.map(prop =>
-      `    this.${this.namingConvention.convert(prop.key)} = ${this.namingConvention.convert(prop.key)};`
-    ).join('\n');
+    const body = requiredProps
+      .map(
+        (prop) =>
+          `    this.${this.namingConvention.convert(prop.key)} = ${this.namingConvention.convert(prop.key)};`
+      )
+      .join('\n');
 
     return {
       name: 'constructor',
@@ -1185,14 +1610,17 @@ export class CodeGenerator {
       annotations: [],
       visibility: 'public',
       isStatic: false,
-      description: 'Constructor'
+      description: 'Constructor',
     };
   }
 
   /**
    * Generate getters and setters
    */
-  private generateGettersSetters(data: any, context: CodeGenerationContext): Array<{
+  private generateGettersSetters(
+    data: any,
+    context: CodeGenerationContext
+  ): Array<{
     name: string;
     returnType: string;
     parameters: Array<{
@@ -1240,7 +1668,7 @@ export class CodeGenerator {
         annotations: [],
         visibility: 'public',
         isStatic: false,
-        description: `Get ${prop.key}`
+        description: `Get ${prop.key}`,
       });
 
       // Generate setter if not read-only
@@ -1248,17 +1676,19 @@ export class CodeGenerator {
         methods.push({
           name: `set${this.namingConvention.convert(prop.key, { caseStyle: 'PascalCase' })}`,
           returnType: 'void',
-          parameters: [{
-            name: `value`,
-            type: propType,
-            optional: false,
-            description: `Value to set for ${prop.key}`
-          }],
+          parameters: [
+            {
+              name: 'value',
+              type: propType,
+              optional: false,
+              description: `Value to set for ${prop.key}`,
+            },
+          ],
           body: `    this.${propName} = value;`,
           annotations: [],
           visibility: 'public',
           isStatic: false,
-          description: `Set ${prop.key}`
+          description: `Set ${prop.key}`,
         });
       }
     }
@@ -1275,7 +1705,6 @@ export class CodeGenerator {
         return code.replace(/\n/g, '\r\n');
       case 'cr':
         return code.replace(/\n/g, '\r');
-      case 'lf':
       default:
         return code;
     }
@@ -1328,7 +1757,8 @@ export function generateMultipleLanguages(
     try {
       results[language] = generator.generateCode(data, language, options);
     } catch (error) {
-      results[language] = `// Error generating ${language}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      results[language] =
+        `// Error generating ${language}: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
   }
 

@@ -2,11 +2,11 @@
  * Analysis Types - Types for text analysis operations
  */
 
-import { NLPResult } from "./core";
+import type { LanguageInfo, NLPResult } from './core';
 
 // Sentiment Analysis Types
 export interface SentimentAnalysis {
-  overall: "positive" | "negative" | "neutral";
+  overall: 'positive' | 'negative' | 'neutral';
   score: number; // -1 to 1
   confidence: number; // 0-1
   emotions: EmotionScores;
@@ -24,7 +24,7 @@ export interface EmotionScores {
 
 export interface AspectSentiment {
   aspect: string;
-  sentiment: "positive" | "negative" | "neutral";
+  sentiment: 'positive' | 'negative' | 'neutral';
   score: number;
   confidence: number;
   mentionIndex: number[];
@@ -43,24 +43,24 @@ export interface Entity {
 }
 
 export type EntityType =
-  | "PERSON"
-  | "ORGANIZATION"
-  | "LOCATION"
-  | "DATE"
-  | "TIME"
-  | "MONEY"
-  | "PERCENT"
-  | "FACILITY"
-  | "GPE" // Geopolitical Entity
-  | "EVENT"
-  | "WORK_OF_ART"
-  | "LAW"
-  | "LANGUAGE"
-  | "PRODUCT"
-  | "QUANTITY"
-  | "ORDINAL"
-  | "CARDINAL"
-  | "CUSTOM";
+  | 'PERSON'
+  | 'ORGANIZATION'
+  | 'LOCATION'
+  | 'DATE'
+  | 'TIME'
+  | 'MONEY'
+  | 'PERCENT'
+  | 'FACILITY'
+  | 'GPE' // Geopolitical Entity
+  | 'EVENT'
+  | 'WORK_OF_ART'
+  | 'LAW'
+  | 'LANGUAGE'
+  | 'PRODUCT'
+  | 'QUANTITY'
+  | 'ORDINAL'
+  | 'CARDINAL'
+  | 'CUSTOM';
 
 export interface EntityDisambiguation {
   id: string;
@@ -84,7 +84,7 @@ export interface Keyword {
   relevance: number; // 0-1 relevance score
   frequency: number; // occurrence count
   positions: number[]; // indices in text
-  type: "single" | "phrase" | "entity";
+  type: 'single' | 'phrase' | 'entity';
   algorithm: string; // algorithm that found this keyword
 }
 
@@ -106,22 +106,12 @@ export interface LanguageDetectionResult extends NLPResult<LanguageInfo[]> {
   confidence: number;
 }
 
-export interface LanguageInfo {
-  code: string; // ISO 639-1 code
-  name: string; // Full language name
-  confidence: number; // 0-1 confidence score
-  script: string; // 'Latin', 'Cyrillic', 'Arabic', etc.
-  family?: string; // Language family
-  region?: string; // Geographic region
-  nativeName?: string; // Name in native language
-}
-
 // Text Summarization Types
 export interface TextSummary {
   original: string;
   summary: string;
   compressionRatio: number;
-  type: "extractive" | "abstractive";
+  type: 'extractive' | 'abstractive';
   keyPoints: string[];
   quality: number; // 0-1 quality score
   sentences: SummarySentence[];
@@ -144,7 +134,7 @@ export interface CompressionOptions {
   targetRatio: number; // Target compression ratio (0-1)
   minSentences: number; // Minimum number of sentences
   maxSentences: number; // Maximum number of sentences
-  algorithm: "extractive" | "abstractive" | "hybrid";
+  algorithm: 'extractive' | 'abstractive' | 'hybrid';
   preserveEntities: boolean;
 }
 
@@ -248,13 +238,13 @@ export interface ReadabilityScore {
     score: number;
     gradeLevel: string;
     difficulty:
-      | "Very Easy"
-      | "Easy"
-      | "Fairly Easy"
-      | "Standard"
-      | "Fairly Difficult"
-      | "Difficult"
-      | "Very Difficult";
+      | 'Very Easy'
+      | 'Easy'
+      | 'Fairly Easy'
+      | 'Standard'
+      | 'Fairly Difficult'
+      | 'Difficult'
+      | 'Very Difficult';
   };
   gunningFog: {
     score: number;
@@ -279,12 +269,12 @@ export interface ReadabilityScore {
     score: number;
     gradeLevel: string;
     audience:
-      | "Elementary"
-      | "Middle School"
-      | "High School"
-      | "College"
-      | "Graduate"
-      | "Professional";
+      | 'Elementary'
+      | 'Middle School'
+      | 'High School'
+      | 'College'
+      | 'Graduate'
+      | 'Professional';
   };
 }
 
@@ -298,10 +288,10 @@ export interface ReadabilityResult extends NLPResult<ReadabilityScore> {
 }
 
 export interface ReadabilityRecommendation {
-  type: "sentence" | "word" | "structure";
+  type: 'sentence' | 'word' | 'structure';
   suggestion: string;
   examples: string[];
-  impact: "minor" | "moderate" | "significant";
+  impact: 'minor' | 'moderate' | 'significant';
 }
 
 // Analysis Configuration Types
@@ -309,7 +299,7 @@ export interface AnalysisConfig {
   sentiment?: {
     includeAspects: boolean;
     includeEmotions: boolean;
-    granularity: "document" | "sentence" | "aspect";
+    granularity: 'document' | 'sentence' | 'aspect';
   };
   entities?: {
     types: EntityType[];
@@ -317,13 +307,13 @@ export interface AnalysisConfig {
     customEntities?: Record<string, EntityType>;
   };
   keywords?: {
-    algorithms: ("tfidf" | "textrank" | "yake" | "rake")[];
+    algorithms: ('tfidf' | 'textrank' | 'yake' | 'rake')[];
     maxKeywords: number;
     includePhrases: boolean;
     minFrequency: number;
   };
   summarization?: {
-    algorithm: "extractive" | "abstractive" | "hybrid";
+    algorithm: 'extractive' | 'abstractive' | 'hybrid';
     compressionRatio: number;
     minSentences?: number;
     maxSentences?: number;

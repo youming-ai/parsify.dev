@@ -4,31 +4,25 @@
  * Re-exports from the detailed implementation in registry/
  */
 
+import { ToolRegistry } from './registry/tool-registry';
+
 export {
   ToolRegistry,
   type ToolMetadata,
   type ToolConfig,
   type ToolRegistryConfig,
-} from "./registry/tool-registry";
+} from './registry/tool-registry';
 
 // Re-export other registry services
 export {
   ToolDiscovery,
   type DiscoveryOptions,
-  type DiscoveryResult,
-} from "./registry/tool-discovery";
+} from './registry/tool-discovery';
 
 export {
   ToolManager,
-  type ManagerConfig,
-  type ManagerStatus,
-} from "./registry/tool-manager";
-
-export {
-  CodeExecutionRegistry,
-  type CodeExecutionConfig,
-  type ExecutionEnvironment,
-} from "./registry/code-execution-tools";
+  type ToolManagerConfig,
+} from './registry/tool-manager';
 
 // Create singleton instance with default configuration
 const defaultRegistry = ToolRegistry.getInstance({
@@ -36,7 +30,7 @@ const defaultRegistry = ToolRegistry.getInstance({
   preloadPriority: 1,
   maxConcurrentLoads: 3,
   retryAttempts: 3,
-  cacheStrategy: "memory",
+  cacheStrategy: 'memory',
 });
 
 // Export convenience functions
@@ -46,8 +40,7 @@ export const getAllToolsMetadata = defaultRegistry.getAllToolsMetadata.bind(defa
 export const getToolsByCategory = defaultRegistry.getToolsByCategory.bind(defaultRegistry);
 export const searchTools = defaultRegistry.searchTools.bind(defaultRegistry);
 export const loadTool = defaultRegistry.loadTool.bind(defaultRegistry);
-export const preloadTool = defaultRegistry.preloadTool.bind(defaultRegistry);
-export const unloadTool = defaultRegistry.unloadTool.bind(defaultRegistry);
+export const preloadTools = defaultRegistry.preloadTools.bind(defaultRegistry);
 
 // Export the default registry instance
 export default defaultRegistry;

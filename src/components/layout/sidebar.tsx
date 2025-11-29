@@ -1,5 +1,9 @@
-"use client";
+'use client';
 
+import { cn } from '@/lib/utils';
+
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   ChevronDown,
   ChevronRight,
@@ -9,142 +13,176 @@ import {
   FileText,
   Hash,
   Star,
-} from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 const toolCategories = [
   {
-    title: "JSON Tools",
+    title: 'JSON Tools',
     icon: FileJson,
     items: [
       {
-        name: "JSON Formatter",
-        href: "/tools/json/format",
-        description: "Format and prettify JSON data",
+        name: 'JSON Formatter',
+        href: '/tools/json/format',
+        description: 'Format and prettify JSON data',
       },
       {
-        name: "JSON Validator",
-        href: "/tools/json/validate",
-        description: "Validate JSON syntax",
+        name: 'JSON Validator',
+        href: '/tools/json/validate',
+        description: 'Validate JSON syntax',
       },
       {
-        name: "JSON Converter",
-        href: "/tools/json/convert",
-        description: "Convert JSON to other formats",
+        name: 'JSON Converter',
+        href: '/tools/json/convert',
+        description: 'Convert JSON to other formats',
       },
       {
-        name: "JSON Minifier",
-        href: "/tools/json/minify",
-        description: "Compress JSON data",
+        name: 'JSON Minifier',
+        href: '/tools/json/minify',
+        description: 'Compress JSON data',
       },
       {
-        name: "JSON to CSV",
-        href: "/tools/json/to-csv",
-        description: "Convert JSON to CSV",
+        name: 'JSON to CSV',
+        href: '/tools/json/to-csv',
+        description: 'Convert JSON to CSV',
       },
       {
-        name: "CSV to JSON",
-        href: "/tools/json/from-csv",
-        description: "Convert CSV to JSON",
+        name: 'CSV to JSON',
+        href: '/tools/json/from-csv',
+        description: 'Convert CSV to JSON',
       },
     ],
   },
   {
-    title: "Code Tools",
+    title: 'Code Tools',
     icon: Code,
     items: [
       {
-        name: "Code Formatter",
-        href: "/tools/code/format",
-        description: "Format code in multiple languages",
+        name: 'Code Formatter',
+        href: '/tools/code/format',
+        description: 'Format code in multiple languages',
       },
       {
-        name: "Code Executor",
-        href: "/tools/code/execute",
-        description: "Run JavaScript and Python code",
+        name: 'Code Executor',
+        href: '/tools/code/execute',
+        description: 'Run JavaScript and Python code',
       },
       {
-        name: "Code Minifier",
-        href: "/tools/code/minify",
-        description: "Minify JavaScript/CSS code",
+        name: 'Code Minifier',
+        href: '/tools/code/minify',
+        description: 'Minify JavaScript/CSS code',
       },
     ],
   },
   {
-    title: "Text Tools",
+    title: 'Text Tools',
     icon: FileText,
     items: [
       {
-        name: "Base64 Encoder",
-        href: "/tools/text/base64",
-        description: "Encode/decode Base64",
+        name: 'Base64 Encoder',
+        href: '/tools/text/base64',
+        description: 'Encode/decode Base64',
       },
       {
-        name: "URL Encoder",
-        href: "/tools/text/url",
-        description: "Encode/decode URLs",
+        name: 'URL Encoder',
+        href: '/tools/text/url',
+        description: 'Encode/decode URLs',
       },
       {
-        name: "Hash Generator",
-        href: "/tools/text/hash",
-        description: "Generate MD5, SHA hashes",
+        name: 'Hash Generator',
+        href: '/tools/text/hash',
+        description: 'Generate MD5, SHA hashes',
       },
       {
-        name: "UUID Generator",
-        href: "/tools/text/uuid",
-        description: "Generate UUIDs",
+        name: 'UUID Generator',
+        href: '/tools/text/uuid',
+        description: 'Generate UUIDs',
       },
       {
-        name: "Timestamp Converter",
-        href: "/tools/text/timestamp",
-        description: "Convert Unix timestamps",
+        name: 'Timestamp Converter',
+        href: '/tools/text/timestamp',
+        description: 'Convert Unix timestamps',
       },
     ],
   },
 ];
 
 const quickActions = [
-  { name: "Recent Tools", href: "/tools/recent", icon: Clock },
-  { name: "Favorites", href: "/tools/favorites", icon: Star },
+  { name: 'Recent Tools', href: '/tools/recent', icon: Clock },
+  { name: 'Favorites', href: '/tools/favorites', icon: Star },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  isCollapsed: boolean;
+  toggleCollapse: () => void;
+}
+
+export function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
   const pathname = usePathname();
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(["JSON Tools"]);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(['JSON Tools']);
 
   const toggleCategory = (category: string) => {
+    if (isCollapsed) {
+      toggleCollapse();
+      if (!expandedCategories.includes(category)) {
+        setExpandedCategories([...expandedCategories, category]);
+      }
+      return;
+    }
     setExpandedCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
+      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
     );
   };
 
   return (
-    <div className="hidden border-r bg-muted/40 md:block">
+    <div
+      className={cn(
+        'fixed inset-y-0 left-0 z-30 hidden border-r bg-background/70 backdrop-blur-xl transition-all duration-300 md:block',
+        isCollapsed ? 'w-[70px]' : 'w-64'
+      )}
+    >
       <div className="flex h-full max-h-screen flex-col gap-2">
-        <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <span className="">Tools</span>
-          </Link>
+        <div className="flex h-14 items-center justify-between border-b px-4 lg:h-[60px]">
+          {!isCollapsed && (
+            <Link href="/" className="flex items-center gap-2 font-semibold">
+              <span className="">Tools</span>
+            </Link>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn('ml-auto h-8 w-8', isCollapsed && 'mx-auto')}
+            onClick={toggleCollapse}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4 rotate-180" />
+            )}
+          </Button>
         </div>
 
         <ScrollArea className="flex-1 px-3 py-2">
           <div className="space-y-2">
             {/* Quick Actions */}
             <div className="px-3 py-2">
-              <h2 className="mb-2 px-4 font-semibold text-lg tracking-tight">Quick Access</h2>
+              {!isCollapsed && (
+                <h2 className="mb-2 px-4 font-semibold text-lg tracking-tight">Quick Access</h2>
+              )}
               <div className="space-y-1">
                 {quickActions.map((action) => (
-                  <Link key={action.href} href={action.href}>
+                  <Link key={action.href} href={action.href} title={isCollapsed ? action.name : ''}>
                     <Button
-                      variant={pathname === action.href ? "secondary" : "ghost"}
-                      className="w-full justify-start"
+                      variant={pathname === action.href ? 'secondary' : 'ghost'}
+                      className={cn(
+                        'w-full justify-start',
+                        isCollapsed ? 'justify-center px-2' : ''
+                      )}
                     >
-                      <action.icon className="mr-2 h-4 w-4" />
-                      {action.name}
+                      <action.icon className={cn('h-4 w-4', isCollapsed ? 'mr-0' : 'mr-2')} />
+                      {!isCollapsed && action.name}
                     </Button>
                   </Link>
                 ))}
@@ -156,26 +194,31 @@ export function Sidebar() {
               <div key={category.title} className="px-3 py-2">
                 <Button
                   variant="ghost"
-                  className="w-full justify-between px-4"
+                  className={cn(
+                    'w-full justify-between px-4',
+                    isCollapsed ? 'justify-center px-2' : ''
+                  )}
                   onClick={() => toggleCategory(category.title)}
+                  title={isCollapsed ? category.title : ''}
                 >
                   <div className="flex items-center">
-                    <category.icon className="mr-2 h-4 w-4" />
-                    <span className="font-medium">{category.title}</span>
+                    <category.icon className={cn('h-4 w-4', isCollapsed ? 'mr-0' : 'mr-2')} />
+                    {!isCollapsed && <span className="font-medium">{category.title}</span>}
                   </div>
-                  {expandedCategories.includes(category.title) ? (
-                    <ChevronDown className="h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
+                  {!isCollapsed &&
+                    (expandedCategories.includes(category.title) ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    ))}
                 </Button>
 
-                {expandedCategories.includes(category.title) && (
+                {!isCollapsed && expandedCategories.includes(category.title) && (
                   <div className="mt-1 space-y-1 pl-10">
                     {category.items.map((item) => (
                       <Link key={item.href} href={item.href} title={item.description}>
                         <Button
-                          variant={pathname === item.href ? "secondary" : "ghost"}
+                          variant={pathname === item.href ? 'secondary' : 'ghost'}
                           className="h-8 w-full justify-start text-sm"
                         >
                           {item.name}
@@ -190,20 +233,30 @@ export function Sidebar() {
         </ScrollArea>
 
         <div className="mt-auto p-4">
-          <div className="rounded-lg bg-muted p-4">
-            <div className="flex items-center gap-2">
-              <Hash className="h-4 w-4" />
-              <span className="font-medium text-sm">Pro Features</span>
+          {!isCollapsed ? (
+            <div className="rounded-lg bg-muted p-4">
+              <div className="flex items-center gap-2">
+                <Hash className="h-4 w-4" />
+                <span className="font-medium text-sm">Pro Features</span>
+              </div>
+              <p className="mt-1 text-muted-foreground text-xs">
+                Unlock advanced tools and higher limits with our Pro plan.
+              </p>
+              <Link href="/pricing">
+                <Button size="sm" className="mt-2 w-full">
+                  Upgrade Now
+                </Button>
+              </Link>
             </div>
-            <p className="mt-1 text-muted-foreground text-xs">
-              Unlock advanced tools and higher limits with our Pro plan.
-            </p>
-            <Link href="/pricing">
-              <Button size="sm" className="mt-2 w-full">
-                Upgrade Now
-              </Button>
-            </Link>
-          </div>
+          ) : (
+            <div className="flex justify-center">
+              <Link href="/pricing" title="Upgrade to Pro">
+                <Button size="icon" variant="ghost">
+                  <Hash className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>

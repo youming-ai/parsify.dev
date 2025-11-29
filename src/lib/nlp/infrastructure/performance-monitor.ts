@@ -3,19 +3,16 @@
  * Provides comprehensive monitoring and analytics for ML-based text processing
  */
 
+import { type NLPEvent, type NLPEventListener, type NLPEventType, TaskStatus } from '../types';
 import {
-  PerformanceMetrics,
-  MemoryMetrics,
-  ModelPerformanceMetrics,
-  NetworkMetrics,
-  PerformanceAlert,
+  type AlertSeverity,
   AlertType,
-  AlertSeverity,
-  TaskStatus,
-  NLPEvent,
-  NLPEventType,
-  NLPEventListener,
-} from "../types";
+  type MemoryMetrics,
+  type ModelPerformanceMetrics,
+  type NetworkMetrics,
+  type PerformanceAlert,
+  type SystemPerformanceMetrics,
+} from '../types/infrastructure';
 
 export interface PerformanceConfig {
   enableProfiling: boolean;
@@ -42,7 +39,7 @@ export interface PerformanceSnapshot {
   timestamp: Date;
   operation: string;
   tool: string;
-  metrics: PerformanceMetrics;
+  metrics: SystemPerformanceMetrics;
   context: Record<string, any>;
 }
 
@@ -66,14 +63,14 @@ export interface PerformanceAggregation {
   };
 }
 
-export type TimeWindow = "1m" | "5m" | "15m" | "1h" | "6h" | "1d" | "1w";
+export type TimeWindow = '1m' | '5m' | '15m' | '1h' | '6h' | '1d' | '1w';
 
 export class PerformanceMonitor {
   private config: PerformanceConfig;
   private snapshots: PerformanceSnapshot[] = [];
   private alerts: PerformanceAlert[] = [];
   private eventListeners: Map<NLPEventType, NLPEventListener[]> = new Map();
-  private isMonitoring: boolean = false;
+  private isMonitoring = false;
   private monitoringInterval?: NodeJS.Timeout;
   private operations: Map<string, OperationTimer> = new Map();
   private modelMetrics: Map<string, ModelPerformanceMetrics> = new Map();
@@ -114,12 +111,12 @@ export class PerformanceMonitor {
     }, 60000); // Check every minute
 
     this.emitEvent({
-      type: "analysis_started",
+      type: 'analysis_started',
       timestamp: new Date(),
-      data: { message: "Performance monitoring started" },
+      data: { message: 'Performance monitoring started' },
     });
 
-    console.log("Performance monitoring started");
+    console.log('Performance monitoring started');
   }
 
   /**
@@ -135,12 +132,12 @@ export class PerformanceMonitor {
     }
 
     this.emitEvent({
-      type: "analysis_completed",
+      type: 'analysis_completed',
       timestamp: new Date(),
-      data: { message: "Performance monitoring stopped" },
+      data: { message: 'Performance monitoring stopped' },
     });
 
-    console.log("Performance monitoring stopped");
+    console.log('Performance monitoring stopped');
   }
 
   /**
@@ -150,7 +147,7 @@ export class PerformanceMonitor {
     operationId: string,
     operation: string,
     tool: string,
-    context: Record<string, any> = {},
+    context: Record<string, any> = {}
   ): void {
     if (!this.config.enableProfiling) return;
 
@@ -169,10 +166,10 @@ export class PerformanceMonitor {
    */
   endOperation(
     operationId: string,
-    success: boolean = true,
+    success = true,
     modelMetrics?: Partial<ModelPerformanceMetrics>,
     networkMetrics?: Partial<NetworkMetrics>,
-    error?: Error,
+    error?: Error
   ): void {
     if (!this.config.enableProfiling) return;
 
@@ -183,7 +180,7 @@ export class PerformanceMonitor {
     const duration = endTime - timer.startTime;
     const memoryEnd = this.getMemoryUsage();
 
-    const metrics: PerformanceMetrics = {
+    const metrics: SystemPerformanceMetrics = {
       timestamp: new Date(),
       operation: timer.operation,
       tool: timer.tool,
@@ -195,6 +192,7 @@ export class PerformanceMonitor {
             ...modelMetrics,
             loadTime: modelMetrics.loadTime || 0,
             inferenceTime: duration,
+            batchSize: modelMetrics.batchSize ?? 0,
             throughput: modelMetrics.throughput || 0,
             cacheHitRate: modelMetrics.cacheHitRate || 0,
             accuracy: modelMetrics.accuracy,
@@ -231,7 +229,7 @@ export class PerformanceMonitor {
 
     // Emit performance event
     this.emitEvent({
-      type: success ? "analysis_completed" : "analysis_failed",
+      type: success ? 'analysis_completed' : 'analysis_failed',
       timestamp: new Date(),
       data: {
         operation: timer.operation,
@@ -246,7 +244,7 @@ export class PerformanceMonitor {
   /**
    * Record model loading metrics
    */
-  recordModelLoad(modelId: string, loadTime: number, modelSize: number, success: boolean): void {
+  recordModelLoad(modelId: string, loadTime: number, _modelSize: number, _success: boolean): void {
     if (!this.config.enableModelMetrics) return;
 
     const existing = this.modelMetrics.get(modelId) || {
@@ -265,21 +263,21 @@ export class PerformanceMonitor {
     // Check for performance alerts
     if (loadTime > this.config.alertThresholds.maxModelLoadTime) {
       this.addAlert({
-        type: "model_load_failure",
+        type: 'model_load_failure',
         severity:
-          loadTime > this.config.alertThresholds.maxModelLoadTime * 2 ? "critical" : "error",
+          loadTime > this.config.alertThresholds.maxModelLoadTime * 2 ? 'critical' : 'error',
         message: `Model ${modelId} loading took ${loadTime}ms (threshold: ${this.config.alertThresholds.maxModelLoadTime}ms)`,
         timestamp: new Date(),
         metrics: {
           timestamp: new Date(),
-          operation: "model_load",
+          operation: 'model_load',
           tool: modelId,
           duration: loadTime,
           memoryUsage: this.getMemoryUsage(),
           cpuUsage: this.getCpuUsage(),
         },
         threshold: this.config.alertThresholds.maxModelLoadTime,
-        suggestion: "Consider using model quantization or lazy loading",
+        suggestion: 'Consider using model quantization or lazy loading',
       });
     }
   }
@@ -291,7 +289,7 @@ export class PerformanceMonitor {
     // This would integrate with the cache system
     // For now, we'll emit a performance event
     this.emitEvent({
-      type: hit ? "cache_hit" : "cache_miss",
+      type: hit ? 'cache_hit' : 'cache_miss',
       timestamp: new Date(),
       data: { cacheId },
     });
@@ -300,11 +298,11 @@ export class PerformanceMonitor {
   /**
    * Get current performance metrics
    */
-  getCurrentMetrics(): PerformanceMetrics {
+  getCurrentMetrics(): SystemPerformanceMetrics {
     return {
       timestamp: new Date(),
-      operation: "system_check",
-      tool: "performance_monitor",
+      operation: 'system_check',
+      tool: 'performance_monitor',
       duration: 0,
       memoryUsage: this.getMemoryUsage(),
       cpuUsage: this.getCpuUsage(),
@@ -317,7 +315,7 @@ export class PerformanceMonitor {
   getAggregatedMetrics(
     operation?: string,
     tool?: string,
-    window: TimeWindow = "1h",
+    window: TimeWindow = '1h'
   ): PerformanceAggregation[] {
     const now = Date.now();
     const windowMs = this.getWindowMs(window);
@@ -341,7 +339,7 @@ export class PerformanceMonitor {
 
     // Calculate aggregates for each group
     return Array.from(groups.entries()).map(([key, snapshots]) => {
-      const [op, tl] = key.split(":");
+      const [op, tl] = key.split(':');
       const durations = snapshots.map((s) => s.metrics.duration);
       const memoryUsages = snapshots.map((s) => s.metrics.memoryUsage.used);
       const errorCount = snapshots.filter((s) => !s.context.success).length;
@@ -373,7 +371,7 @@ export class PerformanceMonitor {
   /**
    * Get recent alerts
    */
-  getAlerts(severity?: AlertSeverity, limit: number = 50): PerformanceAlert[] {
+  getAlerts(severity?: AlertSeverity, limit = 50): PerformanceAlert[] {
     let filtered = this.alerts;
 
     if (severity) {
@@ -388,46 +386,46 @@ export class PerformanceMonitor {
    */
   getRecommendations(): string[] {
     const recommendations: string[] = [];
-    const recentMetrics = this.getAggregatedMetrics(undefined, undefined, "1h");
+    const recentMetrics = this.getAggregatedMetrics(undefined, undefined, '1h');
 
     // Analyze response times
     const slowOperations = recentMetrics.filter(
-      (agg) => agg.metrics.avgResponseTime > this.config.alertThresholds.maxResponseTime,
+      (agg) => agg.metrics.avgResponseTime > this.config.alertThresholds.maxResponseTime
     );
     if (slowOperations.length > 0) {
       recommendations.push(
-        `Consider optimizing ${slowOperations.map((o) => o.operation).join(", ")} - average response time is above threshold`,
+        `Consider optimizing ${slowOperations.map((o) => o.operation).join(', ')} - average response time is above threshold`
       );
     }
 
     // Analyze memory usage
     const highMemoryOperations = recentMetrics.filter(
-      (agg) => agg.metrics.peakMemoryUsage > this.config.alertThresholds.maxMemoryUsage * 1000,
+      (agg) => agg.metrics.peakMemoryUsage > this.config.alertThresholds.maxMemoryUsage * 1000
     ); // Convert to MB
     if (highMemoryOperations.length > 0) {
       recommendations.push(
-        `High memory usage detected in ${highMemoryOperations.map((o) => o.tool).join(", ")} - consider implementing memory optimization`,
+        `High memory usage detected in ${highMemoryOperations.map((o) => o.tool).join(', ')} - consider implementing memory optimization`
       );
     }
 
     // Analyze error rates
     const highErrorOperations = recentMetrics.filter(
-      (agg) => agg.metrics.errorRate > this.config.alertThresholds.maxErrorRate,
+      (agg) => agg.metrics.errorRate > this.config.alertThresholds.maxErrorRate
     );
     if (highErrorOperations.length > 0) {
       recommendations.push(
-        `High error rate in ${highErrorOperations.map((o) => o.operation).join(", ")} - review error handling and input validation`,
+        `High error rate in ${highErrorOperations.map((o) => o.operation).join(', ')} - review error handling and input validation`
       );
     }
 
     // Analyze accuracy if available
     const lowAccuracyOperations = recentMetrics.filter(
       (agg) =>
-        agg.metrics.accuracy && agg.metrics.accuracy < this.config.alertThresholds.minAccuracy,
+        agg.metrics.accuracy && agg.metrics.accuracy < this.config.alertThresholds.minAccuracy
     );
     if (lowAccuracyOperations.length > 0) {
       recommendations.push(
-        `Low accuracy in ${lowAccuracyOperations.map((o) => o.tool).join(", ")} - consider model retraining or parameter tuning`,
+        `Low accuracy in ${lowAccuracyOperations.map((o) => o.tool).join(', ')} - consider model retraining or parameter tuning`
       );
     }
 
@@ -437,7 +435,7 @@ export class PerformanceMonitor {
   /**
    * Export performance data
    */
-  exportData(format: "json" | "csv" = "json"): string {
+  exportData(format: 'json' | 'csv' = 'json'): string {
     const data = {
       snapshots: this.snapshots,
       alerts: this.alerts,
@@ -447,12 +445,12 @@ export class PerformanceMonitor {
       exportedAt: new Date(),
     };
 
-    if (format === "json") {
+    if (format === 'json') {
       return JSON.stringify(data, null, 2);
     }
 
     // CSV format implementation would go here
-    throw new Error("CSV export not implemented yet");
+    throw new Error('CSV export not implemented yet');
   }
 
   /**
@@ -462,7 +460,7 @@ export class PerformanceMonitor {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
-    this.eventListeners.get(event)!.push(listener);
+    this.eventListeners.get(event)?.push(listener);
   }
 
   off(event: NLPEventType, listener: NLPEventListener): void {
@@ -499,11 +497,11 @@ export class PerformanceMonitor {
     // Check response time
     if (metrics.duration > this.config.alertThresholds.maxResponseTime) {
       this.addAlert({
-        type: "response_time",
+        type: 'response_time',
         severity:
           metrics.duration > this.config.alertThresholds.maxResponseTime * 2
-            ? "critical"
-            : "warning",
+            ? 'critical'
+            : 'warning',
         message: `${snapshot.operation} on ${snapshot.tool} took ${metrics.duration}ms`,
         timestamp: new Date(),
         metrics,
@@ -515,8 +513,8 @@ export class PerformanceMonitor {
     const memoryUsagePercent = metrics.memoryUsage.percentage;
     if (memoryUsagePercent > this.config.alertThresholds.maxMemoryUsage * 100) {
       this.addAlert({
-        type: "memory_usage",
-        severity: memoryUsagePercent > 95 ? "critical" : "warning",
+        type: 'memory_usage',
+        severity: memoryUsagePercent > 95 ? 'critical' : 'warning',
         message: `Memory usage is ${memoryUsagePercent.toFixed(1)}% during ${snapshot.operation}`,
         timestamp: new Date(),
         metrics,
@@ -527,8 +525,8 @@ export class PerformanceMonitor {
     // Check CPU usage
     if (metrics.cpuUsage > this.config.alertThresholds.maxCpuUsage * 100) {
       this.addAlert({
-        type: "cpu_usage",
-        severity: metrics.cpuUsage > 95 ? "critical" : "warning",
+        type: 'cpu_usage',
+        severity: metrics.cpuUsage > 95 ? 'critical' : 'warning',
         message: `CPU usage is ${metrics.cpuUsage.toFixed(1)}% during ${snapshot.operation}`,
         timestamp: new Date(),
         metrics,
@@ -542,12 +540,12 @@ export class PerformanceMonitor {
 
     // Emit alert event
     this.emitEvent({
-      type: "performance_warning",
+      type: 'performance_warning',
       timestamp: new Date(),
       data: alert,
     });
 
-    console.warn("Performance Alert:", alert.message);
+    console.warn('Performance Alert:', alert.message);
   }
 
   private performHealthCheck(): void {
@@ -556,7 +554,7 @@ export class PerformanceMonitor {
     // Basic health check - could be expanded
     if (metrics.memoryUsage.percentage > 90) {
       this.emitEvent({
-        type: "memory_warning",
+        type: 'memory_warning',
         timestamp: new Date(),
         data: { usage: metrics.memoryUsage.percentage },
       });
@@ -574,14 +572,14 @@ export class PerformanceMonitor {
       try {
         listener(event);
       } catch (error) {
-        console.error("Error in performance event listener:", error);
+        console.error('Error in performance event listener:', error);
       }
     });
   }
 
   private getMemoryUsage(): MemoryMetrics {
     // Browser-based memory estimation
-    if (typeof performance !== "undefined" && "memory" in performance) {
+    if (typeof performance !== 'undefined' && 'memory' in performance) {
       const memory = (performance as any).memory;
       return {
         used: Math.round(memory.usedJSHeapSize / 1024 / 1024), // MB
@@ -628,13 +626,13 @@ export class PerformanceMonitor {
 
   private getWindowMs(window: TimeWindow): number {
     const multipliers: Record<TimeWindow, number> = {
-      "1m": 60 * 1000,
-      "5m": 5 * 60 * 1000,
-      "15m": 15 * 60 * 1000,
-      "1h": 60 * 60 * 1000,
-      "6h": 6 * 60 * 60 * 1000,
-      "1d": 24 * 60 * 60 * 1000,
-      "1w": 7 * 24 * 60 * 60 * 1000,
+      '1m': 60 * 1000,
+      '5m': 5 * 60 * 1000,
+      '15m': 15 * 60 * 1000,
+      '1h': 60 * 60 * 1000,
+      '6h': 6 * 60 * 60 * 1000,
+      '1d': 24 * 60 * 60 * 1000,
+      '1w': 7 * 24 * 60 * 60 * 1000,
     };
     return multipliers[window];
   }

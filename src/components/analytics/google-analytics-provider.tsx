@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense, useEffect } from "react";
-import { getGoogleAnalyticsService } from "@/lib/analytics/google-analytics";
+import { getGoogleAnalyticsService } from '@/lib/analytics/google-analytics';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect } from 'react';
+import type React from 'react';
 
 interface GoogleAnalyticsProviderProps {
   children: React.ReactNode;
@@ -34,7 +35,7 @@ function GoogleAnalyticsProviderInner({
 
   useEffect(() => {
     // Only initialize in browser environment
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
 
     // Initialize Google Analytics
     const initializeGoogleAnalytics = async () => {
@@ -49,9 +50,9 @@ function GoogleAnalyticsProviderInner({
           anonymizeIp !== undefined
         ) {
           gaService.updateConfig({
-            measurementId: measurementId || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "",
-            enabled: enabled ?? process.env.NODE_ENV !== "development",
-            debug: debug ?? process.env.NODE_ENV === "development",
+            ...(measurementId ? { measurementId } : {}),
+            enabled: enabled ?? process.env.NODE_ENV !== 'development',
+            debug: debug ?? process.env.NODE_ENV === 'development',
             anonymizeIp: anonymizeIp ?? true,
           });
         }
@@ -59,7 +60,7 @@ function GoogleAnalyticsProviderInner({
         // Initialize the service
         await gaService.initialize();
       } catch (error) {
-        console.error("Failed to initialize Google Analytics:", error);
+        console.error('Failed to initialize Google Analytics:', error);
       }
     };
 
@@ -68,7 +69,7 @@ function GoogleAnalyticsProviderInner({
 
   // Track page views when pathname or search params change
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
 
     const trackPageView = () => {
       try {
@@ -82,7 +83,7 @@ function GoogleAnalyticsProviderInner({
           gaService.trackPageView(fullPath);
         }
       } catch (error) {
-        console.error("Failed to track page view:", error);
+        console.error('Failed to track page view:', error);
       }
     };
 

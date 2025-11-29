@@ -1,6 +1,6 @@
-import { cn } from "@/lib/utils";
-import { Footer } from "./footer";
-import { Header } from "./header";
+import { cn } from '@/lib/utils';
+import { Footer } from './footer';
+import { Header } from './header';
 
 interface ToolsLayoutProps {
   children: React.ReactNode;
@@ -13,11 +13,11 @@ export function ToolsLayout({ children, showSidebar = false }: ToolsLayoutProps)
       <Header />
       <div className="flex">
         {showSidebar && (
-          <aside className="hidden md:block w-64 border-r border-gray-200 dark:border-gray-700">
+          <aside className="hidden w-64 border-gray-200 border-r md:block dark:border-gray-700">
             {/* Sidebar content would go here if needed */}
           </aside>
         )}
-        <main className={cn("flex-1", showSidebar ? "ml-64" : "")}>{children}</main>
+        <main className={cn('flex-1 py-12 lg:py-16', showSidebar ? 'ml-64' : '')}>{children}</main>
       </div>
       <Footer />
     </div>

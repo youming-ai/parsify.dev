@@ -1,0 +1,2 @@
+// Placeholder analytics types
+export {};

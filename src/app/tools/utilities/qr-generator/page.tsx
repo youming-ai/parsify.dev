@@ -1,33 +1,21 @@
-import { QrCode, Smartphone } from "lucide-react";
-import type { Metadata } from "next";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import QRGeneratorClient from "./client";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { QrCode, Smartphone } from 'lucide-react';
+import type { Metadata } from 'next';
+import QRGeneratorClient from './client';
 
 export const metadata: Metadata = {
-  title: "QR Code Generator - Create Custom QR Codes",
+  title: 'QR Code Generator - Create Custom QR Codes',
   description:
-    "Generate QR codes instantly for URLs, text, WiFi, contact info and more. Customizable size and error correction.",
-  keywords: ["QR code", "generator", "quick response", "mobile", "scanner", "barcode", "URL"],
+    'Generate QR codes instantly for URLs, text, WiFi, contact info and more. Customizable size and error correction.',
+  keywords: ['QR code', 'generator', 'quick response', 'mobile', 'scanner', 'barcode', 'URL'],
 };
 
 export default function QRGeneratorPage() {
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4">QR Code Generator</h1>
-          <p className="text-xl text-muted-foreground mb-4">
-            Generate custom QR codes for any purpose
-          </p>
-          <div className="flex justify-center gap-2 mb-4">
-            <Badge variant="secondary">Client-Side</Badge>
-            <Badge variant="outline">Instant</Badge>
-            <Badge variant="default">Downloadable</Badge>
-          </div>
-        </div>
-
+    <div className="container mx-auto px-4 py-8">
+      <div className="mx-auto w-full">
         <Alert className="mb-6">
           <QrCode className="h-4 w-4" />
           <AlertDescription>
@@ -47,7 +35,7 @@ export default function QRGeneratorPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-muted-foreground text-sm">
                 <li>• URLs and websites</li>
                 <li>• Plain text messages</li>
                 <li>• WiFi credentials</li>
@@ -65,7 +53,7 @@ export default function QRGeneratorPage() {
               <CardTitle>Customization Options</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-muted-foreground text-sm">
                 <li>• Multiple sizes (100-500px)</li>
                 <li>• Error correction levels</li>
                 <li>• Download formats (PNG, SVG)</li>
@@ -81,7 +69,7 @@ export default function QRGeneratorPage() {
               <CardTitle>Use Cases</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-muted-foreground text-sm">
                 <li>• Business cards</li>
                 <li>• WiFi sharing</li>
                 <li>• Event check-ins</li>

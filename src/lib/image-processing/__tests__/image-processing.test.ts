@@ -2,10 +2,10 @@
  * Image Processing Unit Tests
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { convertImage, getImageDimensions, toJPEG } from "../image-convert";
-import { extractTextFromImage, validateOCROptions } from "../image-ocr";
-import { cropToSquare, resizeByWidth, resizeImage } from "../image-resize";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { convertImage, getImageDimensions, toJPEG } from '../image-convert';
+import { extractTextFromImage, validateOCROptions } from '../image-ocr';
+import { cropToSquare, resizeByWidth, resizeImage } from '../image-resize';
 
 // Mock DOM APIs
 const mockCanvas = {
@@ -14,11 +14,11 @@ const mockCanvas = {
   getContext: vi.fn(() => ({
     drawImage: vi.fn(),
     toBlob: vi.fn((callback) => {
-      callback(new Blob(["mock image data"], { type: "image/png" }));
+      callback(new Blob(['mock image data'], { type: 'image/png' }));
     }),
   })),
   toBlob: vi.fn((callback) => {
-    callback(new Blob(["mock image data"], { type: "image/png" }));
+    callback(new Blob(['mock image data'], { type: 'image/png' }));
   }),
 };
 
@@ -27,7 +27,7 @@ const mockImage = {
   height: 600,
   onload: null as (() => void) | null,
   onerror: null as (() => void) | null,
-  src: "",
+  src: '',
 };
 
 // Mock global functions
@@ -36,7 +36,7 @@ global.document = {
   createElement: vi.fn(() => mockCanvas),
 } as any;
 global.URL = {
-  createObjectURL: vi.fn(() => "mock-url"),
+  createObjectURL: vi.fn(() => 'mock-url'),
   revokeObjectURL: vi.fn(),
 } as any;
 global.FileReader = vi.fn(() => ({
@@ -45,41 +45,41 @@ global.FileReader = vi.fn(() => ({
 })) as any;
 global.Blob = vi.fn((data, options) => ({ data, ...options })) as any;
 
-describe("Image Convert", () => {
+describe('Image Convert', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should convert image to PNG", async () => {
-    const mockFile = new File(["image data"], "test.jpg", { type: "image/jpeg" });
+  it('should convert image to PNG', async () => {
+    const mockFile = new File(['image data'], 'test.jpg', { type: 'image/jpeg' });
 
     const result = await convertImage({
       file: mockFile,
-      format: "png",
+      format: 'png',
       width: 400,
       height: 300,
     });
 
     expect(global.Image).toHaveBeenCalled();
-    expect(global.document.createElement).toHaveBeenCalledWith("canvas");
+    expect(global.document.createElement).toHaveBeenCalledWith('canvas');
     expect(result.success).toBe(true);
   });
 
-  it("should convert image to JPEG with quality", async () => {
-    const mockFile = new File(["image data"], "test.png", { type: "image/png" });
+  it('should convert image to JPEG with quality', async () => {
+    const mockFile = new File(['image data'], 'test.png', { type: 'image/png' });
 
     const result = await toJPEG(mockFile, 0.8, 400, 300);
 
     expect(mockCanvas.getContext().toBlob).toHaveBeenCalledWith(
       expect.any(Function),
-      "image/jpeg",
-      0.8,
+      'image/jpeg',
+      0.8
     );
     expect(result.success).toBe(true);
   });
 
-  it("should get image dimensions", async () => {
-    const mockFile = new File(["image data"], "test.jpg", { type: "image/jpeg" });
+  it('should get image dimensions', async () => {
+    const mockFile = new File(['image data'], 'test.jpg', { type: 'image/jpeg' });
 
     const dimensions = await getImageDimensions(mockFile);
 
@@ -88,13 +88,13 @@ describe("Image Convert", () => {
   });
 });
 
-describe("Image Resize", () => {
+describe('Image Resize', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should resize image maintaining aspect ratio", async () => {
-    const mockFile = new File(["image data"], "test.jpg", { type: "image/jpeg" });
+  it('should resize image maintaining aspect ratio', async () => {
+    const mockFile = new File(['image data'], 'test.jpg', { type: 'image/jpeg' });
 
     const result = await resizeImage({
       file: mockFile,
@@ -107,8 +107,8 @@ describe("Image Resize", () => {
     expect(result.newSize?.height).toBe(300); // 600 * (400/800)
   });
 
-  it("should resize image by width", async () => {
-    const mockFile = new File(["image data"], "test.jpg", { type: "image/jpeg" });
+  it('should resize image by width', async () => {
+    const mockFile = new File(['image data'], 'test.jpg', { type: 'image/jpeg' });
 
     const result = await resizeByWidth(mockFile, 400);
 
@@ -117,8 +117,8 @@ describe("Image Resize", () => {
     expect(result.newSize?.height).toBe(300);
   });
 
-  it("should crop image to square", async () => {
-    const mockFile = new File(["image data"], "test.jpg", { type: "image/jpeg" });
+  it('should crop image to square', async () => {
+    const mockFile = new File(['image data'], 'test.jpg', { type: 'image/jpeg' });
 
     const result = await cropToSquare(mockFile);
 
@@ -128,14 +128,14 @@ describe("Image Resize", () => {
   });
 });
 
-describe("Image OCR", () => {
+describe('Image OCR', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should validate OCR options", () => {
+  it('should validate OCR options', () => {
     const validOptions = {
-      file: new File(["image data"], "test.jpg", { type: "image/jpeg" }),
+      file: new File(['image data'], 'test.jpg', { type: 'image/jpeg' }),
       confidence: 85,
     };
 
@@ -143,30 +143,30 @@ describe("Image OCR", () => {
     expect(errors).toHaveLength(0);
   });
 
-  it("should detect invalid OCR options", () => {
+  it('should detect invalid OCR options', () => {
     const invalidOptions = {
-      file: new File(["text data"], "test.txt", { type: "text/plain" }),
+      file: new File(['text data'], 'test.txt', { type: 'text/plain' }),
       confidence: 150, // Invalid: > 100
     };
 
     const errors = validateOCROptions(invalidOptions);
     expect(errors.length).toBeGreaterThan(0);
-    expect(errors.some((e) => e.includes("image"))).toBe(true);
-    expect(errors.some((e) => e.includes("confidence"))).toBe(true);
+    expect(errors.some((e) => e.includes('image'))).toBe(true);
+    expect(errors.some((e) => e.includes('confidence'))).toBe(true);
   });
 
-  it("should extract text from image (placeholder)", async () => {
-    const mockFile = new File(["image data"], "test.jpg", { type: "image/jpeg" });
+  it('should extract text from image (placeholder)', async () => {
+    const mockFile = new File(['image data'], 'test.jpg', { type: 'image/jpeg' });
 
     const result = await extractTextFromImage({
       file: mockFile,
-      languages: ["eng"],
+      languages: ['eng'],
       confidence: 80,
     });
 
     expect(result.success).toBe(true);
-    expect(result.text).toContain("placeholder");
+    expect(result.text).toContain('placeholder');
     expect(result.confidence).toBe(85.5);
-    expect(typeof result.processingTime).toBe("number");
+    expect(typeof result.processingTime).toBe('number');
   });
 });

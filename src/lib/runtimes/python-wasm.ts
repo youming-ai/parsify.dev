@@ -63,10 +63,10 @@ export class PythonRuntime {
   private async _doInitialize(): Promise<void> {
     try {
       // Load Pyodide
-      const { loadPyodide } = await import("pyodide");
+      const { loadPyodide } = await import('pyodide');
       this.pyodide = await loadPyodide({
-        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/",
-        packages: ["numpy", "pandas", "matplotlib"], // Pre-load common packages
+        indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/',
+        packages: ['numpy', 'pandas', 'matplotlib'], // Pre-load common packages
       });
 
       // Configure Python environment
@@ -82,8 +82,29 @@ sys.stderr = io.StringIO()
 
       this.isInitialized = true;
     } catch (error) {
-      throw new Error(`Failed to initialize Python runtime: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error ?? 'Unknown error');
+      throw new Error(`Failed to initialize Python runtime: ${message}`);
     }
+  }
+
+  /**
+   * Install a package
+   */
+  async installPackage(packageName: string): Promise<void> {
+    await this.initialize();
+    if (!this.pyodide) {
+      throw new Error('Python runtime not initialized');
+    }
+    await this.pyodide.loadPackage(packageName);
+  }
+
+  /**
+   * Interrupt execution
+   */
+  interrupt(): void {
+    // Pyodide interruption requires SharedArrayBuffer and service worker setup
+    // For now, we'll just log
+    console.log('Interrupting Python execution (not fully implemented)');
   }
 
   /**
@@ -93,7 +114,7 @@ sys.stderr = io.StringIO()
     await this.initialize();
 
     if (!this.pyodide) {
-      throw new Error("Python runtime not initialized");
+      throw new Error('Python runtime not initialized');
     }
 
     const {
@@ -109,10 +130,11 @@ sys.stderr = io.StringIO()
     } = options;
 
     const startTime = performance.now();
-    let output = "";
-    let errorOutput = "";
+    let output = '';
+    let errorOutput = '';
     let isComplete = false;
     const graphics: string[] = [];
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
     try {
       // Load additional packages if requested
@@ -136,10 +158,10 @@ sys.stderr = io.StringIO()
       }
 
       // Set up timeout
-      const timeoutId = setTimeout(() => {
+      timeoutId = setTimeout(() => {
         if (!isComplete) {
           isComplete = true;
-          throw new Error("Python execution timeout");
+          throw new Error('Python execution timeout');
         }
       }, timeoutMs);
 
@@ -173,7 +195,7 @@ error_buffer.getvalue()
         }
 
         isComplete = true;
-        clearTimeout(timeoutId);
+        if (timeoutId) clearTimeout(timeoutId);
 
         // Capture graphics if requested
         if (captureGraphics) {
@@ -202,7 +224,7 @@ figures
 
         const endTime = performance.now();
         const executionTime = endTime - startTime;
-        const exitCode = errorOutput.includes("Error") ? 1 : 0;
+        const exitCode = errorOutput.includes('Error') ? 1 : 0;
 
         return {
           stdout: output,
@@ -215,7 +237,7 @@ figures
         };
       } catch (error) {
         isComplete = true;
-        clearTimeout(timeoutId);
+        if (timeoutId) clearTimeout(timeoutId);
 
         const endTime = performance.now();
         const executionTime = endTime - startTime;
@@ -231,7 +253,7 @@ figures
         };
       }
     } finally {
-      clearTimeout(timeoutId);
+      if (timeoutId) clearTimeout(timeoutId);
     }
   }
 
@@ -242,7 +264,7 @@ figures
     await this.initialize();
 
     if (!this.pyodide) {
-      throw new Error("Python runtime not initialized");
+      throw new Error('Python runtime not initialized');
     }
 
     try {
@@ -262,9 +284,8 @@ except:
           installed: true,
           files: [], // Would need additional logic to list files
         };
-      } else {
-        return null;
       }
+      return null;
     } catch {
       return null;
     }
@@ -299,8 +320,8 @@ if hasattr(sys, 'stderr'):
   getStatus() {
     return {
       initialized: this.isInitialized,
-      version: "3.11",
-      packages: ["numpy", "pandas", "matplotlib"],
+      version: '3.11',
+      packages: ['numpy', 'pandas', 'matplotlib'],
       memoryUsage: this._estimateMemoryUsage(),
     };
   }

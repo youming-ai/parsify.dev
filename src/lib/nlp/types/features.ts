@@ -15,6 +15,21 @@ export interface FeatureConfig {
   cacheResults: boolean;
 }
 
+export interface FeatureExtractionConfig {
+  defaultEmbeddingModel: string;
+  embeddingDimension: number;
+  maxSequenceLength: number;
+  batchSize: number;
+  enableCaching: boolean;
+  cacheSize: number;
+  normalizeVectors: boolean;
+  includePartOfSpeech: boolean;
+  includeDependencies: boolean;
+  ngramRange: [number, number];
+  minTokenFrequency: number;
+  maxFeatures: number;
+}
+
 // Base feature interface
 export interface BaseFeature {
   confidence: number;
@@ -269,7 +284,7 @@ export interface FeaturePipeline {
 
 export interface FeatureExtractionStep {
   id: string;
-  type: "linguistic" | "semantic" | "structural";
+  type: 'linguistic' | 'semantic' | 'structural';
   method: string;
   parameters: Record<string, any>;
   enabled: boolean;
@@ -296,7 +311,7 @@ export interface FeatureAnalysis {
 
 // Feature Aggregation
 export interface FeatureAggregation {
-  method: "average" | "weighted" | "max" | "min" | "concat";
+  method: 'average' | 'weighted' | 'max' | 'min' | 'concat';
   weights?: Record<string, number>;
   result: TextFeatures;
   confidence: number;
@@ -304,7 +319,7 @@ export interface FeatureAggregation {
 
 // Feature Selection
 export interface FeatureSelection {
-  method: "variance" | "chi2" | "mutual_information" | "recursive";
+  method: 'variance' | 'chi2' | 'mutual_information' | 'recursive';
   k: number;
   score: Record<string, number>;
   selected: string[];
@@ -313,7 +328,7 @@ export interface FeatureSelection {
 
 // Feature Transformation
 export interface FeatureTransformation {
-  type: "scaling" | "normalization" | "reduction" | "encoding";
+  type: 'scaling' | 'normalization' | 'reduction' | 'encoding';
   method: string;
   parameters: Record<string, any>;
   originalFeatures: TextFeatures;
@@ -340,7 +355,7 @@ export interface FeatureVectorMetadata {
 
 // Feature Export/Import
 export interface FeatureExport {
-  format: "json" | "csv" | "binary" | "protobuf";
+  format: 'json' | 'csv' | 'binary' | 'protobuf';
   features: TextFeatures | TextFeatures[];
   metadata: FeatureExportMetadata;
 }
@@ -355,7 +370,7 @@ export interface FeatureExportMetadata {
 
 // Feature Visualization
 export interface FeatureVisualization {
-  type: "scatter" | "heatmap" | "network" | "distribution" | "timeline";
+  type: 'scatter' | 'heatmap' | 'network' | 'distribution' | 'timeline';
   data: any;
   config: Record<string, any>;
   metadata: Record<string, any>;

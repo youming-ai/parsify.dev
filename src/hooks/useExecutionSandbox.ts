@@ -12,11 +12,11 @@
  * - Integration with constitutional compliance layer
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useConstitutionalCompliance } from "./useConstitutionalCompliance";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useConstitutionalCompliance } from './useConstitutionalCompliance';
 
 // Security level configuration
-export type SecurityLevel = "strict" | "moderate" | "permissive";
+export type SecurityLevel = 'strict' | 'moderate' | 'permissive';
 
 // Execution context interface
 interface ExecutionContext {
@@ -46,13 +46,13 @@ interface SandboxExecutionResult {
 // Security violation information
 interface SecurityViolation {
   type:
-    | "forbidden_import"
-    | "malicious_pattern"
-    | "resource_limit"
-    | "timeout"
-    | "network_access"
-    | "file_access";
-  severity: "low" | "medium" | "high" | "critical";
+    | 'forbidden_import'
+    | 'malicious_pattern'
+    | 'resource_limit'
+    | 'timeout'
+    | 'network_access'
+    | 'file_access';
+  severity: 'low' | 'medium' | 'high' | 'critical';
   message: string;
   line?: number;
   pattern?: string;
@@ -84,82 +84,82 @@ interface SecurityConfig {
 // Predefined security configurations
 const SECURITY_CONFIGS: Record<SecurityLevel, SecurityConfig> = {
   strict: {
-    level: "strict",
+    level: 'strict',
     maxExecutionTime: 5000, // 5 seconds
     maxMemoryUsage: 64, // 64MB
     maxNetworkRequests: 0,
     allowedDomains: [],
-    allowedFileSystemPaths: ["/tmp"],
-    blockedImports: ["os", "subprocess", "socket", "urllib", "http", "requests", "fetch"],
+    allowedFileSystemPaths: ['/tmp'],
+    blockedImports: ['os', 'subprocess', 'socket', 'urllib', 'http', 'requests', 'fetch'],
     blockedPatterns: [
-      "eval\\s*\\(",
-      "exec\\s*\\(",
-      "compile\\s*\\(",
-      "__import__",
-      "globals\\(\\)",
-      "locals\\(\\)",
-      "vars\\(\\)",
-      "dir\\(\\)",
-      "getattr\\s*\\(",
-      "setattr\\s*\\(",
-      "delattr\\s*\\(",
-      "hasattr\\s*\\(",
-      "callable\\s*\\(",
-      "isinstance\\s*\\(",
-      "issubclass\\s*\\(",
-      "super\\s*\\(",
-      "property\\s*\\(",
-      "staticmethod\\s*\\(",
-      "classmethod\\s*\\(",
-      "type\\s*\\(",
-      "input\\s*\\(",
-      "raw_input\\s*\\(",
-      "open\\s*\\(",
-      "file\\s*\\(",
-      "with\\s+open\\s*\\(",
-      "read\\s*\\(",
-      "write\\s*\\(",
-      "execfile\\s*\\(",
-      "reload\\s*\\(",
-      "import\\s+\\*",
-      "from\\s+\\w+\\s+import\\s+\\*",
+      'eval\\s*\\(',
+      'exec\\s*\\(',
+      'compile\\s*\\(',
+      '__import__',
+      'globals\\(\\)',
+      'locals\\(\\)',
+      'vars\\(\\)',
+      'dir\\(\\)',
+      'getattr\\s*\\(',
+      'setattr\\s*\\(',
+      'delattr\\s*\\(',
+      'hasattr\\s*\\(',
+      'callable\\s*\\(',
+      'isinstance\\s*\\(',
+      'issubclass\\s*\\(',
+      'super\\s*\\(',
+      'property\\s*\\(',
+      'staticmethod\\s*\\(',
+      'classmethod\\s*\\(',
+      'type\\s*\\(',
+      'input\\s*\\(',
+      'raw_input\\s*\\(',
+      'open\\s*\\(',
+      'file\\s*\\(',
+      'with\\s+open\\s*\\(',
+      'read\\s*\\(',
+      'write\\s*\\(',
+      'execfile\\s*\\(',
+      'reload\\s*\\(',
+      'import\\s+\\*',
+      'from\\s+\\w+\\s+import\\s+\\*',
     ],
     enableCodeAnalysis: true,
     enableRuntimeMonitoring: true,
   },
   moderate: {
-    level: "moderate",
+    level: 'moderate',
     maxExecutionTime: 15000, // 15 seconds
     maxMemoryUsage: 128, // 128MB
     maxNetworkRequests: 5,
-    allowedDomains: ["api.example.com", "cdn.jsdelivr.net"],
-    allowedFileSystemPaths: ["/tmp", "/workspace"],
-    blockedImports: ["subprocess", "socket", "urllib"],
+    allowedDomains: ['api.example.com', 'cdn.jsdelivr.net'],
+    allowedFileSystemPaths: ['/tmp', '/workspace'],
+    blockedImports: ['subprocess', 'socket', 'urllib'],
     blockedPatterns: [
-      "eval\\s*\\(",
-      "exec\\s*\\(",
-      "compile\\s*\\(",
-      "__import__",
-      "globals\\(\\)",
-      "locals\\(\\)",
-      "vars\\(\\)",
-      "open\\s*\\(",
-      "file\\s*\\(",
-      "execfile\\s*\\(",
-      "import\\s+\\*",
+      'eval\\s*\\(',
+      'exec\\s*\\(',
+      'compile\\s*\\(',
+      '__import__',
+      'globals\\(\\)',
+      'locals\\(\\)',
+      'vars\\(\\)',
+      'open\\s*\\(',
+      'file\\s*\\(',
+      'execfile\\s*\\(',
+      'import\\s+\\*',
     ],
     enableCodeAnalysis: true,
     enableRuntimeMonitoring: true,
   },
   permissive: {
-    level: "permissive",
+    level: 'permissive',
     maxExecutionTime: 30000, // 30 seconds
     maxMemoryUsage: 256, // 256MB
     maxNetworkRequests: 20,
-    allowedDomains: ["*"], // Allow all domains with monitoring
-    allowedFileSystemPaths: ["*"], // Allow all paths with monitoring
+    allowedDomains: ['*'], // Allow all domains with monitoring
+    allowedFileSystemPaths: ['*'], // Allow all paths with monitoring
     blockedImports: [], // No blocked imports
-    blockedPatterns: ["eval\\s*\\(", "exec\\s*\\(", "compile\\s*\\("],
+    blockedPatterns: ['eval\\s*\\(', 'exec\\s*\\(', 'compile\\s*\\('],
     enableCodeAnalysis: false,
     enableRuntimeMonitoring: true,
   },
@@ -201,10 +201,10 @@ export const useExecutionSandbox = () => {
 
     // Check for blocked patterns
     for (const pattern of config.blockedPatterns) {
-      const regex = new RegExp(pattern, "gi");
+      const regex = new RegExp(pattern, 'gi');
       let match;
       let _lineNumber = 1;
-      const lines = code.split("\\n");
+      const lines = code.split('\\n');
 
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -212,8 +212,8 @@ export const useExecutionSandbox = () => {
         match = regex.exec(line);
         if (match) {
           violations.push({
-            type: "malicious_pattern",
-            severity: "high",
+            type: 'malicious_pattern',
+            severity: 'high',
             message: `Potentially dangerous pattern detected: ${pattern}`,
             line: i + 1,
             pattern: match[0],
@@ -232,12 +232,12 @@ export const useExecutionSandbox = () => {
 
       if (
         config.blockedImports.some((blocked) =>
-          moduleName.toLowerCase().includes(blocked.toLowerCase()),
+          moduleName.toLowerCase().includes(blocked.toLowerCase())
         )
       ) {
         violations.push({
-          type: "forbidden_import",
-          severity: "high",
+          type: 'forbidden_import',
+          severity: 'high',
           message: `Blocked import detected: ${importStatement}`,
           pattern: importStatement,
         });
@@ -246,26 +246,26 @@ export const useExecutionSandbox = () => {
 
     // Check for obfuscation techniques
     if (
-      code.includes("chr(") ||
-      code.includes("ord(") ||
-      code.includes("hex(") ||
-      code.includes("base64")
+      code.includes('chr(') ||
+      code.includes('ord(') ||
+      code.includes('hex(') ||
+      code.includes('base64')
     ) {
       violations.push({
-        type: "malicious_pattern",
-        severity: "medium",
-        message: "Potential code obfuscation detected",
-        pattern: "encoding/decoding functions",
+        type: 'malicious_pattern',
+        severity: 'medium',
+        message: 'Potential code obfuscation detected',
+        pattern: 'encoding/decoding functions',
       });
     }
 
     // Check for infinite loop patterns
-    if (code.includes("while True:") && !code.includes("break") && !code.includes("return")) {
+    if (code.includes('while True:') && !code.includes('break') && !code.includes('return')) {
       violations.push({
-        type: "malicious_pattern",
-        severity: "medium",
-        message: "Potential infinite loop detected",
-        pattern: "while True: without break",
+        type: 'malicious_pattern',
+        severity: 'medium',
+        message: 'Potential infinite loop detected',
+        pattern: 'while True: without break',
       });
     }
 
@@ -280,10 +280,10 @@ export const useExecutionSandbox = () => {
       console: {
         log: (...args: any[]) =>
           args
-            .map((arg) => (typeof arg === "object" ? JSON.stringify(arg) : String(arg)))
-            .join(" "),
-        error: (...args: any[]) => `ERROR: ${args.map((arg) => String(arg)).join(" ")}`,
-        warn: (...args: any[]) => `WARN: ${args.map((arg) => String(arg)).join(" ")}`,
+            .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg) : String(arg)))
+            .join(' '),
+        error: (...args: any[]) => `ERROR: ${args.map((arg) => String(arg)).join(' ')}`,
+        warn: (...args: any[]) => `WARN: ${args.map((arg) => String(arg)).join(' ')}`,
       },
 
       // Safe Math functions
@@ -314,8 +314,8 @@ export const useExecutionSandbox = () => {
       },
 
       // Safe utility functions
-      parseInt: parseInt,
-      parseFloat: parseFloat,
+      parseInt: Number.parseInt,
+      parseFloat: Number.parseFloat,
       isNaN: Number.isNaN,
       isFinite: Number.isFinite,
 
@@ -336,12 +336,9 @@ export const useExecutionSandbox = () => {
     };
 
     // Remove dangerous functions based on security level
-    if (config.level === "strict") {
-      // Remove more dangerous functions
-      delete sandboxedGlobal.eval;
-      delete sandboxedGlobal.Function;
-      delete sandboxedGlobal.constructor;
-      delete sandboxedGlobal.prototype;
+    if (config.level === 'strict') {
+      // Note: Dangerous functions are not included in sandboxedGlobal
+      // to prevent their use in strict mode
     }
 
     return sandboxedGlobal;
@@ -375,18 +372,101 @@ export const useExecutionSandbox = () => {
     };
   }, []);
 
+  // Execute JavaScript in sandbox
+  const executeJavaScript = useCallback(
+    async (code: string, config: SecurityConfig, _signal: AbortSignal): Promise<any> => {
+      const sandbox = createIsolatedEnvironment('javascript', config);
+      const _originalConsole = console.log;
+      const _originalError = console.error;
+      const logs: string[] = [];
+
+      // Create sandboxed console
+      sandbox.console.log = (...args: any[]) => {
+        logs.push(
+          args
+            .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)))
+            .join(' ')
+        );
+      };
+
+      sandbox.console.error = (...args: any[]) => {
+        logs.push(`ERROR: ${args.map((arg) => String(arg)).join(' ')}`);
+      };
+
+      try {
+        // Create isolated execution function
+        const executeCode = new Function(
+          ...Object.keys(sandbox),
+          `
+        "use strict";
+        ${code}
+        `
+        );
+
+        // Set up monitoring hooks
+        if (config.enableRuntimeMonitoring) {
+          const originalFetch = globalThis.fetch;
+          globalThis.fetch = (...args) => {
+            resourceMonitor.current.networkRequests++;
+            if (config.allowedDomains.length > 0 && !config.allowedDomains.includes('*')) {
+              const target = args[0];
+              const urlToCheck =
+                target instanceof URL
+                  ? target
+                  : target instanceof Request
+                    ? target.url
+                    : String(target);
+              const url = new URL(urlToCheck);
+              if (!config.allowedDomains.includes(url.hostname)) {
+                throw new Error(`Network access to domain ${url.hostname} is not allowed`);
+              }
+            }
+            return originalFetch(...args);
+          };
+        }
+
+        // Execute code with timeout
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => {
+            reject(new Error('Execution timeout'));
+          }, config.maxExecutionTime);
+        });
+
+        const executionPromise = Promise.resolve(executeCode(...Object.values(sandbox)));
+
+        await Promise.race([executionPromise, timeoutPromise]);
+
+        return {
+          success: true,
+          output: logs.join('\\n'),
+          exitCode: 0,
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+          output: logs.join('\\n'),
+          exitCode: 1,
+        };
+      } finally {
+        // Restore original functions
+      }
+    },
+    [createIsolatedEnvironment]
+  );
+
   // Execute code in sandbox
   const executeInSandbox = useCallback(
     async (
       language: string,
       code: string,
-      securityLevel: SecurityLevel = "moderate",
+      securityLevel: SecurityLevel = 'moderate',
       options?: {
         timeout?: number;
         memoryLimit?: number;
         allowedImports?: string[];
         customConfig?: Partial<SecurityConfig>;
-      },
+      }
     ): Promise<SandboxExecutionResult> => {
       const executionId = `exec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const startTime = performance.now();
@@ -401,7 +481,7 @@ export const useExecutionSandbox = () => {
       };
 
       // Validate against constitutional compliance
-      const isCompliant = await validateAction("code_execution", {
+      const isCompliant = await validateAction('code_execution', {
         language,
         codeLength: code.length,
         securityLevel,
@@ -411,14 +491,14 @@ export const useExecutionSandbox = () => {
       if (!isCompliant) {
         return {
           success: false,
-          error: "Code execution blocked: Constitutional compliance check failed",
+          error: 'Code execution blocked: Constitutional compliance check failed',
           executionTime: 0,
           memoryUsage: 0,
           securityViolations: [
             {
-              type: "malicious_pattern",
-              severity: "critical",
-              message: "Constitutional compliance check failed",
+              type: 'malicious_pattern',
+              severity: 'critical',
+              message: 'Constitutional compliance check failed',
             },
           ],
           resourcesUsed: {
@@ -433,10 +513,10 @@ export const useExecutionSandbox = () => {
 
       // Analyze code for security violations
       const codeViolations = analyzeCode(code, config);
-      if (codeViolations.some((v) => v.severity === "critical" || v.severity === "high")) {
+      if (codeViolations.some((v) => v.severity === 'critical' || v.severity === 'high')) {
         return {
           success: false,
-          error: "Code blocked due to security violations",
+          error: 'Code blocked due to security violations',
           executionTime: 0,
           memoryUsage: 0,
           securityViolations: codeViolations,
@@ -478,7 +558,7 @@ export const useExecutionSandbox = () => {
         let result: any;
         const violations: SecurityViolation[] = [...codeViolations];
 
-        if (language === "javascript" || language === "typescript") {
+        if (language === 'javascript' || language === 'typescript') {
           result = await executeJavaScript(code, config, abortController.signal);
         } else {
           // For other languages, delegate to their respective runtimes
@@ -490,8 +570,8 @@ export const useExecutionSandbox = () => {
         const executionTime = performance.now() - startTime;
         if (executionTime > config.maxExecutionTime) {
           violations.push({
-            type: "timeout",
-            severity: "high",
+            type: 'timeout',
+            severity: 'high',
             message: `Execution exceeded time limit: ${executionTime}ms > ${config.maxExecutionTime}ms`,
           });
         }
@@ -501,8 +581,8 @@ export const useExecutionSandbox = () => {
         const memoryMB = resourceUsage.memoryPeak / (1024 * 1024);
         if (memoryMB > config.maxMemoryUsage) {
           violations.push({
-            type: "resource_limit",
-            severity: "high",
+            type: 'resource_limit',
+            severity: 'high',
             message: `Memory usage exceeded limit: ${memoryMB.toFixed(2)}MB > ${config.maxMemoryUsage}MB`,
           });
         }
@@ -525,8 +605,8 @@ export const useExecutionSandbox = () => {
           memoryUsage: 0,
           securityViolations: [
             {
-              type: "malicious_pattern",
-              severity: "medium",
+              type: 'malicious_pattern',
+              severity: 'medium',
               message: `Execution error: ${error instanceof Error ? error.message : String(error)}`,
             },
           ],
@@ -539,99 +619,7 @@ export const useExecutionSandbox = () => {
         setActiveExecutionsCount(activeExecutions.current.size);
       }
     },
-    [validateAction, analyzeCode, startResourceMonitoring, getResourceUsage, executeJavaScript],
-  );
-
-  // Execute JavaScript in sandbox
-  const executeJavaScript = useCallback(
-    async (code: string, config: SecurityConfig, signal: AbortSignal): Promise<any> => {
-      const sandbox = createIsolatedEnvironment("javascript", config);
-      const _originalConsole = console.log;
-      const _originalError = console.error;
-      const logs: string[] = [];
-
-      // Create sandboxed console
-      sandbox.console.log = (...args: any[]) => {
-        logs.push(
-          args
-            .map((arg) => (typeof arg === "object" ? JSON.stringify(arg, null, 2) : String(arg)))
-            .join(" "),
-        );
-      };
-
-      sandbox.console.error = (...args: any[]) => {
-        logs.push(`ERROR: ${args.map((arg) => String(arg)).join(" ")}`);
-      };
-
-      try {
-        // Create isolated execution function
-        const executeCode = new Function(
-          ...Object.keys(sandbox),
-          `
-        "use strict";
-        ${
-          signal.addEventListener
-            ? `
-        if (typeof AbortController !== 'undefined') {
-          const controller = new AbortController();
-          signal.addEventListener('abort', () => {
-            throw new Error('Execution aborted');
-          });
-        }
-        `
-            : ""
-        }
-        ${code}
-        `,
-        );
-
-        // Set up monitoring hooks
-        if (config.enableRuntimeMonitoring) {
-          // Monitor network requests (this would need more sophisticated implementation)
-          const originalFetch = globalThis.fetch;
-          globalThis.fetch = (...args) => {
-            resourceMonitor.current.networkRequests++;
-            if (config.allowedDomains.length > 0 && !config.allowedDomains.includes("*")) {
-              const url = new URL(args[0]);
-              if (!config.allowedDomains.includes(url.hostname)) {
-                throw new Error(`Network access to domain ${url.hostname} is not allowed`);
-              }
-            }
-            return originalFetch(...args);
-          };
-        }
-
-        // Execute code with timeout
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => {
-            reject(new Error("Execution timeout"));
-          }, config.maxExecutionTime);
-        });
-
-        const executionPromise = Promise.resolve(executeCode(...Object.values(sandbox)));
-
-        await Promise.race([executionPromise, timeoutPromise]);
-
-        return {
-          success: true,
-          output: logs.join("\\n"),
-          exitCode: 0,
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : String(error),
-          output: logs.join("\\n"),
-          exitCode: 1,
-        };
-      } finally {
-        // Restore original functions
-        if (config.enableRuntimeMonitoring && globalThis.fetch) {
-          // Restore original fetch
-        }
-      }
-    },
-    [createIsolatedEnvironment],
+    [validateAction, analyzeCode, startResourceMonitoring, getResourceUsage, executeJavaScript]
   );
 
   // Abort execution
@@ -707,7 +695,7 @@ export const useExecutionSandbox = () => {
     getResourceUsage,
 
     // Security levels
-    securityLevels: ["strict", "moderate", "permissive"] as SecurityLevel[],
-    supportedLanguages: ["javascript", "typescript", "python", "java", "go", "rust"],
+    securityLevels: ['strict', 'moderate', 'permissive'] as SecurityLevel[],
+    supportedLanguages: ['javascript', 'typescript', 'python', 'java', 'go', 'rust'],
   };
 };

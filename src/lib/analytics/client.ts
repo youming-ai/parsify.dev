@@ -8,19 +8,19 @@ import {
   CLOUDFLARE_ANALYTICS_CONFIG,
   DEFAULT_ANALYTICS_CONFIG,
   RATE_LIMITS,
-} from "./config";
+} from './config';
 import type {
+  APIUsageEvent,
   AnalyticsBatch,
   AnalyticsConfig,
   AnalyticsConsent,
   AnalyticsEvent,
   AnalyticsSession,
-  APIUsageEvent,
   PageViewEvent,
   PerformanceEvent,
   ToolUsageEvent,
   UserInteractionEvent,
-} from "./types";
+} from './types';
 
 // Re-export types for convenience
 export type { AnalyticsConfig, AnalyticsConsent, AnalyticsSession, AnalyticsEvent };
@@ -33,6 +33,7 @@ export class CloudflareAnalyticsClient {
   private performanceObserver: PerformanceObserver | null = null;
   private isInitialized = false;
   private eventCounters = new Map<string, number>();
+  private batchTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(config?: Partial<AnalyticsConfig>) {
     this.config = { ...DEFAULT_ANALYTICS_CONFIG, ...config };
@@ -75,9 +76,9 @@ export class CloudflareAnalyticsClient {
       this.startBatchProcessor();
 
       this.isInitialized = true;
-      this.log("Analytics client initialized");
+      this.log('Analytics client initialized');
     } catch (error) {
-      this.logError("Failed to initialize analytics client", error);
+      this.logError('Failed to initialize analytics client', error);
     }
   }
 
@@ -94,7 +95,7 @@ export class CloudflareAnalyticsClient {
       url: window.location.href,
       userAgent: navigator.userAgent,
       userId: this.session?.userId,
-      sessionId: this.session?.id || "",
+      sessionId: this.session?.id || '',
       data: {
         title: title || document.title,
         path: path || window.location.pathname,
@@ -116,7 +117,7 @@ export class CloudflareAnalyticsClient {
   trackToolUsage(params: {
     toolId: string;
     toolName: string;
-    action: "execute" | "validate" | "format" | "convert" | "error";
+    action: 'execute' | 'validate' | 'format' | 'convert' | 'error';
     processingTime?: number;
     inputSize?: number;
     outputSize?: number;
@@ -132,7 +133,7 @@ export class CloudflareAnalyticsClient {
       url: window.location.href,
       userAgent: navigator.userAgent,
       userId: this.session?.userId,
-      sessionId: this.session?.id || "",
+      sessionId: this.session?.id || '',
       data: params,
     };
 
@@ -143,7 +144,7 @@ export class CloudflareAnalyticsClient {
   /**
    * Track performance metrics
    */
-  trackPerformance(metrics: Partial<PerformanceEvent["data"]>): void {
+  trackPerformance(metrics: Partial<PerformanceEvent['data']>): void {
     if (!this.canTrack(ANALYTICS_EVENTS.PERFORMANCE)) return;
 
     const event: PerformanceEvent = {
@@ -153,7 +154,7 @@ export class CloudflareAnalyticsClient {
       url: window.location.href,
       userAgent: navigator.userAgent,
       userId: this.session?.userId,
-      sessionId: this.session?.id || "",
+      sessionId: this.session?.id || '',
       data: {
         ...metrics,
         connectionType: this.getConnectionType(),
@@ -168,7 +169,7 @@ export class CloudflareAnalyticsClient {
    * Track user interactions
    */
   trackInteraction(params: {
-    interactionType: "click" | "scroll" | "focus" | "blur" | "submit" | "navigation";
+    interactionType: 'click' | 'scroll' | 'focus' | 'blur' | 'submit' | 'navigation';
     elementId?: string;
     elementTag?: string;
     elementText?: string;
@@ -184,7 +185,7 @@ export class CloudflareAnalyticsClient {
       url: window.location.href,
       userAgent: navigator.userAgent,
       userId: this.session?.userId,
-      sessionId: this.session?.id || "",
+      sessionId: this.session?.id || '',
       data: params,
     };
 
@@ -212,7 +213,7 @@ export class CloudflareAnalyticsClient {
       url: window.location.href,
       userAgent: navigator.userAgent,
       userId: this.session?.userId,
-      sessionId: this.session?.id || "",
+      sessionId: this.session?.id || '',
       data: params,
     };
 
@@ -225,7 +226,7 @@ export class CloudflareAnalyticsClient {
   trackCustomEvent(
     eventName: string,
     data: Record<string, any>,
-    properties?: Record<string, string | number | boolean>,
+    properties?: Record<string, string | number | boolean>
   ): void {
     if (!this.config.customEvents.enabled) return;
     if (!this.config.customEvents.allowedEvents.includes(eventName)) return;
@@ -237,7 +238,7 @@ export class CloudflareAnalyticsClient {
       url: window.location.href,
       userAgent: navigator.userAgent,
       userId: this.session?.userId,
-      sessionId: this.session?.id || "",
+      sessionId: this.session?.id || '',
       data,
       properties,
     };
@@ -254,12 +255,12 @@ export class CloudflareAnalyticsClient {
       performance: consent.performance ?? false,
       interactions: consent.interactions ?? false,
       timestamp: Date.now(),
-      version: "1.0",
+      version: '1.0',
       ...consent,
     };
 
     this.saveConsent();
-    this.trackCustomEvent("consent_update", {
+    this.trackCustomEvent('consent_update', {
       analytics: this.consent.analytics,
       performance: this.consent.performance,
       interactions: this.consent.interactions,
@@ -306,13 +307,13 @@ export class CloudflareAnalyticsClient {
    */
 
   private async initializeSession(): Promise<void> {
-    const existingSessionId = this.getStorageItem("sessionId");
+    const existingSessionId = this.getStorageItem('sessionId');
 
     if (existingSessionId) {
       // Resume existing session
       this.session = {
         id: existingSessionId,
-        userId: this.getStorageItem("userId") || undefined,
+        userId: this.getStorageItem('userId') || undefined,
         startTime: Date.now(),
         lastActivity: Date.now(),
         pageViews: 0,
@@ -326,7 +327,7 @@ export class CloudflareAnalyticsClient {
       // Create new session
       this.session = {
         id: this.generateSessionId(),
-        userId: this.getStorageItem("userId") || undefined,
+        userId: this.getStorageItem('userId') || undefined,
         startTime: Date.now(),
         lastActivity: Date.now(),
         pageViews: 0,
@@ -336,7 +337,7 @@ export class CloudflareAnalyticsClient {
         referrer: document.referrer,
         landingPage: window.location.pathname,
       };
-      this.setStorageItem("sessionId", this.session.id);
+      this.setStorageItem('sessionId', this.session.id);
     }
   }
 
@@ -347,17 +348,17 @@ export class CloudflareAnalyticsClient {
         performance: true,
         interactions: true,
         timestamp: Date.now(),
-        version: "1.0",
+        version: '1.0',
       };
       return;
     }
 
-    const savedConsent = this.getStorageItem("consent");
+    const savedConsent = this.getStorageItem('consent');
     if (savedConsent) {
       try {
         this.consent = JSON.parse(savedConsent);
       } catch (error) {
-        this.logError("Failed to parse saved consent", error);
+        this.logError('Failed to parse saved consent', error);
       }
     }
   }
@@ -371,19 +372,19 @@ export class CloudflareAnalyticsClient {
 
       entries.forEach((entry) => {
         switch (entry.entryType) {
-          case "largest-contentful-paint":
+          case 'largest-contentful-paint':
             this.trackPerformance({
               lcp: entry.startTime,
             });
             break;
 
-          case "first-input":
+          case 'first-input':
             this.trackPerformance({
               fid: (entry as any).processingStart - entry.startTime,
             });
             break;
 
-          case "layout-shift":
+          case 'layout-shift':
             if (!(entry as any).hadRecentInput) {
               this.trackPerformance({
                 cls: (entry as any).value,
@@ -391,7 +392,7 @@ export class CloudflareAnalyticsClient {
             }
             break;
 
-          case "navigation": {
+          case 'navigation': {
             const navEntry = entry as PerformanceNavigationTiming;
             this.trackPerformance({
               fcp: navEntry.responseStart - navEntry.requestStart,
@@ -407,16 +408,16 @@ export class CloudflareAnalyticsClient {
 
     // Observe performance entries
     this.performanceObserver.observe({
-      entryTypes: ["largest-contentful-paint", "first-input", "layout-shift", "navigation"],
+      entryTypes: ['largest-contentful-paint', 'first-input', 'layout-shift', 'navigation'],
     });
   }
 
   private initializeInteractionTracking(): void {
     // Click tracking
-    document.addEventListener("click", (event) => {
+    document.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
       this.trackInteraction({
-        interactionType: "click",
+        interactionType: 'click',
         elementId: target.id,
         elementTag: target.tagName,
         elementText: target.textContent?.slice(0, 100),
@@ -425,12 +426,12 @@ export class CloudflareAnalyticsClient {
 
     // Scroll tracking (throttled)
     let scrollTimeout: NodeJS.Timeout;
-    document.addEventListener("scroll", () => {
+    document.addEventListener('scroll', () => {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
         const scrollDepth = this.calculateScrollDepth();
         this.trackInteraction({
-          interactionType: "scroll",
+          interactionType: 'scroll',
           scrollDepth,
         });
       }, 1000);
@@ -441,18 +442,18 @@ export class CloudflareAnalyticsClient {
     if (!this.config.trackingId) return;
 
     // Create Cloudflare Web Analytics script
-    const script = document.createElement("script");
+    const script = document.createElement('script');
     script.src = `${CLOUDFLARE_ANALYTICS_CONFIG.endpoint}?id=${this.config.trackingId}`;
     script.async = true;
     script.defer = true;
 
     // Add data attributes for additional tracking
     script.setAttribute(
-      "data-cf-beacon",
+      'data-cf-beacon',
       JSON.stringify({
         token: this.config.trackingId,
         spa: true,
-      }),
+      })
     );
 
     document.head.appendChild(script);
@@ -463,7 +464,7 @@ export class CloudflareAnalyticsClient {
 
     // Trigger Cloudflare page view tracking
     if (window._cfBeacon) {
-      window._cfBeacon("pageview");
+      window._cfBeacon('pageview');
     }
   }
 
@@ -495,7 +496,7 @@ export class CloudflareAnalyticsClient {
       id: this.generateBatchId(),
       events: [...this.eventQueue],
       timestamp: Date.now(),
-      status: "pending",
+      status: 'pending',
       retryCount: 0,
     };
   }
@@ -504,13 +505,13 @@ export class CloudflareAnalyticsClient {
     if (this.eventQueue.length === 0) return;
 
     try {
-      batch.status = "sending";
+      batch.status = 'sending';
 
       const response = await fetch(CLOUDFLARE_ANALYTICS_CONFIG.customDataEndpoint, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "X-Request-ID": this.generateEventId(),
+          'Content-Type': 'application/json',
+          'X-Request-ID': this.generateEventId(),
         },
         body: JSON.stringify({
           batchId: batch.id,
@@ -522,15 +523,15 @@ export class CloudflareAnalyticsClient {
       });
 
       if (response.ok) {
-        batch.status = "sent";
+        batch.status = 'sent';
         this.eventQueue = [];
         this.log(`Batch ${batch.id} sent successfully`);
       } else {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
     } catch (error) {
-      batch.status = "failed";
-      batch.error = error instanceof Error ? error.message : "Unknown error";
+      batch.status = 'failed';
+      batch.error = error instanceof Error ? error.message : 'Unknown error';
 
       if (batch.retryCount < RATE_LIMITS.batchRetries) {
         batch.retryCount++;
@@ -605,18 +606,18 @@ export class CloudflareAnalyticsClient {
   }
 
   private getConnectionType(): string {
-    return (navigator as any).connection?.effectiveType || "unknown";
+    return (navigator as any).connection?.effectiveType || 'unknown';
   }
 
   private getEffectiveConnectionType(): string {
-    return (navigator as any).connection?.effectiveType || "unknown";
+    return (navigator as any).connection?.effectiveType || 'unknown';
   }
 
   private hasDNT(): boolean {
     return (
-      navigator.doNotTrack === "1" ||
-      (window as any).doNotTrack === "1" ||
-      (navigator as any).msDoNotTrack === "1"
+      navigator.doNotTrack === '1' ||
+      (window as any).doNotTrack === '1' ||
+      (navigator as any).msDoNotTrack === '1'
     );
   }
 
@@ -631,9 +632,7 @@ export class CloudflareAnalyticsClient {
   private getStorageItem(key: string): string | null {
     try {
       return localStorage.getItem(
-        CLOUDFLARE_ANALYTICS_CONFIG.storage[
-          key as keyof typeof CLOUDFLARE_ANALYTICS_CONFIG.storage
-        ],
+        CLOUDFLARE_ANALYTICS_CONFIG.storage[key as keyof typeof CLOUDFLARE_ANALYTICS_CONFIG.storage]
       );
     } catch {
       return null;
@@ -646,7 +645,7 @@ export class CloudflareAnalyticsClient {
         CLOUDFLARE_ANALYTICS_CONFIG.storage[
           key as keyof typeof CLOUDFLARE_ANALYTICS_CONFIG.storage
         ],
-        value,
+        value
       );
     } catch (error) {
       this.logError(`Failed to save ${key} to localStorage`, error);
@@ -659,22 +658,22 @@ export class CloudflareAnalyticsClient {
         localStorage.removeItem(key);
       });
     } catch (error) {
-      this.logError("Failed to clear localStorage", error);
+      this.logError('Failed to clear localStorage', error);
     }
   }
 
   private saveSession(): void {
     if (this.session) {
-      this.setStorageItem("sessionId", this.session.id);
+      this.setStorageItem('sessionId', this.session.id);
       if (this.session.userId) {
-        this.setStorageItem("userId", this.session.userId);
+        this.setStorageItem('userId', this.session.userId);
       }
     }
   }
 
   private saveConsent(): void {
     if (this.consent) {
-      this.setStorageItem("consent", JSON.stringify(this.consent));
+      this.setStorageItem('consent', JSON.stringify(this.consent));
     }
   }
 
@@ -720,7 +719,7 @@ declare global {
 let analyticsClient: CloudflareAnalyticsClient | null = null;
 
 export function createAnalyticsClient(
-  config?: Partial<AnalyticsConfig>,
+  config?: Partial<AnalyticsConfig>
 ): CloudflareAnalyticsClient {
   if (!analyticsClient) {
     analyticsClient = new CloudflareAnalyticsClient(config);

@@ -1,29 +1,30 @@
-"use client";
+'use client';
 
-import React, { useState, useCallback, useEffect, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import PerformanceMonitor from '@/lib/performance-monitor';
 import {
-  Link,
-  Copy,
-  Download,
-  Trash2,
   BarChart,
   Clock,
+  Copy,
+  Download,
   ExternalLink,
-  Settings,
-  RefreshCw,
-  Share,
+  Link,
   QrCode,
+  RefreshCw,
+  Settings,
+  Share,
   Shield,
+  Trash2,
   Zap,
-} from "lucide-react";
-import { usePerformanceMonitor } from "@/hooks/use-performance-monitor";
+} from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface URLShortenerProps {
   onShortenComplete?: (shortenedUrl: ShortenedURL) => void;
@@ -52,26 +53,25 @@ interface URLStats {
   avgClicksPerUrl: number;
 }
 
-const STORAGE_KEY = "parsify-url-shortener";
-const STATS_KEY = "parsify-url-stats";
+const STORAGE_KEY = 'parsify-url-shortener';
+const STATS_KEY = 'parsify-url-stats';
 
-const DOMAIN_PREFIX = "psfy.link"; // Custom short domain
+const DOMAIN_PREFIX = 'psfy.link'; // Custom short domain
 
 export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete }) => {
-  const [originalUrl, setOriginalUrl] = useState("");
-  const [customAlias, setCustomAlias] = useState("");
-  const [password, setPassword] = useState("");
-  const [description, setDescription] = useState("");
+  const [originalUrl, setOriginalUrl] = useState('');
+  const [customAlias, setCustomAlias] = useState('');
+  const [password, setPassword] = useState('');
+  const [description, setDescription] = useState('');
   const [expiresIn, setExpiresIn] = useState<number>(0); // 0 = never expires
   const [shortenedUrls, setShortenedUrls] = useState<ShortenedURL[]>([]);
   const [selectedUrl, setSelectedUrl] = useState<ShortenedURL | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const performanceMonitor = PerformanceMonitor.getInstance();
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, _setShowPassword] = useState(false);
   const [requirePassword, setRequirePassword] = useState(false);
-
-  const { startMonitoring, endMonitoring, getMetrics } = usePerformanceMonitor();
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -85,11 +85,11 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
             createdAt: new Date(url.createdAt),
             lastAccessed: url.lastAccessed ? new Date(url.lastAccessed) : undefined,
             expiresAt: url.expiresAt ? new Date(url.expiresAt) : undefined,
-          })),
+          }))
         );
       }
     } catch (error) {
-      console.error("Error loading saved URLs:", error);
+      console.error('Error loading saved URLs:', error);
     }
   }, []);
 
@@ -99,7 +99,7 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
       localStorage.setItem(STORAGE_KEY, JSON.stringify(shortenedUrls));
       updateStats();
     } catch (error) {
-      console.error("Error saving URLs:", error);
+      console.error('Error saving URLs:', error);
     }
   }, [shortenedUrls]);
 
@@ -117,7 +117,7 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
   const stats = useMemo((): URLStats => {
     const now = new Date();
     const activeUrls = shortenedUrls.filter(
-      (url) => url.isActive && (!url.expiresAt || url.expiresAt > now),
+      (url) => url.isActive && (!url.expiresAt || url.expiresAt > now)
     );
     const expiredUrls = shortenedUrls.filter((url) => url.expiresAt && url.expiresAt <= now);
 
@@ -138,14 +138,14 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
     try {
       localStorage.setItem(STATS_KEY, JSON.stringify(stats));
     } catch (error) {
-      console.error("Error saving stats:", error);
+      console.error('Error saving stats:', error);
     }
   }, [stats]);
 
   // Generate short code
-  const generateShortCode = useCallback((length: number = 6): string => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let result = "";
+  const generateShortCode = useCallback((length = 6): string => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
     for (let i = 0; i < length; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
@@ -156,7 +156,7 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
   const isValidUrl = useCallback((url: string): boolean => {
     try {
       const urlObj = new URL(url);
-      return urlObj.protocol === "http:" || urlObj.protocol === "https:";
+      return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
     } catch {
       return false;
     }
@@ -165,26 +165,26 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
   // Create shortened URL
   const createShortenedUrl = useCallback(async () => {
     if (!originalUrl.trim()) {
-      setError("Please enter a URL to shorten");
+      setError('Please enter a URL to shorten');
       return;
     }
 
     if (!isValidUrl(originalUrl)) {
-      setError("Please enter a valid URL (e.g., https://example.com)");
+      setError('Please enter a valid URL (e.g., https://example.com)');
       return;
     }
 
     setError(null);
     setIsLoading(true);
 
-    startMonitoring("url-shorten");
+    performanceMonitor.startMonitoring();
 
     try {
       // Check if custom alias already exists
       if (customAlias) {
         const existing = shortenedUrls.find((url) => url.shortCode === customAlias);
         if (existing) {
-          throw new Error("This custom alias is already taken");
+          throw new Error('This custom alias is already taken');
         }
       }
 
@@ -199,7 +199,7 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
       }
 
       if (attempts >= maxAttempts) {
-        throw new Error("Could not generate a unique short code. Please try again.");
+        throw new Error('Could not generate a unique short code. Please try again.');
       }
 
       // Calculate expiration date
@@ -224,19 +224,18 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
       setSelectedUrl(newShortenedUrl);
 
       // Reset form
-      setOriginalUrl("");
-      setCustomAlias("");
-      setPassword("");
-      setDescription("");
+      setOriginalUrl('');
+      setCustomAlias('');
+      setPassword('');
+      setDescription('');
       setExpiresIn(0);
       setRequirePassword(false);
 
       onShortenComplete?.(newShortenedUrl);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred while shortening the URL");
+      setError(err instanceof Error ? err.message : 'An error occurred while shortening the URL');
     } finally {
-      const metrics = getMetrics();
-      endMonitoring();
+      performanceMonitor.stopMonitoring();
       setIsLoading(false);
     }
   }, [
@@ -249,9 +248,6 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
     shortenedUrls,
     generateShortCode,
     isValidUrl,
-    startMonitoring,
-    endMonitoring,
-    getMetrics,
     onShortenComplete,
   ]);
 
@@ -262,7 +258,7 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
     } catch (error) {
-      console.error("Failed to copy:", error);
+      console.error('Failed to copy:', error);
     }
   }, []);
 
@@ -276,8 +272,8 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
               clicks: u.clicks + 1,
               lastAccessed: new Date(),
             }
-          : u,
-      ),
+          : u
+      )
     );
   }, []);
 
@@ -289,24 +285,24 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
         setSelectedUrl(null);
       }
     },
-    [selectedUrl],
+    [selectedUrl]
   );
 
   // Toggle URL active status
   const toggleUrlStatus = useCallback((id: string) => {
     setShortenedUrls((prev) =>
-      prev.map((url) => (url.id === id ? { ...url, isActive: !url.isActive } : url)),
+      prev.map((url) => (url.id === id ? { ...url, isActive: !url.isActive } : url))
     );
   }, []);
 
   // Export URLs
   const exportUrls = useCallback(() => {
     const dataStr = JSON.stringify(shortenedUrls, null, 2);
-    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = url;
-    link.download = `url-shortener-export-${new Date().toISOString().split("T")[0]}.json`;
+    link.download = `url-shortener-export-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -316,7 +312,7 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
   // Clear all URLs
   const clearAllUrls = useCallback(() => {
     if (
-      confirm("Are you sure you want to delete all shortened URLs? This action cannot be undone.")
+      confirm('Are you sure you want to delete all shortened URLs? This action cannot be undone.')
     ) {
       setShortenedUrls([]);
       setSelectedUrl(null);
@@ -325,7 +321,7 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
   }, []);
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="mx-auto w-full max-w-4xl">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -367,11 +363,11 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
                   placeholder="https://example.com/very/long/url"
                   value={originalUrl}
                   onChange={(e) => setOriginalUrl(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && createShortenedUrl()}
+                  onKeyPress={(e) => e.key === 'Enter' && createShortenedUrl()}
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <Label htmlFor="custom-alias">Custom Alias (optional)</Label>
                   <Input
@@ -422,7 +418,7 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
                     <Label htmlFor="password">Password</Label>
                     <Input
                       id="password"
-                      type={showPassword ? "text" : "password"}
+                      type={showPassword ? 'text' : 'password'}
                       placeholder="Enter password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -448,8 +444,8 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
           </TabsContent>
 
           <TabsContent value="manage" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Your Shortened URLs</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-lg">Your Shortened URLs</h3>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={exportUrls}>
                   <Download className="mr-2 h-4 w-4" />
@@ -463,18 +459,18 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
             </div>
 
             {shortenedUrls.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <Link className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+              <div className="py-8 text-center text-gray-500">
+                <Link className="mx-auto mb-4 h-12 w-12 text-gray-300" />
                 <p>No shortened URLs yet. Create your first one!</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {shortenedUrls.map((url) => (
-                  <Card key={url.id} className={`p-4 ${!url.isActive ? "opacity-50" : ""}`}>
+                  <Card key={url.id} className={`p-4 ${!url.isActive ? 'opacity-50' : ''}`}>
                     <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant={url.isActive ? "default" : "secondary"}>
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-2 flex items-center gap-2">
+                          <Badge variant={url.isActive ? 'default' : 'secondary'}>
                             {url.shortCode}
                           </Badge>
                           {url.expiresAt && (
@@ -485,13 +481,13 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
                           {url.password && <Shield className="h-3 w-3 text-gray-500" />}
                         </div>
 
-                        <p className="text-sm text-gray-600 truncate mb-1">{url.originalUrl}</p>
+                        <p className="mb-1 truncate text-gray-600 text-sm">{url.originalUrl}</p>
 
                         {url.description && (
-                          <p className="text-xs text-gray-500 mb-2">{url.description}</p>
+                          <p className="mb-2 text-gray-500 text-xs">{url.description}</p>
                         )}
 
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <div className="flex items-center gap-4 text-gray-500 text-xs">
                           <span className="flex items-center gap-1">
                             <BarChart className="h-3 w-3" />
                             {url.clicks} clicks
@@ -512,13 +508,13 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
                           size="sm"
                           onClick={() => copyToClipboard(url.shortUrl, url.id)}
                         >
-                          {copiedId === url.id ? "Copied!" : <Copy className="h-4 w-4" />}
+                          {copiedId === url.id ? 'Copied!' : <Copy className="h-4 w-4" />}
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => simulateClick(url)}>
                           <ExternalLink className="h-4 w-4" />
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => toggleUrlStatus(url.id)}>
-                          {url.isActive ? "Disable" : "Enable"}
+                          {url.isActive ? 'Disable' : 'Enable'}
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => deleteUrl(url.id)}>
                           <Trash2 className="h-4 w-4" />
@@ -532,28 +528,28 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
           </TabsContent>
 
           <TabsContent value="stats" className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               <Card className="p-4">
-                <div className="text-2xl font-bold">{stats.totalUrls}</div>
-                <div className="text-sm text-gray-500">Total URLs</div>
+                <div className="font-bold text-2xl">{stats.totalUrls}</div>
+                <div className="text-gray-500 text-sm">Total URLs</div>
               </Card>
               <Card className="p-4">
-                <div className="text-2xl font-bold">{stats.totalClicks}</div>
-                <div className="text-sm text-gray-500">Total Clicks</div>
+                <div className="font-bold text-2xl">{stats.totalClicks}</div>
+                <div className="text-gray-500 text-sm">Total Clicks</div>
               </Card>
               <Card className="p-4">
-                <div className="text-2xl font-bold">{stats.activeUrls}</div>
-                <div className="text-sm text-gray-500">Active URLs</div>
+                <div className="font-bold text-2xl">{stats.activeUrls}</div>
+                <div className="text-gray-500 text-sm">Active URLs</div>
               </Card>
               <Card className="p-4">
-                <div className="text-2xl font-bold">{stats.avgClicksPerUrl.toFixed(1)}</div>
-                <div className="text-sm text-gray-500">Avg Clicks/URL</div>
+                <div className="font-bold text-2xl">{stats.avgClicksPerUrl.toFixed(1)}</div>
+                <div className="text-gray-500 text-sm">Avg Clicks/URL</div>
               </Card>
             </div>
 
             <Card className="p-4">
-              <h3 className="text-lg font-semibold mb-4">About URL Shortener</h3>
-              <div className="text-sm text-gray-600 space-y-2">
+              <h3 className="mb-4 font-semibold text-lg">About URL Shortener</h3>
+              <div className="space-y-2 text-gray-600 text-sm">
                 <p>• Create short, memorable URLs with custom aliases</p>
                 <p>• Password protection for sensitive links</p>
                 <p>• Set expiration dates for temporary links</p>

@@ -1,11 +1,11 @@
-import { AlertCircle, CheckCircle, RefreshCw } from "lucide-react";
-import * as React from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { JsonErrorDisplay } from "./json-error-display";
-import type { JsonValidationResult, JsonValidatorProps } from "./json-types";
-import { validateJson } from "./json-utils";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
+import * as React from 'react';
+import { JsonErrorDisplay } from './json-error-display';
+import type { JsonValidationResult, JsonValidatorProps } from './json-types';
+import { validateJson } from './json-utils';
 
 export function JsonValidator({
   input,
@@ -36,8 +36,8 @@ export function JsonValidator({
             {
               line: 1,
               column: 1,
-              message: error instanceof Error ? error.message : "Unknown validation error",
-              severity: "error",
+              message: error instanceof Error ? error.message : 'Unknown validation error',
+              severity: 'error',
             },
           ],
         };
@@ -67,8 +67,8 @@ export function JsonValidator({
           {
             line: 1,
             column: 1,
-            message: error instanceof Error ? error.message : "Unknown validation error",
-            severity: "error",
+            message: error instanceof Error ? error.message : 'Unknown validation error',
+            severity: 'error',
           },
         ],
       };
@@ -90,22 +90,22 @@ export function JsonValidator({
   };
 
   const getStatusColor = () => {
-    if (isValidating) return "bg-blue-50 border-blue-200";
-    if (validationResult.isValid) return "bg-green-50 border-green-200";
-    return "bg-red-50 border-red-200";
+    if (isValidating) return 'bg-blue-50 border-blue-200';
+    if (validationResult.isValid) return 'bg-green-50 border-green-200';
+    return 'bg-red-50 border-red-200';
   };
 
   const getStatusText = () => {
-    if (isValidating) return "Validating...";
-    if (validationResult.isValid) return "Valid JSON";
+    if (isValidating) return 'Validating...';
+    if (validationResult.isValid) return 'Valid JSON';
     if (validationResult.errors.length > 0) {
-      return `${validationResult.errors.length} ${validationResult.errors.length === 1 ? "error" : "errors"} found`;
+      return `${validationResult.errors.length} ${validationResult.errors.length === 1 ? 'error' : 'errors'} found`;
     }
-    return "Invalid JSON";
+    return 'Invalid JSON';
   };
 
   const getStats = () => {
-    const lines = input.split("\n").length;
+    const lines = input.split('\n').length;
     const chars = input.length;
     const words = input.trim() ? input.trim().split(/\s+/).length : 0;
 
@@ -115,16 +115,16 @@ export function JsonValidator({
   const stats = getStats();
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn('space-y-4', className)}>
       {/* Status Bar */}
-      <div className={cn("rounded-lg border p-4 transition-colors duration-200", getStatusColor())}>
+      <div className={cn('rounded-lg border p-4 transition-colors duration-200', getStatusColor())}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {getStatusIcon()}
             <div>
               <h3 className="font-medium text-gray-900">{getStatusText()}</h3>
               <p className="mt-1 text-gray-600 text-sm">
-                JSON validation {isValidating ? "in progress" : "complete"}
+                JSON validation {isValidating ? 'in progress' : 'complete'}
               </p>
             </div>
           </div>
@@ -137,7 +137,7 @@ export function JsonValidator({
               disabled={isValidating}
               className="flex items-center gap-1"
             >
-              <RefreshCw className={cn("h-3 w-3", isValidating && "animate-spin")} />
+              <RefreshCw className={cn('h-3 w-3', isValidating && 'animate-spin')} />
               Revalidate
             </Button>
           </div>

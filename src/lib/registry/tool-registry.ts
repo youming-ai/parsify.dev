@@ -7,7 +7,7 @@ export interface ToolMetadata {
   id: string;
   name: string;
   description: string;
-  category: "json" | "crypto" | "image" | "network" | "security" | "text" | "code" | "utility";
+  category: 'json' | 'crypto' | 'image' | 'network' | 'security' | 'text' | 'code' | 'utility';
   version: string;
   bundleSize: number;
   loadTime: number;
@@ -20,6 +20,18 @@ export interface ToolMetadata {
   icon?: string;
   author?: string;
   license?: string;
+  executionTimeout?: number;
+  memoryLimit?: number;
+  maxFileSize?: number;
+  maxProcessingTime?: number;
+  requiresBrowserAPI?: string | boolean | string[];
+  requiresNetworkAccess?: boolean;
+  supportedMethods?: string[];
+  corsRestrictions?: boolean;
+  externalServices?: string[];
+  storageType?: string;
+  browserAPIs?: string[];
+  [key: string]: any;
 }
 
 export interface ToolConfig {
@@ -33,10 +45,11 @@ export interface ToolRegistryConfig {
   preloadPriority: number;
   maxConcurrentLoads: number;
   retryAttempts: number;
-  cacheStrategy: "memory" | "localStorage" | "none";
+  cacheStrategy: 'memory' | 'localStorage' | 'none';
 }
 
 export class ToolRegistry {
+  private static instance: ToolRegistry;
   private tools: Map<string, ToolConfig>;
   private config: ToolRegistryConfig;
   private lazyLoader: any;
@@ -49,13 +62,17 @@ export class ToolRegistry {
       preloadPriority: 1,
       maxConcurrentLoads: 3,
       retryAttempts: 3,
-      cacheStrategy: "memory",
+      cacheStrategy: 'memory',
       ...config,
     };
     this.eventListeners = new Map();
 
     // Initialize lazy loader
     this.initializeLazyLoader();
+  }
+
+  private initializeLazyLoader(): void {
+    this.lazyLoader = this.lazyLoader || null;
   }
 
   public static getInstance(config?: Partial<ToolRegistryConfig>): ToolRegistry {
@@ -82,23 +99,23 @@ export class ToolRegistry {
       this.lazyLoader.registerTool(metadata.id, config.importer, {
         priority: metadata.priority,
         onSuccess: (module: any, result: any) => {
-          this.emit("tool:loaded", { toolId: metadata.id, module, result });
+          this.emit('tool:loaded', { toolId: metadata.id, module, result });
         },
         onError: (error: Error) => {
-          this.emit("tool:error", { toolId: metadata.id, error });
+          this.emit('tool:error', { toolId: metadata.id, error });
         },
       });
     }
 
     // Emit registration event
-    this.emit("tool:registered", { toolId: metadata.id, metadata });
+    this.emit('tool:registered', { toolId: metadata.id, metadata });
   }
 
   /**
    * Validate tool metadata
    */
   private validateToolMetadata(metadata: ToolMetadata): void {
-    const requiredFields = ["id", "name", "description", "category", "version"];
+    const requiredFields = ['id', 'name', 'description', 'category', 'version'];
 
     for (const field of requiredFields) {
       if (!metadata[field as keyof ToolMetadata]) {
@@ -110,20 +127,20 @@ export class ToolRegistry {
     if (metadata.bundleSize > 200 * 1024) {
       // 200KB limit
       throw new Error(
-        `Tool ${metadata.id} bundle size ${metadata.bundleSize} bytes exceeds 200KB limit`,
+        `Tool ${metadata.id} bundle size ${metadata.bundleSize} bytes exceeds 200KB limit`
       );
     }
 
     // Validate category
     const validCategories = [
-      "json",
-      "crypto",
-      "image",
-      "network",
-      "security",
-      "text",
-      "code",
-      "utility",
+      'json',
+      'crypto',
+      'image',
+      'network',
+      'security',
+      'text',
+      'code',
+      'utility',
     ];
     if (!validCategories.includes(metadata.category)) {
       throw new Error(`Invalid category ${metadata.category} for tool ${metadata.id}`);
@@ -193,7 +210,7 @@ export class ToolRegistry {
     const module = await tool.importer();
     const loadTime = performance.now() - startTime;
 
-    this.emit("tool:loaded", { toolId, module, loadTime });
+    this.emit('tool:loaded', { toolId, module, loadTime });
     return module;
   }
 
@@ -231,7 +248,7 @@ export class ToolRegistry {
     }
 
     tool.metadata.enabled = enabled;
-    this.emit("tool:updated", { toolId, enabled });
+    this.emit('tool:updated', { toolId, enabled });
   }
 
   /**
@@ -250,7 +267,7 @@ export class ToolRegistry {
     // Validate updated metadata
     this.validateToolMetadata(tool.metadata);
 
-    this.emit("tool:updated", { toolId, metadata: tool.metadata });
+    this.emit('tool:updated', { toolId, metadata: tool.metadata });
   }
 
   /**
@@ -268,7 +285,7 @@ export class ToolRegistry {
       // Remove from registry
       this.tools.delete(toolId);
 
-      this.emit("tool:unregistered", { toolId });
+      this.emit('tool:unregistered', { toolId });
     }
   }
 
@@ -290,7 +307,7 @@ export class ToolRegistry {
         acc[tool.metadata.category] = (acc[tool.metadata.category] || 0) + 1;
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     );
 
     const totalBundleSize = tools.reduce((sum, tool) => sum + tool.metadata.bundleSize, 0);
@@ -311,7 +328,7 @@ export class ToolRegistry {
   public exportRegistry(): {
     tools: ToolMetadata[];
     config: ToolRegistryConfig;
-    statistics: ReturnType<typeof this.getStatistics>;
+    statistics: ReturnType<ToolRegistry['getStatistics']>;
   } {
     return {
       tools: this.getAllToolsMetadata(),

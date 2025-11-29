@@ -1,5 +1,13 @@
-"use client";
+'use client';
 
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import {
   BarChart3,
   Clock,
@@ -15,16 +23,9 @@ import {
   Settings,
   Type,
   Upload,
-} from "lucide-react";
-import { useMemo, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+} from 'lucide-react';
+import { useMemo, useState } from 'react';
+import type React from 'react';
 
 interface TextStats {
   characters: number;
@@ -54,7 +55,7 @@ interface CharFrequency {
 }
 
 export default function TextCounterClient() {
-  const [text, setText] = useState("");
+  const [text, setText] = useState('');
   const [copied, setCopied] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [caseSensitive, setCaseSensitive] = useState(false);
@@ -82,8 +83,8 @@ export default function TextCounterClient() {
 
     // Basic counts
     const characters = text.length;
-    const charactersNoSpaces = text.replace(/\s/g, "").length;
-    const lines = text.split("\n").length;
+    const charactersNoSpaces = text.replace(/\s/g, '').length;
+    const lines = text.split('\n').length;
     const paragraphs = text.split(/\n\s*\n/).filter((p) => p.trim()).length;
 
     // Word counting with better logic
@@ -112,22 +113,22 @@ export default function TextCounterClient() {
     const contentWords = words.filter(
       (word) =>
         ![
-          "the",
-          "a",
-          "an",
-          "and",
-          "or",
-          "but",
-          "in",
-          "on",
-          "at",
-          "to",
-          "for",
-          "of",
-          "with",
-          "by",
-          "from",
-        ].includes(word.toLowerCase()),
+          'the',
+          'a',
+          'an',
+          'and',
+          'or',
+          'but',
+          'in',
+          'on',
+          'at',
+          'to',
+          'for',
+          'of',
+          'with',
+          'by',
+          'from',
+        ].includes(word.toLowerCase())
     ).length;
     const lexicalDensity = wordCount > 0 ? (contentWords / wordCount) * 100 : 0;
 
@@ -164,9 +165,9 @@ export default function TextCounterClient() {
       .filter((word) => word.length > 2); // Filter out very short words
 
     const frequencyMap: { [key: string]: number } = {};
-    words.forEach((word) => {
+    for (const word of words) {
       frequencyMap[word] = (frequencyMap[word] || 0) + 1;
-    });
+    }
 
     return Object.entries(frequencyMap)
       .map(([word, count]) => ({
@@ -182,7 +183,7 @@ export default function TextCounterClient() {
   const charFrequency = useMemo((): CharFrequency[] => {
     if (!text) return [];
 
-    const chars = text.split("");
+    const chars = text.split('');
     let relevantChars = chars;
 
     if (!includePunctuation) {
@@ -190,13 +191,13 @@ export default function TextCounterClient() {
     }
 
     const frequencyMap: { [key: string]: number } = {};
-    relevantChars.forEach((char) => {
+    for (const char of relevantChars) {
       const key = caseSensitive ? char : char.toLowerCase();
       if (key.trim()) {
         // Exclude whitespace
         frequencyMap[key] = (frequencyMap[key] || 0) + 1;
       }
-    });
+    }
 
     const totalRelevantChars = Object.values(frequencyMap).reduce((sum, count) => sum + count, 0);
 
@@ -216,7 +217,7 @@ export default function TextCounterClient() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error("Failed to copy:", error);
+      console.error('Failed to copy:', error);
     }
   };
 
@@ -244,10 +245,10 @@ Top 10 Words:
 ${wordFrequency
   .slice(0, 10)
   .map((wf, i) => `${i + 1}. ${wf.word}: ${wf.count} times (${wf.percentage.toFixed(1)}%)`)
-  .join("\n")}
+  .join('\n')}
 
 Text content:
-${text.substring(0, 500)}${text.length > 500 ? "..." : ""}
+${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
     `.trim();
 
     return report;
@@ -255,9 +256,9 @@ ${text.substring(0, 500)}${text.length > 500 ? "..." : ""}
 
   const downloadReport = () => {
     const report = generateReport();
-    const blob = new Blob([report], { type: "text/plain" });
+    const blob = new Blob([report], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = `text-analysis-${Date.now()}.txt`;
     document.body.appendChild(a);
@@ -279,13 +280,13 @@ ${text.substring(0, 500)}${text.length > 500 ? "..." : ""}
   };
 
   const getReadabilityLevel = (score: number) => {
-    if (score >= 90) return { level: "Very Easy", color: "text-green-600" };
-    if (score >= 80) return { level: "Easy", color: "text-green-500" };
-    if (score >= 70) return { level: "Fairly Easy", color: "text-yellow-500" };
-    if (score >= 60) return { level: "Standard", color: "text-yellow-600" };
-    if (score >= 50) return { level: "Fairly Difficult", color: "text-orange-500" };
-    if (score >= 30) return { level: "Difficult", color: "text-red-500" };
-    return { level: "Very Difficult", color: "text-red-600" };
+    if (score >= 90) return { level: 'Very Easy', color: 'text-green-600' };
+    if (score >= 80) return { level: 'Easy', color: 'text-green-500' };
+    if (score >= 70) return { level: 'Fairly Easy', color: 'text-yellow-500' };
+    if (score >= 60) return { level: 'Standard', color: 'text-yellow-600' };
+    if (score >= 50) return { level: 'Fairly Difficult', color: 'text-orange-500' };
+    if (score >= 30) return { level: 'Difficult', color: 'text-red-500' };
+    return { level: 'Very Difficult', color: 'text-red-600' };
   };
 
   const readability = getReadabilityLevel(stats.readabilityScore);
@@ -318,7 +319,7 @@ ${text.substring(0, 500)}${text.length > 500 ? "..." : ""}
             />
             <Button
               variant="outline"
-              onClick={() => document.getElementById("file-upload")?.click()}
+              onClick={() => document.getElementById('file-upload')?.click()}
               className="flex items-center gap-2"
             >
               <Upload className="h-4 w-4" />
@@ -326,7 +327,7 @@ ${text.substring(0, 500)}${text.length > 500 ? "..." : ""}
             </Button>
             <Button
               variant="outline"
-              onClick={() => setText("")}
+              onClick={() => setText('')}
               className="flex items-center gap-2"
             >
               <RefreshCw className="h-4 w-4" />
@@ -338,7 +339,7 @@ ${text.substring(0, 500)}${text.length > 500 ? "..." : ""}
               className="flex items-center gap-2"
             >
               <Copy className="h-4 w-4" />
-              {copied ? "Copied!" : "Copy"}
+              {copied ? 'Copied!' : 'Copy'}
             </Button>
           </div>
           <Textarea
@@ -355,36 +356,36 @@ ${text.substring(0, 500)}${text.length > 500 ? "..." : ""}
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <Type className="h-8 w-8 mx-auto mb-2 text-blue-500" />
-              <p className="text-2xl font-bold">{stats.characters}</p>
-              <p className="text-sm text-muted-foreground">Characters</p>
+              <Type className="mx-auto mb-2 h-8 w-8 text-blue-500" />
+              <p className="font-bold text-2xl">{stats.characters}</p>
+              <p className="text-muted-foreground text-sm">Characters</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <Hash className="h-8 w-8 mx-auto mb-2 text-green-500" />
-              <p className="text-2xl font-bold">{stats.words}</p>
-              <p className="text-sm text-muted-foreground">Words</p>
+              <Hash className="mx-auto mb-2 h-8 w-8 text-green-500" />
+              <p className="font-bold text-2xl">{stats.words}</p>
+              <p className="text-muted-foreground text-sm">Words</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <MessageSquare className="h-8 w-8 mx-auto mb-2 text-purple-500" />
-              <p className="text-2xl font-bold">{stats.sentences}</p>
-              <p className="text-sm text-muted-foreground">Sentences</p>
+              <MessageSquare className="mx-auto mb-2 h-8 w-8 text-purple-500" />
+              <p className="font-bold text-2xl">{stats.sentences}</p>
+              <p className="text-muted-foreground text-sm">Sentences</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <Clock className="h-8 w-8 mx-auto mb-2 text-orange-500" />
-              <p className="text-2xl font-bold">{stats.readingTime}</p>
-              <p className="text-sm text-muted-foreground">Min Read</p>
+              <Clock className="mx-auto mb-2 h-8 w-8 text-orange-500" />
+              <p className="font-bold text-2xl">{stats.readingTime}</p>
+              <p className="text-muted-foreground text-sm">Min Read</p>
             </div>
           </CardContent>
         </Card>
@@ -467,12 +468,12 @@ ${text.substring(0, 500)}${text.length > 500 ? "..." : ""}
           </div>
 
           <div className="mt-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Readability Score</span>
+            <div className="mb-2 flex items-center justify-between">
+              <span className="font-medium text-sm">Readability Score</span>
               <span className={`text-sm ${readability.color}`}>{readability.level}</span>
             </div>
             <Progress value={Math.max(0, Math.min(100, stats.readabilityScore))} className="h-2" />
-            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+            <div className="mt-1 flex justify-between text-muted-foreground text-xs">
               <span>Very Difficult</span>
               <span>Standard</span>
               <span>Very Easy</span>
@@ -500,15 +501,15 @@ ${text.substring(0, 500)}${text.length > 500 ? "..." : ""}
                 <div className="space-y-2">
                   {wordFrequency.map((wf, index) => (
                     <div key={wf.word} className="flex items-center gap-2">
-                      <span className="w-8 text-sm text-muted-foreground">#{index + 1}</span>
-                      <span className="font-mono flex-1">{wf.word}</span>
-                      <span className="text-sm text-muted-foreground w-12 text-right">
+                      <span className="w-8 text-muted-foreground text-sm">#{index + 1}</span>
+                      <span className="flex-1 font-mono">{wf.word}</span>
+                      <span className="w-12 text-right text-muted-foreground text-sm">
                         {wf.count}
                       </span>
                       <div className="w-24">
                         <Progress value={wf.percentage * 5} className="h-2" />
                       </div>
-                      <span className="text-xs text-muted-foreground w-12 text-right">
+                      <span className="w-12 text-right text-muted-foreground text-xs">
                         {wf.percentage.toFixed(1)}%
                       </span>
                     </div>
@@ -530,15 +531,15 @@ ${text.substring(0, 500)}${text.length > 500 ? "..." : ""}
                 <div className="space-y-2">
                   {charFrequency.map((cf, index) => (
                     <div key={cf.char} className="flex items-center gap-2">
-                      <span className="w-8 text-sm text-muted-foreground">#{index + 1}</span>
-                      <span className="font-mono w-8">{cf.char}</span>
-                      <span className="text-sm text-muted-foreground w-12 text-right">
+                      <span className="w-8 text-muted-foreground text-sm">#{index + 1}</span>
+                      <span className="w-8 font-mono">{cf.char}</span>
+                      <span className="w-12 text-right text-muted-foreground text-sm">
                         {cf.count}
                       </span>
                       <div className="w-24">
                         <Progress value={cf.percentage * 5} className="h-2" />
                       </div>
-                      <span className="text-xs text-muted-foreground w-12 text-right">
+                      <span className="w-12 text-right text-muted-foreground text-xs">
                         {cf.percentage.toFixed(1)}%
                       </span>
                     </div>

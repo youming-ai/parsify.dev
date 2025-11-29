@@ -3,22 +3,22 @@
  * Validates compliance with Parsify.dev constitutional principles in real-time
  */
 
-import type { BundleMetrics } from "./performance/bundle-analyzer";
-import type { ToolMetadata } from "./registry/tool-registry";
+import type { BundleMetrics } from './performance/bundle-analyzer';
+import type { ToolMetadata } from './registry/tool-registry';
 
 export interface ConstitutionalPrinciple {
   id: string;
   title: string;
   description: string;
   requirements: ConstitutionalRequirement[];
-  priority: "critical" | "high" | "medium" | "low";
+  priority: 'critical' | 'high' | 'medium' | 'low';
 }
 
 export interface ConstitutionalRequirement {
   id: string;
   description: string;
   validator: (context: ValidationContext) => Promise<ValidationResult>;
-  category: "performance" | "security" | "accessibility" | "architecture" | "compliance";
+  category: 'performance' | 'security' | 'accessibility' | 'architecture' | 'compliance';
   threshold?: number;
   unit?: string;
 }
@@ -27,7 +27,7 @@ export interface ValidationContext {
   toolMetadata?: ToolMetadata;
   bundleMetrics?: BundleMetrics;
   codeContent?: string;
-  executionEnvironment?: "browser" | "wasm" | "worker";
+  executionEnvironment?: 'browser' | 'wasm' | 'worker';
   userInterface?: any;
   performanceData?: any;
   securityContext?: any;
@@ -45,13 +45,14 @@ export interface ValidationResult {
 export interface ConstitutionalViolation {
   principleId: string;
   requirementId: string;
-  severity: "critical" | "high" | "medium" | "low";
+  severity: 'critical' | 'high' | 'medium' | 'low';
   message: string;
   actualValue?: number;
   expectedValue?: number;
   suggestion?: string;
   code?: string;
   line?: number;
+  timestamp?: number;
 }
 
 export interface ConstitutionalWarning {
@@ -64,7 +65,7 @@ export interface ConstitutionalWarning {
 export interface ComplianceReport {
   timestamp: number;
   overallScore: number;
-  overallStatus: "compliant" | "warning" | "non-compliant";
+  overallStatus: 'compliant' | 'warning' | 'non-compliant';
   principleResults: Record<string, ValidationResult>;
   summary: {
     totalViolations: number;
@@ -86,6 +87,7 @@ export interface ComplianceReport {
 }
 
 export class ConstitutionalValidator {
+  private static instance: ConstitutionalValidator;
   private principles: Map<string, ConstitutionalPrinciple>;
   private validationCache: Map<string, ValidationResult>;
   private violationHistory: ConstitutionalViolation[];
@@ -100,6 +102,10 @@ export class ConstitutionalValidator {
     this.eventListeners = new Map();
 
     this.initializePrinciples();
+  }
+
+  private initializePrinciples() {
+    this.principles.clear();
   }
 
   public static getInstance(): ConstitutionalValidator {
@@ -143,7 +149,7 @@ export class ConstitutionalValidator {
     }
 
     // Determine overall compliance
-    const criticalViolations = results.violations.filter((v) => v.severity === "critical");
+    const criticalViolations = results.violations.filter((v) => v.severity === 'critical');
     results.passed = criticalViolations.length === 0;
 
     // Cache results
@@ -155,7 +161,7 @@ export class ConstitutionalValidator {
     });
 
     // Emit validation event
-    this.emit("tool:validated", { toolId, results, context });
+    this.emit('tool:validated', { toolId, results, context });
 
     return results;
   }
@@ -165,7 +171,7 @@ export class ConstitutionalValidator {
    */
   private async validatePrinciple(
     principle: ConstitutionalPrinciple,
-    context: ValidationContext,
+    context: ValidationContext
   ): Promise<ValidationResult> {
     const results: ValidationResult = {
       passed: true,
@@ -201,9 +207,9 @@ export class ConstitutionalValidator {
         results.violations.push({
           principleId: principle.id,
           requirementId: requirement.id,
-          severity: "high",
-          message: `Validation error: ${error instanceof Error ? error.message : "Unknown error"}`,
-          suggestion: "Check validator implementation",
+          severity: 'high',
+          message: `Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          suggestion: 'Check validator implementation',
         });
 
         results.score = Math.max(0, results.score - 20);
@@ -219,7 +225,7 @@ export class ConstitutionalValidator {
    */
   public async validatePlatform(
     toolMetadata: ToolMetadata[],
-    bundleMetrics: BundleMetrics,
+    bundleMetrics: BundleMetrics
   ): Promise<ComplianceReport> {
     const timestamp = Date.now();
     const principleResults: Record<string, ValidationResult> = {};
@@ -236,14 +242,14 @@ export class ConstitutionalValidator {
       const toolContext: ValidationContext = {
         toolMetadata: tool,
         bundleMetrics,
-        executionEnvironment: "browser",
+        executionEnvironment: 'browser',
       };
 
       const result = await this.validateTool(tool.id, toolContext);
       toolResults[tool.id] = result;
 
       totalViolations += result.violations.length;
-      criticalViolations += result.violations.filter((v) => v.severity === "critical").length;
+      criticalViolations += result.violations.filter((v) => v.severity === 'critical').length;
       totalWarnings += result.warnings.length;
       totalRecommendations += result.recommendations.length;
 
@@ -254,21 +260,21 @@ export class ConstitutionalValidator {
     for (const [principleId, principle] of this.principles) {
       const platformContext: ValidationContext = {
         bundleMetrics,
-        executionEnvironment: "browser",
+        executionEnvironment: 'browser',
       };
 
       const result = await this.validatePrinciple(principle, platformContext);
       principleResults[principleId] = result;
 
       totalViolations += result.violations.length;
-      criticalViolations += result.violations.filter((v) => v.severity === "critical").length;
+      criticalViolations += result.violations.filter((v) => v.severity === 'critical').length;
       totalWarnings += result.warnings.length;
       totalRecommendations += result.recommendations.length;
     }
 
     // Determine overall status
     const overallStatus =
-      criticalViolations > 0 ? "non-compliant" : totalViolations > 0 ? "warning" : "compliant";
+      criticalViolations > 0 ? 'non-compliant' : totalViolations > 0 ? 'warning' : 'compliant';
 
     // Generate bundle analysis
     const bundleAnalysis = this.analyzeBundleCompliance(bundleMetrics);
@@ -282,12 +288,12 @@ export class ConstitutionalValidator {
         totalViolations,
         criticalViolations,
         totalWarnings,
-        totalRecommendations,
+        recommendations: totalRecommendations,
       },
       bundleAnalysis,
     };
 
-    this.emit("platform:validated", { report });
+    this.emit('platform:validated', { report });
     return report;
   }
 
@@ -302,7 +308,7 @@ export class ConstitutionalValidator {
   } {
     const cutoff = Date.now() - timeRange;
     const recentViolations = this.violationHistory.filter(
-      (v) => v.timestamp && v.timestamp > cutoff,
+      (v) => v.timestamp && v.timestamp > cutoff
     );
 
     const violationRate =
@@ -314,7 +320,7 @@ export class ConstitutionalValidator {
     recentViolations.forEach((violation) => {
       principleCounts.set(
         violation.principleId,
-        (principleCounts.get(violation.principleId) || 0) + 1,
+        (principleCounts.get(violation.principleId) || 0) + 1
       );
     });
 
@@ -323,7 +329,7 @@ export class ConstitutionalValidator {
       .slice(0, 5)
       .map(([principleId]) => principleId);
 
-    const criticalIssues = recentViolations.filter((v) => v.severity === "critical");
+    const criticalIssues = recentViolations.filter((v) => v.severity === 'critical');
 
     return {
       violationRate,
@@ -338,8 +344,8 @@ export class ConstitutionalValidator {
    */
   public getViolationHistory(
     principleId?: string,
-    severity?: ConstitutionalViolation["severity"],
-    limit?: number,
+    severity?: ConstitutionalViolation['severity'],
+    limit?: number
   ): ConstitutionalViolation[] {
     let violations = this.violationHistory;
 
@@ -367,13 +373,13 @@ export class ConstitutionalValidator {
   public clearViolationHistory(olderThan?: number): void {
     if (olderThan) {
       this.violationHistory = this.violationHistory.filter(
-        (v) => v.timestamp && v.timestamp > olderThan,
+        (v) => v.timestamp && v.timestamp > olderThan
       );
     } else {
       this.violationHistory = [];
     }
 
-    this.emit("history:cleared");
+    this.emit('history:cleared', {});
   }
 
   /**
@@ -388,7 +394,7 @@ export class ConstitutionalValidator {
    */
   public addPrinciple(principle: ConstitutionalPrinciple): void {
     this.principles.set(principle.id, principle);
-    this.emit("principle:added", { principle });
+    this.emit('principle:added', { principle });
   }
 
   /**
@@ -397,7 +403,7 @@ export class ConstitutionalValidator {
   public removePrinciple(principleId: string): boolean {
     const removed = this.principles.delete(principleId);
     if (removed) {
-      this.emit("principle:removed", { principleId });
+      this.emit('principle:removed', { principleId });
     }
     return removed;
   }
@@ -407,7 +413,7 @@ export class ConstitutionalValidator {
    */
   public clearCache(): void {
     this.validationCache.clear();
-    this.emit("cache:cleared");
+    this.emit('cache:cleared', {});
   }
 
   private analyzeBundleCompliance(bundleMetrics: BundleMetrics): {
@@ -466,30 +472,30 @@ export class ConstitutionalValidator {
     return hash.toString(36);
   }
 
-  private getPriorityWeight(priority: ConstitutionalPrinciple["priority"]): number {
+  private getPriorityWeight(priority: ConstitutionalPrinciple['priority']): number {
     switch (priority) {
-      case "critical":
+      case 'critical':
         return 1.0;
-      case "high":
+      case 'high':
         return 0.8;
-      case "medium":
+      case 'medium':
         return 0.6;
-      case "low":
+      case 'low':
         return 0.4;
       default:
         return 0.5;
     }
   }
 
-  private getSeverityDeduction(severity: ConstitutionalViolation["severity"]): number {
+  private getSeverityDeduction(severity: ConstitutionalViolation['severity']): number {
     switch (severity) {
-      case "critical":
+      case 'critical':
         return 25;
-      case "high":
+      case 'high':
         return 15;
-      case "medium":
+      case 'medium':
         return 10;
-      case "low":
+      case 'low':
         return 5;
       default:
         return 10;
@@ -497,11 +503,11 @@ export class ConstitutionalValidator {
   }
 
   private formatBytes(bytes: number): string {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
+    return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }
 
   /**
@@ -542,7 +548,7 @@ export class ConstitutionalValidator {
     this.validationCache.clear();
     this.violationHistory = [];
     this.eventListeners.clear();
-    this.emit("validator:disposed");
+    this.emit('validator:disposed', {});
   }
 }
 

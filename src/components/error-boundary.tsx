@@ -3,10 +3,10 @@
  * 提供前端错误捕获和优雅降级
  */
 
-"use client";
+'use client';
 
-import React, { Component, type ReactNode } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
+import React, { Component, type ReactNode } from 'react';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -45,7 +45,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     this.setState({ errorInfo });
 
     // 记录错误
-    console.error("Error Boundary caught an error", error, {
+    console.error('Error Boundary caught an error', error, {
       componentStack: errorInfo.componentStack,
       errorBoundary: true,
       retryCount: this.state.retryCount,
@@ -94,7 +94,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         retryCount: prevState.retryCount + 1,
       }));
 
-      console.info("Error boundary retry attempt", {
+      console.info('Error boundary retry attempt', {
         retryCount: this.state.retryCount + 1,
         maxRetries: this.props.maxRetries,
       });
@@ -138,7 +138,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               </div>
             </div>
 
-            {process.env.NODE_ENV === "development" && this.state.error && (
+            {process.env.NODE_ENV === 'development' && this.state.error && (
               <details className="mt-4 rounded bg-red-50 p-3 text-sm">
                 <summary className="cursor-pointer font-medium text-red-800">
                   错误详情 (开发模式)
@@ -166,7 +166,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               <button
                 type="button"
                 onClick={() => {
-                  window.location.href = "/";
+                  window.location.href = '/';
                 }}
                 className="text-blue-600 text-sm hover:text-blue-500"
               >
@@ -185,7 +185,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 // 高阶组件版本
 export const withErrorBoundary = <P extends object>(
   Component: React.ComponentType<P>,
-  errorBoundaryProps?: Omit<ErrorBoundaryProps, "children">,
+  errorBoundaryProps?: Omit<ErrorBoundaryProps, 'children'>
 ) => {
   const WrappedComponent = (props: P) => (
     <ErrorBoundary {...errorBoundaryProps}>
@@ -204,7 +204,7 @@ export const useErrorHandler = () => {
 
   React.useEffect(() => {
     if (error) {
-      console.error("Error caught by useErrorHandler", error);
+      console.error('Error caught by useErrorHandler', error);
       setError(null);
     }
   }, [error]);

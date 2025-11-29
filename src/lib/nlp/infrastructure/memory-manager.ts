@@ -3,14 +3,13 @@
  * Manages memory usage, cleanup, and optimization for ML models and processing
  */
 
+import { NLPEvent, type NLPEventListener } from '../types';
 import {
-  MemoryMetrics,
+  type AlertSeverity,
   ResourceAlert,
   ResourceType,
-  AlertSeverity,
-  NLPEvent,
-  NLPEventListener,
-} from "../types";
+  type SystemPerformanceMetrics,
+} from '../types/infrastructure';
 
 export interface MemoryConfig {
   maxMemoryUsage: number; // Maximum memory usage in MB
@@ -44,8 +43,8 @@ export interface MemoryUsage {
 }
 
 export interface MemoryCleanupTarget {
-  type: "model" | "cache" | "buffer" | "temporary";
-  priority: "low" | "medium" | "high" | "critical";
+  type: 'model' | 'cache' | 'buffer' | 'temporary';
+  priority: 'low' | 'medium' | 'high' | 'critical';
   description: string;
   action: () => Promise<number>; // Returns amount of memory freed in MB
   condition?: () => boolean; // Condition to trigger cleanup
@@ -62,23 +61,23 @@ export interface MemoryAlert {
 }
 
 export type MemoryAlertType =
-  | "high_usage"
-  | "critical_usage"
-  | "memory_leak"
-  | "model_overload"
-  | "buffer_overflow"
-  | "cleanup_failure";
+  | 'high_usage'
+  | 'critical_usage'
+  | 'memory_leak'
+  | 'model_overload'
+  | 'buffer_overflow'
+  | 'cleanup_failure';
 
 export class MemoryManager {
   private config: MemoryConfig;
-  private isMonitoring: boolean = false;
+  private isMonitoring = false;
   private monitoringInterval?: NodeJS.Timeout;
   private cleanupTargets: MemoryCleanupTarget[] = [];
   private eventListeners: Map<string, NLPEventListener[]> = new Map();
-  private memoryHistory: MemoryMetrics[] = [];
+  private memoryHistory: SystemPerformanceMetrics[] = [];
   private alertHistory: MemoryAlert[] = [];
-  private lastCleanup: number = 0;
-  private memoryBaseline: number = 0;
+  private lastCleanup = 0;
+  private memoryBaseline = 0;
 
   constructor(config: Partial<MemoryConfig> = {}) {
     this.config = {
@@ -102,7 +101,7 @@ export class MemoryManager {
     if (this.isMonitoring) return;
 
     this.isMonitoring = true;
-    this.memoryBaseline = this.getCurrentMemoryUsage().used;
+    this.memoryBaseline = this.getCurrentMemoryUsage().heap.used;
 
     this.monitoringInterval = setInterval(() => {
       this.checkMemoryUsage();
@@ -110,12 +109,12 @@ export class MemoryManager {
       this.updateMemoryHistory();
     }, this.config.cleanupInterval);
 
-    this.emitEvent("memory_monitoring_started", {
+    this.emitEvent('memory_monitoring_started', {
       maxMemory: this.config.maxMemoryUsage,
       warningThreshold: this.config.warningThreshold,
     });
 
-    console.log("Memory monitoring started");
+    console.log('Memory monitoring started');
   }
 
   /**
@@ -130,8 +129,8 @@ export class MemoryManager {
       this.monitoringInterval = undefined;
     }
 
-    this.emitEvent("memory_monitoring_stopped", {});
-    console.log("Memory monitoring stopped");
+    this.emitEvent('memory_monitoring_stopped', {});
+    console.log('Memory monitoring stopped');
   }
 
   /**
@@ -197,7 +196,7 @@ export class MemoryManager {
 
       return false;
     } catch (error) {
-      console.warn("Failed to force garbage collection:", error);
+      console.warn('Failed to force garbage collection:', error);
       return false;
     }
   }
@@ -205,13 +204,13 @@ export class MemoryManager {
   /**
    * Perform memory cleanup
    */
-  async performCleanup(priority?: "low" | "medium" | "high" | "critical"): Promise<number> {
+  async performCleanup(priority?: 'low' | 'medium' | 'high' | 'critical'): Promise<number> {
     const targets = this.cleanupTargets.filter(
       (target) =>
         !priority ||
         target.priority === priority ||
-        (priority === "high" && ["high", "critical"].includes(target.priority)) ||
-        (priority === "medium" && ["medium", "high", "critical"].includes(target.priority)),
+        (priority === 'high' && ['high', 'critical'].includes(target.priority)) ||
+        (priority === 'medium' && ['medium', 'high', 'critical'].includes(target.priority))
     );
 
     let totalFreed = 0;
@@ -237,7 +236,7 @@ export class MemoryManager {
     // Force garbage collection after cleanup
     this.forceGarbageCollection();
 
-    this.emitEvent("memory_cleanup_completed", {
+    this.emitEvent('memory_cleanup_completed', {
       totalFreed,
       targetsExecuted: targets.length,
     });
@@ -257,7 +256,7 @@ export class MemoryManager {
    */
   removeCleanupTarget(description: string): void {
     this.cleanupTargets = this.cleanupTargets.filter(
-      (target) => target.description !== description,
+      (target) => target.description !== description
     );
   }
 
@@ -270,7 +269,7 @@ export class MemoryManager {
     peak: number;
     average: number;
     alerts: MemoryAlert[];
-    history: MemoryMetrics[];
+    history: SystemPerformanceMetrics[];
     recommendations: string[];
   } {
     const current = this.getCurrentMemoryUsage();
@@ -291,7 +290,7 @@ export class MemoryManager {
   /**
    * Get recent memory alerts
    */
-  getMemoryAlerts(severity?: AlertSeverity, limit: number = 20): MemoryAlert[] {
+  getMemoryAlerts(severity?: AlertSeverity, limit = 20): MemoryAlert[] {
     let filtered = this.alertHistory;
 
     if (severity) {
@@ -309,7 +308,7 @@ export class MemoryManager {
     const startTime = Date.now();
 
     // Perform aggressive cleanup
-    const freedMemory = await this.performCleanup("medium");
+    const _freedMemory = await this.performCleanup('medium');
 
     // Additional optimizations
     await this.optimizeBuffers();
@@ -327,7 +326,7 @@ export class MemoryManager {
       recommendations: this.getMemoryRecommendations(afterUsage),
     };
 
-    this.emitEvent("memory_optimization_completed", result);
+    this.emitEvent('memory_optimization_completed', result);
 
     return result;
   }
@@ -344,7 +343,7 @@ export class MemoryManager {
       this.config.criticalThreshold = criticalThreshold;
     }
 
-    this.emitEvent("memory_limits_updated", {
+    this.emitEvent('memory_limits_updated', {
       maxMemory,
       warningThreshold,
       criticalThreshold,
@@ -355,7 +354,15 @@ export class MemoryManager {
    * Estimate memory requirements for an operation
    */
   estimateMemoryRequirement(operation: string, inputSize: number): MemoryEstimate {
-    const estimates: Record<string, MemoryEstimate> = {
+    const estimates: Record<
+      string,
+      {
+        baseMemory: number;
+        perCharacter: number;
+        modelMemory: number;
+        bufferMemory: number;
+      }
+    > = {
       sentiment_analysis: {
         baseMemory: 20,
         perCharacter: 0.001,
@@ -419,7 +426,7 @@ export class MemoryManager {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
-    this.eventListeners.get(event)!.push(listener);
+    this.eventListeners.get(event)?.push(listener);
   }
 
   off(event: string, listener: NLPEventListener): void {
@@ -438,9 +445,9 @@ export class MemoryManager {
   private setupDefaultCleanupTargets(): void {
     // Model cleanup
     this.cleanupTargets.push({
-      type: "model",
-      priority: "medium",
-      description: "Unload least recently used models",
+      type: 'model',
+      priority: 'medium',
+      description: 'Unload least recently used models',
       condition: () => this.getMemoryUsagePercentage() > this.config.modelUnloadThreshold * 100,
       action: async () => {
         return this.unloadLeastRecentlyUsedModels();
@@ -449,9 +456,9 @@ export class MemoryManager {
 
     // Cache cleanup
     this.cleanupTargets.push({
-      type: "cache",
-      priority: "low",
-      description: "Clear expired cache entries",
+      type: 'cache',
+      priority: 'low',
+      description: 'Clear expired cache entries',
       action: async () => {
         return this.clearExpiredCache();
       },
@@ -459,9 +466,9 @@ export class MemoryManager {
 
     // Buffer cleanup
     this.cleanupTargets.push({
-      type: "buffer",
-      priority: "medium",
-      description: "Release unused buffers",
+      type: 'buffer',
+      priority: 'medium',
+      description: 'Release unused buffers',
       action: async () => {
         return this.releaseUnusedBuffers();
       },
@@ -469,9 +476,9 @@ export class MemoryManager {
 
     // Temporary object cleanup
     this.cleanupTargets.push({
-      type: "temporary",
-      priority: "high",
-      description: "Clear temporary objects",
+      type: 'temporary',
+      priority: 'high',
+      description: 'Clear temporary objects',
       action: async () => {
         return this.clearTemporaryObjects();
       },
@@ -484,11 +491,11 @@ export class MemoryManager {
 
     // Check for critical threshold
     if (percentage >= this.config.criticalThreshold * 100) {
-      this.createMemoryAlert("critical_usage", AlertSeverity.critical, percentage);
+      this.createMemoryAlert('critical_usage', 'critical', percentage);
     }
     // Check for warning threshold
     else if (percentage >= this.config.warningThreshold * 100) {
-      this.createMemoryAlert("high_usage", AlertSeverity.warning, percentage);
+      this.createMemoryAlert('high_usage', 'warning', percentage);
     }
 
     // Check for memory leaks (steadily increasing usage)
@@ -498,7 +505,7 @@ export class MemoryManager {
   private createMemoryAlert(
     type: MemoryAlertType,
     severity: AlertSeverity,
-    percentage: number,
+    percentage: number
   ): void {
     const alert: MemoryAlert = {
       type,
@@ -506,7 +513,7 @@ export class MemoryManager {
       message: `Memory usage at ${percentage.toFixed(1)}% (${this.getCurrentMemoryUsage().heap.used}MB)`,
       currentUsage: percentage,
       threshold:
-        severity === "critical"
+        severity === 'critical'
           ? this.config.criticalThreshold * 100
           : this.config.warningThreshold * 100,
       suggestions: this.getAlertSuggestions(type),
@@ -514,10 +521,10 @@ export class MemoryManager {
     };
 
     this.alertHistory.push(alert);
-    this.emitEvent("memory_alert", alert);
+    this.emitEvent('memory_alert', alert);
 
     // Trigger auto-cleanup for critical alerts
-    if (severity === "critical") {
+    if (severity === 'critical') {
       this.performAutoCleanup();
     }
   }
@@ -525,47 +532,47 @@ export class MemoryManager {
   private getAlertSuggestions(type: MemoryAlertType): string[] {
     const suggestions: Record<MemoryAlertType, string[]> = {
       high_usage: [
-        "Consider unloading unused models",
-        "Clear temporary cache data",
-        "Reduce input text size",
-        "Enable memory optimization",
+        'Consider unloading unused models',
+        'Clear temporary cache data',
+        'Reduce input text size',
+        'Enable memory optimization',
       ],
       critical_usage: [
-        "Immediate cleanup required",
-        "Unload all non-essential models",
-        "Clear all caches",
-        "Reduce processing load",
+        'Immediate cleanup required',
+        'Unload all non-essential models',
+        'Clear all caches',
+        'Reduce processing load',
       ],
       memory_leak: [
-        "Check for unreleased resources",
-        "Review object lifecycle",
-        "Profile memory usage patterns",
-        "Consider application restart",
+        'Check for unreleased resources',
+        'Review object lifecycle',
+        'Profile memory usage patterns',
+        'Consider application restart',
       ],
       model_overload: [
-        "Unload least recently used models",
-        "Implement model caching limits",
-        "Use model quantization",
-        "Consider smaller model alternatives",
+        'Unload least recently used models',
+        'Implement model caching limits',
+        'Use model quantization',
+        'Consider smaller model alternatives',
       ],
       buffer_overflow: [
-        "Release unused buffers",
-        "Implement buffer pooling",
-        "Reduce buffer sizes",
-        "Use streaming for large data",
+        'Release unused buffers',
+        'Implement buffer pooling',
+        'Reduce buffer sizes',
+        'Use streaming for large data',
       ],
       cleanup_failure: [
-        "Check cleanup target conditions",
-        "Verify cleanup permissions",
-        "Review cleanup logic",
-        "Consider manual cleanup",
+        'Check cleanup target conditions',
+        'Verify cleanup permissions',
+        'Review cleanup logic',
+        'Consider manual cleanup',
       ],
     };
 
     return suggestions[type] || suggestions.high_usage;
   }
 
-  private checkForMemoryLeaks(currentUsage: MemoryUsage): void {
+  private checkForMemoryLeaks(_currentUsage: MemoryUsage): void {
     if (this.memoryHistory.length < 10) return;
 
     const recent = this.memoryHistory.slice(-10);
@@ -575,7 +582,7 @@ export class MemoryManager {
     });
 
     if (trending && recent[recent.length - 1].memoryUsage.used > recent[0].memoryUsage.used * 1.5) {
-      this.createMemoryAlert("memory_leak", AlertSeverity.warning, this.getMemoryUsagePercentage());
+      this.createMemoryAlert('memory_leak', 'warning', this.getMemoryUsagePercentage());
     }
   }
 
@@ -585,22 +592,27 @@ export class MemoryManager {
     const percentage = this.getMemoryUsagePercentage();
 
     if (percentage >= this.config.criticalThreshold * 100) {
-      this.performCleanup("critical");
+      this.performCleanup('critical');
     } else if (percentage >= this.config.warningThreshold * 100) {
-      this.performCleanup("high");
+      this.performCleanup('high');
     }
   }
 
   private updateMemoryHistory(): void {
-    const metrics: MemoryMetrics = {
+    const currentUsage = this.getCurrentMemoryUsage();
+    const metrics: SystemPerformanceMetrics = {
       timestamp: new Date(),
-      operation: "memory_monitoring",
-      tool: "memory_manager",
+      operation: 'memory_monitoring',
+      tool: 'memory_manager',
       duration: 0,
       memoryUsage: {
-        used: this.getCurrentMemoryUsage().heap.used,
-        total: this.getCurrentMemoryUsage().heap.total,
+        used: currentUsage.heap.used,
+        total: currentUsage.heap.total,
         percentage: this.getMemoryUsagePercentage(),
+        heapUsed: currentUsage.heap.used,
+        heapTotal: currentUsage.heap.total,
+        external: currentUsage.buffers.total + currentUsage.temporary.total,
+        modelCache: currentUsage.models.cached,
       },
       cpuUsage: 0,
     };
@@ -618,23 +630,23 @@ export class MemoryManager {
     const percentage = this.getMemoryUsagePercentage();
 
     if (percentage > 80) {
-      recommendations.push("High memory usage detected - consider immediate cleanup");
+      recommendations.push('High memory usage detected - consider immediate cleanup');
     }
 
     if (usage.models.loaded > 5) {
-      recommendations.push("Many models loaded - consider unloading unused models");
+      recommendations.push('Many models loaded - consider unloading unused models');
     }
 
     if (usage.buffers.total > 20) {
-      recommendations.push("Large buffer usage - consider buffer pooling");
+      recommendations.push('Large buffer usage - consider buffer pooling');
     }
 
     if (usage.temporary.active > 100) {
-      recommendations.push("Many temporary objects - consider object pooling");
+      recommendations.push('Many temporary objects - consider object pooling');
     }
 
     if (recommendations.length === 0) {
-      recommendations.push("Memory usage is within normal limits");
+      recommendations.push('Memory usage is within normal limits');
     }
 
     return recommendations;
@@ -677,7 +689,7 @@ export class MemoryManager {
 
   // Browser-specific memory utilities
   private getBrowserMemory() {
-    if (typeof performance !== "undefined" && "memory" in performance) {
+    if (typeof performance !== 'undefined' && 'memory' in performance) {
       return (performance as any).memory;
     }
 

@@ -1,45 +1,17 @@
-"use client";
+'use client';
 
-import { URLEncoder } from "@/components/tools/utilities/url-encoder";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Settings } from "lucide-react";
-import Link from "next/link";
+import { URLEncoder } from '@/components/tools/utilities/url-encoder';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Settings } from 'lucide-react';
+import Link from 'next/link';
 
 export default function URLEncoderPage() {
   return (
     <div className="container mx-auto py-6">
       {/* Breadcrumb Navigation */}
-      <nav className="mb-6 flex items-center space-x-2 text-gray-600 text-sm">
-        <Link href="/" className="hover:text-gray-900">
-          Home
-        </Link>
-        <span>/</span>
-        <Link href="/tools" className="hover:text-gray-900">
-          Tools
-        </Link>
-        <span>/</span>
-        <span className="font-medium text-gray-900">URL Encoder/Decoder</span>
-      </nav>
 
       {/* Tool Header */}
-      <div className="mb-6">
-        <div className="mb-4 flex items-center gap-3">
-          <Settings className="h-8 w-8 text-blue-600" />
-          <div>
-            <h1 className="font-bold text-3xl text-gray-900 dark:text-white">
-              URL Encoder/Decoder
-            </h1>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">Beginner</Badge>
-              <Badge variant="default">Stable</Badge>
-            </div>
-          </div>
-        </div>
-        <p className="text-gray-600 dark:text-gray-400">
-          Encode and decode URLs and URL components with format detection
-        </p>
-      </div>
 
       {/* Tool Component */}
       <div className="space-y-6">

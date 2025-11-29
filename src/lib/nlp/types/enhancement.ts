@@ -2,7 +2,7 @@
  * Enhancement Types - Types for text enhancement and generation operations
  */
 
-import { NLPResult } from "./core";
+import type { NLPResult } from './core';
 
 // Grammar Checking Types
 export interface GrammarIssue {
@@ -13,7 +13,7 @@ export interface GrammarIssue {
   startIndex: number;
   endIndex: number;
   suggestions: GrammarSuggestion[];
-  severity: "error" | "warning" | "info";
+  severity: 'error' | 'warning' | 'info';
   confidence: number;
   ruleId?: string;
   context: {
@@ -24,20 +24,20 @@ export interface GrammarIssue {
 }
 
 export type GrammarIssueType =
-  | "spelling"
-  | "grammar"
-  | "punctuation"
-  | "style"
-  | "capitalization"
-  | "consistency"
-  | "clarity"
-  | "word_choice"
-  | "sentence_structure"
-  | "usage";
+  | 'spelling'
+  | 'grammar'
+  | 'punctuation'
+  | 'style'
+  | 'capitalization'
+  | 'consistency'
+  | 'clarity'
+  | 'word_choice'
+  | 'sentence_structure'
+  | 'usage';
 
 export interface GrammarSuggestion {
   text: string;
-  type: "replacement" | "insertion" | "deletion";
+  type: 'replacement' | 'insertion' | 'deletion';
   explanation?: string;
   confidence: number;
   ruleBased: boolean;
@@ -48,7 +48,7 @@ export interface GrammarCheckResult extends NLPResult<GrammarIssue[]> {
   statistics: {
     totalIssues: number;
     issuesByType: Record<GrammarIssueType, number>;
-    issuesBySeverity: Record<"error" | "warning" | "info", number>;
+    issuesBySeverity: Record<'error' | 'warning' | 'info', number>;
     confidence: number;
   };
   correctedText?: string;
@@ -82,25 +82,25 @@ export interface StyleElement {
 }
 
 export type StyleElementType =
-  | "word_choice"
-  | "sentence_structure"
-  | "voice"
-  | "tone"
-  | "transitions"
-  | "emphasis"
-  | "parallelism"
-  | "rhythm"
-  | "imagery"
-  | "metaphor";
+  | 'word_choice'
+  | 'sentence_structure'
+  | 'voice'
+  | 'tone'
+  | 'transitions'
+  | 'emphasis'
+  | 'parallelism'
+  | 'rhythm'
+  | 'imagery'
+  | 'metaphor';
 
 export interface StyleExample {
   text: string;
-  type: "good" | "poor" | "suggestion";
+  type: 'good' | 'poor' | 'suggestion';
   explanation?: string;
 }
 
 export interface StyleSuggestion {
-  type: "improve" | "maintain" | "avoid";
+  type: 'improve' | 'maintain' | 'avoid';
   description: string;
   examples: string[];
   reasoning: string;
@@ -120,23 +120,23 @@ export interface Tone {
 }
 
 export type ToneType =
-  | "formal"
-  | "informal"
-  | "academic"
-  | "casual"
-  | "professional"
-  | "friendly"
-  | "authoritative"
-  | "conversational"
-  | "technical"
-  | "creative"
-  | "persuasive"
-  | "neutral"
-  | "positive"
-  | "negative";
+  | 'formal'
+  | 'informal'
+  | 'academic'
+  | 'casual'
+  | 'professional'
+  | 'friendly'
+  | 'authoritative'
+  | 'conversational'
+  | 'technical'
+  | 'creative'
+  | 'persuasive'
+  | 'neutral'
+  | 'positive'
+  | 'negative';
 
 export interface FormalityAnalysis {
-  level: "very_informal" | "informal" | "neutral" | "formal" | "very_formal";
+  level: 'very_informal' | 'informal' | 'neutral' | 'formal' | 'very_formal';
   score: number; // 0-1
   indicators: FormalityIndicator[];
 }
@@ -153,7 +153,7 @@ export interface ConsistencyAnalysis {
 }
 
 export interface ConsistencyElement {
-  type: "terminology" | "capitalization" | "punctuation" | "formatting" | "style";
+  type: 'terminology' | 'capitalization' | 'punctuation' | 'formatting' | 'style';
   score: number; // 0-1
   issues: ConsistencyIssue[];
 }
@@ -170,7 +170,7 @@ export interface StyleAnalysisResult extends NLPResult<StyleAnalysis> {
 }
 
 export interface StyleRecommendation {
-  priority: "high" | "medium" | "low";
+  priority: 'high' | 'medium' | 'low';
   category: string;
   description: string;
   examples: string[];
@@ -181,7 +181,7 @@ export interface StyleImprovement {
   before: string;
   after: string;
   explanation: string;
-  impact: "minor" | "moderate" | "significant";
+  impact: 'minor' | 'moderate' | 'significant';
 }
 
 // Text Generation Types
@@ -194,14 +194,14 @@ export interface GenerationRequest {
 }
 
 export type GenerationType =
-  | "completion"
-  | "expansion"
-  | "paraphrase"
-  | "summarization"
-  | "creative"
-  | "technical"
-  | "formal"
-  | "casual";
+  | 'completion'
+  | 'expansion'
+  | 'paraphrase'
+  | 'summarization'
+  | 'creative'
+  | 'technical'
+  | 'formal'
+  | 'casual';
 
 export interface GenerationParameters {
   length?: {
@@ -224,7 +224,7 @@ export interface GenerationConstraints {
   avoidWords?: string[];
   mustInclude?: string[];
   mustExclude?: string[];
-  format?: "paragraph" | "bullet" | "numbered" | "list";
+  format?: 'paragraph' | 'bullet' | 'numbered' | 'list';
   language?: string;
   domain?: string;
 }
@@ -262,7 +262,7 @@ export interface GenerationQuality {
   bias?: {
     detected: boolean;
     types: string[];
-    severity: "low" | "medium" | "high";
+    severity: 'low' | 'medium' | 'high';
   };
 }
 
@@ -278,23 +278,23 @@ export interface ParaphraseRequest {
 }
 
 export type ParaphraseStyle =
-  | "formal"
-  | "informal"
-  | "simple"
-  | "academic"
-  | "business"
-  | "creative"
-  | "technical"
-  | "conversational";
+  | 'formal'
+  | 'informal'
+  | 'simple'
+  | 'academic'
+  | 'business'
+  | 'creative'
+  | 'technical'
+  | 'conversational';
 
-export type LengthChange = "much_shorter" | "shorter" | "same" | "longer" | "much_longer";
+export type LengthChange = 'much_shorter' | 'shorter' | 'same' | 'longer' | 'much_longer';
 
 export type ComplexityChange =
-  | "much_simpler"
-  | "simpler"
-  | "same"
-  | "more_complex"
-  | "much_more_complex";
+  | 'much_simpler'
+  | 'simpler'
+  | 'same'
+  | 'more_complex'
+  | 'much_more_complex';
 
 export interface ParaphraseResult extends NLPResult<Paraphrase[]> {
   original: string;
@@ -314,7 +314,7 @@ export interface Paraphrase {
 }
 
 export interface ChangeDetail {
-  type: "word" | "phrase" | "structure" | "order";
+  type: 'word' | 'phrase' | 'structure' | 'order';
   original: string;
   changed: string;
   reason: string;
@@ -351,13 +351,13 @@ export interface ReadabilityImprovement {
 }
 
 export type ReadabilityImprovementType =
-  | "sentence_split"
-  | "sentence_merge"
-  | "word_replacement"
-  | "restructuring"
-  | "punctuation"
-  | "transition"
-  | "clarification";
+  | 'sentence_split'
+  | 'sentence_merge'
+  | 'word_replacement'
+  | 'restructuring'
+  | 'punctuation'
+  | 'transition'
+  | 'clarification';
 
 export interface ReadabilityEnhancementResult extends NLPResult<ReadabilityEnhancement> {
   statistics: {
@@ -399,13 +399,13 @@ export interface WritingElement {
 
 export interface WritingExample {
   text: string;
-  type: "good" | "poor" | "suggestion";
+  type: 'good' | 'poor' | 'suggestion';
   explanation?: string;
   improvement?: string;
 }
 
 export interface WritingSuggestion {
-  priority: "critical" | "high" | "medium" | "low";
+  priority: 'critical' | 'high' | 'medium' | 'low';
   category: string;
   description: string;
   examples: string[];
@@ -414,14 +414,14 @@ export interface WritingSuggestion {
 }
 
 export interface ActionItem {
-  type: "fix" | "improve" | "review";
+  type: 'fix' | 'improve' | 'review';
   description: string;
   location: {
     startIndex: number;
     endIndex: number;
   };
-  priority: "critical" | "high" | "medium" | "low";
-  effort: "low" | "medium" | "high";
+  priority: 'critical' | 'high' | 'medium' | 'low';
+  effort: 'low' | 'medium' | 'high';
 }
 
 export interface WritingCoachResult extends NLPResult<WritingCoach> {
@@ -429,14 +429,14 @@ export interface WritingCoachResult extends NLPResult<WritingCoach> {
   estimatedImprovement: {
     current: number;
     potential: number;
-    effort: "low" | "medium" | "high";
+    effort: 'low' | 'medium' | 'high';
   };
 }
 
 export interface RevisionPlan {
   phases: RevisionPhase[];
   totalEstimatedTime: number; // minutes
-  difficulty: "easy" | "moderate" | "challenging";
+  difficulty: 'easy' | 'moderate' | 'challenging';
 }
 
 export interface RevisionPhase {
@@ -444,7 +444,7 @@ export interface RevisionPhase {
   description: string;
   items: string[];
   estimatedTime: number;
-  priority: "high" | "medium" | "low";
+  priority: 'high' | 'medium' | 'low';
 }
 
 // Enhancement Configuration Types
@@ -453,8 +453,8 @@ export interface EnhancementConfig {
     includeSpelling: boolean;
     includeGrammar: boolean;
     includeStyle: boolean;
-    severity: "all" | "errors_only" | "suggestions_only";
-    languageVariants: ("en-US" | "en-GB" | "en-CA" | "en-AU")[];
+    severity: 'all' | 'errors_only' | 'suggestions_only';
+    languageVariants: ('en-US' | 'en-GB' | 'en-CA' | 'en-AU')[];
   };
   style?: {
     targetTone: ToneType;
@@ -466,7 +466,7 @@ export interface EnhancementConfig {
     defaultLength: number;
     maxTokens: number;
     temperature: number;
-    creativityLevel: "low" | "medium" | "high";
+    creativityLevel: 'low' | 'medium' | 'high';
     includeExamples: boolean;
   };
   paraphrase?: {
@@ -479,8 +479,8 @@ export interface EnhancementConfig {
     targetGradeLevel: string;
     minImprovement: number;
     preserveStyle: boolean;
-    simplificationLevel: "conservative" | "moderate" | "aggressive";
+    simplificationLevel: 'conservative' | 'moderate' | 'aggressive';
   };
 }
 
-export type FormalityLevel = "very_informal" | "informal" | "neutral" | "formal" | "very_formal";
+export type FormalityLevel = 'very_informal' | 'informal' | 'neutral' | 'formal' | 'very_formal';

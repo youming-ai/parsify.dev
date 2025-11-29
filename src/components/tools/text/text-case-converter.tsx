@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import { Copy, Download, RefreshCw, Settings } from "lucide-react";
-import * as React from "react";
+import { Copy, Download, RefreshCw, Settings } from 'lucide-react';
+import * as React from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 
 export type CaseType =
-  | "upper"
-  | "lower"
-  | "title"
-  | "sentence"
-  | "camel"
-  | "pascal"
-  | "snake"
-  | "kebab"
-  | "constant"
-  | "alternating"
-  | "inverse"
-  | "random";
+  | 'upper'
+  | 'lower'
+  | 'title'
+  | 'sentence'
+  | 'camel'
+  | 'pascal'
+  | 'snake'
+  | 'kebab'
+  | 'constant'
+  | 'alternating'
+  | 'inverse'
+  | 'random';
 
 export interface CaseConversionResult {
   original: string;
@@ -47,154 +47,154 @@ const caseConversions: {
   example: string;
 }[] = [
   {
-    type: "upper",
-    label: "UPPERCASE",
-    description: "Convert all text to uppercase",
-    example: "HELLO WORLD",
+    type: 'upper',
+    label: 'UPPERCASE',
+    description: 'Convert all text to uppercase',
+    example: 'HELLO WORLD',
   },
   {
-    type: "lower",
-    label: "lowercase",
-    description: "Convert all text to lowercase",
-    example: "hello world",
+    type: 'lower',
+    label: 'lowercase',
+    description: 'Convert all text to lowercase',
+    example: 'hello world',
   },
   {
-    type: "title",
-    label: "Title Case",
-    description: "Capitalize the first letter of each word",
-    example: "Hello World",
+    type: 'title',
+    label: 'Title Case',
+    description: 'Capitalize the first letter of each word',
+    example: 'Hello World',
   },
   {
-    type: "sentence",
-    label: "Sentence case",
-    description: "Capitalize the first letter of each sentence",
-    example: "Hello world. This is a test.",
+    type: 'sentence',
+    label: 'Sentence case',
+    description: 'Capitalize the first letter of each sentence',
+    example: 'Hello world. This is a test.',
   },
   {
-    type: "camel",
-    label: "camelCase",
-    description: "First word lowercase, subsequent words capitalized",
-    example: "helloWorld",
+    type: 'camel',
+    label: 'camelCase',
+    description: 'First word lowercase, subsequent words capitalized',
+    example: 'helloWorld',
   },
   {
-    type: "pascal",
-    label: "PascalCase",
-    description: "All words capitalized, no spaces",
-    example: "HelloWorld",
+    type: 'pascal',
+    label: 'PascalCase',
+    description: 'All words capitalized, no spaces',
+    example: 'HelloWorld',
   },
   {
-    type: "snake",
-    label: "snake_case",
-    description: "Lowercase words separated by underscores",
-    example: "hello_world",
+    type: 'snake',
+    label: 'snake_case',
+    description: 'Lowercase words separated by underscores',
+    example: 'hello_world',
   },
   {
-    type: "kebab",
-    label: "kebab-case",
-    description: "Lowercase words separated by hyphens",
-    example: "hello-world",
+    type: 'kebab',
+    label: 'kebab-case',
+    description: 'Lowercase words separated by hyphens',
+    example: 'hello-world',
   },
   {
-    type: "constant",
-    label: "CONSTANT_CASE",
-    description: "Uppercase words separated by underscores",
-    example: "HELLO_WORLD",
+    type: 'constant',
+    label: 'CONSTANT_CASE',
+    description: 'Uppercase words separated by underscores',
+    example: 'HELLO_WORLD',
   },
   {
-    type: "alternating",
-    label: "aLtErNaTiNg",
-    description: "Alternating uppercase and lowercase letters",
-    example: "HeLlO wOrLd",
+    type: 'alternating',
+    label: 'aLtErNaTiNg',
+    description: 'Alternating uppercase and lowercase letters',
+    example: 'HeLlO wOrLd',
   },
   {
-    type: "inverse",
-    label: "INVERSE",
-    description: "Invert the case of all letters",
-    example: "hELLO WORLD",
+    type: 'inverse',
+    label: 'INVERSE',
+    description: 'Invert the case of all letters',
+    example: 'hELLO WORLD',
   },
   {
-    type: "random",
-    label: "RaNdOm",
-    description: "Random uppercase and lowercase letters",
-    example: "HeLlO WoRLd",
+    type: 'random',
+    label: 'RaNdOm',
+    description: 'Random uppercase and lowercase letters',
+    example: 'HeLlO WoRLd',
   },
 ];
 
 export function TextCaseConverter({ className }: TextCaseConverterProps) {
-  const [inputText, setInputText] = React.useState("");
+  const [inputText, setInputText] = React.useState('');
   const [results, setResults] = React.useState<CaseConversionResult[]>([]);
   const [selectedResult, setSelectedResult] = React.useState<CaseConversionResult | null>(null);
   const [batchMode, setBatchMode] = React.useState(false);
-  const [customSeparator, setCustomSeparator] = React.useState("");
+  const [customSeparator, setCustomSeparator] = React.useState('');
 
   const convertCase = React.useCallback((text: string, caseType: CaseType): string => {
     if (!text.trim()) return text;
 
     switch (caseType) {
-      case "upper":
+      case 'upper':
         return text.toUpperCase();
 
-      case "lower":
+      case 'lower':
         return text.toLowerCase();
 
-      case "title":
+      case 'title':
         return text.replace(
           /\w\S*/g,
-          (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(),
+          (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
         );
 
-      case "sentence":
+      case 'sentence':
         return text.replace(/(^\w|\.\s+\w)/g, (letter) => letter.toUpperCase());
 
-      case "camel":
+      case 'camel':
         return text
           .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) =>
-            index === 0 ? word.toLowerCase() : word.toUpperCase(),
+            index === 0 ? word.toLowerCase() : word.toUpperCase()
           )
-          .replace(/\s+/g, "")
-          .replace(/[^a-zA-Z0-9]/g, "");
+          .replace(/\s+/g, '')
+          .replace(/[^a-zA-Z0-9]/g, '');
 
-      case "pascal":
+      case 'pascal':
         return text
           .replace(/(?:^\w|[A-Z]|\b\w)/g, (word) => word.toUpperCase())
-          .replace(/\s+/g, "")
-          .replace(/[^a-zA-Z0-9]/g, "");
+          .replace(/\s+/g, '')
+          .replace(/[^a-zA-Z0-9]/g, '');
 
-      case "snake":
+      case 'snake':
         return text
           .toLowerCase()
-          .replace(/\s+/g, "_")
-          .replace(/[^a-z0-9_]/g, "");
+          .replace(/\s+/g, '_')
+          .replace(/[^a-z0-9_]/g, '');
 
-      case "kebab":
+      case 'kebab':
         return text
           .toLowerCase()
-          .replace(/\s+/g, "-")
-          .replace(/[^a-z0-9-]/g, "");
+          .replace(/\s+/g, '-')
+          .replace(/[^a-z0-9-]/g, '');
 
-      case "constant":
+      case 'constant':
         return text
           .toUpperCase()
-          .replace(/\s+/g, "_")
-          .replace(/[^A-Z0-9_]/g, "");
+          .replace(/\s+/g, '_')
+          .replace(/[^A-Z0-9_]/g, '');
 
-      case "alternating":
+      case 'alternating':
         return text
-          .split("")
+          .split('')
           .map((char, index) => (index % 2 === 0 ? char.toLowerCase() : char.toUpperCase()))
-          .join("");
+          .join('');
 
-      case "inverse":
+      case 'inverse':
         return text
-          .split("")
+          .split('')
           .map((char) => (char === char.toUpperCase() ? char.toLowerCase() : char.toUpperCase()))
-          .join("");
+          .join('');
 
-      case "random":
+      case 'random':
         return text
-          .split("")
+          .split('')
           .map((char) => (Math.random() > 0.5 ? char.toUpperCase() : char.toLowerCase()))
-          .join("");
+          .join('');
 
       default:
         return text;
@@ -207,13 +207,13 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
       .split(/\s+/)
       .filter((word) => word.length > 0);
     const changes = original
-      .split("")
+      .split('')
       .filter((char, index) => converted[index] && char !== converted[index]).length;
 
     return {
       wordCount: words.length,
       charCount: original.length,
-      lineCount: original.split("\n").length,
+      lineCount: original.split('\n').length,
       changesCount: changes,
     };
   }, []);
@@ -241,7 +241,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
         setSelectedResult(result);
       }
     },
-    [inputText, convertCase, calculateStats, batchMode],
+    [inputText, convertCase, calculateStats, batchMode]
   );
 
   const handleBatchConvert = React.useCallback(() => {
@@ -250,7 +250,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
     const newResults: CaseConversionResult[] = [];
 
     // Convert to all common programming case types
-    const commonCases: CaseType[] = ["camel", "pascal", "snake", "kebab", "constant"];
+    const commonCases: CaseType[] = ['camel', 'pascal', 'snake', 'kebab', 'constant'];
 
     commonCases.forEach((caseType) => {
       const converted = convertCase(inputText, caseType);
@@ -275,15 +275,15 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
       .toLowerCase()
       .replace(/\s+/g, customSeparator)
       .replace(/[^a-z0-9]/g, customSeparator)
-      .replace(new RegExp(`${customSeparator}+`, "g"), customSeparator)
-      .replace(new RegExp(`^${customSeparator}|${customSeparator}$`, "g"), "");
+      .replace(new RegExp(`${customSeparator}+`, 'g'), customSeparator)
+      .replace(new RegExp(`^${customSeparator}|${customSeparator}$`, 'g'), '');
 
     const stats = calculateStats(inputText, converted);
 
     const result: CaseConversionResult = {
       original: inputText,
       converted,
-      caseType: "snake", // Using snake as base type
+      caseType: 'snake', // Using snake as base type
       stats,
     };
 
@@ -293,26 +293,26 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
   const copyToClipboard = React.useCallback(async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-    } catch (error) {
+    } catch (_error) {
       // Fallback for older browsers
-      const textArea = document.createElement("textarea");
+      const textArea = document.createElement('textarea');
       textArea.value = text;
       document.body.appendChild(textArea);
       textArea.focus();
       textArea.select();
       try {
-        document.execCommand("copy");
+        document.execCommand('copy');
       } catch (error) {
-        console.error("Failed to copy text: ", error);
+        console.error('Failed to copy text: ', error);
       }
       document.body.removeChild(textArea);
     }
   }, []);
 
   const downloadText = React.useCallback((text: string, filename: string) => {
-    const blob = new Blob([text], { type: "text/plain" });
+    const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
@@ -361,9 +361,9 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
             <div className="flex flex-wrap gap-2">
               <Button
                 onClick={() => setBatchMode(!batchMode)}
-                variant={batchMode ? "default" : "outline"}
+                variant={batchMode ? 'default' : 'outline'}
               >
-                {batchMode ? "Single Mode" : "Batch Mode"}
+                {batchMode ? 'Single Mode' : 'Batch Mode'}
               </Button>
               {batchMode && (
                 <Button onClick={handleBatchConvert} variant="outline">
@@ -372,7 +372,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
               )}
               {selectedResult && (
                 <Button onClick={swapInputOutput} variant="outline">
-                  <RefreshCw className="h-4 w-4 mr-2" />
+                  <RefreshCw className="mr-2 h-4 w-4" />
                   Swap Input/Output
                 </Button>
               )}
@@ -394,19 +394,19 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
               </TabsList>
 
               <TabsContent value="common" className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-3">
-                  {["upper", "lower", "title", "sentence"].map((caseType) => {
+                <div className="grid gap-3 md:grid-cols-2">
+                  {['upper', 'lower', 'title', 'sentence'].map((caseType) => {
                     const conversion = caseConversions.find((c) => c.type === caseType);
                     return (
                       <Button
                         key={caseType}
                         onClick={() => handleConvert(caseType as CaseType)}
                         variant="outline"
-                        className="justify-start h-auto p-3"
+                        className="h-auto justify-start p-3"
                       >
                         <div className="text-left">
                           <div className="font-medium">{conversion?.label}</div>
-                          <div className="text-xs text-gray-500">{conversion?.example}</div>
+                          <div className="text-gray-500 text-xs">{conversion?.example}</div>
                         </div>
                       </Button>
                     );
@@ -415,19 +415,19 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
               </TabsContent>
 
               <TabsContent value="programming" className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-3">
-                  {["camel", "pascal", "snake", "kebab", "constant"].map((caseType) => {
+                <div className="grid gap-3 md:grid-cols-2">
+                  {['camel', 'pascal', 'snake', 'kebab', 'constant'].map((caseType) => {
                     const conversion = caseConversions.find((c) => c.type === caseType);
                     return (
                       <Button
                         key={caseType}
                         onClick={() => handleConvert(caseType as CaseType)}
                         variant="outline"
-                        className="justify-start h-auto p-3"
+                        className="h-auto justify-start p-3"
                       >
                         <div className="text-left">
                           <div className="font-medium">{conversion?.label}</div>
-                          <div className="text-xs text-gray-500">{conversion?.example}</div>
+                          <div className="text-gray-500 text-xs">{conversion?.example}</div>
                         </div>
                       </Button>
                     );
@@ -436,19 +436,19 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
               </TabsContent>
 
               <TabsContent value="fun" className="space-y-4">
-                <div className="grid md:grid-cols-3 gap-3">
-                  {["alternating", "inverse", "random"].map((caseType) => {
+                <div className="grid gap-3 md:grid-cols-3">
+                  {['alternating', 'inverse', 'random'].map((caseType) => {
                     const conversion = caseConversions.find((c) => c.type === caseType);
                     return (
                       <Button
                         key={caseType}
                         onClick={() => handleConvert(caseType as CaseType)}
                         variant="outline"
-                        className="justify-start h-auto p-3"
+                        className="h-auto justify-start p-3"
                       >
                         <div className="text-left">
                           <div className="font-medium">{conversion?.label}</div>
-                          <div className="text-xs text-gray-500">{conversion?.example}</div>
+                          <div className="text-gray-500 text-xs">{conversion?.example}</div>
                         </div>
                       </Button>
                     );
@@ -457,7 +457,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
 
                 {/* Custom Separator */}
                 <div className="border-t pt-4">
-                  <div className="grid md:grid-cols-3 gap-2">
+                  <div className="grid gap-2 md:grid-cols-3">
                     <div className="space-y-2">
                       <Label htmlFor="custom-separator">Custom Separator</Label>
                       <Input
@@ -488,7 +488,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
             <CardContent>
               <div className="space-y-3">
                 {results.map((result) => (
-                  <div key={result.caseType} className="border rounded-lg p-3 space-y-2">
+                  <div key={result.caseType} className="space-y-2 rounded-lg border p-3">
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium capitalize">{result.caseType}</h4>
                       <div className="flex gap-2">
@@ -508,10 +508,10 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
                         </Button>
                       </div>
                     </div>
-                    <div className="font-mono text-sm bg-gray-50 p-2 rounded">
-                      {result.converted || "(empty)"}
+                    <div className="rounded bg-gray-50 p-2 font-mono text-sm">
+                      {result.converted || '(empty)'}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-gray-500 text-xs">
                       {result.stats.changesCount} changes • {result.stats.wordCount} words
                     </div>
                   </div>
@@ -532,7 +532,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
                     variant="outline"
                     onClick={() => copyToClipboard(selectedResult.converted)}
                   >
-                    <Copy className="h-4 w-4 mr-2" />
+                    <Copy className="mr-2 h-4 w-4" />
                     Copy
                   </Button>
                   <Button
@@ -542,16 +542,16 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
                       downloadText(selectedResult.converted, `${selectedResult.caseType}.txt`)
                     }
                   >
-                    <Download className="h-4 w-4 mr-2" />
+                    <Download className="mr-2 h-4 w-4" />
                     Download
                   </Button>
                 </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-4 gap-4 text-sm">
+              <div className="grid gap-4 text-sm md:grid-cols-4">
                 <div>
-                  <span className="font-medium">Case Type:</span>{" "}
+                  <span className="font-medium">Case Type:</span>{' '}
                   <span className="capitalize">{selectedResult.caseType}</span>
                 </div>
                 <div>
@@ -574,7 +574,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
                 />
               </div>
 
-              <div className="text-sm text-gray-600">
+              <div className="text-gray-600 text-sm">
                 {selectedResult.stats.changesCount} characters changed from original
               </div>
             </CardContent>

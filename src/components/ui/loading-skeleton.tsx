@@ -3,15 +3,15 @@
  * Optimized loading states with minimal bundle impact
  */
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
-interface SkeletonProps {
+export interface SkeletonProps {
   className?: string;
   children?: React.ReactNode;
 }
 
 export function Skeleton({ className, ...props }: SkeletonProps) {
-  return <div className={cn("animate-pulse rounded-md bg-muted", className)} {...props} />;
+  return <div className={cn('animate-pulse rounded-md bg-muted', className)} {...props} />;
 }
 
 // Backward compatibility alias for components still importing LoadingSkeleton
@@ -22,7 +22,7 @@ export function LoadingSkeleton(props: SkeletonProps) {
 // Tool-specific skeleton layouts
 export function ToolPageSkeleton() {
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="container mx-auto space-y-6 px-4 py-8">
       {/* Header skeleton */}
       <div className="space-y-2">
         <Skeleton className="h-8 w-48" />
@@ -70,7 +70,7 @@ export function ToolPageSkeleton() {
 
 export function JsonFormatterSkeleton() {
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="container mx-auto space-y-6 px-4 py-8">
       {/* Header */}
       <div className="space-y-2">
         <Skeleton className="h-8 w-40" />
@@ -108,7 +108,7 @@ export function JsonFormatterSkeleton() {
       </div>
 
       {/* Formatting options */}
-      <div className="rounded-lg border p-4 space-y-4">
+      <div className="space-y-4 rounded-lg border p-4">
         <Skeleton className="h-6 w-32" />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex items-center space-x-2">
@@ -135,7 +135,7 @@ export function JsonFormatterSkeleton() {
 
 export function CodeExecutorSkeleton() {
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="container mx-auto space-y-6 px-4 py-8">
       {/* Header */}
       <div className="space-y-2">
         <Skeleton className="h-8 w-36" />
@@ -174,7 +174,7 @@ export function CodeExecutorSkeleton() {
 
 export function ToolsListSkeleton() {
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="container mx-auto space-y-8 px-4 py-8">
       {/* Header */}
       <div className="space-y-4">
         <Skeleton className="h-12 w-64" />
@@ -197,7 +197,7 @@ export function ToolsListSkeleton() {
             <Skeleton className="h-6 w-32" />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 3 }).map((_, toolIndex) => (
-                <div key={toolIndex} className="rounded-lg border p-4 space-y-3">
+                <div key={toolIndex} className="space-y-3 rounded-lg border p-4">
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-8 w-8 rounded" />
                     <Skeleton className="h-5 w-32" />
@@ -222,18 +222,18 @@ export function ToolsListSkeleton() {
 }
 
 // Loading spinner component for inline use
-export function LoadingSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
+export function LoadingSpinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   const sizeClasses = {
-    sm: "h-4 w-4",
-    md: "h-6 w-6",
-    lg: "h-8 w-8",
+    sm: 'h-4 w-4',
+    md: 'h-6 w-6',
+    lg: 'h-8 w-8',
   };
 
   return (
     <div
       className={cn(
-        "animate-spin rounded-full border-2 border-current border-t-transparent",
-        sizeClasses[size],
+        'animate-spin rounded-full border-2 border-current border-t-transparent',
+        sizeClasses[size]
       )}
     >
       <span className="sr-only">Loading...</span>
@@ -242,7 +242,7 @@ export function LoadingSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
 }
 
 // Full page loading overlay
-export function FullPageLoading({ message = "Loading..." }: { message?: string }) {
+export function FullPageLoading({ message = 'Loading...' }: { message?: string }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
       <div className="flex flex-col items-center gap-4">

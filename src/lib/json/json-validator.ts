@@ -12,7 +12,7 @@ export interface ValidationError {
   position: number;
   message: string;
   code: string;
-  severity: "error" | "warning" | "info";
+  severity: 'error' | 'warning' | 'info';
   path: string;
   rule: string;
   suggestion?: string;
@@ -24,7 +24,7 @@ export interface ValidationError {
 }
 
 export interface ValidationWarning extends ValidationError {
-  severity: "warning" | "info";
+  severity: 'warning' | 'info';
 }
 
 export interface ValidationResult {
@@ -53,7 +53,8 @@ export interface ValidationMetadata {
   timestamp: Date;
   options: ValidationOptions;
   inputSize: number;
-  inputType: "json" | "json5" | "text";
+  inputType: 'json' | 'json5' | 'text';
+  repaired?: boolean;
 }
 
 export interface ValidationOptions {
@@ -74,13 +75,13 @@ export interface ValidationOptions {
 export interface ValidationRule {
   name: string;
   description: string;
-  severity: ValidationError["severity"];
+  severity: ValidationError['severity'];
   enabled: boolean;
   validate: (value: any, path: string, options: ValidationOptions) => ValidationError[];
 }
 
 export interface JSONSchema {
-  type: "object" | "array" | "string" | "number" | "boolean" | "null";
+  type: 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null';
   properties?: Record<string, JSONSchema>;
   items?: JSONSchema;
   required?: string[];
@@ -118,11 +119,11 @@ export interface SchemaValidationError extends ValidationError {
 // Built-in validation rules
 const BUILT_IN_RULES: ValidationRule[] = [
   {
-    name: "no-undefined-values",
-    description: "Detect undefined values in JSON",
-    severity: "error",
+    name: 'no-undefined-values',
+    description: 'Detect undefined values in JSON',
+    severity: 'error',
     enabled: true,
-    validate: (value, path, options) => {
+    validate: (value, path, _options) => {
       const errors: ValidationError[] = [];
 
       const checkForUndefined = (obj: any, currentPath: string) => {
@@ -132,13 +133,13 @@ const BUILT_IN_RULES: ValidationRule[] = [
             column: 0,
             position: 0,
             message: `Undefined value found at ${currentPath}`,
-            code: "UNDEFINED_VALUE",
-            severity: "error",
+            code: 'UNDEFINED_VALUE',
+            severity: 'error',
             path: currentPath,
-            rule: "no-undefined-values",
-            suggestion: "Remove undefined values or provide explicit null values",
+            rule: 'no-undefined-values',
+            suggestion: 'Remove undefined values or provide explicit null values',
           });
-        } else if (obj !== null && typeof obj === "object") {
+        } else if (obj !== null && typeof obj === 'object') {
           Object.keys(obj).forEach((key) => {
             checkForUndefined(obj[key], `${currentPath}.${key}`);
           });
@@ -154,27 +155,27 @@ const BUILT_IN_RULES: ValidationRule[] = [
     },
   },
   {
-    name: "no-circular-references",
-    description: "Detect circular references in objects",
-    severity: "error",
+    name: 'no-circular-references',
+    description: 'Detect circular references in objects',
+    severity: 'error',
     enabled: true,
-    validate: (value, path, options) => {
+    validate: (value, path, _options) => {
       const errors: ValidationError[] = [];
       const seen = new WeakSet();
 
       const checkCircular = (obj: any, currentPath: string) => {
-        if (obj !== null && typeof obj === "object") {
+        if (obj !== null && typeof obj === 'object') {
           if (seen.has(obj)) {
             errors.push({
               line: 0,
               column: 0,
               position: 0,
               message: `Circular reference detected at ${currentPath}`,
-              code: "CIRCULAR_REFERENCE",
-              severity: "error",
+              code: 'CIRCULAR_REFERENCE',
+              severity: 'error',
               path: currentPath,
-              rule: "no-circular-references",
-              suggestion: "Break the circular reference or use a ref library",
+              rule: 'no-circular-references',
+              suggestion: 'Break the circular reference or use a ref library',
             });
           } else {
             seen.add(obj);
@@ -190,9 +191,9 @@ const BUILT_IN_RULES: ValidationRule[] = [
     },
   },
   {
-    name: "max-depth-check",
-    description: "Validate maximum object nesting depth",
-    severity: "error",
+    name: 'max-depth-check',
+    description: 'Validate maximum object nesting depth',
+    severity: 'error',
     enabled: true,
     validate: (value, path, options) => {
       const errors: ValidationError[] = [];
@@ -204,13 +205,13 @@ const BUILT_IN_RULES: ValidationRule[] = [
             column: 0,
             position: 0,
             message: `Maximum depth exceeded (${options.maxDepth}) at ${currentPath}`,
-            code: "MAX_DEPTH_EXCEEDED",
-            severity: "error",
+            code: 'MAX_DEPTH_EXCEEDED',
+            severity: 'error',
             path: currentPath,
-            rule: "max-depth-check",
+            rule: 'max-depth-check',
             suggestion: `Reduce nesting depth or increase maxDepth to ${currentDepth}`,
           });
-        } else if (obj !== null && typeof obj === "object" && !Array.isArray(obj)) {
+        } else if (obj !== null && typeof obj === 'object' && !Array.isArray(obj)) {
           Object.keys(obj).forEach((key) => {
             checkDepth(obj[key], `${currentPath}.${key}`, currentDepth + 1);
           });
@@ -222,28 +223,28 @@ const BUILT_IN_RULES: ValidationRule[] = [
     },
   },
   {
-    name: "key-format-check",
-    description: "Validate object key format (best practices)",
-    severity: "warning",
+    name: 'key-format-check',
+    description: 'Validate object key format (best practices)',
+    severity: 'warning',
     enabled: false,
-    validate: (value, path, options) => {
+    validate: (value, path, _options) => {
       const errors: ValidationError[] = [];
 
       const checkKeys = (obj: any, currentPath: string) => {
-        if (obj !== null && typeof obj === "object" && !Array.isArray(obj)) {
+        if (obj !== null && typeof obj === 'object' && !Array.isArray(obj)) {
           Object.keys(obj).forEach((key) => {
             // Check for spaces in keys
-            if (key.includes(" ")) {
+            if (key.includes(' ')) {
               errors.push({
                 line: 0,
                 column: 0,
                 position: 0,
                 message: `Key contains spaces: "${key}" at ${currentPath}`,
-                code: "INVALID_KEY_FORMAT",
-                severity: "warning",
+                code: 'INVALID_KEY_FORMAT',
+                severity: 'warning',
                 path: `${currentPath}.${key}`,
-                rule: "key-format-check",
-                suggestion: "Use underscores or camelCase for key names",
+                rule: 'key-format-check',
+                suggestion: 'Use underscores or camelCase for key names',
               });
             }
 
@@ -254,11 +255,11 @@ const BUILT_IN_RULES: ValidationRule[] = [
                 column: 0,
                 position: 0,
                 message: `Empty key found at ${currentPath}`,
-                code: "EMPTY_KEY",
-                severity: "warning",
+                code: 'EMPTY_KEY',
+                severity: 'warning',
                 path: currentPath,
-                rule: "key-format-check",
-                suggestion: "Provide meaningful key names",
+                rule: 'key-format-check',
+                suggestion: 'Provide meaningful key names',
               });
             }
 
@@ -272,11 +273,11 @@ const BUILT_IN_RULES: ValidationRule[] = [
     },
   },
   {
-    name: "array-consistency-check",
-    description: "Check array consistency (mixed types)",
-    severity: "warning",
+    name: 'array-consistency-check',
+    description: 'Check array consistency (mixed types)',
+    severity: 'warning',
     enabled: false,
-    validate: (value, path, options) => {
+    validate: (value, path, _options) => {
       const errors: ValidationError[] = [];
 
       const checkArrays = (obj: any, currentPath: string) => {
@@ -287,11 +288,11 @@ const BUILT_IN_RULES: ValidationRule[] = [
           const types = new Set();
           obj.forEach((item) => {
             if (item === null) {
-              types.add("null");
+              types.add('null');
             } else if (Array.isArray(item)) {
-              types.add("array");
-            } else if (typeof item === "object") {
-              types.add("object");
+              types.add('array');
+            } else if (typeof item === 'object') {
+              types.add('object');
             } else {
               types.add(typeof item);
             }
@@ -302,17 +303,17 @@ const BUILT_IN_RULES: ValidationRule[] = [
               line: 0,
               column: 0,
               position: 0,
-              message: `Mixed types in array at ${currentPath}: ${Array.from(types).join(", ")}`,
-              code: "MIXED_ARRAY_TYPES",
-              severity: "warning",
+              message: `Mixed types in array at ${currentPath}: ${Array.from(types).join(', ')}`,
+              code: 'MIXED_ARRAY_TYPES',
+              severity: 'warning',
               path: currentPath,
-              rule: "array-consistency-check",
-              suggestion: "Consider using consistent types in arrays",
+              rule: 'array-consistency-check',
+              suggestion: 'Consider using consistent types in arrays',
             });
           }
 
           obj.forEach((item) => checkArrays(item, currentPath));
-        } else if (obj !== null && typeof obj === "object") {
+        } else if (obj !== null && typeof obj === 'object') {
           Object.keys(obj).forEach((key) => {
             checkArrays(obj[key], `${currentPath}.${key}`);
           });
@@ -356,7 +357,7 @@ export class JSONValidator {
   validate(jsonString: string): ValidationResult {
     const startTime = performance.now();
     const metadata: ValidationMetadata = {
-      version: "1.0.0",
+      version: '1.0.0',
       timestamp: new Date(),
       options: this.options,
       inputSize: new Blob([jsonString]).size,
@@ -367,7 +368,7 @@ export class JSONValidator {
       // Check document size
       if (this.options.maxDocumentSize > 0 && metadata.inputSize > this.options.maxDocumentSize) {
         throw new Error(
-          `Document size (${metadata.inputSize} bytes) exceeds maximum (${this.options.maxDocumentSize} bytes)`,
+          `Document size (${metadata.inputSize} bytes) exceeds maximum (${this.options.maxDocumentSize} bytes)`
         );
       }
 
@@ -394,7 +395,7 @@ export class JSONValidator {
             repaired = true;
           } else {
             throw new Error(
-              `Invalid JSON and repair failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+              `Invalid JSON and repair failed: ${error instanceof Error ? error.message : 'Unknown error'}`
             );
           }
         } else {
@@ -405,9 +406,11 @@ export class JSONValidator {
 
       // Validate parsed data
       const validateStartTime = performance.now();
-      const errors = this.validateData(data, "");
-      const warnings = errors.filter((e) => e.severity === "warning" || e.severity === "info");
-      const validationErrors = errors.filter((e) => e.severity === "error");
+      const errors = this.validateData(data, '');
+      const warnings = errors.filter(
+        (e): e is ValidationWarning => e.severity === 'warning' || e.severity === 'info'
+      );
+      const validationErrors = errors.filter((e) => e.severity === 'error');
       const validateTime = performance.now() - validateStartTime;
 
       // Schema validation
@@ -437,7 +440,7 @@ export class JSONValidator {
           schemaTime: schemaResult ? totalTime - parseTime - validateTime : 0,
           totalTime,
           memoryUsage: 0, // Would need Memory API for accurate measurement
-          linesProcessed: jsonString.split("\n").length,
+          linesProcessed: jsonString.split('\n').length,
           charactersProcessed: jsonString.length,
         },
         metadata: { ...metadata, repaired },
@@ -452,11 +455,11 @@ export class JSONValidator {
             line: 0,
             column: 0,
             position: 0,
-            message: error instanceof Error ? error.message : "Unknown validation error",
-            code: "VALIDATION_ERROR",
-            severity: "error",
-            path: "",
-            rule: "parse",
+            message: error instanceof Error ? error.message : 'Unknown validation error',
+            code: 'VALIDATION_ERROR',
+            severity: 'error',
+            path: '',
+            rule: 'parse',
             suggestion: this.getSuggestionForError(error),
           },
         ],
@@ -467,7 +470,7 @@ export class JSONValidator {
           schemaTime: 0,
           totalTime: performance.now() - startTime,
           memoryUsage: 0,
-          linesProcessed: jsonString.split("\n").length,
+          linesProcessed: jsonString.split('\n').length,
           charactersProcessed: jsonString.length,
         },
         metadata,
@@ -494,18 +497,18 @@ export class JSONValidator {
   /**
    * Detect input type (JSON, JSON5, etc.)
    */
-  private detectInputType(input: string): ValidationMetadata["inputType"] {
+  private detectInputType(input: string): ValidationMetadata['inputType'] {
     // Check for JSON5 features
     if (this.hasJSON5Features(input)) {
-      return "json5";
+      return 'json5';
     }
 
     // Check if it's valid JSON
     try {
       JSON.parse(input);
-      return "json";
+      return 'json';
     } catch {
-      return "text";
+      return 'text';
     }
   }
 
@@ -523,12 +526,12 @@ export class JSONValidator {
     // Remove comments if allowed
     let processedInput = input;
     if (this.options.allowComments) {
-      processedInput = processedInput.replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
+      processedInput = processedInput.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
     }
 
     // Remove trailing commas if allowed
     if (this.options.allowTrailingCommas) {
-      processedInput = processedInput.replace(/,(\s*[}\]])/g, "$1");
+      processedInput = processedInput.replace(/,(\s*[}\]])/g, '$1');
     }
 
     // Handle single quotes if allowed
@@ -542,28 +545,32 @@ export class JSONValidator {
   /**
    * Attempt to repair invalid JSON
    */
-  private attemptRepair(input: string): { success: boolean; data?: any; repaired: string } {
+  private attemptRepair(input: string): {
+    success: boolean;
+    data?: any;
+    repaired: string;
+  } {
     let repaired = input;
 
     try {
       // Common repair attempts
       repaired = repaired
-        .replace(/,(\s*[}\]])/g, "$1") // Remove trailing commas
+        .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
         .replace(/'/g, '"') // Convert single quotes to double quotes
         .replace(/(\w+)\s*:/g, '"$1":') // Quote unquoted keys
         .replace(/:\s*'/g, ':"') // Quote unquoted string values
-        .replace(/\s*\/\/.*$/gm, "") // Remove single-line comments
-        .replace(/\/\*[\s\S]*?\*\//g, ""); // Remove multi-line comments
+        .replace(/\s*\/\/.*$/gm, '') // Remove single-line comments
+        .replace(/\/\*[\s\S]*?\*\//g, ''); // Remove multi-line comments
 
       return {
         success: true,
         data: JSON.parse(repaired),
         repaired,
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         success: false,
-        repaired: "",
+        repaired: '',
       };
     }
   }
@@ -571,37 +578,41 @@ export class JSONValidator {
   /**
    * Get suggestion for parsing errors
    */
-  private getSuggestionForError(error: Error): string {
+  private getSuggestionForError(error: unknown): string {
+    if (!(error instanceof Error)) {
+      return 'Check JSON syntax and structure';
+    }
+
     const message = error.message.toLowerCase();
 
-    if (message.includes("unexpected token")) {
-      return "Check for missing commas, brackets, or quotes";
+    if (message.includes('unexpected token')) {
+      return 'Check for missing commas, brackets, or quotes';
     }
-    if (message.includes("unexpected end of input")) {
-      return "Make sure the JSON is complete and properly closed";
+    if (message.includes('unexpected end of input')) {
+      return 'Make sure the JSON is complete and properly closed';
     }
-    if (message.includes("duplicate key")) {
-      return "Remove duplicate keys in your JSON object";
+    if (message.includes('duplicate key')) {
+      return 'Remove duplicate keys in your JSON object';
     }
-    if (message.includes("invalid character")) {
-      return "Remove any invalid characters or properly escape them";
+    if (message.includes('invalid character')) {
+      return 'Remove any invalid characters or properly escape them';
     }
 
-    return "Check JSON syntax and structure";
+    return 'Check JSON syntax and structure';
   }
 
   /**
    * Validate JSON schema (simplified implementation)
    */
-  validateSchema(data: any, schema: JSONSchema, path: string = ""): SchemaValidationResult {
+  validateSchema(data: any, schema: JSONSchema, path = ''): SchemaValidationResult {
     const errors: SchemaValidationError[] = [];
     const validatedPath: string[] = [];
-    const usedSchemas: string[] = [schema.id || "root"];
+    const usedSchemas: string[] = [schema.id || 'root'];
 
     const validateValue = (value: any, currentSchema: JSONSchema, currentPath: string): boolean => {
       // Type validation
       if (currentSchema.type) {
-        const actualType = Array.isArray(value) ? "array" : value === null ? "null" : typeof value;
+        const actualType = Array.isArray(value) ? 'array' : value === null ? 'null' : typeof value;
 
         if (Array.isArray(currentSchema.type)) {
           if (!currentSchema.type.includes(actualType)) {
@@ -609,11 +620,11 @@ export class JSONValidator {
               line: 0,
               column: 0,
               position: 0,
-              message: `Expected type ${currentSchema.type.join(" or ")}, got ${actualType}`,
-              code: "TYPE_MISMATCH",
-              severity: "error",
+              message: `Expected type ${currentSchema.type.join(' or ')}, got ${actualType}`,
+              code: 'TYPE_MISMATCH',
+              severity: 'error',
               path: currentPath,
-              rule: "schema",
+              rule: 'schema',
               schemaPath: currentPath,
               instancePath: currentPath,
               schema: currentSchema,
@@ -627,10 +638,10 @@ export class JSONValidator {
             column: 0,
             position: 0,
             message: `Expected type ${currentSchema.type}, got ${actualType}`,
-            code: "TYPE_MISMATCH",
-            severity: "error",
+            code: 'TYPE_MISMATCH',
+            severity: 'error',
             path: currentPath,
-            rule: "schema",
+            rule: 'schema',
             schemaPath: currentPath,
             instancePath: currentPath,
             schema: currentSchema,
@@ -641,17 +652,17 @@ export class JSONValidator {
       }
 
       // Array validation
-      if (currentSchema.type === "array" && Array.isArray(value)) {
+      if (currentSchema.type === 'array' && Array.isArray(value)) {
         if (currentSchema.minItems && value.length < currentSchema.minItems) {
           errors.push({
             line: 0,
             column: 0,
             position: 0,
             message: `Array minimum length is ${currentSchema.minItems}, got ${value.length}`,
-            code: "ARRAY_MIN_ITEMS",
-            severity: "error",
+            code: 'ARRAY_MIN_ITEMS',
+            severity: 'error',
             path: currentPath,
-            rule: "schema",
+            rule: 'schema',
             schemaPath: currentPath,
             instancePath: currentPath,
             schema: currentSchema,
@@ -665,10 +676,10 @@ export class JSONValidator {
             column: 0,
             position: 0,
             message: `Array maximum length is ${currentSchema.maxItems}, got ${value.length}`,
-            code: "ARRAY_MAX_ITEMS",
-            severity: "error",
+            code: 'ARRAY_MAX_ITEMS',
+            severity: 'error',
             path: currentPath,
-            rule: "schema",
+            rule: 'schema',
             schemaPath: currentPath,
             instancePath: currentPath,
             schema: currentSchema,
@@ -677,16 +688,22 @@ export class JSONValidator {
         }
 
         if (currentSchema.items) {
-          value.forEach((item, index) => {
-            validateValue(item, currentSchema.items, `${currentPath}[${index}]`);
-          });
+          const itemsSchema = Array.isArray(currentSchema.items)
+            ? currentSchema.items[0]
+            : currentSchema.items;
+
+          if (itemsSchema) {
+            value.forEach((item, index) => {
+              validateValue(item, itemsSchema, `${currentPath}[${index}]`);
+            });
+          }
         }
       }
 
       // Object validation
       if (
-        currentSchema.type === "object" &&
-        typeof value === "object" &&
+        currentSchema.type === 'object' &&
+        typeof value === 'object' &&
         value !== null &&
         !Array.isArray(value)
       ) {
@@ -698,10 +715,10 @@ export class JSONValidator {
                 column: 0,
                 position: 0,
                 message: `Required property '${requiredProp}' is missing`,
-                code: "REQUIRED_PROPERTY",
-                severity: "error",
+                code: 'REQUIRED_PROPERTY',
+                severity: 'error',
                 path: currentPath,
-                rule: "schema",
+                rule: 'schema',
                 schemaPath: currentPath,
                 instancePath: currentPath,
                 schema: currentSchema,
@@ -728,10 +745,10 @@ export class JSONValidator {
                 column: 0,
                 position: 0,
                 message: `Additional property '${prop}' not allowed`,
-                code: "ADDITIONAL_PROPERTY",
-                severity: "error",
+                code: 'ADDITIONAL_PROPERTY',
+                severity: 'error',
                 path: currentPath,
-                rule: "schema",
+                rule: 'schema',
                 schemaPath: currentPath,
                 instancePath: currentPath,
                 schema: currentSchema,
@@ -743,17 +760,17 @@ export class JSONValidator {
       }
 
       // String validation
-      if (currentSchema.type === "string" && typeof value === "string") {
+      if (currentSchema.type === 'string' && typeof value === 'string') {
         if (currentSchema.minLength && value.length < currentSchema.minLength) {
           errors.push({
             line: 0,
             column: 0,
             position: 0,
             message: `String minimum length is ${currentSchema.minLength}, got ${value.length}`,
-            code: "STRING_MIN_LENGTH",
-            severity: "error",
+            code: 'STRING_MIN_LENGTH',
+            severity: 'error',
             path: currentPath,
-            rule: "schema",
+            rule: 'schema',
             schemaPath: currentPath,
             instancePath: currentPath,
             schema: currentSchema,
@@ -767,10 +784,10 @@ export class JSONValidator {
             column: 0,
             position: 0,
             message: `String maximum length is ${currentSchema.maxLength}, got ${value.length}`,
-            code: "STRING_MAX_LENGTH",
-            severity: "error",
+            code: 'STRING_MAX_LENGTH',
+            severity: 'error',
             path: currentPath,
-            rule: "schema",
+            rule: 'schema',
             schemaPath: currentPath,
             instancePath: currentPath,
             schema: currentSchema,
@@ -784,10 +801,10 @@ export class JSONValidator {
             column: 0,
             position: 0,
             message: `String does not match pattern: ${currentSchema.pattern}`,
-            code: "STRING_PATTERN",
-            severity: "error",
+            code: 'STRING_PATTERN',
+            severity: 'error',
             path: currentPath,
-            rule: "schema",
+            rule: 'schema',
             schemaPath: currentPath,
             instancePath: currentPath,
             schema: currentSchema,
@@ -797,17 +814,17 @@ export class JSONValidator {
       }
 
       // Number validation
-      if (currentSchema.type === "number" && typeof value === "number") {
+      if (currentSchema.type === 'number' && typeof value === 'number') {
         if (currentSchema.minimum !== undefined && value < currentSchema.minimum) {
           errors.push({
             line: 0,
             column: 0,
             position: 0,
             message: `Number minimum is ${currentSchema.minimum}, got ${value}`,
-            code: "NUMBER_MINIMUM",
-            severity: "error",
+            code: 'NUMBER_MINIMUM',
+            severity: 'error',
             path: currentPath,
-            rule: "schema",
+            rule: 'schema',
             schemaPath: currentPath,
             instancePath: currentPath,
             schema: currentSchema,
@@ -821,10 +838,10 @@ export class JSONValidator {
             column: 0,
             position: 0,
             message: `Number maximum is ${currentSchema.maximum}, got ${value}`,
-            code: "NUMBER_MAXIMUM",
-            severity: "error",
+            code: 'NUMBER_MAXIMUM',
+            severity: 'error',
             path: currentPath,
-            rule: "schema",
+            rule: 'schema',
             schemaPath: currentPath,
             instancePath: currentPath,
             schema: currentSchema,
@@ -839,11 +856,11 @@ export class JSONValidator {
           line: 0,
           column: 0,
           position: 0,
-          message: `Value must be one of: ${currentSchema.enum.join(", ")}`,
-          code: "ENUM_MISMATCH",
-          severity: "error",
+          message: `Value must be one of: ${currentSchema.enum.join(', ')}`,
+          code: 'ENUM_MISMATCH',
+          severity: 'error',
           path: currentPath,
-          rule: "schema",
+          rule: 'schema',
           schemaPath: currentPath,
           instancePath: currentPath,
           schema: currentSchema,
@@ -927,7 +944,7 @@ export class JSONValidator {
 // Convenience function for quick validation
 export function validateJSON(
   jsonString: string,
-  options?: Partial<ValidationOptions>,
+  options?: Partial<ValidationOptions>
 ): ValidationResult {
   const validator = new JSONValidator(options);
   return validator.validate(jsonString);
@@ -937,7 +954,7 @@ export function validateJSON(
 export function validateJSONSchema(
   data: any,
   schema: JSONSchema,
-  path?: string,
+  path?: string
 ): SchemaValidationResult {
   const validator = new JSONValidator();
   return validator.validateSchema(data, schema, path);

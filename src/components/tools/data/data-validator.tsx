@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import { AlertCircle, CheckCircle, Settings, Shield, XCircle } from "lucide-react";
-import * as React from "react";
-import { toast } from "sonner";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { AlertCircle, CheckCircle, Settings, Shield, XCircle } from 'lucide-react';
+import * as React from 'react';
+import { toast } from 'sonner';
 
 export interface ValidationRule {
   id: string;
   name: string;
-  type: "required" | "pattern" | "length" | "range" | "email" | "url" | "number" | "custom";
+  type: 'required' | 'pattern' | 'length' | 'range' | 'email' | 'url' | 'number' | 'custom';
   field: string;
   value?: string | number;
-  operation?: "equals" | "contains" | "startsWith" | "endsWith" | "regex" | "min" | "max";
+  operation?: 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'regex' | 'min' | 'max';
   enabled: boolean;
   description: string;
 }
@@ -55,40 +55,40 @@ interface DataValidatorProps {
 // Predefined validation rules templates
 const ruleTemplates = {
   email: {
-    type: "email" as const,
-    field: "email",
-    description: "Valid email address format",
+    type: 'email' as const,
+    field: 'email',
+    description: 'Valid email address format',
   },
   url: {
-    type: "url" as const,
-    field: "url",
-    description: "Valid URL format",
+    type: 'url' as const,
+    field: 'url',
+    description: 'Valid URL format',
   },
   required: {
-    type: "required" as const,
-    field: "name",
-    description: "Field must not be empty",
+    type: 'required' as const,
+    field: 'name',
+    description: 'Field must not be empty',
   },
   length: {
-    type: "length" as const,
-    field: "password",
-    operation: "min" as const,
+    type: 'length' as const,
+    field: 'password',
+    operation: 'min' as const,
     value: 8,
-    description: "Minimum 8 characters",
+    description: 'Minimum 8 characters',
   },
   pattern: {
-    type: "pattern" as const,
-    field: "phone",
-    operation: "regex" as const,
-    value: "^\\d{3}-\\d{3}-\\d{4}$",
-    description: "Phone format: XXX-XXX-XXXX",
+    type: 'pattern' as const,
+    field: 'phone',
+    operation: 'regex' as const,
+    value: '^\\d{3}-\\d{3}-\\d{4}$',
+    description: 'Phone format: XXX-XXX-XXXX',
   },
 };
 
 export function DataValidator({ onValidationComplete, className }: DataValidatorProps) {
-  const [inputData, setInputData] = React.useState("");
-  const [dataFormat, setDataFormat] = React.useState<"json" | "csv" | "xml" | "yaml" | "form">(
-    "json",
+  const [inputData, setInputData] = React.useState('');
+  const [dataFormat, setDataFormat] = React.useState<'json' | 'csv' | 'xml' | 'yaml' | 'form'>(
+    'json'
   );
   const [validationRules, setValidationRules] = React.useState<ValidationRule[]>([]);
   const [results, setResults] = React.useState<DataValidationResult | null>(null);
@@ -121,12 +121,12 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
   };
 
   // Validate length
-  const validateLength = (value: string, operation: "min" | "max", length: number): boolean => {
+  const validateLength = (value: string, operation: 'min' | 'max', length: number): boolean => {
     const valueLength = value.length;
     switch (operation) {
-      case "min":
+      case 'min':
         return valueLength >= length;
-      case "max":
+      case 'max':
         return valueLength <= length;
       default:
         return true;
@@ -142,37 +142,37 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
   const parseData = (data: string, format: string): any => {
     try {
       switch (format) {
-        case "json":
+        case 'json':
           return JSON.parse(data);
-        case "csv": {
+        case 'csv': {
           // Simple CSV parsing
-          const lines = data.split("\n").filter((line) => line.trim());
-          const headers = lines[0].split(",").map((h) => h.trim());
+          const lines = data.split('\n').filter((line) => line.trim());
+          const headers = lines[0].split(',').map((h) => h.trim());
           const rows = lines.slice(1).map((line) => {
-            const values = line.split(",").map((v) => v.trim());
+            const values = line.split(',').map((v) => v.trim());
             return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
           });
           return rows;
         }
-        case "xml": {
+        case 'xml': {
           // Basic XML parsing - in real implementation, use proper XML parser
           const parser = new DOMParser();
-          const doc = parser.parseFromString(data, "text/xml");
-          if (doc.querySelector("parsererror")) {
-            throw new Error("Invalid XML");
+          const doc = parser.parseFromString(data, 'text/xml');
+          if (doc.querySelector('parsererror')) {
+            throw new Error('Invalid XML');
           }
           return { xml: data, parsed: true };
         }
-        case "yaml":
+        case 'yaml':
           // YAML parsing would require a library
-          return { yaml: data, note: "YAML parsing not implemented" };
-        case "form": {
+          return { yaml: data, note: 'YAML parsing not implemented' };
+        case 'form': {
           // Parse form data (key=value pairs)
           const formObj: any = {};
-          data.split("\n").forEach((line) => {
-            const [key, ...valueParts] = line.split("=");
+          data.split('\n').forEach((line) => {
+            const [key, ...valueParts] = line.split('=');
             if (key && valueParts.length > 0) {
-              formObj[key.trim()] = valueParts.join("=").trim();
+              formObj[key.trim()] = valueParts.join('=').trim();
             }
           });
           return formObj;
@@ -182,7 +182,7 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
       }
     } catch (error) {
       throw new Error(
-        `Failed to parse ${format} data: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to parse ${format} data: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   };
@@ -202,11 +202,11 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
   const addCustomRule = () => {
     const newRule: ValidationRule = {
       id: Date.now().toString(),
-      name: "Custom Rule",
-      type: "custom",
-      field: "field",
+      name: 'Custom Rule',
+      type: 'custom',
+      field: 'field',
       enabled: true,
-      description: "Custom validation rule",
+      description: 'Custom validation rule',
     };
     setValidationRules((prev) => [...prev, newRule]);
   };
@@ -219,19 +219,19 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
   // Update rule
   const updateRule = (id: string, updates: Partial<ValidationRule>) => {
     setValidationRules((prev) =>
-      prev.map((rule) => (rule.id === id ? { ...rule, ...updates } : rule)),
+      prev.map((rule) => (rule.id === id ? { ...rule, ...updates } : rule))
     );
   };
 
   // Validate data
   const validateData = async () => {
     if (!inputData.trim()) {
-      toast.error("Please enter data to validate");
+      toast.error('Please enter data to validate');
       return;
     }
 
     if (validationRules.length === 0) {
-      toast.error("Please add at least one validation rule");
+      toast.error('Please add at least one validation rule');
       return;
     }
 
@@ -244,7 +244,7 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
       let totalWarnings = 0;
 
       // Get all fields from data
-      const getAllFields = (data: any, prefix = ""): Array<{ path: string; value: any }> => {
+      const getAllFields = (data: any, prefix = ''): Array<{ path: string; value: any }> => {
         const fields: Array<{ path: string; value: any }> = [];
 
         if (Array.isArray(data)) {
@@ -252,17 +252,17 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
             const itemFields = getAllFields(item, `${prefix}[${index}]`);
             fields.push(...itemFields);
           });
-        } else if (typeof data === "object" && data !== null) {
+        } else if (typeof data === 'object' && data !== null) {
           Object.entries(data).forEach(([key, value]) => {
             const currentPath = prefix ? `${prefix}.${key}` : key;
             fields.push({ path: currentPath, value });
-            if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
               const nestedFields = getAllFields(value, currentPath);
               fields.push(...nestedFields);
             }
           });
         } else {
-          fields.push({ path: prefix || "value", value: data });
+          fields.push({ path: prefix || 'value', value: data });
         }
 
         return fields;
@@ -273,7 +273,7 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
       // Apply validation rules
       for (const fieldData of allFields) {
         const fieldRules = validationRules.filter(
-          (rule) => rule.enabled && (fieldData.path.includes(rule.field) || rule.field === "*"),
+          (rule) => rule.enabled && (fieldData.path.includes(rule.field) || rule.field === '*')
         );
 
         if (fieldRules.length > 0) {
@@ -285,52 +285,52 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
 
             try {
               let isValid = true;
-              let errorMessage = "";
+              let errorMessage = '';
 
               switch (rule.type) {
-                case "required":
+                case 'required':
                   isValid = value.trim().length > 0;
                   errorMessage = `${rule.field} is required`;
                   break;
-                case "email":
+                case 'email':
                   isValid = validateEmail(value);
-                  errorMessage = "Invalid email format";
+                  errorMessage = 'Invalid email format';
                   break;
-                case "url":
+                case 'url':
                   isValid = validateURL(value);
-                  errorMessage = "Invalid URL format";
+                  errorMessage = 'Invalid URL format';
                   break;
-                case "pattern":
+                case 'pattern':
                   if (rule.value) {
                     isValid = validatePattern(value, String(rule.value));
                     errorMessage = `Pattern validation failed: ${rule.value}`;
                   }
                   break;
-                case "length":
+                case 'length':
                   if (
                     rule.value &&
                     rule.operation &&
-                    (rule.operation === "min" || rule.operation === "max")
+                    (rule.operation === 'min' || rule.operation === 'max')
                   ) {
                     isValid = validateLength(value, rule.operation, Number(rule.value));
                     errorMessage = `Length must be ${rule.operation} ${rule.value} characters`;
                   }
                   break;
-                case "range":
-                  if (typeof fieldData.value === "number" && rule.value) {
+                case 'range':
+                  if (typeof fieldData.value === 'number' && rule.value) {
                     // For range, value should be like "min,max"
-                    const [min, max] = String(rule.value).split(",").map(Number);
+                    const [min, max] = String(rule.value).split(',').map(Number);
                     isValid = validateRange(fieldData.value, min, max);
                     errorMessage = `Value must be between ${min} and ${max}`;
                   }
                   break;
-                case "number":
+                case 'number':
                   isValid = !Number.isNaN(Number(value));
-                  errorMessage = "Must be a valid number";
+                  errorMessage = 'Must be a valid number';
                   break;
-                case "custom":
+                case 'custom':
                   // Custom validation logic would go here
-                  warnings.push("Custom validation not implemented");
+                  warnings.push('Custom validation not implemented');
                   break;
               }
 
@@ -340,7 +340,7 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
               }
             } catch (error) {
               errors.push(
-                `Validation error: ${error instanceof Error ? error.message : "Unknown error"}`,
+                `Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`
               );
               totalErrors++;
             }
@@ -362,7 +362,7 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
       const validationSummary =
         results.length > 0
           ? `Validated ${results.length} fields: ${results.filter((r) => r.valid).length} passed, ${results.filter((r) => !r.valid).length} failed`
-          : "No fields to validate";
+          : 'No fields to validate';
 
       const validationResult: DataValidationResult = {
         isValid: totalErrors === 0,
@@ -377,12 +377,12 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
       onValidationComplete?.(validationResult);
 
       if (totalErrors === 0) {
-        toast.success("All validations passed!");
+        toast.success('All validations passed!');
       } else {
         toast.error(`Validation failed: ${totalErrors} error(s) found`);
       }
     } catch (error) {
-      toast.error(`Validation failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+      toast.error(`Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsProcessing(false);
     }
@@ -418,7 +418,7 @@ phone=555-123-4567
 website=https://johndoe.com`,
     };
 
-    setInputData(samples[format as keyof typeof samples] || "");
+    setInputData(samples[format as keyof typeof samples] || '');
     setDataFormat(format as any);
   };
 
@@ -434,7 +434,7 @@ website=https://johndoe.com`,
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>Data Format</Label>
                 <Select value={dataFormat} onValueChange={(value: any) => setDataFormat(value)}>
@@ -500,8 +500,8 @@ website=https://johndoe.com`,
               ) : (
                 <div className="space-y-3">
                   {validationRules.map((rule) => (
-                    <div key={rule.id} className="p-3 border rounded">
-                      <div className="flex items-center justify-between mb-2">
+                    <div key={rule.id} className="rounded border p-3">
+                      <div className="mb-2 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <input
                             type="checkbox"
@@ -520,13 +520,13 @@ website=https://johndoe.com`,
                           Remove
                         </Button>
                       </div>
-                      <div className="grid md:grid-cols-3 gap-2">
+                      <div className="grid gap-2 md:grid-cols-3">
                         <Input
                           value={rule.field}
                           onChange={(e) => updateRule(rule.id, { field: e.target.value })}
                           placeholder="Field name"
                         />
-                        {(rule.type === "length" || rule.type === "range") && (
+                        {(rule.type === 'length' || rule.type === 'range') && (
                           <Select
                             value={rule.operation}
                             onValueChange={(value: any) =>
@@ -550,13 +550,13 @@ website=https://johndoe.com`,
                           />
                         )}
                       </div>
-                      <div className="text-sm text-gray-600">{rule.description}</div>
+                      <div className="text-gray-600 text-sm">{rule.description}</div>
                     </div>
                   ))}
                 </div>
               )}
 
-              <div className="flex flex-wrap gap-2 pt-4 border-t">
+              <div className="flex flex-wrap gap-2 border-t pt-4">
                 {Object.entries(ruleTemplates).map(([key, template]) => (
                   <Button key={key} variant="outline" size="sm" onClick={() => addRule(template)}>
                     Add {key}
@@ -573,7 +573,7 @@ website=https://johndoe.com`,
           disabled={isProcessing || validationRules.length === 0}
           className="w-full"
         >
-          {isProcessing ? "Validating..." : "Validate Data"}
+          {isProcessing ? 'Validating...' : 'Validate Data'}
         </Button>
 
         {/* Results */}
@@ -590,11 +590,11 @@ website=https://johndoe.com`,
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-4 gap-4 text-sm">
+              <div className="grid gap-4 text-sm md:grid-cols-4">
                 <div>
                   <span className="font-medium">Status:</span>
-                  <Badge variant={results.isValid ? "default" : "destructive"} className="ml-2">
-                    {results.isValid ? "Valid" : "Invalid"}
+                  <Badge variant={results.isValid ? 'default' : 'destructive'} className="ml-2">
+                    {results.isValid ? 'Valid' : 'Invalid'}
                   </Badge>
                 </div>
                 <div>
@@ -602,31 +602,31 @@ website=https://johndoe.com`,
                 </div>
                 <div>
                   <span className="font-medium">Errors:</span>
-                  <span className="text-red-600 ml-1">{results.totalErrors}</span>
+                  <span className="ml-1 text-red-600">{results.totalErrors}</span>
                 </div>
                 <div>
                   <span className="font-medium">Warnings:</span>
-                  <span className="text-yellow-600 ml-1">{results.totalWarnings}</span>
+                  <span className="ml-1 text-yellow-600">{results.totalWarnings}</span>
                 </div>
               </div>
 
-              <div className="p-3 bg-gray-50 rounded">
+              <div className="rounded bg-gray-50 p-3">
                 <div className="text-sm">{results.summary}</div>
               </div>
 
               {results.results.length > 0 && (
                 <div className="space-y-3">
                   {results.results.map((result, index) => (
-                    <div key={index} className="p-3 border rounded">
-                      <div className="flex items-center gap-2 mb-2">
+                    <div key={index} className="rounded border p-3">
+                      <div className="mb-2 flex items-center gap-2">
                         {result.valid ? (
                           <CheckCircle className="h-4 w-4 text-green-600" />
                         ) : (
                           <XCircle className="h-4 w-4 text-red-600" />
                         )}
                         <span className="font-medium">{result.field}</span>
-                        <span className="text-sm text-gray-600">
-                          ({typeof result.value === "string" ? `"${result.value}"` : result.value})
+                        <span className="text-gray-600 text-sm">
+                          ({typeof result.value === 'string' ? `"${result.value}"` : result.value})
                         </span>
                       </div>
 
@@ -635,7 +635,7 @@ website=https://johndoe.com`,
                           {result.errors.map((error, errorIndex) => (
                             <div
                               key={errorIndex}
-                              className="text-sm text-red-600 flex items-center gap-1"
+                              className="flex items-center gap-1 text-red-600 text-sm"
                             >
                               <XCircle className="h-3 w-3" />
                               {error}
@@ -649,7 +649,7 @@ website=https://johndoe.com`,
                           {result.warnings.map((warning, warningIndex) => (
                             <div
                               key={warningIndex}
-                              className="text-sm text-yellow-600 flex items-center gap-1"
+                              className="flex items-center gap-1 text-sm text-yellow-600"
                             >
                               <AlertCircle className="h-3 w-3" />
                               {warning}

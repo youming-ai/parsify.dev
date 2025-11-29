@@ -2,7 +2,7 @@
  * Classification Types - Types for text classification and organization operations
  */
 
-import { NLPResult } from "./core";
+import type { NLPResult } from './core';
 
 // Document Classification Types
 export interface DocumentClassification {
@@ -48,7 +48,7 @@ export interface DocumentClassificationResult extends NLPResult<DocumentClassifi
 
 export interface ClassificationConfig {
   taxonomy: string;
-  algorithm: "naive_bayes" | "svm" | "neural" | "ensemble";
+  algorithm: 'naive_bayes' | 'svm' | 'neural' | 'ensemble';
   maxCategories: number;
   minConfidence: number;
   hierarchy: boolean;
@@ -78,24 +78,24 @@ export interface Intent {
 }
 
 export type IntentType =
-  | "question"
-  | "command"
-  | "request"
-  | "complaint"
-  | "compliment"
-  | "suggestion"
-  | "feedback"
-  | "information"
-  | "transaction"
-  | "greeting"
-  | "farewell"
-  | "confirmation"
-  | "cancellation"
-  | "inquiry"
-  | "booking"
-  | "support"
-  | "sales"
-  | "custom";
+  | 'question'
+  | 'command'
+  | 'request'
+  | 'complaint'
+  | 'compliment'
+  | 'suggestion'
+  | 'feedback'
+  | 'information'
+  | 'transaction'
+  | 'greeting'
+  | 'farewell'
+  | 'confirmation'
+  | 'cancellation'
+  | 'inquiry'
+  | 'booking'
+  | 'support'
+  | 'sales'
+  | 'custom';
 
 export interface IntentEntity {
   text: string;
@@ -107,13 +107,13 @@ export interface IntentEntity {
 }
 
 export type ActionabilityLevel =
-  | "highly_actionable"
-  | "actionable"
-  | "moderately_actionable"
-  | "low_actionable"
-  | "not_actionable";
+  | 'highly_actionable'
+  | 'actionable'
+  | 'moderately_actionable'
+  | 'low_actionable'
+  | 'not_actionable';
 
-export type UrgencyLevel = "urgent" | "high" | "medium" | "low" | "routine";
+export type UrgencyLevel = 'urgent' | 'high' | 'medium' | 'low' | 'routine';
 
 export interface IntentDetectionResult extends NLPResult<Intent> {
   algorithm: string;
@@ -128,7 +128,7 @@ export interface SuggestedAction {
   description: string;
   parameters?: Record<string, any>;
   confidence: number;
-  priority: "high" | "medium" | "low";
+  priority: 'high' | 'medium' | 'low';
 }
 
 // Spam Detection Types
@@ -143,43 +143,43 @@ export interface SpamAnalysis {
 }
 
 export type SpamType =
-  | "marketing"
-  | "phishing"
-  | "scam"
-  | "adult"
-  | "gambling"
-  | "promotional"
-  | "political"
-  | "misinformation"
-  | "automated"
-  | "duplicate"
-  | "off_topic"
-  | "other";
+  | 'marketing'
+  | 'phishing'
+  | 'scam'
+  | 'adult'
+  | 'gambling'
+  | 'promotional'
+  | 'political'
+  | 'misinformation'
+  | 'automated'
+  | 'duplicate'
+  | 'off_topic'
+  | 'other';
 
 export interface SpamIndicator {
   type: SpamIndicatorType;
   value: string | number;
   weight: number;
   description: string;
-  severity: "low" | "medium" | "high";
+  severity: 'low' | 'medium' | 'high';
 }
 
 export type SpamIndicatorType =
-  | "suspicious_links"
-  | "excessive_capitalization"
-  | "repetitive_content"
-  | "suspicious_sender"
-  | "urgency_language"
-  | "grammar_errors"
-  | "emotional_language"
-  | "request_personal_info"
-  | "unusual_formatting"
-  | "blacklisted_words"
-  | "whitelisted_words"
-  | "domain_reputation"
-  | "content_similarity";
+  | 'suspicious_links'
+  | 'excessive_capitalization'
+  | 'repetitive_content'
+  | 'suspicious_sender'
+  | 'urgency_language'
+  | 'grammar_errors'
+  | 'emotional_language'
+  | 'request_personal_info'
+  | 'unusual_formatting'
+  | 'blacklisted_words'
+  | 'whitelisted_words'
+  | 'domain_reputation'
+  | 'content_similarity';
 
-export type RiskLevel = "very_low" | "low" | "medium" | "high" | "very_high";
+export type RiskLevel = 'very_low' | 'low' | 'medium' | 'high' | 'very_high';
 
 export interface SpamDetectionResult extends NLPResult<SpamAnalysis> {
   algorithm: string;
@@ -196,10 +196,10 @@ export interface SpamThresholds {
 }
 
 export interface RecommendedAction {
-  action: "allow" | "block" | "quarantine" | "flag" | "review";
+  action: 'allow' | 'block' | 'quarantine' | 'flag' | 'review';
   reason: string;
   confidence: number;
-  priority: "high" | "medium" | "low";
+  priority: 'high' | 'medium' | 'low';
 }
 
 // Auto-Tagging Types
@@ -214,25 +214,25 @@ export interface Tag {
 }
 
 export type TagType =
-  | "topic"
-  | "entity"
-  | "keyword"
-  | "category"
-  | "sentiment"
-  | "language"
-  | "style"
-  | "domain"
-  | "technical"
-  | "custom";
+  | 'topic'
+  | 'entity'
+  | 'keyword'
+  | 'category'
+  | 'sentiment'
+  | 'language'
+  | 'style'
+  | 'domain'
+  | 'technical'
+  | 'custom';
 
 export type TagSource =
-  | "extracted"
-  | "generated"
-  | "predefined"
-  | "user_defined"
-  | "ml_model"
-  | "rule_based"
-  | "hybrid";
+  | 'extracted'
+  | 'generated'
+  | 'predefined'
+  | 'user_defined'
+  | 'ml_model'
+  | 'rule_based'
+  | 'hybrid';
 
 export interface AutoTaggingResult extends NLPResult<Tag[]> {
   algorithm: string;
@@ -296,9 +296,9 @@ export interface ClusteringResult extends NLPResult<DocumentCluster[]> {
 }
 
 export interface ClusteringParameters {
-  algorithm: "kmeans" | "hierarchical" | "dbscan" | "spectral";
+  algorithm: 'kmeans' | 'hierarchical' | 'dbscan' | 'spectral';
   nClusters?: number;
-  distance: "euclidean" | "cosine" | "manhattan" | "jaccard";
+  distance: 'euclidean' | 'cosine' | 'manhattan' | 'jaccard';
   maxIterations: number;
   convergenceThreshold: number;
   seed?: number;
@@ -355,7 +355,7 @@ export interface QualityFactor {
   name: string;
   value: number;
   description: string;
-  impact: "positive" | "negative" | "neutral";
+  impact: 'positive' | 'negative' | 'neutral';
 }
 
 export interface QualityIssue {
@@ -368,41 +368,41 @@ export interface QualityIssue {
 }
 
 export type QualityIssueType =
-  | "inaccuracy"
-  | "ambiguity"
-  | "incompleteness"
-  | "inconsistency"
-  | "irrelevance"
-  | "bias"
-  | "outdated"
-  | "superficial"
-  | "poor_structure"
-  | "grammar"
-  | "style"
-  | "readability"
-  | "citation";
+  | 'inaccuracy'
+  | 'ambiguity'
+  | 'incompleteness'
+  | 'inconsistency'
+  | 'irrelevance'
+  | 'bias'
+  | 'outdated'
+  | 'superficial'
+  | 'poor_structure'
+  | 'grammar'
+  | 'style'
+  | 'readability'
+  | 'citation';
 
-export type QualitySeverity = "critical" | "high" | "medium" | "low" | "info";
+export type QualitySeverity = 'critical' | 'high' | 'medium' | 'low' | 'info';
 
 export interface QualityRecommendation {
   type: QualityRecommendationType;
   description: string;
-  priority: "high" | "medium" | "low";
-  effort: "low" | "medium" | "high";
+  priority: 'high' | 'medium' | 'low';
+  effort: 'low' | 'medium' | 'high';
   impact: QualityImpact;
 }
 
 export type QualityRecommendationType =
-  | "add_examples"
-  | "clarify_ambiguity"
-  | "update_information"
-  | "improve_structure"
-  | "enhance_readability"
-  | "add_sources"
-  | "remove_bias"
-  | "expand_content"
-  | "simplify_language"
-  | "improve_flow";
+  | 'add_examples'
+  | 'clarify_ambiguity'
+  | 'update_information'
+  | 'improve_structure'
+  | 'enhance_readability'
+  | 'add_sources'
+  | 'remove_bias'
+  | 'expand_content'
+  | 'simplify_language'
+  | 'improve_flow';
 
 export interface QualityImpact {
   accuracy: number;
@@ -412,11 +412,11 @@ export interface QualityImpact {
 }
 
 export type QualityGrade =
-  | "A" // Excellent (90-100)
-  | "B" // Good (80-89)
-  | "C" // Average (70-79)
-  | "D" // Poor (60-69)
-  | "F"; // Fail (0-59)
+  | 'A' // Excellent (90-100)
+  | 'B' // Good (80-89)
+  | 'C' // Average (70-79)
+  | 'D' // Poor (60-69)
+  | 'F'; // Fail (0-59)
 
 export interface ContentQualityResult extends NLPResult<QualityAnalysis> {
   algorithm: string;
@@ -435,7 +435,7 @@ export interface QualityBenchmarks {
   category: string;
   average: number;
   percentile: number;
-  comparison: "above" | "at" | "below";
+  comparison: 'above' | 'at' | 'below';
 }
 
 // Classification Configuration Types
@@ -454,7 +454,7 @@ export interface ClassificationConfig {
     customIntents?: CustomIntent[];
   };
   spamDetection?: {
-    sensitivity: "low" | "medium" | "high";
+    sensitivity: 'low' | 'medium' | 'high';
     customRules: SpamRule[];
     whitelist: string[];
     blacklist: string[];

@@ -1,3 +1,8 @@
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 import {
   ChevronDown,
   ChevronRight,
@@ -7,14 +12,9 @@ import {
   Send,
   Terminal as TerminalIcon,
   Trash2,
-} from "lucide-react";
-import * as React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import type { TerminalLine, TerminalProps } from "./code-types";
+} from 'lucide-react';
+import * as React from 'react';
+import type { TerminalLine, TerminalProps } from './code-types';
 
 interface TerminalComponentProps extends TerminalProps {
   maxLines?: number;
@@ -36,12 +36,12 @@ export function Terminal({
   onClear,
   readonly = false,
   height = 400,
-  theme = "dark",
+  theme = 'dark',
   showTimestamps = true,
   showLineNumbers = false,
   maxLines = 1000,
   autoScroll = true,
-  inputPlaceholder = "Enter input...",
+  inputPlaceholder = 'Enter input...',
   allowClear = true,
   allowCopy = true,
   allowDownload = true,
@@ -49,7 +49,7 @@ export function Terminal({
   onDownload,
   className,
 }: TerminalComponentProps) {
-  const [inputValue, setInputValue] = React.useState("");
+  const [inputValue, setInputValue] = React.useState('');
   const [lineNumbers, setLineNumbers] = React.useState(true);
   const [timestamps, setTimestamps] = React.useState(showTimestamps);
   const [showControls, setShowControls] = React.useState(false);
@@ -68,7 +68,7 @@ export function Terminal({
   // Auto scroll to bottom when new lines are added
   React.useEffect(() => {
     if (autoScroll && linesEndRef.current) {
-      linesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      linesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [autoScroll]);
 
@@ -83,12 +83,12 @@ export function Terminal({
     e.preventDefault();
     if (inputValue.trim() && onInput) {
       onInput(inputValue);
-      setInputValue("");
+      setInputValue('');
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleInputSubmit(e);
     }
@@ -103,12 +103,12 @@ export function Terminal({
   const copyTerminalContent = () => {
     const content = limitedLines
       .map((line) => {
-        const timestamp = timestamps ? `[${new Date(line.timestamp).toLocaleTimeString()}] ` : "";
-        const lineNumber = lineNumbers ? `${limitedLines.indexOf(line) + 1}: ` : "";
-        const prefix = line.type === "input" ? "> " : line.type === "error" ? "! " : "  ";
+        const timestamp = timestamps ? `[${new Date(line.timestamp).toLocaleTimeString()}] ` : '';
+        const lineNumber = lineNumbers ? `${limitedLines.indexOf(line) + 1}: ` : '';
+        const prefix = line.type === 'input' ? '> ' : line.type === 'error' ? '! ' : '  ';
         return `${timestamp}${lineNumber}${prefix}${line.content}`;
       })
-      .join("\n");
+      .join('\n');
 
     navigator.clipboard.writeText(content).then(() => {
       if (onCopy) {
@@ -120,16 +120,16 @@ export function Terminal({
   const downloadTerminalContent = () => {
     const content = limitedLines
       .map((line) => {
-        const timestamp = timestamps ? `[${new Date(line.timestamp).toLocaleTimeString()}] ` : "";
-        const lineNumber = lineNumbers ? `${limitedLines.indexOf(line) + 1}: ` : "";
-        const prefix = line.type === "input" ? "> " : line.type === "error" ? "! " : "  ";
+        const timestamp = timestamps ? `[${new Date(line.timestamp).toLocaleTimeString()}] ` : '';
+        const lineNumber = lineNumbers ? `${limitedLines.indexOf(line) + 1}: ` : '';
+        const prefix = line.type === 'input' ? '> ' : line.type === 'error' ? '! ' : '  ';
         return `${timestamp}${lineNumber}${prefix}${line.content}`;
       })
-      .join("\n");
+      .join('\n');
 
-    const blob = new Blob([content], { type: "text/plain" });
+    const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = `terminal-output-${Date.now()}.txt`;
     document.body.appendChild(a);
@@ -142,31 +142,31 @@ export function Terminal({
     }
   };
 
-  const getLineColor = (type: TerminalLine["type"]) => {
+  const getLineColor = (type: TerminalLine['type']) => {
     switch (type) {
-      case "input":
-        return "text-blue-600 dark:text-blue-400";
-      case "output":
-        return "text-gray-900 dark:text-gray-100";
-      case "error":
-        return "text-red-600 dark:text-red-400";
-      case "info":
-        return "text-green-600 dark:text-green-400";
+      case 'input':
+        return 'text-blue-600 dark:text-blue-400';
+      case 'output':
+        return 'text-gray-900 dark:text-gray-100';
+      case 'error':
+        return 'text-red-600 dark:text-red-400';
+      case 'info':
+        return 'text-green-600 dark:text-green-400';
       default:
-        return "text-gray-900 dark:text-gray-100";
+        return 'text-gray-900 dark:text-gray-100';
     }
   };
 
-  const getLineIcon = (type: TerminalLine["type"]) => {
+  const getLineIcon = (type: TerminalLine['type']) => {
     switch (type) {
-      case "input":
-        return "❯";
-      case "error":
-        return "✕";
-      case "info":
-        return "ℹ";
+      case 'input':
+        return '❯';
+      case 'error':
+        return '✕';
+      case 'info':
+        return 'ℹ';
       default:
-        return "";
+        return '';
     }
   };
 
@@ -177,7 +177,7 @@ export function Terminal({
 
   if (isMinimized) {
     return (
-      <Card className={cn("border", className)}>
+      <Card className={cn('border', className)}>
         <CardContent className="p-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -195,7 +195,7 @@ export function Terminal({
   }
 
   return (
-    <Card className={cn("border", className)}>
+    <Card className={cn('border', className)}>
       {/* Terminal Header */}
       <div className="border-b bg-gray-50 px-4 py-2 dark:bg-gray-800">
         <div className="flex items-center justify-between">
@@ -209,7 +209,7 @@ export function Terminal({
             {/* View Options */}
             <Button variant="ghost" size="sm" onClick={() => setShowControls(!showControls)}>
               <ChevronDown
-                className={cn("h-4 w-4 transition-transform", showControls && "rotate-180")}
+                className={cn('h-4 w-4 transition-transform', showControls && 'rotate-180')}
               />
             </Button>
 
@@ -273,12 +273,12 @@ export function Terminal({
       {/* Terminal Content */}
       <div
         className={cn(
-          "overflow-auto font-mono text-sm",
-          theme === "dark"
-            ? "bg-gray-900 text-gray-100"
-            : theme === "high-contrast"
-              ? "bg-black text-white"
-              : "bg-white text-gray-900",
+          'overflow-auto font-mono text-sm',
+          theme === 'dark'
+            ? 'bg-gray-900 text-gray-100'
+            : theme === 'high-contrast'
+              ? 'bg-black text-white'
+              : 'bg-white text-gray-900'
         )}
         style={{ height }}
         onClick={handleTerminalClick}
@@ -302,11 +302,11 @@ export function Terminal({
                   </span>
                 )}
 
-                <span className={cn("w-4 flex-shrink-0", getLineColor(line.type))}>
+                <span className={cn('w-4 flex-shrink-0', getLineColor(line.type))}>
                   {getLineIcon(line.type)}
                 </span>
 
-                <span className={cn("flex-1 break-words", getLineColor(line.type))}>
+                <span className={cn('flex-1 break-words', getLineColor(line.type))}>
                   {line.content}
                 </span>
               </div>
@@ -327,10 +327,10 @@ export function Terminal({
                 onKeyDown={handleKeyDown}
                 placeholder={inputPlaceholder}
                 className={cn(
-                  "flex-1 border-0 bg-transparent focus:outline-none focus:ring-0",
-                  theme === "dark"
-                    ? "text-gray-100 placeholder-gray-500"
-                    : "text-gray-900 placeholder-gray-400",
+                  'flex-1 border-0 bg-transparent focus:outline-none focus:ring-0',
+                  theme === 'dark'
+                    ? 'text-gray-100 placeholder-gray-500'
+                    : 'text-gray-900 placeholder-gray-400'
                 )}
               />
               <Button type="submit" size="sm" variant="ghost">
@@ -347,7 +347,7 @@ export function Terminal({
 // Utility functions for terminal
 export const createTerminalLine = (
   content: string,
-  type: TerminalLine["type"] = "output",
+  type: TerminalLine['type'] = 'output'
 ): TerminalLine => ({
   id: `${Date.now()}-${Math.random()}`,
   type,
@@ -357,12 +357,12 @@ export const createTerminalLine = (
 
 export const formatTerminalOutput = (output: string): TerminalLine[] => {
   return output
-    .split("\n")
-    .map((line) => createTerminalLine(line, line.trim() ? "output" : "info"));
+    .split('\n')
+    .map((line) => createTerminalLine(line, line.trim() ? 'output' : 'info'));
 };
 
 export const formatTerminalError = (error: string): TerminalLine[] => {
-  return error.split("\n").map((line) => createTerminalLine(line, "error"));
+  return error.split('\n').map((line) => createTerminalLine(line, 'error'));
 };
 
 // Terminal presets

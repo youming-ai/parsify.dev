@@ -1,37 +1,38 @@
-"use client";
+'use client';
 
-import React, { useState, useCallback, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import PerformanceMonitor from '@/lib/performance-monitor';
 import {
+  Activity,
+  Clock,
+  Download,
+  Eye,
   Globe,
   MapPin,
-  Search,
-  Download,
-  RefreshCw,
-  Wifi,
   Network,
-  Shield,
-  Eye,
-  Clock,
+  RefreshCw,
+  Search,
   Server,
-  Activity,
-} from "lucide-react";
-import { usePerformanceMonitor } from "@/hooks/use-performance-monitor";
+  Shield,
+  Wifi,
+} from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface IPGeolocationToolProps {
   onLookupComplete?: (result: GeoLocationResult) => void;
@@ -43,8 +44,10 @@ interface GeoLocationResult {
   countryCode: string;
   region: string;
   regionName: string;
+  regionCode?: string;
   city: string;
   zip?: string;
+  flag?: string;
   latitude: number;
   longitude: number;
   timezone: string;
@@ -53,6 +56,7 @@ interface GeoLocationResult {
   as: string;
   proxy?: boolean;
   hosting?: boolean;
+  mobile?: boolean;
   source: string;
   responseTime: number;
   timestamp: Date;
@@ -73,59 +77,59 @@ interface CachedResult {
 }
 
 export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupComplete }) => {
-  const [ipAddress, setIpAddress] = useState("");
-  const [currentIP, setCurrentIP] = useState("");
+  const [ipAddress, setIpAddress] = useState('');
+  const [currentIP, setCurrentIP] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [result, setResult] = useState<GeoLocationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchHistory, setSearchHistory] = useState<GeoLocationResult[]>([]);
-  const [selectedSource, setSelectedSource] = useState("ip-api");
+  const [selectedSource, setSelectedSource] = useState('ip-api');
   const [cacheEnabled, setCacheEnabled] = useState(true);
   const [autoDetect, setAutoDetect] = useState(true);
 
-  const { startMonitoring, endMonitoring, getMetrics } = usePerformanceMonitor();
+  const performanceMonitor = PerformanceMonitor.getInstance();
   const cacheRef = useRef<Map<string, CachedResult>>(new Map());
 
   const dataSources: Record<string, DataSource> = {
-    "ip-api": {
-      name: "IP-API.co",
-      url: "https://ipapi.co",
+    'ip-api': {
+      name: 'IP-API.co',
+      url: 'https://ipapi.co',
       requiresApiKey: false,
-      rateLimit: "1000/hour",
-      features: ["geolocation", "isp", "timezone", "proxy", "mobile"],
-      endpoint: "/json",
+      rateLimit: '1000/hour',
+      features: ['geolocation', 'isp', 'timezone', 'proxy', 'mobile'],
+      endpoint: '/json',
     },
-    "ip-api-com": {
-      name: "IP-API.com",
-      url: "https://ipapi.com",
+    'ip-api-com': {
+      name: 'IP-API.com',
+      url: 'https://ipapi.com',
       requiresApiKey: false,
-      rateLimit: "45/minute",
-      features: ["geolocation", "isp", "mobile", "security"],
-      endpoint: "/json",
+      rateLimit: '45/minute',
+      features: ['geolocation', 'isp', 'mobile', 'security'],
+      endpoint: '/json',
     },
     ipify: {
-      name: "IPify",
-      url: "https://geo.ipify.org",
+      name: 'IPify',
+      url: 'https://geo.ipify.org',
       requiresApiKey: false,
-      rateLimit: "1000/month",
-      features: ["geolocation"],
-      endpoint: "/api/v1",
+      rateLimit: '1000/month',
+      features: ['geolocation'],
+      endpoint: '/api/v1',
     },
     freegeoip: {
-      name: "FreeGeoIP",
-      url: "https://freegeoip.app",
+      name: 'FreeGeoIP',
+      url: 'https://freegeoip.app',
       requiresApiKey: false,
-      rateLimit: "1000/hour",
-      features: ["geolocation"],
-      endpoint: "/json",
+      rateLimit: '1000/hour',
+      features: ['geolocation'],
+      endpoint: '/json',
     },
     ipgeolocation: {
-      name: "IPGeolocation.io",
-      url: "https://ipgeolocation.io",
+      name: 'IPGeolocation.io',
+      url: 'https://ipgeolocation.io',
       requiresApiKey: true,
-      rateLimit: "50000/month",
-      features: ["geolocation", "isp", "timezone", "security", "organization"],
-      endpoint: "/api/json",
+      rateLimit: '50000/month',
+      features: ['geolocation', 'isp', 'timezone', 'security', 'organization'],
+      endpoint: '/api/json',
     },
   };
 
@@ -134,10 +138,10 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
       // Try multiple methods to get client IP
       const methods = [
         // Using ipify for client IP detection
-        "https://api.ipify.org?format=json",
-        "https://jsonip.com/?format=json",
-        "https://ipapi.co/json",
-        "https://ipinfo.io/json",
+        'https://api.ipify.org?format=json',
+        'https://jsonip.com/?format=json',
+        'https://ipapi.co/json',
+        'https://ipinfo.io/json',
       ];
 
       for (const methodUrl of methods) {
@@ -150,16 +154,13 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
           if (data.ip) {
             return data.ip;
           }
-        } catch (err) {
-          // Try next method
-          continue;
-        }
+        } catch (_err) {}
       }
 
-      throw new Error("Could not detect client IP");
+      throw new Error('Could not detect client IP');
     } catch (error) {
-      console.warn("Client IP detection failed:", error);
-      return "";
+      console.warn('Client IP detection failed:', error);
+      return '';
     }
   }, []);
 
@@ -172,107 +173,107 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
 
     // Parse based on different API response formats
     switch (source) {
-      case "ip-api":
+      case 'ip-api':
         return {
           ip: data.ip,
-          country: data.country_name || data.country || "",
-          countryCode: data.country_code || "",
-          region: data.region || "",
-          regionName: data.region_name || "",
-          city: data.city || "",
+          country: data.country_name || data.country || '',
+          countryCode: data.country_code || '',
+          region: data.region || '',
+          regionName: data.region_name || '',
+          city: data.city || '',
           zip: data.postal || data.zip,
           latitude: data.latitude || 0,
           longitude: data.longitude || 0,
-          timezone: data.timezone || "",
-          isp: data.org || data.connection?.isp || "",
+          timezone: data.timezone || '',
+          isp: data.org || data.connection?.isp || '',
           org: data.org,
-          as: data.connection?.asn || "",
+          as: data.connection?.asn || '',
           hosting: false,
           proxy: data.connection?.proxy || false,
           ...commonFields,
         };
 
-      case "ip-api-com":
+      case 'ip-api-com':
         return {
-          ip: data.query || "",
-          country: data.country || "",
-          countryCode: data.countryCode || "",
-          region: data.regionName || data.region || "",
-          regionName: data.regionName || data.region || "",
-          city: data.city || "",
-          zip: data.zip || "",
+          ip: data.query || '',
+          country: data.country || '',
+          countryCode: data.countryCode || '',
+          region: data.regionName || data.region || '',
+          regionName: data.regionName || data.region || '',
+          city: data.city || '',
+          zip: data.zip || '',
           latitude: data.lat || 0,
           longitude: data.lon || 0,
           timezone: data.timezone?.offset
-            ? `UTC${data.timezone.offset >= 0 ? "+" : ""}${data.timezone.offset}`
-            : "",
-          isp: data.isp || data.org || "",
-          org: data.org || "",
-          as: data.as || data.query || "",
+            ? `UTC${data.timezone.offset >= 0 ? '+' : ''}${data.timezone.offset}`
+            : '',
+          isp: data.isp || data.org || '',
+          org: data.org || '',
+          as: data.as || data.query || '',
           mobile: data.mobile || false,
           hosting: data.hosting || false,
           proxy: data.proxy || false,
           ...commonFields,
         };
 
-      case "ipify":
+      case 'ipify':
         return {
-          ip: data.ip || "",
-          country: data.country_code || data.country || "",
-          countryCode: data.country_code || data.country || "",
-          region: "",
-          regionName: data.region || "",
-          city: data.city || "",
+          ip: data.ip || '',
+          country: data.country_code || data.country || '',
+          countryCode: data.country_code || data.country || '',
+          region: '',
+          regionName: data.region || '',
+          city: data.city || '',
           latitude: data.latitude || 0,
           longitude: data.longitude || 0,
           timezone: data.time_zone?.offset
-            ? `UTC${data.time_zone.offset >= 0 ? "+" : ""}${data.time_zone.offset}`
-            : "",
-          isp: "",
-          org: "",
-          as: "",
+            ? `UTC${data.time_zone.offset >= 0 ? '+' : ''}${data.time_zone.offset}`
+            : '',
+          isp: '',
+          org: '',
+          as: '',
           hosting: false,
           proxy: false,
           ...commonFields,
         };
 
-      case "freegeoip":
+      case 'freegeoip':
         return {
-          ip: data.ip || "",
-          country: data.country_name || data.country || "",
-          countryCode: data.country_code || "",
-          region: data.region_code || data.region || "",
-          regionName: data.region_name || data.region || "",
-          city: data.city || "",
-          zip: data.zip_code || data.postal || data.zip || "",
+          ip: data.ip || '',
+          country: data.country_name || data.country || '',
+          countryCode: data.country_code || '',
+          region: data.region_code || data.region || '',
+          regionName: data.region_name || data.region || '',
+          city: data.city || '',
+          zip: data.zip_code || data.postal || data.zip || '',
           latitude: data.latitude || 0,
           longitude: data.longitude || 0,
           timezone: data.time_zone?.offset
-            ? `UTC${data.time_zone.offset >= 0 ? "+" : ""}${data.time_zone.offset}`
-            : "",
-          isp: "",
-          org: "",
-          as: "",
+            ? `UTC${data.time_zone.offset >= 0 ? '+' : ''}${data.time_zone.offset}`
+            : '',
+          isp: '',
+          org: '',
+          as: '',
           hosting: false,
           proxy: false,
           ...commonFields,
         };
 
-      case "ipgeolocation":
+      case 'ipgeolocation':
         return {
-          ip: data.ip || data.query || "",
-          country: data.country_name || data.country || "",
-          countryCode: data.country_code || data.country || "",
-          region: data.region_code || data.state || "",
-          regionName: data.region_name || data.state || "",
-          city: data.city || "",
-          zip: data.zip || data.postal || data.zip_code || "",
+          ip: data.ip || data.query || '',
+          country: data.country_name || data.country || '',
+          countryCode: data.country_code || data.country || '',
+          region: data.region_code || data.state || '',
+          regionName: data.region_name || data.state || '',
+          city: data.city || '',
+          zip: data.zip || data.postal || data.zip_code || '',
           latitude: data.latitude || 0,
           longitude: data.longitude || 0,
-          timezone: data.time_zone || "",
-          isp: data.isp || data.org || "",
-          org: data.org || "",
-          as: data.as || "",
+          timezone: data.time_zone || '',
+          isp: data.isp || data.org || '',
+          org: data.org || '',
+          as: data.as || '',
           hosting: data.hosting || false,
           proxy: data.proxy || false,
           ...commonFields,
@@ -280,18 +281,18 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
 
       default:
         return {
-          ip: "",
-          country: "",
-          countryCode: "",
-          region: "",
-          regionName: "",
-          city: "",
+          ip: '',
+          country: '',
+          countryCode: '',
+          region: '',
+          regionName: '',
+          city: '',
           latitude: 0,
           longitude: 0,
-          timezone: "",
-          isp: "",
-          org: "",
-          as: "",
+          timezone: '',
+          isp: '',
+          org: '',
+          as: '',
           hosting: false,
           proxy: false,
           ...commonFields,
@@ -324,7 +325,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
         }
 
         // Make API request
-        const url = source.endpoint.startsWith("/")
+        const url = source.endpoint.startsWith('/')
           ? `${source.url}${source.endpoint}`
           : source.url;
 
@@ -332,10 +333,10 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
           signal: AbortSignal.timeout(10000),
           headers: source.requiresApiKey
             ? {
-                "X-Api-Key": process.env.NEXT_PUBLIC_IPGEOLOCATION_API_KEY || "",
-                "Content-Type": "application/json",
+                'X-Api-Key': process.env.NEXT_PUBLIC_IPGEOLOCATION_API_KEY || '',
+                'Content-Type': 'application/json',
               }
-            : { "Content-Type": "application/json" },
+            : { 'Content-Type': 'application/json' },
         });
 
         if (!response.ok) {
@@ -361,18 +362,18 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
 
         return result;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Lookup failed";
+        const errorMessage = error instanceof Error ? error.message : 'Lookup failed';
         throw new Error(`${source.name} API error: ${errorMessage}`);
       }
     },
-    [cacheEnabled, dataSources, getCacheKey, isCacheValid, parseGeolocationData],
+    [cacheEnabled, dataSources, getCacheKey, isCacheValid, parseGeolocationData]
   );
 
   const searchIP = useCallback(async () => {
     const targetIP = ipAddress.trim() || currentIP;
 
     if (!targetIP) {
-      setError("Please enter an IP address or use auto-detection");
+      setError('Please enter an IP address or use auto-detection');
       return;
     }
 
@@ -380,13 +381,13 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
     const ipRegex =
       /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))$/;
     if (!ipRegex.test(targetIP)) {
-      setError("Please enter a valid IP address");
+      setError('Please enter a valid IP address');
       return;
     }
 
     setIsSearching(true);
     setError(null);
-    startMonitoring("ip-geolocation");
+    performanceMonitor.startMonitoring();
 
     try {
       const result = await lookupIP(targetIP, selectedSource);
@@ -402,21 +403,13 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
         onLookupComplete(result);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Geolocation lookup failed";
+      const errorMessage = error instanceof Error ? error.message : 'Geolocation lookup failed';
       setError(errorMessage);
     } finally {
-      endMonitoring();
+      performanceMonitor.stopMonitoring();
       setIsSearching(false);
     }
-  }, [
-    ipAddress,
-    currentIP,
-    selectedSource,
-    lookupIP,
-    startMonitoring,
-    endMonitoring,
-    onLookupComplete,
-  ]);
+  }, [ipAddress, currentIP, selectedSource, lookupIP, onLookupComplete]);
 
   const getCurrentIP = useCallback(async () => {
     setIsSearching(true);
@@ -429,8 +422,8 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
         setIpAddress(ip);
       }
     } catch (error) {
-      console.warn("Failed to detect current IP:", error);
-      setError("Could not auto-detect IP address");
+      console.warn('Failed to detect current IP:', error);
+      setError('Could not auto-detect IP address');
     } finally {
       setIsSearching(false);
     }
@@ -467,9 +460,11 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
       timestamp: result.timestamp,
     };
 
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: 'application/json',
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = `ip-geolocation-${result.ip}-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a);
@@ -480,21 +475,21 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
 
   const downloadAsCSV = useCallback(() => {
     const headers = [
-      "IP",
-      "Country",
-      "Country Code",
-      "Region",
-      "City",
-      "Latitude",
-      "Longitude",
-      "ISP",
-      "Organization",
-      "ASN",
-      "Proxy",
-      "Hosting",
-      "Source",
-      "Response Time (ms)",
-      "Timestamp",
+      'IP',
+      'Country',
+      'Country Code',
+      'Region',
+      'City',
+      'Latitude',
+      'Longitude',
+      'ISP',
+      'Organization',
+      'ASN',
+      'Proxy',
+      'Hosting',
+      'Source',
+      'Response Time (ms)',
+      'Timestamp',
     ];
 
     const rows = searchHistory.map((result) => [
@@ -506,22 +501,22 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
       result.latitude,
       result.longitude,
       result.isp,
-      result.org || "",
-      result.as || "",
-      result.proxy ? "Yes" : "No",
-      result.hosting ? "Yes" : "No",
+      result.org || '',
+      result.as || '',
+      result.proxy ? 'Yes' : 'No',
+      result.hosting ? 'Yes' : 'No',
       result.source,
       result.responseTime.toFixed(2),
       result.timestamp.toISOString(),
     ]);
 
-    const csvContent = [headers, ...rows].map((row) => row.join(",")).join("\n");
+    const csvContent = [headers, ...rows].map((row) => row.join(',')).join('\n');
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = "ip-geolocation-history.csv";
+    a.download = 'ip-geolocation-history.csv';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -540,7 +535,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
   }, [autoDetect, getCurrentIP]);
 
   const formatTimezone = useCallback((tz: string): string => {
-    if (!tz) return "Unknown";
+    if (!tz) return 'Unknown';
 
     // Parse timezone string like "UTC-5" or "UTC+8"
     const match = tz.match(/UTC([+-]\d+)/);
@@ -552,7 +547,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
   }, []);
 
   const getProviderInfo = useCallback((sourceKey: string): DataSource => {
-    return dataSources[sourceKey] || dataSources["ip-api"];
+    return dataSources[sourceKey] || dataSources['ip-api'];
   }, []);
 
   return (
@@ -570,8 +565,8 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
         <CardContent>
           <div className="space-y-4">
             {/* IP Input */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2 space-y-4">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <div className="space-y-4 lg:col-span-2">
                 <div>
                   <Label htmlFor="ip">IP Address</Label>
                   <Input
@@ -583,9 +578,9 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                   />
                   {currentIP && (
                     <div className="mt-1">
-                      <Label className="text-sm text-gray-500">Current IP:</Label>
+                      <Label className="text-gray-500 text-sm">Current IP:</Label>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                        <span className="rounded bg-gray-100 px-2 py-1 font-mono text-sm">
                           {currentIP}
                         </span>
                         <Button
@@ -619,8 +614,8 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                           <SelectItem key={key} value={key}>
                             <div className="flex flex-col">
                               <span>{source.name}</span>
-                              <div className="text-xs text-gray-500">
-                                {source.features.join(", ")} • {source.rateLimit}
+                              <div className="text-gray-500 text-xs">
+                                {source.features.join(', ')} • {source.rateLimit}
                               </div>
                             </div>
                           </SelectItem>
@@ -637,12 +632,12 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                     >
                       {isSearching ? (
                         <>
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                           Looking up...
                         </>
                       ) : (
                         <>
-                          <Search className="h-4 w-4 mr-2" />
+                          <Search className="mr-2 h-4 w-4" />
                           Lookup IP
                         </>
                       )}
@@ -676,7 +671,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                     </div>
                   </div>
 
-                  <div className="text-xs text-gray-500">
+                  <div className="text-gray-500 text-xs">
                     {cacheEnabled && (
                       <span>
                         Cache expires after 5 minutes • {cacheRef.current.size} items cached
@@ -687,24 +682,24 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
               </div>
 
               <div>
-                <div className="text-sm font-medium mb-2">Source Information</div>
-                <div className="border rounded-lg p-3 space-y-2">
+                <div className="mb-2 font-medium text-sm">Source Information</div>
+                <div className="space-y-2 rounded-lg border p-3">
                   <div className="flex items-center gap-2">
                     <Server className="h-4 w-4 text-gray-500" />
                     <div>
                       <div className="font-medium text-sm">
                         {getProviderInfo(selectedSource).name}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-gray-500 text-xs">
                         {getProviderInfo(selectedSource).rateLimit}
                       </div>
                     </div>
                   </div>
-                  <div className="text-xs text-gray-600">
-                    Features: {getProviderInfo(selectedSource).features.join(", ")}
+                  <div className="text-gray-600 text-xs">
+                    Features: {getProviderInfo(selectedSource).features.join(', ')}
                   </div>
                   {getProviderInfo(selectedSource).requiresApiKey && (
-                    <div className="text-xs text-orange-600">
+                    <div className="text-orange-600 text-xs">
                       API key required for production use
                     </div>
                   )}
@@ -729,33 +724,33 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                 </TabsList>
 
                 <TabsContent value="details" className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium">Basic Information</Label>
+                      <Label className="font-medium text-sm">Basic Information</Label>
                       <div className="space-y-1">
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">IP Address:</span>
-                          <span className="text-sm font-mono font-medium">{result.ip}</span>
+                          <span className="text-gray-600 text-sm">IP Address:</span>
+                          <span className="font-medium font-mono text-sm">{result.ip}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Country:</span>
+                          <span className="text-gray-600 text-sm">Country:</span>
                           <span className="text-sm">
                             {result.countryCode
-                              ? `${result.flag || ""} ${result.country}`
+                              ? `${result.flag || ''} ${result.country}`
                               : result.country}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">City:</span>
+                          <span className="text-gray-600 text-sm">City:</span>
                           <span className="text-sm">{result.city}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Region:</span>
+                          <span className="text-gray-600 text-sm">Region:</span>
                           <span className="text-sm">{result.regionName || result.region}</span>
                         </div>
                         {result.zip && (
                           <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Postal:</span>
+                            <span className="text-gray-600 text-sm">Postal:</span>
                             <span className="text-sm">{result.zip}</span>
                           </div>
                         )}
@@ -763,21 +758,21 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium">Network Information</Label>
+                      <Label className="font-medium text-sm">Network Information</Label>
                       <div className="space-y-1">
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">ISP:</span>
-                          <span className="text-sm truncate max-w-32">{result.isp}</span>
+                          <span className="text-gray-600 text-sm">ISP:</span>
+                          <span className="max-w-32 truncate text-sm">{result.isp}</span>
                         </div>
                         {result.org && (
                           <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Organization:</span>
-                            <span className="text-sm truncate max-w-32">{result.org}</span>
+                            <span className="text-gray-600 text-sm">Organization:</span>
+                            <span className="max-w-32 truncate text-sm">{result.org}</span>
                           </div>
                         )}
                         {result.as && (
                           <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">ASN:</span>
+                            <span className="text-gray-600 text-sm">ASN:</span>
                             <span className="text-sm">{result.as}</span>
                           </div>
                         )}
@@ -785,38 +780,38 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium">Technical Details</Label>
+                      <Label className="font-medium text-sm">Technical Details</Label>
                       <div className="space-y-1">
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Latitude:</span>
+                          <span className="text-gray-600 text-sm">Latitude:</span>
                           <span className="text-sm">{result.latitude.toFixed(4)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Longitude:</span>
+                          <span className="text-gray-600 text-sm">Longitude:</span>
                           <span className="text-sm">{result.longitude.toFixed(4)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Timezone:</span>
+                          <span className="text-gray-600 text-sm">Timezone:</span>
                           <span className="text-sm">{formatTimezone(result.timezone)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Proxy:</span>
-                          <Badge variant={result.proxy ? "destructive" : "secondary"}>
-                            {result.proxy ? "Yes" : "No"}
+                          <span className="text-gray-600 text-sm">Proxy:</span>
+                          <Badge variant={result.proxy ? 'destructive' : 'secondary'}>
+                            {result.proxy ? 'Yes' : 'No'}
                           </Badge>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Hosting:</span>
-                          <Badge variant={result.hosting ? "secondary" : "outline"}>
-                            {result.hosting ? "Yes" : "No"}
+                          <span className="text-gray-600 text-sm">Hosting:</span>
+                          <Badge variant={result.hosting ? 'secondary' : 'outline'}>
+                            {result.hosting ? 'Yes' : 'No'}
                           </Badge>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Source:</span>
+                          <span className="text-gray-600 text-sm">Source:</span>
                           <span className="text-sm">{result.source}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Response:</span>
+                          <span className="text-gray-600 text-sm">Response:</span>
                           <span className="text-sm">{result.responseTime.toFixed(0)}ms</span>
                         </div>
                       </div>
@@ -825,18 +820,18 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
 
                   <div className="flex gap-2">
                     <Button onClick={() => downloadResult(result)}>
-                      <Download className="h-4 w-4 mr-2" />
+                      <Download className="mr-2 h-4 w-4" />
                       Download JSON
                     </Button>
                     <Button variant="outline" onClick={clearCache}>
-                      <RefreshCw className="h-4 w-4 mr-2" />
+                      <RefreshCw className="mr-2 h-4 w-4" />
                       Clear Cache
                     </Button>
                   </div>
                 </TabsContent>
 
                 <TabsContent value="map" className="space-y-4">
-                  <div className="border rounded-lg overflow-hidden">
+                  <div className="overflow-hidden rounded-lg border">
                     <div className="aspect-video">
                       <iframe
                         src={`https://www.openstreetmap.org/export/embed.html?bbox=${result.longitude - 0.005},${result.latitude - 0.005},${result.longitude + 0.005},${result.latitude + 0.005}&layer=mapnik&marker=${result.latitude},${result.longitude}`}
@@ -846,9 +841,9 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                         title={`Location: ${result.city}, ${result.country}`}
                       />
                     </div>
-                    <div className="p-3 bg-gray-50">
-                      <div className="text-sm text-center">
-                        <MapPin className="h-4 w-4 inline-block mr-2" />
+                    <div className="bg-gray-50 p-3">
+                      <div className="text-center text-sm">
+                        <MapPin className="mr-2 inline-block h-4 w-4" />
                         View location on OpenStreetMap
                       </div>
                     </div>
@@ -858,8 +853,8 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                 <TabsContent value="history" className="space-y-4">
                   {searchHistory.length > 0 ? (
                     <>
-                      <div className="flex justify-between items-center mb-4">
-                        <Label className="text-sm font-medium">
+                      <div className="mb-4 flex items-center justify-between">
+                        <Label className="font-medium text-sm">
                           Search History ({searchHistory.length})
                         </Label>
                         <div className="flex gap-2">
@@ -869,7 +864,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                             onClick={downloadAsCSV}
                             disabled={searchHistory.length === 0}
                           >
-                            <Download className="h-4 w-4 mr-2" />
+                            <Download className="mr-2 h-4 w-4" />
                             Export CSV
                           </Button>
                           <Button variant="outline" size="sm" onClick={clearHistory}>
@@ -878,27 +873,27 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                         </div>
                       </div>
 
-                      <div className="border rounded-lg overflow-hidden">
+                      <div className="overflow-hidden rounded-lg border">
                         <div className="overflow-x-auto">
                           <table className="w-full">
                             <thead className="bg-gray-50">
                               <tr>
-                                <th className="text-left p-2 text-sm font-medium">IP</th>
-                                <th className="text-left p-2 text-sm font-medium">Location</th>
-                                <th className="text-left p-2 text-sm font-medium">ISP</th>
-                                <th className="text-left p-2 text-sm font-medium">Source</th>
-                                <th className="text-left p-2 text-sm font-medium">Time</th>
-                                <th className="text-left p-2 text-sm font-medium">Actions</th>
+                                <th className="p-2 text-left font-medium text-sm">IP</th>
+                                <th className="p-2 text-left font-medium text-sm">Location</th>
+                                <th className="p-2 text-left font-medium text-sm">ISP</th>
+                                <th className="p-2 text-left font-medium text-sm">Source</th>
+                                <th className="p-2 text-left font-medium text-sm">Time</th>
+                                <th className="p-2 text-left font-medium text-sm">Actions</th>
                               </tr>
                             </thead>
                             <tbody>
                               {searchHistory.map((item, index) => (
                                 <tr key={index} className="border-t hover:bg-gray-50">
-                                  <td className="p-2 text-sm font-mono">{item.ip}</td>
+                                  <td className="p-2 font-mono text-sm">{item.ip}</td>
                                   <td className="p-2 text-sm">
                                     {item.city}, {item.country}
                                   </td>
-                                  <td className="p-2 text-sm truncate max-w-32">{item.isp}</td>
+                                  <td className="max-w-32 truncate p-2 text-sm">{item.isp}</td>
                                   <td className="p-2 text-sm">
                                     <Badge variant="outline" className="text-xs">
                                       {item.source}
@@ -912,7 +907,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                                       onClick={() => {
                                         setIpAddress(item.ip);
                                         setSelectedSource(
-                                          item.source.toLowerCase().replace(".", "-"),
+                                          item.source.toLowerCase().replace('.', '-')
                                         );
                                         setResult(item);
                                       }}
@@ -928,8 +923,8 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                       </div>
                     </>
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <Globe className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <div className="py-8 text-center text-gray-500">
+                      <Globe className="mx-auto mb-2 h-12 w-12 opacity-50" />
                       <p>
                         No search history yet. Start looking up IP addresses to see your results
                         here.
@@ -939,7 +934,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                 </TabsContent>
 
                 <TabsContent value="tools" className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <Card>
                       <CardHeader>
                         <CardTitle className="text-base">Quick Links</CardTitle>
@@ -949,10 +944,10 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                           variant="outline"
                           className="w-full"
                           onClick={() => {
-                            window.open(`https://www.shodan.io/host/${result.ip}`, "_blank");
+                            window.open(`https://www.shodan.io/host/${result.ip}`, '_blank');
                           }}
                         >
-                          <Activity className="h-4 w-4 mr-2" />
+                          <Activity className="mr-2 h-4 w-4" />
                           Shodan.io
                         </Button>
                         <Button
@@ -961,21 +956,21 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                           onClick={() => {
                             window.open(
                               `https://www.virustotal.com/en/ip-address/${result.ip}/information`,
-                              "_blank",
+                              '_blank'
                             );
                           }}
                         >
-                          <Shield className="h-4 w-4 mr-2" />
+                          <Shield className="mr-2 h-4 w-4" />
                           VirusTotal
                         </Button>
                         <Button
                           variant="outline"
                           className="w-full"
                           onClick={() => {
-                            window.open(`https://dnschecker.org/#A/0/${result.ip}`, "_blank");
+                            window.open(`https://dnschecker.org/#A/0/${result.ip}`, '_blank');
                           }}
                         >
-                          <Network className="h-4 w-4 mr-2" />
+                          <Network className="mr-2 h-4 w-4" />
                           DNS Checker
                         </Button>
                       </CardContent>
@@ -986,25 +981,25 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                         <CardTitle className="text-base">IP Analysis</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-2 text-sm">
-                        <div className="p-2 bg-gray-50 rounded">
-                          <div className="flex justify-between mb-1">
+                        <div className="rounded bg-gray-50 p-2">
+                          <div className="mb-1 flex justify-between">
                             <span>IP Type:</span>
-                            <Badge variant={result.proxy ? "destructive" : "secondary"}>
-                              {result.proxy ? "Proxy" : result.hosting ? "Hosting" : "Residential"}
+                            <Badge variant={result.proxy ? 'destructive' : 'secondary'}>
+                              {result.proxy ? 'Proxy' : result.hosting ? 'Hosting' : 'Residential'}
                             </Badge>
                           </div>
-                          <div className="flex justify-between mb-1">
+                          <div className="mb-1 flex justify-between">
                             <span>Privacy:</span>
-                            <span className="font-medium">{result.proxy ? "Low" : "High"}</span>
+                            <span className="font-medium">{result.proxy ? 'Low' : 'High'}</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Location Type:</span>
-                            <span>{result.hosting ? "Data Center" : "Consumer"}</span>
+                            <span>{result.hosting ? 'Data Center' : 'Consumer'}</span>
                           </div>
                         </div>
 
-                        <div className="text-xs text-gray-600">
-                          <Clock className="h-3 w-3 inline-block mr-1" />
+                        <div className="text-gray-600 text-xs">
+                          <Clock className="mr-1 inline-block h-3 w-3" />
                           Data cached for 5 minutes • Total cache: {cacheRef.current.size} items
                         </div>
                       </CardContent>
@@ -1018,37 +1013,37 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
             {searchHistory.length > 0 && (
               <div className="border-t pt-4">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Summary</Label>
-                  <Button variant="outline" size="small" onClick={downloadAsCSV}>
-                    <Download className="h-4 w-4 mr-2" />
+                  <Label className="font-medium text-sm">Summary</Label>
+                  <Button variant="outline" size="sm" onClick={downloadAsCSV}>
+                    <Download className="mr-2 h-4 w-4" />
                     Export All
                   </Button>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                <div className="mt-2 grid grid-cols-2 gap-4 md:grid-cols-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold">{searchHistory.length}</div>
-                    <div className="text-xs text-gray-500">Total Lookups</div>
+                    <div className="font-bold text-2xl">{searchHistory.length}</div>
+                    <div className="text-gray-500 text-xs">Total Lookups</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold">
+                    <div className="font-bold text-2xl">
                       {searchHistory.filter((item) => item.proxy).length}
                     </div>
-                    <div className="text-xs text-gray-500">Proxy IPs</div>
+                    <div className="text-gray-500 text-xs">Proxy IPs</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold">
+                    <div className="font-bold text-2xl">
                       {searchHistory.filter((item) => item.hosting).length}
                     </div>
-                    <div className="text-xs text-gray-500">Hosting IPs</div>
+                    <div className="text-gray-500 text-xs">Hosting IPs</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold">
+                    <div className="font-bold text-2xl">
                       {(
                         searchHistory.reduce((sum, item) => sum + item.responseTime, 0) /
                         searchHistory.length
                       ).toFixed(0)}
                     </div>
-                    <div className="text-xs text-gray-500">Avg Response</div>
+                    <div className="text-gray-500 text-xs">Avg Response</div>
                   </div>
                 </div>
               </div>

@@ -11,8 +11,8 @@
  * - Client-side processing only
  */
 
-import { readFileSync, readdirSync, statSync } from "fs";
-import { join } from "path";
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 
 interface BundleAnalysisResult {
   toolName: string;
@@ -33,7 +33,7 @@ interface PerformanceMetrics {
 
 const BUNDLE_SIZE_LIMIT = 200 * 1024; // 200KB
 const WARNING_THRESHOLD = 0.8; // 80% of limit
-const TOOLS_DIRECTORY = "src/components/tools";
+const TOOLS_DIRECTORY = 'src/components/tools';
 
 /**
  * Analyzes bundle sizes for all tools
@@ -50,7 +50,7 @@ function analyzeBundleSizes(): BundleAnalysisResult[] {
 
       if (stat.isDirectory()) {
         const toolFiles = readdirSync(categoryPath).filter(
-          (file) => file.endsWith(".tsx") && !file.includes(".test.") && !file.includes(".spec."),
+          (file) => file.endsWith('.tsx') && !file.includes('.test.') && !file.includes('.spec.')
         );
 
         for (const toolFile of toolFiles) {
@@ -58,7 +58,7 @@ function analyzeBundleSizes(): BundleAnalysisResult[] {
           const toolStat = statSync(toolPath);
           const bundleSize = toolStat.size;
 
-          const toolName = toolFile.replace(".tsx", "");
+          const toolName = toolFile.replace('.tsx', '');
           const isWithinLimit = bundleSize <= BUNDLE_SIZE_LIMIT;
           const percentageOfLimit = (bundleSize / BUNDLE_SIZE_LIMIT) * 100;
 
@@ -70,7 +70,7 @@ function analyzeBundleSizes(): BundleAnalysisResult[] {
           }
 
           // Check for potential optimization opportunities
-          const content = readFileSync(toolPath, "utf8");
+          const content = readFileSync(toolPath, 'utf8');
 
           // Large embedded strings or data
           const largeStrings = content.match(/"[^"]{100,}"/g);
@@ -101,7 +101,7 @@ function analyzeBundleSizes(): BundleAnalysisResult[] {
       }
     }
   } catch (error) {
-    console.error("Error analyzing bundle sizes:", error);
+    console.error('Error analyzing bundle sizes:', error);
   }
 
   return results;
@@ -128,8 +128,8 @@ function calculatePerformanceMetrics(analysisResults: BundleAnalysisResult[]): P
         bundleSize: 0,
         isWithinLimit: true,
         percentageOfLimit: 0,
-        issues: []
-      } as BundleAnalysisResult),
+        issues: [],
+      } as BundleAnalysisResult)
   );
 
   // Generate recommendations based on analysis
@@ -137,43 +137,43 @@ function calculatePerformanceMetrics(analysisResults: BundleAnalysisResult[]): P
 
   if (violationsCount > 0) {
     recommendations.push(
-      `${violationsCount} tool(s) exceed the 200KB size limit and require code splitting`,
+      `${violationsCount} tool(s) exceed the 200KB size limit and require code splitting`
     );
   }
 
   const nearLimitCount = analysisResults.filter(
-    (result) => result.percentageOfLimit > WARNING_THRESHOLD * 100 && result.isWithinLimit,
+    (result) => result.percentageOfLimit > WARNING_THRESHOLD * 100 && result.isWithinLimit
   ).length;
 
   if (nearLimitCount > 0) {
     recommendations.push(
-      `${nearLimitCount} tool(s) are approaching the size limit and should be optimized`,
+      `${nearLimitCount} tool(s) are approaching the size limit and should be optimized`
     );
   }
 
   if (averageBundleSize > BUNDLE_SIZE_LIMIT * 0.5) {
     recommendations.push(
-      `Average bundle size (${formatBytes(averageBundleSize)}) is high, consider optimization strategies`,
+      `Average bundle size (${formatBytes(averageBundleSize)}) is high, consider optimization strategies`
     );
   }
 
   const toolsWithIssues = analysisResults.filter((result) => result.issues.length > 0);
   if (toolsWithIssues.length > 0) {
     recommendations.push(
-      `${toolsWithIssues.length} tool(s) have optimization opportunities (check detailed report)`,
+      `${toolsWithIssues.length} tool(s) have optimization opportunities (check detailed report)`
     );
   }
 
   // Overall performance recommendations
   if (compliancePercentage < 100) {
     recommendations.push(
-      "Implement code splitting for large tools to meet constitutional requirements",
+      'Implement code splitting for large tools to meet constitutional requirements'
     );
   }
 
-  recommendations.push("Consider lazy loading for infrequently used features");
-  recommendations.push("Optimize imports and remove unused dependencies");
-  recommendations.push("Compress and optimize static assets");
+  recommendations.push('Consider lazy loading for infrequently used features');
+  recommendations.push('Optimize imports and remove unused dependencies');
+  recommendations.push('Compress and optimize static assets');
 
   return {
     totalBundleSize,
@@ -189,11 +189,11 @@ function calculatePerformanceMetrics(analysisResults: BundleAnalysisResult[]): P
  * Formats bytes to human-readable format
  */
 function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 B";
+  if (bytes === 0) return '0 B';
   const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
+  const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+  return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
 }
 
 /**
@@ -201,13 +201,13 @@ function formatBytes(bytes: number): string {
  */
 function generatePerformanceReport(
   analysisResults: BundleAnalysisResult[],
-  metrics: PerformanceMetrics,
+  metrics: PerformanceMetrics
 ): string {
-  let report = "# Performance and Bundle Validation Report\n\n";
+  let report = '# Performance and Bundle Validation Report\n\n';
   report += `Generated: ${new Date().toISOString()}\n\n`;
 
   // Executive Summary
-  report += "## Executive Summary\n\n";
+  report += '## Executive Summary\n\n';
   report += `- **Compliance Rate**: ${metrics.compliancePercentage.toFixed(1)}% (${analysisResults.length - metrics.violationsCount}/${analysisResults.length} tools within limits)\n`;
   report += `- **Total Bundle Size**: ${formatBytes(metrics.totalBundleSize)}\n`;
   report += `- **Average Bundle Size**: ${formatBytes(metrics.averageBundleSize)}\n`;
@@ -215,74 +215,73 @@ function generatePerformanceReport(
   report += `- **Violations**: ${metrics.violationsCount} tools exceed 200KB limit\n\n`;
 
   // Compliance Status
-  report += "## Compliance Status\n\n";
+  report += '## Compliance Status\n\n';
   if (metrics.compliancePercentage === 100) {
-    report += "✅ **FULLY COMPLIANT** - All tools within constitutional size limits\n\n";
+    report += '✅ **FULLY COMPLIANT** - All tools within constitutional size limits\n\n';
   } else {
-    report += "❌ **NOT COMPLIANT** - Some tools exceed constitutional size limits\n\n";
+    report += '❌ **NOT COMPLIANT** - Some tools exceed constitutional size limits\n\n';
   }
 
   // Violations
   if (metrics.violationsCount > 0) {
-    report += "## Size Limit Violations\n\n";
-    analysisResults
-      .filter((result) => !result.isWithinLimit)
-      .forEach((result) => {
-        report += `### ${result.toolName}\n`;
-        report += `- **Size**: ${formatBytes(result.bundleSize)} (${result.percentageOfLimit.toFixed(1)}% of limit)\n`;
-        report += `- **Over Limit**: ${formatBytes(result.bundleSize - BUNDLE_SIZE_LIMIT)}\n`;
-        if (result.issues.length > 0) {
-          report += `- **Issues**: ${result.issues.join(", ")}\n`;
-        }
-        report += "\n";
-      });
+    report += '## Size Limit Violations\n\n';
+    const violations = analysisResults.filter((result) => !result.isWithinLimit);
+    for (const result of violations) {
+      report += `### ${result.toolName}\n`;
+      report += `- **Size**: ${formatBytes(result.bundleSize)} (${result.percentageOfLimit.toFixed(1)}% of limit)\n`;
+      report += `- **Over Limit**: ${formatBytes(result.bundleSize - BUNDLE_SIZE_LIMIT)}\n`;
+      if (result.issues.length > 0) {
+        report += `- **Issues**: ${result.issues.join(', ')}\n`;
+      }
+      report += '\n';
+    }
   }
 
   // Near Limit Tools
   const nearLimitTools = analysisResults.filter(
-    (result) => result.percentageOfLimit > WARNING_THRESHOLD * 100 && result.isWithinLimit,
+    (result) => result.percentageOfLimit > WARNING_THRESHOLD * 100 && result.isWithinLimit
   );
 
   if (nearLimitTools.length > 0) {
-    report += "## Tools Approaching Size Limit\n\n";
-    nearLimitTools.forEach((result) => {
+    report += '## Tools Approaching Size Limit\n\n';
+    for (const result of nearLimitTools) {
       report += `### ${result.toolName}\n`;
       report += `- **Size**: ${formatBytes(result.bundleSize)} (${result.percentageOfLimit.toFixed(1)}% of limit)\n`;
       if (result.issues.length > 0) {
-        report += `- **Issues**: ${result.issues.join(", ")}\n`;
+        report += `- **Issues**: ${result.issues.join(', ')}\n`;
       }
-      report += "\n";
-    });
+      report += '\n';
+    }
   }
 
   // Tools with Optimization Opportunities
   const toolsWithOptimizations = analysisResults.filter((result) => result.issues.length > 0);
   if (toolsWithOptimizations.length > 0) {
-    report += "## Optimization Opportunities\n\n";
-    toolsWithOptimizations.forEach((result) => {
+    report += '## Optimization Opportunities\n\n';
+    for (const result of toolsWithOptimizations) {
       report += `### ${result.toolName}\n`;
-      result.issues.forEach((issue) => {
+      for (const issue of result.issues) {
         report += `- ${issue}\n`;
-      });
-      report += "\n";
-    });
+      }
+      report += '\n';
+    }
   }
 
   // Recommendations
-  report += "## Recommendations\n\n";
-  metrics.recommendations.forEach((recommendation, index) => {
+  report += '## Recommendations\n\n';
+  for (const [index, recommendation] of metrics.recommendations.entries()) {
     report += `${index + 1}. ${recommendation}\n`;
-  });
+  }
 
   // Best Practices
-  report += "\n## Best Practices for Bundle Optimization\n\n";
-  report += "1. **Code Splitting**: Separate large components into smaller, lazy-loaded modules\n";
-  report += "2. **Tree Shaking**: Remove unused code and dependencies\n";
-  report += "3. **Dynamic Imports**: Load tools on-demand using React.lazy()\n";
-  report += "4. **Asset Optimization**: Compress images, optimize fonts, minify code\n";
-  report += "5. **Dependency Management**: Remove unused npm packages and optimize imports\n";
-  report += "6. **String Optimization**: Move large strings to external files or use compression\n";
-  report += "7. **Component Design**: Keep components focused and single-purpose\n\n";
+  report += '\n## Best Practices for Bundle Optimization\n\n';
+  report += '1. **Code Splitting**: Separate large components into smaller, lazy-loaded modules\n';
+  report += '2. **Tree Shaking**: Remove unused code and dependencies\n';
+  report += '3. **Dynamic Imports**: Load tools on-demand using React.lazy()\n';
+  report += '4. **Asset Optimization**: Compress images, optimize fonts, minify code\n';
+  report += '5. **Dependency Management**: Remove unused npm packages and optimize imports\n';
+  report += '6. **String Optimization**: Move large strings to external files or use compression\n';
+  report += '7. **Component Design**: Keep components focused and single-purpose\n\n';
 
   return report;
 }
@@ -291,10 +290,10 @@ function generatePerformanceReport(
  * Main validation function
  */
 function validatePerformance(): PerformanceMetrics {
-  console.log("🚀 Starting Performance and Bundle Validation...\n");
+  console.log('🚀 Starting Performance and Bundle Validation...\n');
 
   // Analyze bundle sizes
-  console.log("📦 Analyzing bundle sizes...");
+  console.log('📦 Analyzing bundle sizes...');
   const analysisResults = analyzeBundleSizes();
   console.log(`   Found ${analysisResults.length} tools\n`);
 
@@ -302,20 +301,20 @@ function validatePerformance(): PerformanceMetrics {
   const metrics = calculatePerformanceMetrics(analysisResults);
 
   // Display summary
-  console.log("📊 Performance Summary:");
+  console.log('📊 Performance Summary:');
   console.log(`   Total Bundle Size: ${formatBytes(metrics.totalBundleSize)}`);
   console.log(`   Average Bundle Size: ${formatBytes(metrics.averageBundleSize)}`);
   console.log(`   Compliance Rate: ${metrics.compliancePercentage.toFixed(1)}%`);
   console.log(`   Violations: ${metrics.violationsCount}`);
   console.log(
-    `   Largest Bundle: ${metrics.largestBundle.toolName} (${formatBytes(metrics.largestBundle.bundleSize)})\n`,
+    `   Largest Bundle: ${metrics.largestBundle.toolName} (${formatBytes(metrics.largestBundle.bundleSize)})\n`
   );
 
   // Display status
   if (metrics.compliancePercentage === 100) {
-    console.log("✅ ALL TOOLS WITHIN CONSTITUTIONAL SIZE LIMITS");
+    console.log('✅ ALL TOOLS WITHIN CONSTITUTIONAL SIZE LIMITS');
   } else {
-    console.log("❌ SIZE LIMIT VIOLATIONS DETECTED");
+    console.log('❌ SIZE LIMIT VIOLATIONS DETECTED');
   }
 
   // Generate report
@@ -323,10 +322,10 @@ function validatePerformance(): PerformanceMetrics {
 
   // Save report to file
   try {
-    require("fs").writeFileSync("performance-validation-report.md", report);
-    console.log("📄 Detailed report saved to: performance-validation-report.md");
+    require('node:fs').writeFileSync('performance-validation-report.md', report);
+    console.log('📄 Detailed report saved to: performance-validation-report.md');
   } catch (error) {
-    console.warn("Could not save report to file:", error);
+    console.warn('Could not save report to file:', error);
   }
 
   return metrics;
@@ -337,63 +336,63 @@ function validatePerformance(): PerformanceMetrics {
  */
 export function getOptimizationSuggestions(analysisResults: BundleAnalysisResult[]): Array<{
   tool: string;
-  type: "code-splitting" | "dependency" | "asset" | "import";
+  type: 'code-splitting' | 'dependency' | 'asset' | 'import';
   suggestion: string;
-  impact: "high" | "medium" | "low";
+  impact: 'high' | 'medium' | 'low';
 }> {
   const suggestions: Array<{
     tool: string;
-    type: "code-splitting" | "dependency" | "asset" | "import";
+    type: 'code-splitting' | 'dependency' | 'asset' | 'import';
     suggestion: string;
-    impact: "high" | "medium" | "low";
+    impact: 'high' | 'medium' | 'low';
   }> = [];
 
-  analysisResults.forEach((result) => {
-    if (result.issues.includes("Contains inline base64 resources")) {
+  for (const result of analysisResults) {
+    if (result.issues.includes('Contains inline base64 resources')) {
       suggestions.push({
         tool: result.toolName,
-        type: "asset",
-        suggestion: "Move inline base64 resources to external files and load dynamically",
-        impact: "high",
+        type: 'asset',
+        suggestion: 'Move inline base64 resources to external files and load dynamically',
+        impact: 'high',
       });
     }
 
-    if (result.issues.includes("Contains large embedded strings")) {
+    if (result.issues.includes('Contains large embedded strings')) {
       suggestions.push({
         tool: result.toolName,
-        type: "dependency",
-        suggestion: "Move large embedded strings to external JSON/JS files",
-        impact: "medium",
+        type: 'dependency',
+        suggestion: 'Move large embedded strings to external JSON/JS files',
+        impact: 'medium',
       });
     }
 
-    if (result.issues.includes("functions that could be split")) {
+    if (result.issues.includes('functions that could be split')) {
       suggestions.push({
         tool: result.toolName,
-        type: "code-splitting",
-        suggestion: "Split large functions into smaller, lazy-loaded modules",
-        impact: "medium",
+        type: 'code-splitting',
+        suggestion: 'Split large functions into smaller, lazy-loaded modules',
+        impact: 'medium',
       });
     }
 
     if (!result.isWithinLimit) {
       suggestions.push({
         tool: result.toolName,
-        type: "code-splitting",
-        suggestion: "Implement aggressive code splitting to meet 200KB limit",
-        impact: "high",
+        type: 'code-splitting',
+        suggestion: 'Implement aggressive code splitting to meet 200KB limit',
+        impact: 'high',
       });
     }
 
     if (result.percentageOfLimit > WARNING_THRESHOLD * 100) {
       suggestions.push({
         tool: result.toolName,
-        type: "import",
-        suggestion: "Optimize imports and remove unused dependencies",
-        impact: "low",
+        type: 'import',
+        suggestion: 'Optimize imports and remove unused dependencies',
+        impact: 'low',
       });
     }
-  });
+  }
 
   return suggestions.sort((a, b) => {
     const impactOrder = { high: 3, medium: 2, low: 1 };

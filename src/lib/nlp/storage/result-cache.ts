@@ -3,7 +3,7 @@
  * Intelligent caching system for NLP results using IndexedDB with LRU eviction
  */
 
-import type { NLPResult, ProcessingRequest, ProcessingResult } from "@/lib/nlp/core/engine";
+import type { NLPResult, ProcessingRequest, ProcessingResult } from '@/lib/nlp/core/engine';
 
 // Types
 export interface CacheEntry {
@@ -61,7 +61,7 @@ export interface CacheConfig {
   ttl: number; // Time to live in milliseconds
   enableCompression: boolean;
   enableEncryption: boolean;
-  evictionPolicy: "lru" | "lfu" | "size" | "time";
+  evictionPolicy: 'lru' | 'lfu' | 'size' | 'time';
   enableMetrics: boolean;
   enablePersistence: boolean;
   persistenceInterval: number;
@@ -90,7 +90,7 @@ const DEFAULT_CACHE_CONFIG: CacheConfig = {
   ttl: 7 * 24 * 60 * 60 * 1000, // 7 days
   enableCompression: true,
   enableEncryption: false,
-  evictionPolicy: "lru",
+  evictionPolicy: 'lru',
   enableMetrics: true,
   enablePersistence: true,
   persistenceInterval: 60000, // 1 minute
@@ -102,7 +102,7 @@ const DEFAULT_CACHE_CONFIG: CacheConfig = {
 export class ResultCache {
   private config: CacheConfig;
   private db: IDBDatabase | null = null;
-  private dbName = "nlp_result_cache";
+  private dbName = 'nlp_result_cache';
   private dbVersion = 1;
 
   private memoryCache: Map<string, CacheEntry> = new Map();
@@ -149,9 +149,9 @@ export class ResultCache {
       await this.startPersistenceTimer();
 
       this.isInitialized = true;
-      console.log("NLP Result Cache initialized successfully");
+      console.log('NLP Result Cache initialized successfully');
     } catch (error) {
-      console.error("Failed to initialize NLP Result Cache:", error);
+      console.error('Failed to initialize NLP Result Cache:', error);
       throw error;
     }
   }
@@ -173,25 +173,29 @@ export class ResultCache {
         const db = (event.target as IDBOpenDBRequest).result;
 
         // Create main cache store
-        if (!db.objectStoreNames.contains("cache")) {
-          const cacheStore = db.createObjectStore("cache", { keyPath: "id" });
-          cacheStore.createIndex("key", "key", { unique: true });
-          cacheStore.createIndex("createdAt", "createdAt");
-          cacheStore.createIndex("lastAccessed", "lastAccessed");
-          cacheStore.createIndex("accessCount", "accessCount");
-          cacheStore.createIndex("tags", "tags", { multiEntry: true });
-          cacheStore.createIndex("metadata.model.name", "metadata.model.name", { unique: false });
+        if (!db.objectStoreNames.contains('cache')) {
+          const cacheStore = db.createObjectStore('cache', { keyPath: 'id' });
+          cacheStore.createIndex('key', 'key', { unique: true });
+          cacheStore.createIndex('createdAt', 'createdAt');
+          cacheStore.createIndex('lastAccessed', 'lastAccessed');
+          cacheStore.createIndex('accessCount', 'accessCount');
+          cacheStore.createIndex('tags', 'tags', { multiEntry: true });
+          cacheStore.createIndex('metadata.model.name', 'metadata.model.name', {
+            unique: false,
+          });
         }
 
         // Create metadata store
-        if (!db.objectStoreNames.contains("metadata")) {
-          const metadataStore = db.createObjectStore("metadata", { keyPath: "key" });
-          metadataStore.createIndex("timestamp", "timestamp");
+        if (!db.objectStoreNames.contains('metadata')) {
+          const metadataStore = db.createObjectStore('metadata', {
+            keyPath: 'key',
+          });
+          metadataStore.createIndex('timestamp', 'timestamp');
         }
 
         // Create index store for fast lookups
-        if (!db.objectStoreNames.contains("indexes")) {
-          db.createObjectStore("indexes", { keyPath: "key" });
+        if (!db.objectStoreNames.contains('indexes')) {
+          db.createObjectStore('indexes', { keyPath: 'key' });
         }
       };
     });
@@ -204,8 +208,8 @@ export class ResultCache {
     if (!this.db) return;
 
     try {
-      const transaction = this.db.transaction(["cache"], "readonly");
-      const store = transaction.objectStore("cache");
+      const transaction = this.db.transaction(['cache'], 'readonly');
+      const store = transaction.objectStore('cache');
 
       const request = store.getAll();
       await new Promise((resolve, reject) => {
@@ -228,7 +232,7 @@ export class ResultCache {
       // Update statistics
       this.updateStatistics();
     } catch (error) {
-      console.warn("Failed to load persisted cache data:", error);
+      console.warn('Failed to load persisted cache data:', error);
     }
   }
 
@@ -237,9 +241,9 @@ export class ResultCache {
    */
   private generateCacheKey(request: ProcessingRequest): string {
     const keyData = {
-      input: request.input,
+      text: request.text,
       operations: request.operations.map((op) => op.type).sort(),
-      options: request.options,
+      config: request.config,
     };
 
     // Create hash of the request data
@@ -309,7 +313,7 @@ export class ResultCache {
   public async set(
     request: ProcessingRequest,
     result: ProcessingResult,
-    metadata: Partial<CacheMetadata> = {},
+    metadata: Partial<CacheMetadata> & { tags?: string[] } = {}
   ): Promise<void> {
     if (!this.isInitialized) {
       await this.initialize();
@@ -340,9 +344,9 @@ export class ResultCache {
       request,
       metadata: {
         processingTime: metadata.processingTime || 0,
-        confidence: metadata.confidence || result.metrics?.confidence,
+        confidence: metadata.confidence,
         model: metadata.model,
-        inputHash: this.hashString(request.input),
+        inputHash: this.hashString(request.text),
         outputHash: metadata.outputHash,
         language: metadata.language,
         quality: metadata.quality,
@@ -383,11 +387,11 @@ export class ResultCache {
     // Remove from IndexedDB
     if (this.config.enablePersistence && this.db) {
       try {
-        const transaction = this.db.transaction(["cache"], "readwrite");
-        const store = transaction.objectStore("cache");
+        const transaction = this.db.transaction(['cache'], 'readwrite');
+        const store = transaction.objectStore('cache');
         await store.delete(entry.id);
       } catch (error) {
-        console.warn("Failed to delete entry from IndexedDB:", error);
+        console.warn('Failed to delete entry from IndexedDB:', error);
       }
     }
 
@@ -405,10 +409,10 @@ export class ResultCache {
     // Clear IndexedDB
     if (this.config.enablePersistence && this.db) {
       try {
-        const transaction = this.db.transaction(["cache"], "readwrite");
-        await transaction.objectStore("cache").clear();
+        const transaction = this.db.transaction(['cache'], 'readwrite');
+        await transaction.objectStore('cache').clear();
       } catch (error) {
-        console.warn("Failed to clear IndexedDB:", error);
+        console.warn('Failed to clear IndexedDB:', error);
       }
     }
 
@@ -452,7 +456,7 @@ export class ResultCache {
   private matchesQuery(entry: CacheEntry, query: CacheQuery): boolean {
     // Text similarity
     if (query.text) {
-      const similarity = this.calculateTextSimilarity(query.text, entry.request.input);
+      const similarity = this.calculateTextSimilarity(query.text, entry.request.text);
       const threshold = query.similarityThreshold || this.config.similarityThreshold;
       if (similarity < threshold) {
         return false;
@@ -523,7 +527,7 @@ export class ResultCache {
   /**
    * Calculate relevance score for search results
    */
-  private calculateRelevanceScore(entry: CacheEntry, query: CacheQuery): number {
+  private calculateRelevanceScore(entry: CacheEntry, _query: CacheQuery): number {
     let score = 0;
 
     // Recent access bonus
@@ -554,7 +558,7 @@ export class ResultCache {
       if (!operationsMatch) continue;
 
       // Check text similarity
-      const similarity = this.calculateTextSimilarity(request.input, entry.request.input);
+      const similarity = this.calculateTextSimilarity(request.text, entry.request.text);
 
       if (similarity >= threshold) {
         return key;
@@ -598,7 +602,7 @@ export class ResultCache {
   private async ensureCapacity(newEntrySize: number): Promise<void> {
     const currentSize = Array.from(this.memoryCache.values()).reduce(
       (sum, entry) => sum + entry.size,
-      0,
+      0
     );
 
     const entryCount = this.memoryCache.size;
@@ -618,13 +622,13 @@ export class ResultCache {
     // Sort based on eviction policy
     entries.sort((a, b) => {
       switch (this.config.evictionPolicy) {
-        case "lru":
+        case 'lru':
           return a.lastAccessed - b.lastAccessed;
-        case "lfu":
+        case 'lfu':
           return a.accessCount - b.accessCount;
-        case "size":
+        case 'size':
           return b.size - a.size;
-        case "time":
+        case 'time':
           return a.createdAt - b.createdAt;
         default:
           return a.lastAccessed - b.lastAccessed;
@@ -657,7 +661,7 @@ export class ResultCache {
       if (!this.indexCache.has(`tag:${tag}`)) {
         this.indexCache.set(`tag:${tag}`, new Set());
       }
-      this.indexCache.get(`tag:${tag}`)!.add(entry.key);
+      this.indexCache.get(`tag:${tag}`)?.add(entry.key);
     }
 
     // Model index
@@ -666,7 +670,7 @@ export class ResultCache {
       if (!this.indexCache.has(modelKey)) {
         this.indexCache.set(modelKey, new Set());
       }
-      this.indexCache.get(modelKey)!.add(entry.key);
+      this.indexCache.get(modelKey)?.add(entry.key);
     }
 
     // Language index
@@ -675,7 +679,7 @@ export class ResultCache {
       if (!this.indexCache.has(langKey)) {
         this.indexCache.set(langKey, new Set());
       }
-      this.indexCache.get(langKey)!.add(entry.key);
+      this.indexCache.get(langKey)?.add(entry.key);
     }
   }
 
@@ -727,11 +731,11 @@ export class ResultCache {
     if (!this.db) return;
 
     try {
-      const transaction = this.db.transaction(["cache"], "readwrite");
-      const store = transaction.objectStore("cache");
+      const transaction = this.db.transaction(['cache'], 'readwrite');
+      const store = transaction.objectStore('cache');
       await store.put(entry);
     } catch (error) {
-      console.warn("Failed to persist entry to IndexedDB:", error);
+      console.warn('Failed to persist entry to IndexedDB:', error);
     }
   }
 
@@ -755,14 +759,14 @@ export class ResultCache {
     if (!this.db || this.memoryCache.size === 0) return;
 
     try {
-      const transaction = this.db.transaction(["cache"], "readwrite");
-      const store = transaction.objectStore("cache");
+      const transaction = this.db.transaction(['cache'], 'readwrite');
+      const store = transaction.objectStore('cache');
 
       for (const entry of this.memoryCache.values()) {
         await store.put(entry);
       }
     } catch (error) {
-      console.warn("Failed to persist cache to database:", error);
+      console.warn('Failed to persist cache to database:', error);
     }
   }
 

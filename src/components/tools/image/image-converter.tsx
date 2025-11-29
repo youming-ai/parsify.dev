@@ -11,52 +11,52 @@
  * - Integration with canvas operations and format converters
  */
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
-import { ToolWrapper } from "../common/ToolWrapper";
+'use client';
+
+import { ToolWrapper } from '@/components/tools/tool-wrapper';
+import PerformanceMonitor from '@/lib/performance-monitor';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { ResizeOptions, useCanvasOperations } from '../../../lib/image/canvas-operations';
 import {
+  type ConversionOptions,
+  type ConversionResult,
   useFormatConverter,
-  ConversionOptions,
-  ConversionResult,
-} from "../../../lib/image/format-converters";
-import { useCanvasOperations, ResizeOptions } from "../../../lib/image/canvas-operations";
-import { usePerformanceMonitor } from "../../../hooks/usePerformanceMonitor";
-import { useMemoryManagement } from "../../../hooks/useMemoryManagement";
-import { useConstitutionalCompliance } from "../../../hooks/useConstitutionalCompliance";
+} from '../../../lib/image/format-converters';
 
 interface ImageConverterProps {
-  onComplete: (result: string) => void;
+  onComplete?: (result: string) => void;
 }
 
 // Preset conversion examples
 const conversionPresets = [
   {
-    name: "Optimize for Web",
-    description: "Convert to WebP with balanced quality",
-    format: "webp" as const,
+    name: 'Optimize for Web',
+    description: 'Convert to WebP with balanced quality',
+    format: 'webp' as const,
     quality: 0.8,
     optimizeSize: true,
     keepTransparency: true,
   },
   {
-    name: "High Quality JPEG",
-    description: "Convert to JPEG with maximum quality",
-    format: "jpeg" as const,
+    name: 'High Quality JPEG',
+    description: 'Convert to JPEG with maximum quality',
+    format: 'jpeg' as const,
     quality: 0.95,
     optimizeSize: false,
     keepTransparency: false,
   },
   {
-    name: "Lossless PNG",
-    description: "Convert to PNG with transparency support",
-    format: "png" as const,
+    name: 'Lossless PNG',
+    description: 'Convert to PNG with transparency support',
+    format: 'png' as const,
     quality: 1.0,
     optimizeSize: false,
     keepTransparency: true,
   },
   {
-    name: "Small Size JPEG",
-    description: "Compressed JPEG for small file size",
-    format: "jpeg" as const,
+    name: 'Small Size JPEG',
+    description: 'Compressed JPEG for small file size',
+    format: 'jpeg' as const,
     quality: 0.6,
     optimizeSize: true,
     keepTransparency: false,
@@ -73,18 +73,18 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
 
   // Conversion options
   const [conversionOptions, setConversionOptions] = useState<ConversionOptions>({
-    targetFormat: "png",
+    targetFormat: 'png',
     quality: 0.9,
     progressive: false,
     lossless: false,
     stripMetadata: true,
     optimizeSize: false,
-    colorSpace: "srgb",
+    colorSpace: 'srgb',
     keepTransparency: true,
   });
 
   // UI state
-  const [activeTab, setActiveTab] = useState<"single" | "batch">("single");
+  const [activeTab, setActiveTab] = useState<'single' | 'batch'>('single');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [compareMode, setCompareMode] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState(0);
@@ -95,9 +95,6 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
   const convertedCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // Custom hooks
-  const { startMonitoring, stopMonitoring, getMetrics } = usePerformanceMonitor();
-  const { checkMemoryUsage, getMemoryStats } = useMemoryManagement();
-  const { validateAction } = useConstitutionalCompliance();
   const { convertFormat, batchConvert, estimateFileSize, validateOptions } = useFormatConverter();
   const { loadImage, createCanvasFromImage } = useCanvasOperations();
 
@@ -107,6 +104,42 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
     setProcessingLog((prev) => [...prev, `[${timestamp}] ${message}`]);
   }, []);
 
+  // Performance monitoring functions
+  const monitor = React.useMemo(() => PerformanceMonitor.getInstance(), []);
+
+  const startMonitoring = useCallback(() => {
+    monitor.startMonitoring();
+  }, [monitor]);
+
+  const stopMonitoring = useCallback(() => {
+    // PerformanceMonitor doesn't have stopMonitoring, but it handles lifecycle internally
+    // We can add a no-op for now since monitoring is handled automatically
+  }, []);
+
+  const checkMemoryUsage = useCallback(async () => {
+    const systemMetrics = monitor.getSystemMetrics();
+    return {
+      safe: systemMetrics.totalMemoryUsage < 100 * 1024 * 1024, // 100MB limit
+      usage: systemMetrics.totalMemoryUsage / 1024 / 1024, // Convert to MB
+    };
+  }, [monitor]);
+
+  const getMetrics = useCallback(() => {
+    const systemMetrics = monitor.getSystemMetrics();
+    return {
+      executionTime: 0, // This would need to be tracked manually
+      memoryUsage: systemMetrics.totalMemoryUsage,
+    };
+  }, [monitor]);
+
+  const getMemoryStats = useCallback(() => {
+    const systemMetrics = monitor.getSystemMetrics();
+    return {
+      used: systemMetrics.totalMemoryUsage / 1024 / 1024, // Convert to MB
+      total: systemMetrics.availableMemory / 1024 / 1024, // Convert to MB
+    };
+  }, [monitor]);
+
   // Handle file selection
   const handleFileSelect = useCallback(
     async (files: FileList | File[]) => {
@@ -115,7 +148,7 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
       const file = files[0];
 
       // Validate file type
-      if (!file.type.startsWith("image/")) {
+      if (!file.type.startsWith('image/')) {
         addLog(`❌ Invalid file type: ${file.type}. Please select an image file.`);
         return;
       }
@@ -124,7 +157,7 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
       const maxSize = 10 * 1024 * 1024; // 10MB
       if (file.size > maxSize) {
         addLog(
-          `❌ File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum size is 10MB.`,
+          `❌ File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum size is 10MB.`
         );
         return;
       }
@@ -140,7 +173,7 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
         // Create original canvas for preview
         const canvas = createCanvasFromImage(image);
         if (originalCanvasRef.current) {
-          const ctx = originalCanvasRef.current.getContext("2d")!;
+          const ctx = originalCanvasRef.current.getContext('2d')!;
           originalCanvasRef.current.width = canvas.width;
           originalCanvasRef.current.height = canvas.height;
           ctx.drawImage(canvas, 0, 0);
@@ -149,7 +182,7 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
         addLog(`✅ Image loaded: ${image.width}x${image.height}px`);
 
         // Auto-convert if format is different
-        const currentFormat = file.type.split("/")[1] as any;
+        const currentFormat = file.type.split('/')[1] as any;
         if (currentFormat !== conversionOptions.targetFormat) {
           await performConversion(image, file.name);
         }
@@ -160,7 +193,7 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
         setIsConverting(false);
       }
     },
-    [loadImage, createCanvasFromImage, conversionOptions.targetFormat],
+    [loadImage, createCanvasFromImage, conversionOptions.targetFormat]
   );
 
   // Perform conversion
@@ -178,13 +211,13 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
 
         addLog(`🔄 Converting to ${conversionOptions.targetFormat.toUpperCase()}`);
         addLog(`   Quality: ${(conversionOptions.quality || 0.9) * 100}%`);
-        addLog(`   Optimization: ${conversionOptions.optimizeSize ? "Enabled" : "Disabled"}`);
+        addLog(`   Optimization: ${conversionOptions.optimizeSize ? 'Enabled' : 'Disabled'}`);
 
         const result = await convertFormat(image, conversionOptions);
 
         // Create converted canvas for preview
         if (convertedCanvasRef.current) {
-          const ctx = convertedCanvasRef.current.getContext("2d")!;
+          const ctx = convertedCanvasRef.current.getContext('2d')!;
           const objectURL = URL.createObjectURL(result.blob);
           const img = new Image();
           img.onload = () => {
@@ -201,19 +234,19 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
         // Calculate compression ratio
         const compressionRatio = ((1 - result.size / (sourceFile?.size || 1)) * 100).toFixed(1);
 
-        addLog(`✅ Conversion completed successfully!`);
+        addLog('✅ Conversion completed successfully!');
         addLog(`   Original: ${(sourceFile?.size || 0) / 1024}KB`);
         addLog(`   Converted: ${(result.size / 1024).toFixed(2)}KB`);
-        if (compressionRatio !== "0.0") {
+        if (compressionRatio !== '0.0') {
           addLog(`   Compression: ${compressionRatio}% reduction`);
         }
         addLog(`   Processing time: ${result.processingTime.toFixed(2)}ms`);
 
         // Generate download
         const downloadUrl = URL.createObjectURL(result.blob);
-        const a = document.createElement("a");
+        const a = document.createElement('a');
         a.href = downloadUrl;
-        a.download = `${filename.split(".")[0]}.${conversionOptions.targetFormat}`;
+        a.download = `${filename.split('.')[0]}.${conversionOptions.targetFormat}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -221,9 +254,11 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
 
         addLog(`💾 Downloaded: ${a.download}`);
 
-        onComplete(
-          `Successfully converted ${filename} to ${conversionOptions.targetFormat.toUpperCase()}`,
-        );
+        if (onComplete) {
+          onComplete(
+            `Successfully converted ${filename} to ${conversionOptions.targetFormat.toUpperCase()}`
+          );
+        }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         addLog(`❌ Conversion failed: ${errorMessage}`);
@@ -247,7 +282,7 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
       getMetrics,
       getMemoryStats,
       onComplete,
-    ],
+    ]
   );
 
   // Handle batch conversion
@@ -264,11 +299,11 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
           quality: conversionOptions.quality,
           optimizeSize: conversionOptions.optimizeSize,
           stripMetadata: conversionOptions.stripMetadata,
-          onProgress: (completed, total, current) => {
+          onProgress: (completed: number, total: number, current: string) => {
             const progress = ((completed / total) * 100).toFixed(1);
             addLog(`🔄 Progress: ${progress}% - ${current}`);
           },
-          onFileComplete: (filename, result) => {
+          onFileComplete: (filename: string, result: ConversionResult) => {
             const compressionRatio =
               result.size > 0
                 ? (
@@ -277,7 +312,7 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
                         (Array.from(files).find((f) => f.name === filename)?.size || 1)) *
                     100
                   ).toFixed(1)
-                : "0.0";
+                : '0.0';
             addLog(`✅ ${filename}: ${result.size / 1024}KB (${compressionRatio}% compression)`);
           },
         });
@@ -285,18 +320,20 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
         // Create ZIP for batch download
         const zipBlob = await createZipFromResults(results, Array.from(files));
         const zipUrl = URL.createObjectURL(zipBlob);
-        const a = document.createElement("a");
+        const a = document.createElement('a');
         a.href = zipUrl;
-        a.download = "converted_images.zip";
+        a.download = 'converted_images.zip';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(zipUrl);
 
-        addLog(`💾 Batch conversion completed! Downloaded: converted_images.zip`);
-        onComplete(
-          `Successfully converted ${files.length} images to ${conversionOptions.targetFormat.toUpperCase()}`,
-        );
+        addLog('💾 Batch conversion completed! Downloaded: converted_images.zip');
+        if (onComplete) {
+          onComplete(
+            `Successfully converted ${files.length} images to ${conversionOptions.targetFormat.toUpperCase()}`
+          );
+        }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         addLog(`❌ Batch conversion failed: ${errorMessage}`);
@@ -304,24 +341,24 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
         setIsConverting(false);
       }
     },
-    [batchConvert, conversionOptions, addLog, onComplete],
+    [batchConvert, conversionOptions, addLog, onComplete]
   );
 
   // Create ZIP from results (simplified)
   const createZipFromResults = useCallback(
-    async (results: { [filename: string]: ConversionResult }, files: File[]): Promise<Blob> => {
+    async (results: { [filename: string]: ConversionResult }, _files: File[]): Promise<Blob> => {
       // In a real implementation, you'd use JSZip or similar
       // For now, return a simple text file with information
       const content = Object.entries(results)
         .map(
           ([filename, result]) =>
-            `${filename}: ${result.size} bytes, ${result.format}, ${result.processingTime}ms`,
+            `${filename}: ${result.size} bytes, ${result.format}, ${result.processingTime}ms`
         )
-        .join("\n");
+        .join('\n');
 
-      return new Blob([content], { type: "text/plain" });
+      return new Blob([content], { type: 'text/plain' });
     },
-    [],
+    []
   );
 
   // Apply preset
@@ -333,7 +370,7 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
       });
       addLog(`🎨 Applied preset: ${preset.name}`);
     },
-    [conversionOptions],
+    [conversionOptions]
   );
 
   // Handle drag and drop
@@ -348,20 +385,20 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
       e.stopPropagation();
 
       const files = Array.from(e.dataTransfer.files);
-      if (activeTab === "single") {
+      if (activeTab === 'single') {
         handleFileSelect(files);
       } else {
         handleBatchConversion(e.dataTransfer.files as FileList);
       }
     },
-    [activeTab, handleFileSelect, handleBatchConversion],
+    [activeTab, handleFileSelect, handleBatchConversion]
   );
 
   // Validate options
   useEffect(() => {
     const errors = validateOptions(conversionOptions);
     if (errors.length > 0) {
-      addLog(`⚠️ Validation warnings: ${errors.join(", ")}`);
+      addLog(`⚠️ Validation warnings: ${errors.join(', ')}`);
     }
   }, [conversionOptions, validateOptions, addLog]);
 
@@ -372,35 +409,48 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
     setConvertedResults([]);
     setProcessingLog([]);
     setCompareMode(false);
-    addLog("🔄 Reset converter");
+    addLog('🔄 Reset converter');
   }, [addLog]);
 
+  const toolConfig = {
+    id: 'image-converter',
+    name: 'Image Converter',
+    description: 'Convert images between formats with quality control and optimization',
+    category: 'image',
+    version: '1.0.0',
+    icon: '📷',
+    tags: ['image', 'converter', 'format'],
+    hasSettings: true,
+    hasHelp: true,
+    canExport: true,
+    canImport: true,
+    canCopy: false,
+    canReset: true,
+  };
+
   return (
-    <ToolWrapper
-      title="Image Converter"
-      description="Convert images between formats with quality control and optimization"
-    >
+    <ToolWrapper config={toolConfig}>
       <div className="flex flex-col space-y-4">
         {/* Controls */}
         <div className="flex flex-wrap gap-2">
-          <div className="flex items-center gap-2 bg-gray-700 rounded p-2">
-            <span className="text-white text-sm font-medium">Mode:</span>
+          <div className="flex items-center gap-2 rounded bg-gray-700 p-2">
+            <span className="font-medium text-sm text-white">Mode:</span>
             <button
-              onClick={() => setActiveTab("single")}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                activeTab === "single"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-600 text-gray-300 hover:bg-gray-500"
+              onClick={() => setActiveTab('single')}
+              className={`rounded px-3 py-1 font-medium text-sm transition-colors ${
+                activeTab === 'single'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
               }`}
             >
               Single
             </button>
             <button
-              onClick={() => setActiveTab("batch")}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                activeTab === "batch"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-600 text-gray-300 hover:bg-gray-500"
+              onClick={() => setActiveTab('batch')}
+              className={`rounded px-3 py-1 font-medium text-sm transition-colors ${
+                activeTab === 'batch'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
               }`}
             >
               Batch
@@ -408,7 +458,7 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-white text-sm font-medium">Format:</label>
+            <label className="font-medium text-sm text-white">Format:</label>
             <select
               value={conversionOptions.targetFormat}
               onChange={(e) => {
@@ -417,7 +467,7 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
                   targetFormat: e.target.value as any,
                 }));
               }}
-              className="px-3 py-2 bg-gray-700 text-white rounded border border-gray-600"
+              className="rounded border border-gray-600 bg-gray-700 px-3 py-2 text-white"
             >
               <option value="png">PNG</option>
               <option value="jpeg">JPEG</option>
@@ -427,7 +477,7 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-white text-sm font-medium">Quality:</label>
+            <label className="font-medium text-sm text-white">Quality:</label>
             <input
               type="range"
               min="0.1"
@@ -437,29 +487,29 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
               onChange={(e) => {
                 setConversionOptions((prev) => ({
                   ...prev,
-                  quality: parseFloat(e.target.value),
+                  quality: Number.parseFloat(e.target.value),
                 }));
               }}
               className="w-24"
             />
-            <span className="text-white text-sm">
+            <span className="text-sm text-white">
               {Math.round((conversionOptions.quality || 0.9) * 100)}%
             </span>
           </div>
 
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center gap-2"
+            className="flex items-center gap-2 rounded bg-purple-600 px-3 py-2 text-white hover:bg-purple-700"
           >
-            <span className="w-4 h-4">⚙️</span>
-            {showAdvanced ? "Hide" : "Advanced"}
+            <span className="h-4 w-4">⚙️</span>
+            {showAdvanced ? 'Hide' : 'Advanced'}
           </button>
 
           <button
             onClick={reset}
-            className="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 flex items-center gap-2"
+            className="flex items-center gap-2 rounded bg-gray-600 px-3 py-2 text-white hover:bg-gray-700"
           >
-            <span className="w-4 h-4">🔄</span>
+            <span className="h-4 w-4">🔄</span>
             Reset
           </button>
         </div>
@@ -473,10 +523,10 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
                 setSelectedPreset(index);
                 applyPreset(preset);
               }}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              className={`rounded px-3 py-1 font-medium text-sm transition-colors ${
                 selectedPreset === index
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
               {preset.name}
@@ -486,9 +536,9 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
 
         {/* Advanced Options */}
         {showAdvanced && (
-          <div className="bg-gray-800 rounded p-4">
-            <h3 className="text-white font-semibold mb-3">Advanced Options</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="rounded bg-gray-800 p-4">
+            <h3 className="mb-3 font-semibold text-white">Advanced Options</h3>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
               <label className="flex items-center gap-2 text-white">
                 <input
                   type="checkbox"
@@ -565,7 +615,7 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
               </label>
 
               <div className="flex items-center gap-2">
-                <label className="text-white text-sm font-medium">Color Space:</label>
+                <label className="font-medium text-sm text-white">Color Space:</label>
                 <select
                   value={conversionOptions.colorSpace}
                   onChange={(e) =>
@@ -574,7 +624,7 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
                       colorSpace: e.target.value as any,
                     }))
                   }
-                  className="px-2 py-1 bg-gray-700 text-white rounded border border-gray-600"
+                  className="rounded border border-gray-600 bg-gray-700 px-2 py-1 text-white"
                 >
                   <option value="srgb">sRGB</option>
                   <option value="rec2020">Rec.2020</option>
@@ -587,30 +637,30 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
 
         {/* File Upload Area */}
         <div
-          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+          className={`rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
             sourceFile
-              ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-              : "border-gray-600 hover:border-gray-500"
+              ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+              : 'border-gray-600 hover:border-gray-500'
           }`}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
         >
           <div className="space-y-4">
             <div className="text-6xl">📷</div>
-            <div className="text-lg font-medium text-white">
-              {sourceFile ? sourceFile.name : "Drop image here or click to browse"}
+            <div className="font-medium text-lg text-white">
+              {sourceFile ? sourceFile.name : 'Drop image here or click to browse'}
             </div>
-            <div className="text-sm text-gray-400">
-              {activeTab === "single" ? "Single image conversion" : "Batch image conversion"}
+            <div className="text-gray-400 text-sm">
+              {activeTab === 'single' ? 'Single image conversion' : 'Batch image conversion'}
             </div>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              multiple={activeTab === "batch"}
+              multiple={activeTab === 'batch'}
               onChange={(e) => {
                 if (e.target.files) {
-                  if (activeTab === "single") {
+                  if (activeTab === 'single') {
                     handleFileSelect(e.target.files);
                   } else {
                     handleBatchConversion(e.target.files);
@@ -621,42 +671,42 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
             />
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
             >
-              {activeTab === "single" ? "Select Image" : "Select Images"}
+              {activeTab === 'single' ? 'Select Image' : 'Select Images'}
             </button>
           </div>
         </div>
 
         {/* Preview Area */}
         {sourceFile && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {/* Original Image */}
             <div className="space-y-2">
-              <div className="text-white text-sm font-semibold">Original Image</div>
-              <div className="bg-gray-800 rounded p-2 text-center">
+              <div className="font-semibold text-sm text-white">Original Image</div>
+              <div className="rounded bg-gray-800 p-2 text-center">
                 <div className="text-gray-400 text-sm">
                   {originalImage
                     ? `${originalImage.width}x${originalImage.height}px`
-                    : "No image loaded"}
+                    : 'No image loaded'}
                 </div>
                 <canvas
                   ref={originalCanvasRef}
-                  className="max-w-full max-h-64 mt-2 mx-auto"
-                  style={{ display: originalImage ? "block" : "none" }}
+                  className="mx-auto mt-2 max-h-64 max-w-full"
+                  style={{ display: originalImage ? 'block' : 'none' }}
                 />
               </div>
             </div>
 
             {/* Converted Image */}
             <div className="space-y-2">
-              <div className="text-white text-sm font-semibold">
+              <div className="font-semibold text-sm text-white">
                 Converted ({conversionOptions.targetFormat.toUpperCase()})
               </div>
-              <div className="bg-gray-800 rounded p-2 text-center">
+              <div className="rounded bg-gray-800 p-2 text-center">
                 {isConverting && (
                   <div className="flex items-center justify-center py-4">
-                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
                     <span className="ml-3 text-white">Converting...</span>
                   </div>
                 )}
@@ -666,14 +716,14 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
                       {convertedResults[0].dimensions.width}x{convertedResults[0].dimensions.height}
                       px
                     </div>
-                    <canvas ref={convertedCanvasRef} className="max-w-full max-h-64 mt-2 mx-auto" />
-                    <div className="text-gray-400 text-xs mt-2">
+                    <canvas ref={convertedCanvasRef} className="mx-auto mt-2 max-h-64 max-w-full" />
+                    <div className="mt-2 text-gray-400 text-xs">
                       {(convertedResults[0].size / 1024).toFixed(2)}KB
                     </div>
                   </>
                 )}
                 {!isConverting && convertedResults.length === 0 && (
-                  <div className="text-gray-400 text-sm py-4">No conversion performed</div>
+                  <div className="py-4 text-gray-400 text-sm">No conversion performed</div>
                 )}
               </div>
             </div>
@@ -697,30 +747,30 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
 
         {/* Compare View */}
         {compareMode && originalImage && convertedResults.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <div className="text-white text-sm font-semibold">Before</div>
+              <div className="font-semibold text-sm text-white">Before</div>
               <canvas
                 ref={originalCanvasRef}
-                className="max-w-full border border-gray-600 rounded"
-                style={{ maxHeight: "400px" }}
+                className="max-w-full rounded border border-gray-600"
+                style={{ maxHeight: '400px' }}
               />
             </div>
             <div className="space-y-2">
-              <div className="text-white text-sm font-semibold">After</div>
+              <div className="font-semibold text-sm text-white">After</div>
               <canvas
                 ref={convertedCanvasRef}
-                className="max-w-full border border-gray-600 rounded"
-                style={{ maxHeight: "400px" }}
+                className="max-w-full rounded border border-gray-600"
+                style={{ maxHeight: '400px' }}
               />
             </div>
           </div>
         )}
 
         {/* Processing Log */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <h3 className="text-white font-semibold mb-2">Processing Log</h3>
-          <div className="font-mono text-sm text-gray-300 space-y-1 max-h-48 overflow-y-auto">
+        <div className="rounded-lg bg-gray-800 p-4">
+          <h3 className="mb-2 font-semibold text-white">Processing Log</h3>
+          <div className="max-h-48 space-y-1 overflow-y-auto font-mono text-gray-300 text-sm">
             {processingLog.length === 0 ? (
               <div className="text-gray-500">No processing activity yet...</div>
             ) : (
@@ -734,11 +784,11 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
         </div>
 
         {/* Info Panel */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <h3 className="text-white font-semibold mb-2">📊 Image Converter Features</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
+        <div className="rounded-lg bg-gray-800 p-4">
+          <h3 className="mb-2 font-semibold text-white">📊 Image Converter Features</h3>
+          <div className="grid grid-cols-1 gap-4 text-gray-300 text-sm md:grid-cols-2">
             <div>
-              <h4 className="font-semibold text-white mb-1">Supported Formats:</h4>
+              <h4 className="mb-1 font-semibold text-white">Supported Formats:</h4>
               <ul className="space-y-1">
                 <li>• PNG - Lossless with transparency</li>
                 <li>• JPEG - Lossy compression</li>
@@ -747,7 +797,7 @@ export const ImageConverter: React.FC<ImageConverterProps> = ({ onComplete }) =>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-white mb-1">Advanced Options:</h4>
+              <h4 className="mb-1 font-semibold text-white">Advanced Options:</h4>
               <ul className="space-y-1">
                 <li>• Quality control (10-100%)</li>
                 <li>• Progressive JPEG generation</li>

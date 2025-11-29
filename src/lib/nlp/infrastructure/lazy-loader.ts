@@ -3,11 +3,11 @@
  * Provides dynamic loading and unloading of ML models and tool bundles
  */
 
-import { ModelStatus, NLPResult, TaskStatus, NLPEvent } from "../types";
+import { ModelStatus, NLPEvent, NLPResult, TaskStatus } from '../types';
 
 export interface LoadableItem {
   id: string;
-  type: "model" | "tool" | "bundle";
+  type: 'model' | 'tool' | 'bundle';
   name: string;
   description: string;
   version: string;
@@ -26,9 +26,9 @@ export interface LoadableItem {
   error?: Error;
 }
 
-export type LoadingStatus = "unloaded" | "loading" | "loaded" | "error" | "unloading";
+export type LoadingStatus = 'unloaded' | 'loading' | 'loaded' | 'error' | 'unloading';
 
-export type LoadPriority = "critical" | "high" | "medium" | "low" | "background";
+export type LoadPriority = 'critical' | 'high' | 'medium' | 'low' | 'background';
 
 export interface LoadOptions {
   timeout?: number;
@@ -66,17 +66,17 @@ export interface LoadingStats {
 }
 
 export interface PreloadStrategy {
-  type: "eager" | "predictive" | "usage_based" | "priority_based";
+  type: 'eager' | 'predictive' | 'usage_based' | 'priority_based';
   conditions: PreloadCondition[];
   maxConcurrent: number;
   memoryThreshold: number;
 }
 
 export interface PreloadCondition {
-  type: "time" | "usage" | "priority" | "dependency" | "custom";
+  type: 'time' | 'usage' | 'priority' | 'dependency' | 'custom';
   value: any;
-  comparator: "equals" | "greater_than" | "less_than" | "contains" | "custom";
-  action: "load" | "unload" | "priority";
+  comparator: 'equals' | 'greater_than' | 'less_than' | 'contains' | 'custom';
+  action: 'load' | 'unload' | 'priority';
 }
 
 export class LazyLoader {
@@ -86,7 +86,7 @@ export class LazyLoader {
   private preloadStrategies: PreloadStrategy[] = [];
   private config: LazyLoaderConfig;
   private eventListeners: Map<string, Function[]> = new Map();
-  private isLoading: boolean = false;
+  private isLoading = false;
   private loadingTimer?: NodeJS.Timeout;
 
   constructor(config: Partial<LazyLoaderConfig> = {}) {
@@ -97,7 +97,7 @@ export class LazyLoader {
       memoryThreshold: 0.8,
       enablePreloading: true,
       enableUnloading: true,
-      cacheStrategy: "lru",
+      cacheStrategy: 'lru',
       maxCacheSize: 100,
       ...config,
     };
@@ -115,16 +115,16 @@ export class LazyLoader {
   /**
    * Register a loadable item
    */
-  registerItem(item: Omit<LoadableItem, "status" | "accessCount">): void {
+  registerItem(item: Omit<LoadableItem, 'status' | 'accessCount'>): void {
     const loadableItem: LoadableItem = {
       ...item,
-      status: "unloaded",
+      status: 'unloaded',
       accessCount: 0,
     };
 
     this.items.set(item.id, loadableItem);
 
-    this.emitEvent("item_registered", { item: loadableItem });
+    this.emitEvent('item_registered', { item: loadableItem });
   }
 
   /**
@@ -137,7 +137,7 @@ export class LazyLoader {
     }
 
     // Return cached result if already loaded
-    if (item.status === "loaded" && !options.force) {
+    if (item.status === 'loaded' && !options.force) {
       item.lastAccessed = new Date();
       item.accessCount++;
       return {
@@ -198,7 +198,7 @@ export class LazyLoader {
   /**
    * Unload an item
    */
-  async unload(id: string, force: boolean = false): Promise<boolean> {
+  async unload(id: string, force = false): Promise<boolean> {
     const item = this.items.get(id);
     if (!item) {
       return false;
@@ -210,27 +210,27 @@ export class LazyLoader {
     }
 
     // Don't unload if currently in use
-    if (item.status === "loading") {
+    if (item.status === 'loading') {
       return false;
     }
 
     try {
-      this.emitEvent("item_unloading", { item });
+      this.emitEvent('item_unloading', { item });
 
-      item.status = "unloading";
+      item.status = 'unloading';
 
       // Perform actual unloading (implementation-specific)
       await this.performUnload(item);
 
-      item.status = "unloaded";
+      item.status = 'unloaded';
       item.loadedAt = undefined;
 
-      this.emitEvent("item_unloaded", { item });
+      this.emitEvent('item_unloaded', { item });
 
       return true;
     } catch (error) {
       console.warn(`Failed to unload item ${id}:`, error);
-      item.status = "loaded";
+      item.status = 'loaded';
       return false;
     }
   }
@@ -251,12 +251,12 @@ export class LazyLoader {
 
     return {
       totalItems: items.length,
-      loadedItems: items.filter((item) => item.status === "loaded").length,
-      loadingItems: items.filter((item) => item.status === "loading").length,
-      failedItems: items.filter((item) => item.status === "error").length,
+      loadedItems: items.filter((item) => item.status === 'loaded').length,
+      loadingItems: items.filter((item) => item.status === 'loading').length,
+      failedItems: items.filter((item) => item.status === 'error').length,
       totalSize: items.reduce((sum, item) => sum + item.size, 0),
       loadedSize: items
-        .filter((item) => item.status === "loaded")
+        .filter((item) => item.status === 'loaded')
         .reduce((sum, item) => sum + item.size, 0),
       averageLoadTime: this.calculateAverageLoadTime(),
       successRate: this.calculateSuccessRate(),
@@ -267,7 +267,7 @@ export class LazyLoader {
   /**
    * Get items by type and status
    */
-  getItems(type?: "model" | "tool" | "bundle", status?: LoadingStatus): LoadableItem[] {
+  getItems(type?: 'model' | 'tool' | 'bundle', status?: LoadingStatus): LoadableItem[] {
     return Array.from(this.items.values()).filter((item) => {
       if (type && item.type !== type) return false;
       if (status && item.status !== status) return false;
@@ -282,7 +282,7 @@ export class LazyLoader {
     const item = this.items.get(id);
     if (item) {
       item.loadPriority = priority;
-      this.emitEvent("item_priority_changed", { item, priority });
+      this.emitEvent('item_priority_changed', { item, priority });
     }
   }
 
@@ -293,7 +293,7 @@ export class LazyLoader {
     const item = this.items.get(id);
     if (item) {
       item.lazy = lazy;
-      this.emitEvent("item_lazy_changed", { item, lazy });
+      this.emitEvent('item_lazy_changed', { item, lazy });
     }
   }
 
@@ -302,7 +302,7 @@ export class LazyLoader {
    */
   isLoaded(id: string): boolean {
     const item = this.items.get(id);
-    return item ? item.status === "loaded" : false;
+    return item ? item.status === 'loaded' : false;
   }
 
   /**
@@ -310,7 +310,7 @@ export class LazyLoader {
    */
   access(id: string): any {
     const item = this.items.get(id);
-    if (item && item.status === "loaded") {
+    if (item && item.status === 'loaded') {
       item.lastAccessed = new Date();
       item.accessCount++;
       return this.getItemData(item);
@@ -328,7 +328,7 @@ export class LazyLoader {
 
     for (const [id, item] of this.items.entries()) {
       if (
-        item.status === "loaded" &&
+        item.status === 'loaded' &&
         !item.persistent &&
         (!item.lastAccessed || now - item.lastAccessed.getTime() > maxAgeMs)
       ) {
@@ -338,7 +338,7 @@ export class LazyLoader {
       }
     }
 
-    this.emitEvent("cleanup_completed", { itemsCleaned: cleaned });
+    this.emitEvent('cleanup_completed', { itemsCleaned: cleaned });
     return cleaned;
   }
 
@@ -356,7 +356,7 @@ export class LazyLoader {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
-    this.eventListeners.get(event)!.push(listener);
+    this.eventListeners.get(event)?.push(listener);
   }
 
   off(event: string, listener: Function): void {
@@ -374,12 +374,12 @@ export class LazyLoader {
    */
   private async loadItem(item: LoadableItem, options: LoadOptions): Promise<LoadResult> {
     const startTime = performance.now();
-    const timeout = options.timeout || item.timeout || this.config.defaultTimeout;
+    const _timeout = options.timeout || item.timeout || this.config.defaultTimeout;
 
     try {
-      this.emitEvent("item_loading", { item });
+      this.emitEvent('item_loading', { item });
 
-      item.status = "loading";
+      item.status = 'loading';
       item.error = undefined;
 
       // Load dependencies first if required
@@ -393,13 +393,13 @@ export class LazyLoader {
 
       const loadTime = performance.now() - startTime;
 
-      item.status = "loaded";
+      item.status = 'loaded';
       item.loadedAt = new Date();
       item.lastAccessed = new Date();
       item.accessCount = 1;
       item.loadTime = loadTime;
 
-      this.emitEvent("item_loaded", { item, loadTime });
+      this.emitEvent('item_loaded', { item, loadTime });
 
       return {
         success: true,
@@ -410,10 +410,10 @@ export class LazyLoader {
     } catch (error) {
       const loadTime = performance.now() - startTime;
 
-      item.status = "error";
+      item.status = 'error';
       item.error = error as Error;
 
-      this.emitEvent("item_load_failed", { item, error, loadTime });
+      this.emitEvent('item_load_failed', { item, error, loadTime });
 
       return {
         success: false,
@@ -426,11 +426,11 @@ export class LazyLoader {
 
   private async performLoad(item: LoadableItem, options: LoadOptions): Promise<void> {
     switch (item.type) {
-      case "model":
+      case 'model':
         return this.loadModel(item, options);
-      case "tool":
+      case 'tool':
         return this.loadTool(item, options);
-      case "bundle":
+      case 'bundle':
         return this.loadBundle(item, options);
       default:
         throw new Error(`Unknown item type: ${item.type}`);
@@ -439,58 +439,64 @@ export class LazyLoader {
 
   private async performUnload(item: LoadableItem): Promise<void> {
     switch (item.type) {
-      case "model":
+      case 'model':
         return this.unloadModel(item);
-      case "tool":
+      case 'tool':
         return this.unloadTool(item);
-      case "bundle":
+      case 'bundle':
         return this.unloadBundle(item);
       default:
         throw new Error(`Unknown item type: ${item.type}`);
     }
   }
 
-  private async loadModel(item: LoadableItem, options: LoadOptions): Promise<void> {
+  private async loadModel(_item: LoadableItem, _options: LoadOptions): Promise<void> {
     // Implementation for loading ML models
     // This would integrate with TensorFlow.js or other ML frameworks
   }
 
-  private async loadTool(item: LoadableItem, options: LoadOptions): Promise<void> {
+  private async loadTool(_item: LoadableItem, _options: LoadOptions): Promise<void> {
     // Implementation for loading NLP tools
     // This would dynamically import and initialize tool components
   }
 
-  private async loadBundle(item: LoadableItem, options: LoadOptions): Promise<void> {
+  private async loadBundle(_item: LoadableItem, _options: LoadOptions): Promise<void> {
     // Implementation for loading code bundles
     // This would use dynamic imports for JavaScript modules
   }
 
-  private async unloadModel(item: LoadableItem): Promise<void> {
+  private async unloadModel(_item: LoadableItem): Promise<void> {
     // Implementation for unloading ML models
   }
 
-  private async unloadTool(item: LoadableItem): Promise<void> {
+  private async unloadTool(_item: LoadableItem): Promise<void> {
     // Implementation for unloading tools
   }
 
-  private async unloadBundle(item: LoadableItem): Promise<void> {
+  private async unloadBundle(_item: LoadableItem): Promise<void> {
     // Implementation for unloading bundles
   }
 
-  private getItemData(item: LoadableItem): any {
+  private getItemData(_item: LoadableItem): any {
     // Return the actual loaded data for the item
     // This depends on the specific implementation
     return null;
   }
 
-  private sortByPriority(ids: string[], priority: LoadPriority): string[] {
+  private sortByPriority(ids: string[], _priority: LoadPriority): string[] {
     return ids.sort((a, b) => {
       const itemA = this.items.get(a);
       const itemB = this.items.get(b);
 
       if (!itemA || !itemB) return 0;
 
-      const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3, background: 4 };
+      const priorityOrder = {
+        critical: 0,
+        high: 1,
+        medium: 2,
+        low: 3,
+        background: 4,
+      };
       return priorityOrder[itemA.loadPriority] - priorityOrder[itemB.loadPriority];
     });
   }
@@ -498,13 +504,13 @@ export class LazyLoader {
   private setupDefaultPreloadStrategies(): void {
     // Predictive preloading based on usage patterns
     this.preloadStrategies.push({
-      type: "usage_based",
+      type: 'usage_based',
       conditions: [
         {
-          type: "usage",
+          type: 'usage',
           value: 5,
-          comparator: "greater_than",
-          action: "load",
+          comparator: 'greater_than',
+          action: 'load',
         },
       ],
       maxConcurrent: 2,
@@ -513,13 +519,13 @@ export class LazyLoader {
 
     // Priority-based preloading
     this.preloadStrategies.push({
-      type: "priority_based",
+      type: 'priority_based',
       conditions: [
         {
-          type: "priority",
-          value: "critical",
-          comparator: "equals",
-          action: "load",
+          type: 'priority',
+          value: 'critical',
+          comparator: 'equals',
+          action: 'load',
         },
       ],
       maxConcurrent: 3,
@@ -539,7 +545,13 @@ export class LazyLoader {
     // Sort by priority and limit concurrent loads
     const sortedItems = matchingItems
       .sort((a, b) => {
-        const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3, background: 4 };
+        const priorityOrder = {
+          critical: 0,
+          high: 1,
+          medium: 2,
+          low: 3,
+          background: 4,
+        };
         return priorityOrder[a.loadPriority] - priorityOrder[b.loadPriority];
       })
       .slice(0, strategy.maxConcurrent);
@@ -547,7 +559,7 @@ export class LazyLoader {
     // Load items
     await this.loadMultiple(
       sortedItems.map((item) => item.id),
-      { priority: "medium" },
+      { priority: 'medium' }
     );
   }
 
@@ -555,9 +567,9 @@ export class LazyLoader {
     return Array.from(this.items.values()).filter((item) => {
       return conditions.every((condition) => {
         switch (condition.type) {
-          case "priority":
+          case 'priority':
             return this.evaluateCondition(item.loadPriority, condition.value, condition.comparator);
-          case "usage":
+          case 'usage':
             return this.evaluateCondition(item.accessCount, condition.value, condition.comparator);
           default:
             return true;
@@ -568,13 +580,13 @@ export class LazyLoader {
 
   private evaluateCondition(actual: any, expected: any, comparator: string): boolean {
     switch (comparator) {
-      case "equals":
+      case 'equals':
         return actual === expected;
-      case "greater_than":
+      case 'greater_than':
         return actual > expected;
-      case "less_than":
+      case 'less_than':
         return actual < expected;
-      case "contains":
+      case 'contains':
         return Array.isArray(actual)
           ? actual.includes(expected)
           : String(actual).includes(expected);
@@ -585,7 +597,7 @@ export class LazyLoader {
 
   private calculateAverageLoadTime(): number {
     const loadedItems = Array.from(this.items.values()).filter(
-      (item) => item.loadTime !== undefined,
+      (item) => item.loadTime !== undefined
     );
     if (loadedItems.length === 0) return 0;
 
@@ -597,12 +609,12 @@ export class LazyLoader {
     const items = Array.from(this.items.values());
     if (items.length === 0) return 1;
 
-    const successful = items.filter((item) => item.status === "loaded").length;
+    const successful = items.filter((item) => item.status === 'loaded').length;
     return successful / items.length;
   }
 
   private calculateMemoryUsage(): number {
-    const loadedItems = this.items.values().filter((item) => item.status === "loaded");
+    const loadedItems = Array.from(this.items.values()).filter((item) => item.status === 'loaded');
     return Array.from(loadedItems).reduce((sum, item) => sum + item.size, 0);
   }
 

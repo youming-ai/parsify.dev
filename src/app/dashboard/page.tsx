@@ -1,5 +1,8 @@
-"use client";
+'use client';
 
+import { MainLayout } from '@/components/layout/main-layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Activity,
   BarChart3,
@@ -10,52 +13,49 @@ import {
   Settings,
   TrendingUp,
   Zap,
-} from "lucide-react";
-import { useState } from "react";
-import { MainLayout } from "@/components/layout/main-layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+} from 'lucide-react';
+import { useState } from 'react';
 
 export default function DashboardPage() {
   const [_isLoading, _setIsLoading] = useState(false);
   const [recentActivity, _setRecentActivity] = useState([
     {
       id: 1,
-      action: "JSON formatted",
-      tool: "JSON Formatter",
-      time: "2 minutes ago",
+      action: 'JSON formatted',
+      tool: 'JSON Formatter',
+      time: '2 minutes ago',
     },
     {
       id: 2,
-      action: "Code executed",
-      tool: "Code Runner",
-      time: "15 minutes ago",
+      action: 'Code executed',
+      tool: 'Code Runner',
+      time: '15 minutes ago',
     },
     {
       id: 3,
-      action: "File converted",
-      tool: "JSON Converter",
-      time: "1 hour ago",
+      action: 'File converted',
+      tool: 'JSON Converter',
+      time: '1 hour ago',
     },
     {
       id: 4,
-      action: "Data validated",
-      tool: "Data Validator",
-      time: "2 hours ago",
+      action: 'Data validated',
+      tool: 'Data Validator',
+      time: '2 hours ago',
     },
   ]);
   const [stats, _setStats] = useState({
     totalOperations: 156,
     toolsUsed: 8,
     filesProcessed: 42,
-    timeSaved: "3.5 hours",
+    timeSaved: '3.5 hours',
   });
 
   const getWelcomeMessage = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 17) return "Good afternoon";
-    return "Good evening";
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
   };
 
   return (
@@ -74,7 +74,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  window.location.href = "/tools";
+                  window.location.href = '/tools';
                 }}
               >
                 <Settings className="mr-2 h-4 w-4" />
@@ -186,7 +186,7 @@ export default function DashboardPage() {
                     variant="outline"
                     className="h-auto justify-start p-4"
                     onClick={() => {
-                      window.location.href = "/tools/json";
+                      window.location.href = '/tools/json';
                     }}
                   >
                     <div className="flex items-center gap-3">
@@ -204,7 +204,7 @@ export default function DashboardPage() {
                     variant="outline"
                     className="h-auto justify-start p-4"
                     onClick={() => {
-                      window.location.href = "/tools/code";
+                      window.location.href = '/tools/code';
                     }}
                   >
                     <div className="flex items-center gap-3">
@@ -222,7 +222,7 @@ export default function DashboardPage() {
                     variant="outline"
                     className="h-auto justify-start p-4"
                     onClick={() => {
-                      window.location.href = "/tools/converter";
+                      window.location.href = '/tools/converter';
                     }}
                   >
                     <div className="flex items-center gap-3">
@@ -240,7 +240,7 @@ export default function DashboardPage() {
                     variant="outline"
                     className="h-auto justify-start p-4"
                     onClick={() => {
-                      window.location.href = "/tools";
+                      window.location.href = '/tools';
                     }}
                   >
                     <div className="flex items-center gap-3">

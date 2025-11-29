@@ -40,17 +40,17 @@ export interface RSAResult {
 /**
  * Generate RSA key pair
  */
-export async function generateRSAKeyPair(modulusLength: number = 2048): Promise<RSAResult> {
+export async function generateRSAKeyPair(modulusLength = 2048): Promise<RSAResult> {
   try {
     const keyPair = await crypto.subtle.generateKey(
       {
-        name: "RSA-OAEP",
+        name: 'RSA-OAEP',
         modulusLength: modulusLength,
         publicExponent: new Uint8Array([1, 0, 1]), // 65537
-        hash: { name: "SHA-256" },
+        hash: { name: 'SHA-256' },
       },
       true,
-      ["encrypt", "decrypt"],
+      ['encrypt', 'decrypt']
     );
 
     return {
@@ -60,7 +60,7 @@ export async function generateRSAKeyPair(modulusLength: number = 2048): Promise<
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Key generation failed",
+      error: error instanceof Error ? error.message : 'Key generation failed',
     };
   }
 }
@@ -68,17 +68,17 @@ export async function generateRSAKeyPair(modulusLength: number = 2048): Promise<
 /**
  * Generate RSA key pair for signing
  */
-export async function generateRSASigningKeyPair(modulusLength: number = 2048): Promise<RSAResult> {
+export async function generateRSASigningKeyPair(modulusLength = 2048): Promise<RSAResult> {
   try {
     const keyPair = await crypto.subtle.generateKey(
       {
-        name: "RSA-PSS",
+        name: 'RSA-PSS',
         modulusLength: modulusLength,
         publicExponent: new Uint8Array([1, 0, 1]), // 65537
-        hash: { name: "SHA-256" },
+        hash: { name: 'SHA-256' },
       },
       true,
-      ["sign", "verify"],
+      ['sign', 'verify']
     );
 
     return {
@@ -88,7 +88,7 @@ export async function generateRSASigningKeyPair(modulusLength: number = 2048): P
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Signing key generation failed",
+      error: error instanceof Error ? error.message : 'Signing key generation failed',
     };
   }
 }
@@ -100,7 +100,7 @@ export async function rsaEncrypt(options: RSAEncryptionOptions): Promise<RSAResu
   try {
     // Convert data to ArrayBuffer
     let dataArrayBuffer: ArrayBuffer;
-    if (typeof options.data === "string") {
+    if (typeof options.data === 'string') {
       const encoder = new TextEncoder();
       dataArrayBuffer = encoder.encode(options.data).buffer;
     } else {
@@ -109,10 +109,10 @@ export async function rsaEncrypt(options: RSAEncryptionOptions): Promise<RSAResu
 
     const encryptedData = await crypto.subtle.encrypt(
       {
-        name: "RSA-OAEP",
+        name: 'RSA-OAEP',
       },
       options.publicKey,
-      dataArrayBuffer,
+      dataArrayBuffer
     );
 
     return {
@@ -122,7 +122,7 @@ export async function rsaEncrypt(options: RSAEncryptionOptions): Promise<RSAResu
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Encryption failed",
+      error: error instanceof Error ? error.message : 'Encryption failed',
     };
   }
 }
@@ -134,10 +134,10 @@ export async function rsaDecrypt(options: RSADecryptionOptions): Promise<RSAResu
   try {
     const decryptedData = await crypto.subtle.decrypt(
       {
-        name: "RSA-OAEP",
+        name: 'RSA-OAEP',
       },
       options.privateKey,
-      options.encryptedData,
+      options.encryptedData
     );
 
     return {
@@ -147,7 +147,7 @@ export async function rsaDecrypt(options: RSADecryptionOptions): Promise<RSAResu
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Decryption failed",
+      error: error instanceof Error ? error.message : 'Decryption failed',
     };
   }
 }
@@ -159,7 +159,7 @@ export async function rsaSign(options: RSASignOptions): Promise<RSAResult> {
   try {
     // Convert data to ArrayBuffer
     let dataArrayBuffer: ArrayBuffer;
-    if (typeof options.data === "string") {
+    if (typeof options.data === 'string') {
       const encoder = new TextEncoder();
       dataArrayBuffer = encoder.encode(options.data).buffer;
     } else {
@@ -168,11 +168,11 @@ export async function rsaSign(options: RSASignOptions): Promise<RSAResult> {
 
     const signature = await crypto.subtle.sign(
       {
-        name: "RSA-PSS",
+        name: 'RSA-PSS',
         saltLength: 32,
       },
       options.privateKey,
-      dataArrayBuffer,
+      dataArrayBuffer
     );
 
     return {
@@ -182,7 +182,7 @@ export async function rsaSign(options: RSASignOptions): Promise<RSAResult> {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Signing failed",
+      error: error instanceof Error ? error.message : 'Signing failed',
     };
   }
 }
@@ -194,7 +194,7 @@ export async function rsaVerify(options: RSAVerifyOptions): Promise<RSAResult> {
   try {
     // Convert data to ArrayBuffer
     let dataArrayBuffer: ArrayBuffer;
-    if (typeof options.data === "string") {
+    if (typeof options.data === 'string') {
       const encoder = new TextEncoder();
       dataArrayBuffer = encoder.encode(options.data).buffer;
     } else {
@@ -203,12 +203,12 @@ export async function rsaVerify(options: RSAVerifyOptions): Promise<RSAResult> {
 
     const isValid = await crypto.subtle.verify(
       {
-        name: "RSA-PSS",
+        name: 'RSA-PSS',
         saltLength: 32,
       },
       options.publicKey,
       options.signature,
-      dataArrayBuffer,
+      dataArrayBuffer
     );
 
     return {
@@ -218,7 +218,7 @@ export async function rsaVerify(options: RSAVerifyOptions): Promise<RSAResult> {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Verification failed",
+      error: error instanceof Error ? error.message : 'Verification failed',
     };
   }
 }
@@ -227,12 +227,12 @@ export async function rsaVerify(options: RSAVerifyOptions): Promise<RSAResult> {
  * Export RSA key to PEM format
  */
 export async function exportRSAPublicKey(publicKey: CryptoKey): Promise<string> {
-  const exported = await crypto.subtle.exportKey("spki", publicKey);
+  const exported = await crypto.subtle.exportKey('spki', publicKey);
   const exportedAsString = String.fromCharCode.apply(null, Array.from(new Uint8Array(exported)));
   const exportedAsBase64 = btoa(exportedAsString);
-  const pemHeader = "-----BEGIN PUBLIC KEY-----";
-  const pemFooter = "-----END PUBLIC KEY-----";
-  const pemContents = exportedAsBase64.match(/.{1,64}/g)?.join("\n") || exportedAsBase64;
+  const pemHeader = '-----BEGIN PUBLIC KEY-----';
+  const pemFooter = '-----END PUBLIC KEY-----';
+  const pemContents = exportedAsBase64.match(/.{1,64}/g)?.join('\n') || exportedAsBase64;
   return `${pemHeader}\n${pemContents}\n${pemFooter}`;
 }
 
@@ -240,11 +240,11 @@ export async function exportRSAPublicKey(publicKey: CryptoKey): Promise<string> 
  * Import RSA key from PEM format
  */
 export async function importRSAPublicKey(pem: string): Promise<CryptoKey> {
-  const pemHeader = "-----BEGIN PUBLIC KEY-----";
-  const pemFooter = "-----END PUBLIC KEY-----";
+  const pemHeader = '-----BEGIN PUBLIC KEY-----';
+  const pemFooter = '-----END PUBLIC KEY-----';
   const pemContents = pem
     .substring(pemHeader.length, pem.length - pemFooter.length)
-    .replace(/\s/g, "");
+    .replace(/\s/g, '');
   const binaryDerString = atob(pemContents);
   const binaryDer = new Uint8Array(binaryDerString.length);
   for (let i = 0; i < binaryDerString.length; i++) {
@@ -252,13 +252,13 @@ export async function importRSAPublicKey(pem: string): Promise<CryptoKey> {
   }
 
   return crypto.subtle.importKey(
-    "spki",
+    'spki',
     binaryDer.buffer,
     {
-      name: "RSA-OAEP",
-      hash: { name: "SHA-256" },
+      name: 'RSA-OAEP',
+      hash: { name: 'SHA-256' },
     },
     true,
-    ["encrypt"],
+    ['encrypt']
   );
 }

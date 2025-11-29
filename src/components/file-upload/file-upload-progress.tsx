@@ -1,8 +1,8 @@
-import type React from "react";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
-import type { FileUploadProgress, FileUploadStatus } from "./file-upload-types";
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
+import type React from 'react';
+import type { FileUploadProgress, FileUploadStatus } from './file-upload-types';
 
 interface FileUploadProgressProps {
   /** Upload progress information */
@@ -38,9 +38,9 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
   const { loaded, total, percentage, speed, timeRemaining } = progress;
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
@@ -57,7 +57,7 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
 
   const getStatusIcon = () => {
     switch (status) {
-      case "pending":
+      case 'pending':
         return (
           <svg
             className="h-5 w-5 animate-pulse text-gray-400"
@@ -73,7 +73,7 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
             />
           </svg>
         );
-      case "uploading":
+      case 'uploading':
         return (
           <svg
             className="h-5 w-5 animate-spin text-blue-500"
@@ -89,7 +89,7 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
             />
           </svg>
         );
-      case "success":
+      case 'success':
         return (
           <svg
             className="h-5 w-5 text-green-500"
@@ -105,7 +105,7 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
             />
           </svg>
         );
-      case "error":
+      case 'error':
         return (
           <svg
             className="h-5 w-5 text-red-500"
@@ -121,7 +121,7 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
             />
           </svg>
         );
-      case "cancelled":
+      case 'cancelled':
         return (
           <svg
             className="h-5 w-5 text-gray-500"
@@ -144,40 +144,40 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
 
   const getStatusColor = () => {
     switch (status) {
-      case "pending":
-        return "text-gray-500";
-      case "uploading":
-        return "text-blue-500";
-      case "success":
-        return "text-green-500";
-      case "error":
-        return "text-red-500";
-      case "cancelled":
-        return "text-gray-500";
+      case 'pending':
+        return 'text-gray-500';
+      case 'uploading':
+        return 'text-blue-500';
+      case 'success':
+        return 'text-green-500';
+      case 'error':
+        return 'text-red-500';
+      case 'cancelled':
+        return 'text-gray-500';
       default:
-        return "text-gray-500";
+        return 'text-gray-500';
     }
   };
 
   const _getProgressColor = () => {
     switch (status) {
-      case "pending":
-        return "bg-gray-200";
-      case "uploading":
-        return "bg-blue-500";
-      case "success":
-        return "bg-green-500";
-      case "error":
-        return "bg-red-500";
-      case "cancelled":
-        return "bg-gray-400";
+      case 'pending':
+        return 'bg-gray-200';
+      case 'uploading':
+        return 'bg-blue-500';
+      case 'success':
+        return 'bg-green-500';
+      case 'error':
+        return 'bg-red-500';
+      case 'cancelled':
+        return 'bg-gray-400';
       default:
-        return "bg-blue-500";
+        return 'bg-blue-500';
     }
   };
 
   return (
-    <div className={cn("w-full rounded-lg border border-gray-200 bg-white p-4", className)}>
+    <div className={cn('w-full rounded-lg border border-gray-200 bg-white p-4', className)}>
       <div className="mb-3 flex items-start justify-between">
         <div className="flex min-w-0 flex-1 items-center space-x-3">
           {getStatusIcon()}
@@ -190,11 +190,11 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
         </div>
 
         <div className="flex items-center space-x-2">
-          <span className={cn("font-medium text-sm", getStatusColor())}>
+          <span className={cn('font-medium text-sm', getStatusColor())}>
             {percentage.toFixed(1)}%
           </span>
 
-          {showCancelButton && status === "uploading" && onCancel && (
+          {showCancelButton && status === 'uploading' && onCancel && (
             <Button
               variant="ghost"
               size="sm"
@@ -212,7 +212,7 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
             </Button>
           )}
 
-          {showRetryButton && status === "error" && onRetry && (
+          {showRetryButton && status === 'error' && onRetry && (
             <Button
               variant="ghost"
               size="sm"
@@ -235,7 +235,7 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
       <div className="space-y-2">
         <Progress value={percentage} className="h-2" />
 
-        {(speed || timeRemaining) && status === "uploading" && (
+        {(speed || timeRemaining) && status === 'uploading' && (
           <div className="flex justify-between text-gray-500 text-xs">
             {speed && <span>{formatSpeed(speed)}</span>}
             {timeRemaining && <span>{formatTime(timeRemaining)} remaining</span>}

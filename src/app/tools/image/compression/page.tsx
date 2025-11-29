@@ -1,33 +1,21 @@
-import { Shield } from "lucide-react";
-import type { Metadata } from "next";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import ImageCompressionClient from "./client";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Shield } from 'lucide-react';
+import type { Metadata } from 'next';
+import ImageCompressionClient from './client';
 
 export const metadata: Metadata = {
-  title: "Image Compression - Compress Images Online",
+  title: 'Image Compression - Compress Images Online',
   description:
-    "Compress images online with quality adjustment. Support for JPEG, PNG, WebP formats with instant preview.",
-  keywords: ["image compression", "resize", "optimize", "JPEG", "PNG", "WebP", "image optimizer"],
+    'Compress images online with quality adjustment. Support for JPEG, PNG, WebP formats with instant preview.',
+  keywords: ['image compression', 'resize', 'optimize', 'JPEG', 'PNG', 'WebP', 'image optimizer'],
 };
 
 export default function ImageCompressionPage() {
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4">Image Compression</h1>
-          <p className="text-xl text-muted-foreground mb-4">
-            Compress and optimize images instantly with quality control
-          </p>
-          <div className="flex justify-center gap-2 mb-4">
-            <Badge variant="secondary">Client-Side</Badge>
-            <Badge variant="outline">Privacy Protected</Badge>
-            <Badge variant="default">Instant</Badge>
-          </div>
-        </div>
-
+    <div className="container mx-auto px-4 py-8">
+      <div className="mx-auto w-full">
         <Alert className="mb-6">
           <Shield className="h-4 w-4" />
           <AlertDescription>
@@ -44,7 +32,7 @@ export default function ImageCompressionPage() {
               <CardTitle>Compression Features</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-muted-foreground text-sm">
                 <li>• Quality adjustment (0-100%)</li>
                 <li>• Multiple format support (JPEG, PNG, WebP)</li>
                 <li>• Real-time preview</li>
@@ -62,7 +50,7 @@ export default function ImageCompressionPage() {
               <CardTitle>Supported Formats</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-muted-foreground text-sm">
                 <li>
                   • <strong>JPEG:</strong> Lossy compression, ideal for photos
                 </li>

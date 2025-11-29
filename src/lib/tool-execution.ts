@@ -25,7 +25,7 @@ export interface ExecutionRequest {
   input: any;
   config?: Record<string, any>;
   context: ExecutionContext;
-  priority?: "low" | "normal" | "high" | "critical";
+  priority?: 'low' | 'normal' | 'high' | 'critical';
 }
 
 export interface ExecutionResult {
@@ -41,7 +41,7 @@ export interface ExecutionResult {
     bytesProcessed?: number;
   };
   logs: Array<{
-    level: "debug" | "info" | "warn" | "error";
+    level: 'debug' | 'info' | 'warn' | 'error';
     message: string;
     timestamp: number;
   }>;
@@ -68,7 +68,7 @@ export interface ToolExecutor {
   // Optional methods for enhanced functionality
   validate?(
     input: any,
-    config?: Record<string, any>,
+    config?: Record<string, any>
   ): Promise<{
     valid: boolean;
     errors: string[];
@@ -98,18 +98,21 @@ export interface ToolExecutor {
 }
 
 export class ToolExecutionService {
+  private static instance: ToolExecutionService;
   private executors: Map<string, ToolExecutor>;
   private activeExecutions: Map<string, AbortController>;
   private executionQueue: ExecutionRequest[];
   private maxConcurrentExecutions: number;
   private eventListeners: Map<string, Function[]>;
+  private defaultTimeout: number;
+  private defaultMemoryLimit: number;
 
   private constructor(
     config: {
       maxConcurrentExecutions?: number;
       defaultTimeout?: number;
       defaultMemoryLimit?: number;
-    } = {},
+    } = {}
   ) {
     this.executors = new Map();
     this.activeExecutions = new Map();
@@ -120,6 +123,10 @@ export class ToolExecutionService {
     this.eventListeners = new Map();
 
     this.startExecutionLoop();
+  }
+
+  private startExecutionLoop(): void {
+    // Placeholder for execution queue processing
   }
 
   public static getInstance(config?: {
@@ -138,7 +145,7 @@ export class ToolExecutionService {
    */
   public registerExecutor(executor: ToolExecutor): void {
     this.executors.set(executor.toolId, executor);
-    this.emit("executor:registered", { toolId: executor.toolId, executor });
+    this.emit('executor:registered', { toolId: executor.toolId, executor });
   }
 
   /**
@@ -146,7 +153,7 @@ export class ToolExecutionService {
    */
   public unregisterExecutor(toolId: string): void {
     this.executors.delete(toolId);
-    this.emit("executor:unregistered", { toolId });
+    this.emit('executor:unregistered', { toolId });
   }
 
   /**
@@ -198,7 +205,7 @@ export class ToolExecutionService {
     if (this.activeExecutions.size >= this.maxConcurrentExecutions) {
       // Add to queue
       this.executionQueue.push(enhancedRequest);
-      this.emit("execution:queued", { request: enhancedRequest });
+      this.emit('execution:queued', { request: enhancedRequest });
 
       // Wait for execution
       return new Promise((resolve, reject) => {
@@ -226,7 +233,7 @@ export class ToolExecutionService {
    */
   private async executeWithMonitoring(
     request: ExecutionRequest,
-    executor: ToolExecutor,
+    executor: ToolExecutor
   ): Promise<ExecutionResult> {
     const startTime = performance.now();
     const startMemory = this.getMemoryUsage();
@@ -234,7 +241,7 @@ export class ToolExecutionService {
 
     // Register as active execution
     this.activeExecutions.set(request.id, abortController);
-    this.emit("execution:started", { request });
+    this.emit('execution:started', { request });
 
     try {
       // Check resource requirements
@@ -243,7 +250,7 @@ export class ToolExecutionService {
 
         if (requirements.maxMemory && requirements.maxMemory > request.context.memoryLimit!) {
           throw new Error(
-            `Tool requires ${requirements.maxMemory} bytes, but limit is ${request.context.memoryLimit} bytes`,
+            `Tool requires ${requirements.maxMemory} bytes, but limit is ${request.context.memoryLimit} bytes`
           );
         }
 
@@ -252,7 +259,7 @@ export class ToolExecutionService {
           requirements.maxExecutionTime > request.context.timeout!
         ) {
           throw new Error(
-            `Tool requires ${requirements.maxExecutionTime}ms, but timeout is ${request.context.timeout}ms`,
+            `Tool requires ${requirements.maxExecutionTime}ms, but timeout is ${request.context.timeout}ms`
           );
         }
       }
@@ -261,7 +268,7 @@ export class ToolExecutionService {
       if (executor.validate) {
         const validation = await executor.validate(request.input, request.config);
         if (!validation.valid) {
-          throw new Error(`Input validation failed: ${validation.errors.join(", ")}`);
+          throw new Error(`Input validation failed: ${validation.errors.join(', ')}`);
         }
       }
 
@@ -293,10 +300,9 @@ export class ToolExecutionService {
       const enhancedResult: ExecutionResult = {
         ...result,
         metadata: {
-          executionTime,
+          ...result.metadata,
           memoryUsed,
           cpuTime: executionTime, // Simplified - real CPU time would require more complex monitoring
-          ...result.metadata,
         },
       };
 
@@ -305,7 +311,7 @@ export class ToolExecutionService {
         await executor.onAfterExecute(request, enhancedResult);
       }
 
-      this.emit("execution:completed", { request, result: enhancedResult });
+      this.emit('execution:completed', { request, result: enhancedResult });
       return enhancedResult;
     } catch (error) {
       // Call error hook
@@ -316,7 +322,7 @@ export class ToolExecutionService {
       const errorResult: ExecutionResult = {
         id: request.id,
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : 'Unknown error',
         metadata: {
           executionTime: performance.now() - startTime,
           memoryUsed: Math.max(0, this.getMemoryUsage() - startMemory),
@@ -324,15 +330,15 @@ export class ToolExecutionService {
         },
         logs: [
           {
-            level: "error",
-            message: error instanceof Error ? error.message : "Unknown error",
+            level: 'error',
+            message: error instanceof Error ? error.message : 'Unknown error',
             timestamp: Date.now(),
           },
         ],
         context: request.context,
       };
 
-      this.emit("execution:failed", { request, error: errorResult });
+      this.emit('execution:failed', { request, error: errorResult });
       return errorResult;
     } finally {
       // Cleanup
@@ -362,7 +368,7 @@ export class ToolExecutionService {
     if (abortController) {
       abortController.abort();
       this.activeExecutions.delete(executionId);
-      this.emit("execution:cancelled", { executionId });
+      this.emit('execution:cancelled', { executionId });
       return true;
     }
 
@@ -370,7 +376,7 @@ export class ToolExecutionService {
     const queueIndex = this.executionQueue.findIndex((req) => req.id === executionId);
     if (queueIndex !== -1) {
       this.executionQueue.splice(queueIndex, 1);
-      this.emit("execution:cancelled", { executionId });
+      this.emit('execution:cancelled', { executionId });
       return true;
     }
 
@@ -381,17 +387,17 @@ export class ToolExecutionService {
    * Get execution status
    */
   public getExecutionStatus(
-    executionId: string,
-  ): "pending" | "running" | "completed" | "cancelled" | "not-found" {
+    executionId: string
+  ): 'pending' | 'running' | 'completed' | 'cancelled' | 'not-found' {
     if (this.activeExecutions.has(executionId)) {
-      return "running";
+      return 'running';
     }
 
     if (this.executionQueue.some((req) => req.id === executionId)) {
-      return "pending";
+      return 'pending';
     }
 
-    return "not-found"; // Would need persistence for completed status
+    return 'not-found'; // Would need persistence for completed status
   }
 
   /**
@@ -413,14 +419,14 @@ export class ToolExecutionService {
    */
   public clearQueue(): void {
     this.executionQueue.length = 0;
-    this.emit("queue:cleared");
+    this.emit('queue:cleared');
   }
 
   /**
    * Get memory usage (simplified)
    */
   private getMemoryUsage(): number {
-    if (typeof performance !== "undefined" && "memory" in performance) {
+    if (typeof performance !== 'undefined' && 'memory' in performance) {
       return (performance as any).memory.usedJSHeapSize || 0;
     }
     return 0;
@@ -431,23 +437,23 @@ export class ToolExecutionService {
    */
   private validateExecutionRequest(request: ExecutionRequest): void {
     if (!request.id) {
-      throw new Error("Execution request must have an ID");
+      throw new Error('Execution request must have an ID');
     }
 
     if (!request.toolId) {
-      throw new Error("Execution request must have a tool ID");
+      throw new Error('Execution request must have a tool ID');
     }
 
     if (!request.context) {
-      throw new Error("Execution request must have context");
+      throw new Error('Execution request must have context');
     }
 
     if (request.context.timeout && request.context.timeout <= 0) {
-      throw new Error("Timeout must be greater than 0");
+      throw new Error('Timeout must be greater than 0');
     }
 
     if (request.context.memoryLimit && request.context.memoryLimit <= 0) {
-      throw new Error("Memory limit must be greater than 0");
+      throw new Error('Memory limit must be greater than 0');
     }
   }
 
@@ -471,7 +477,7 @@ export class ToolExecutionService {
     }
   }
 
-  private emit(event: string, data: any): void {
+  private emit(event: string, data?: any): void {
     const listeners = this.eventListeners.get(event) || [];
     listeners.forEach((listener) => {
       try {
@@ -515,7 +521,7 @@ export class ToolExecutionService {
     // Clear listeners
     this.eventListeners.clear();
 
-    this.emit("service:disposed", {});
+    this.emit('service:disposed', {});
   }
 }
 

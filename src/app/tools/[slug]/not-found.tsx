@@ -1,3 +1,6 @@
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { categories, getPopularTools, getToolsByCategory } from '@/data/tools-data';
 import {
   AlertCircle,
   ArrowLeft,
@@ -12,11 +15,9 @@ import {
   Shield,
   Terminal,
   Zap,
-} from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { categories, getPopularTools, getToolsByCategory } from "@/data/tools-data";
+} from 'lucide-react';
+import Link from 'next/link';
+import type React from 'react';
 
 export default function ToolNotFound() {
   const popularTools = getPopularTools();
@@ -157,12 +158,12 @@ function getToolIcon(iconName: string) {
 
 function getCategoryIcon(category: string) {
   const icons: Record<string, React.ComponentType<{ className?: string }>> = {
-    "JSON Tools": Database,
-    "Common/Auxiliary Tools": Code,
-    "Image/Media Tools": Image,
-    "Network/Ops/Encoding Tools": Settings,
-    "Text Tools": FileText,
-    "Encryption/Hashing/Generation": Shield,
+    'JSON Tools': Database,
+    'Common/Auxiliary Tools': Code,
+    'Image/Media Tools': Image,
+    'Network/Ops/Encoding Tools': Settings,
+    'Text Tools': FileText,
+    'Encryption/Hashing/Generation': Shield,
   };
   return icons[category] || Code;
 }

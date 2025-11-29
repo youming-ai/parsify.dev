@@ -1,17 +1,46 @@
 /**
  * Canvas Operations Utilities
  *
- * Provides comprehensive image manipulation utilities using Canvas API with:
- * - Format conversion between PNG, JPEG, WebP, GIF
- * - Image resizing with various quality settings
- * - Cropping with aspect ratio support
- * - Color adjustments and filters
- * - Text and image watermarking
- * - Performance optimizations for large images
- * - Memory management and cleanup
+ * A comprehensive image manipulation library built on the HTML5 Canvas API. This hook
+ * provides a complete suite of image processing capabilities optimized for both
+ * performance and memory efficiency.
+ *
+ * 🎨 **Core Features:**
+ * - Multi-format image conversion (PNG, JPEG, WebP, GIF)
+ * - Advanced resizing with quality controls and aspect ratio preservation
+ * - Precision cropping with customizable regions
+ * - Rich filter system (brightness, contrast, saturation, blur, etc.)
+ * - Flexible watermarking system (text and image watermarks)
+ * - Performance optimizations for handling large images
+ * - Automatic memory management and resource cleanup
+ *
+ * 🔧 **Technical Implementation:**
+ * - Uses OffscreenCanvas for better performance when available
+ * - Implements lazy loading for image resources
+ * - Provides memory-aware processing for large files
+ * - Supports both client-side and hybrid processing modes
+ *
+ * @example
+ * ```typescript
+ * const {
+ *   loadImage,
+ *   resizeImage,
+ *   applyFilters,
+ *   addWatermark,
+ *   convertToFormat
+ * } = useCanvasOperations();
+ *
+ * // Load and process an image
+ * const image = await loadImage(file);
+ * const resized = resizeImage(image, { width: 800, maintainAspectRatio: true });
+ * const filtered = applyFilters(resized, { brightness: 10, contrast: 5 });
+ * const final = addWatermark(filtered, { text: '© 2024', position: 'bottom-right' });
+ * ```
+ *
+ * @since 1.0.0
  */
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from 'react';
 
 export interface ImageDimensions {
   width: number;
@@ -29,7 +58,7 @@ export interface ResizeOptions {
   width?: number;
   height?: number;
   maintainAspectRatio?: boolean;
-  fitType?: "contain" | "cover" | "fill" | "none";
+  fitType?: 'contain' | 'cover' | 'fill' | 'none';
   quality?: number; // 0.0 - 1.0 for JPEG/WebP
 }
 
@@ -47,7 +76,7 @@ export interface FilterOptions {
 export interface WatermarkOptions {
   text?: string;
   image?: string | HTMLImageElement;
-  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center";
+  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';
   opacity?: number; // 0.0 - 1.0
   fontSize?: number;
   fontFamily?: string;
@@ -57,7 +86,7 @@ export interface WatermarkOptions {
 }
 
 export interface ProcessingOptions {
-  format?: "png" | "jpeg" | "webp";
+  format?: 'png' | 'jpeg' | 'webp';
   quality?: number; // 0.0 - 1.0
   preserveTransparency?: boolean;
 }
@@ -73,7 +102,7 @@ export const useCanvasOperations = () => {
    * Initialize offscreen canvas for better performance
    */
   const initializeOffscreenCanvas = useCallback(() => {
-    if (typeof OffscreenCanvas !== "undefined") {
+    if (typeof OffscreenCanvas !== 'undefined') {
       offscreenCanvasRef.current = new OffscreenCanvas(1, 1);
       return offscreenCanvasRef.current;
     }
@@ -92,7 +121,7 @@ export const useCanvasOperations = () => {
       };
 
       img.onerror = () => {
-        reject(new Error("Failed to load image"));
+        reject(new Error('Failed to load image'));
       };
 
       if (source instanceof File || source instanceof Blob) {
@@ -109,8 +138,8 @@ export const useCanvasOperations = () => {
       }
 
       // Enable CORS for external images
-      if (typeof source === "string" && source.startsWith("http")) {
-        img.crossOrigin = "anonymous";
+      if (typeof source === 'string' && source.startsWith('http')) {
+        img.crossOrigin = 'anonymous';
       }
     });
   }, []);
@@ -120,8 +149,8 @@ export const useCanvasOperations = () => {
    */
   const createCanvasFromImage = useCallback(
     (image: HTMLImageElement, targetDimensions?: ImageDimensions): HTMLCanvasElement => {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d")!;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
 
       const { width, height } = targetDimensions || image;
       canvas.width = width;
@@ -130,7 +159,7 @@ export const useCanvasOperations = () => {
       ctx.drawImage(image, 0, 0, width, height);
       return canvas;
     },
-    [],
+    []
   );
 
   /**
@@ -142,7 +171,7 @@ export const useCanvasOperations = () => {
         width,
         height,
         maintainAspectRatio = true,
-        fitType = "contain",
+        fitType = 'contain',
         quality = 0.9,
       } = options;
 
@@ -157,7 +186,7 @@ export const useCanvasOperations = () => {
         const aspectRatio = originalWidth / originalHeight;
 
         switch (fitType) {
-          case "contain":
+          case 'contain':
             if (width && height) {
               const containerRatio = width / height;
               if (aspectRatio > containerRatio) {
@@ -172,7 +201,7 @@ export const useCanvasOperations = () => {
             }
             break;
 
-          case "cover":
+          case 'cover':
             if (width && height) {
               const containerRatio = width / height;
               if (aspectRatio > containerRatio) {
@@ -187,26 +216,26 @@ export const useCanvasOperations = () => {
             }
             break;
 
-          case "fill":
+          case 'fill':
             // Use provided dimensions without aspect ratio preservation
             break;
 
-          case "none":
+          case 'none':
             targetWidth = originalWidth;
             targetHeight = originalHeight;
             break;
         }
       }
 
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d")!;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
 
       canvas.width = Math.max(1, Math.floor(targetWidth));
       canvas.height = Math.max(1, Math.floor(targetHeight));
 
       // High-quality image rendering
       ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
+      ctx.imageSmoothingQuality = 'high';
 
       // Calculate source and destination dimensions
       let sourceX = 0;
@@ -214,7 +243,7 @@ export const useCanvasOperations = () => {
       let sourceWidth = originalWidth;
       let sourceHeight = originalHeight;
 
-      if (fitType === "cover" && maintainAspectRatio) {
+      if (fitType === 'cover' && maintainAspectRatio) {
         // Calculate crop area for cover fit
         const targetRatio = canvas.width / canvas.height;
         const sourceRatio = originalWidth / originalHeight;
@@ -237,12 +266,12 @@ export const useCanvasOperations = () => {
         0,
         0,
         canvas.width,
-        canvas.height,
+        canvas.height
       );
 
       return canvas;
     },
-    [],
+    []
   );
 
   /**
@@ -258,7 +287,7 @@ export const useCanvasOperations = () => {
         height: number;
         rotation?: number;
         quality?: number;
-      },
+      }
     ): Promise<{
       file: File;
       dataUrl: string;
@@ -287,8 +316,8 @@ export const useCanvasOperations = () => {
         const rotatedWidth = image.naturalWidth * cos + image.naturalHeight * sin;
         const rotatedHeight = image.naturalWidth * sin + image.naturalHeight * cos;
 
-        sourceCanvas = document.createElement("canvas");
-        sourceCtx = sourceCanvas.getContext("2d")!;
+        sourceCanvas = document.createElement('canvas');
+        sourceCtx = sourceCanvas.getContext('2d')!;
         sourceCanvas.width = rotatedWidth;
         sourceCanvas.height = rotatedHeight;
 
@@ -301,8 +330,8 @@ export const useCanvasOperations = () => {
       }
 
       // Create final crop canvas
-      const cropCanvas = document.createElement("canvas");
-      const cropCtx = cropCanvas.getContext("2d")!;
+      const cropCanvas = document.createElement('canvas');
+      const cropCtx = cropCanvas.getContext('2d')!;
 
       cropCanvas.width = Math.max(1, Math.floor(width));
       cropCanvas.height = Math.max(1, Math.floor(height));
@@ -317,21 +346,21 @@ export const useCanvasOperations = () => {
         0,
         0,
         cropCanvas.width,
-        cropCanvas.height,
+        cropCanvas.height
       );
 
       // Convert to data URL and blob
-      const dataUrl = cropCanvas.toDataURL("image/png", quality);
+      const dataUrl = cropCanvas.toDataURL('image/png', quality);
       const blob = await new Promise<Blob>((resolve) => {
-        cropCanvas.toBlob((blob) => resolve(blob!), "image/png", quality);
+        cropCanvas.toBlob((blob) => resolve(blob!), 'image/png', quality);
       });
 
       const fileName =
         source instanceof File
-          ? source.name.replace(/\.[^/.]+$/, "_cropped.png")
-          : "cropped_image.png";
+          ? source.name.replace(/\.[^/.]+$/, '_cropped.png')
+          : 'cropped_image.png';
 
-      const file = new File([blob], fileName, { type: "image/png" });
+      const file = new File([blob], fileName, { type: 'image/png' });
 
       return {
         file,
@@ -339,7 +368,7 @@ export const useCanvasOperations = () => {
         dimensions: { width: cropCanvas.width, height: cropCanvas.height },
       };
     },
-    [loadImage, createCanvasFromImage],
+    [loadImage, createCanvasFromImage]
   );
 
   /**
@@ -348,10 +377,10 @@ export const useCanvasOperations = () => {
   const applyFilters = useCallback(
     (
       image: HTMLImageElement | HTMLCanvasElement,
-      filters: FilterOptions = {},
+      filters: FilterOptions = {}
     ): HTMLCanvasElement => {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d")!;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
 
       canvas.width = image.width;
       canvas.height = image.height;
@@ -376,15 +405,15 @@ export const useCanvasOperations = () => {
       }
 
       if (filters.grayscale) {
-        filterString.push("grayscale(100%)");
+        filterString.push('grayscale(100%)');
       }
 
       if (filters.sepia) {
-        filterString.push("sepia(100%)");
+        filterString.push('sepia(100%)');
       }
 
       if (filters.invert) {
-        filterString.push("invert(100%)");
+        filterString.push('invert(100%)');
       }
 
       if (filters.hue) {
@@ -392,14 +421,14 @@ export const useCanvasOperations = () => {
       }
 
       if (filterString.length > 0) {
-        ctx.filter = filterString.join(" ");
+        ctx.filter = filterString.join(' ');
       }
 
       ctx.drawImage(image, 0, 0);
 
       return canvas;
     },
-    [],
+    []
   );
 
   /**
@@ -408,10 +437,10 @@ export const useCanvasOperations = () => {
   const addWatermark = useCallback(
     (
       image: HTMLImageElement | HTMLCanvasElement,
-      watermark: WatermarkOptions,
+      watermark: WatermarkOptions
     ): HTMLCanvasElement => {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d")!;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
 
       canvas.width = image.width;
       canvas.height = image.height;
@@ -426,7 +455,7 @@ export const useCanvasOperations = () => {
         // Image watermark
         let watermarkImg: HTMLImageElement;
 
-        if (typeof watermark.image === "string") {
+        if (typeof watermark.image === 'string') {
           watermarkImg = new Image();
           watermarkImg.src = watermark.image;
         } else {
@@ -457,17 +486,17 @@ export const useCanvasOperations = () => {
         let y = padding;
 
         switch (watermark.position) {
-          case "top-right":
+          case 'top-right':
             x = canvas.width - width - padding;
             break;
-          case "bottom-left":
+          case 'bottom-left':
             y = canvas.height - height - padding;
             break;
-          case "bottom-right":
+          case 'bottom-right':
             x = canvas.width - width - padding;
             y = canvas.height - height - padding;
             break;
-          case "center":
+          case 'center':
             x = (canvas.width - width) / 2;
             y = (canvas.height - height) / 2;
             break;
@@ -486,16 +515,16 @@ export const useCanvasOperations = () => {
       } else if (watermark.text) {
         // Text watermark
         const fontSize = watermark.fontSize || 24;
-        const fontFamily = watermark.fontFamily || "Arial, sans-serif";
-        const color = watermark.color || "#ffffff";
+        const fontFamily = watermark.fontFamily || 'Arial, sans-serif';
+        const color = watermark.color || '#ffffff';
 
         ctx.font = `${fontSize}px ${fontFamily}`;
         ctx.fillStyle = color;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
 
         const padding = watermark.padding || 20;
-        const lines = watermark.text.split("\n");
+        const lines = watermark.text.split('\n');
         const lineHeight = fontSize * 1.2;
 
         // Calculate position
@@ -503,27 +532,27 @@ export const useCanvasOperations = () => {
         let y = padding;
 
         switch (watermark.position) {
-          case "top-left":
-            ctx.textAlign = "left";
+          case 'top-left':
+            ctx.textAlign = 'left';
             x = padding;
             break;
-          case "top-right":
-            ctx.textAlign = "right";
+          case 'top-right':
+            ctx.textAlign = 'right';
             x = canvas.width - padding;
             break;
-          case "bottom-left":
-            ctx.textAlign = "left";
-            ctx.textBaseline = "bottom";
+          case 'bottom-left':
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'bottom';
             x = padding;
             y = canvas.height - padding - (lines.length - 1) * lineHeight;
             break;
-          case "bottom-right":
-            ctx.textAlign = "right";
-            ctx.textBaseline = "bottom";
+          case 'bottom-right':
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'bottom';
             x = canvas.width - padding;
             y = canvas.height - padding - (lines.length - 1) * lineHeight;
             break;
-          case "center":
+          case 'center':
             // Center is default
             y = (canvas.height - (lines.length - 1) * lineHeight) / 2;
             break;
@@ -549,7 +578,7 @@ export const useCanvasOperations = () => {
 
       return canvas;
     },
-    [],
+    []
   );
 
   /**
@@ -558,41 +587,61 @@ export const useCanvasOperations = () => {
   const convertToFormat = useCallback(
     (
       canvas: HTMLCanvasElement | OffscreenCanvas,
-      options: ProcessingOptions = {},
+      options: ProcessingOptions = {}
     ): Promise<Blob> => {
-      const { format = "png", quality = 0.9, preserveTransparency = true } = options;
+      const { format = 'png', quality = 0.9, preserveTransparency = true } = options;
 
       return new Promise((resolve, reject) => {
         try {
           // Handle transparent backgrounds for JPEG
-          if (format === "jpeg" && !preserveTransparency) {
-            const _ctx = canvas.getContext("2d")!;
-            const tempCanvas = document.createElement("canvas");
-            const tempCtx = tempCanvas.getContext("2d")!;
+          if (format === 'jpeg' && !preserveTransparency) {
+            const _ctx = canvas.getContext('2d')!;
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d')!;
 
             tempCanvas.width = canvas.width;
             tempCanvas.height = canvas.height;
 
             // Fill white background for JPEG
-            tempCtx.fillStyle = "#ffffff";
+            tempCtx.fillStyle = '#ffffff';
             tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
             tempCtx.drawImage(canvas, 0, 0);
 
-            if ("toBlob" in tempCanvas) {
-              tempCanvas.toBlob(resolve, `image/${format}`, quality);
+            if ('toBlob' in tempCanvas) {
+              tempCanvas.toBlob(
+                (blob) => {
+                  if (blob) {
+                    resolve(blob);
+                  } else {
+                    reject(new Error('Failed to generate blob'));
+                  }
+                },
+                `image/${format}`,
+                quality
+              );
             } else {
-              reject(new Error("Canvas toBlob not supported"));
+              reject(new Error('Canvas toBlob not supported'));
             }
           } else {
-            if ("toBlob" in canvas) {
-              canvas.toBlob(resolve, `image/${format}`, quality);
+            if ('toBlob' in canvas) {
+              canvas.toBlob(
+                (blob) => {
+                  if (blob) {
+                    resolve(blob);
+                  } else {
+                    reject(new Error('Failed to generate blob'));
+                  }
+                },
+                `image/${format}`,
+                quality
+              );
             } else if (canvas instanceof OffscreenCanvas) {
               canvas
                 .convertToBlob({ type: `image/${format}`, quality })
                 .then(resolve)
                 .catch(reject);
             } else {
-              reject(new Error("Canvas toBlob not supported"));
+              reject(new Error('Canvas toBlob not supported'));
             }
           }
         } catch (error) {
@@ -600,7 +649,7 @@ export const useCanvasOperations = () => {
         }
       });
     },
-    [],
+    []
   );
 
   /**
@@ -623,7 +672,7 @@ export const useCanvasOperations = () => {
         };
 
         img.onerror = () => {
-          reject(new Error("Failed to load image"));
+          reject(new Error('Failed to load image'));
         };
 
         if (source instanceof File || source instanceof Blob) {
@@ -633,14 +682,14 @@ export const useCanvasOperations = () => {
         }
       });
     },
-    [],
+    []
   );
 
   /**
    * Create thumbnail
    */
   const createThumbnail = useCallback(
-    (image: HTMLImageElement, maxSize: number = 200): HTMLCanvasElement => {
+    (image: HTMLImageElement, maxSize = 200): HTMLCanvasElement => {
       const { width, height } = image;
 
       // Calculate thumbnail dimensions
@@ -663,10 +712,10 @@ export const useCanvasOperations = () => {
         width: thumbnailWidth,
         height: thumbnailHeight,
         maintainAspectRatio: true,
-        fitType: "contain",
+        fitType: 'contain',
       });
     },
-    [resizeImage],
+    [resizeImage]
   );
 
   /**
@@ -706,7 +755,7 @@ export const useCanvasOperations = () => {
 export const calculateCropArea = (
   originalDimensions: ImageDimensions,
   targetAspectRatio: number,
-  cropArea: Partial<CropArea>,
+  cropArea: Partial<CropArea>
 ): CropArea => {
   const { width: originalWidth, height: originalHeight } = originalDimensions;
   const { x = 0, y = 0 } = cropArea;
@@ -750,7 +799,7 @@ export const calculateCropArea = (
 export const estimateFileSize = (
   dimensions: ImageDimensions,
   format: string,
-  quality: number = 0.9,
+  quality = 0.9
 ): number => {
   const { width, height } = dimensions;
   const pixels = width * height;
@@ -759,13 +808,13 @@ export const estimateFileSize = (
   let bytesPerPixel = 3; // Default for RGB
 
   switch (format.toLowerCase()) {
-    case "png":
+    case 'png':
       bytesPerPixel = 4; // RGBA
       break;
-    case "jpeg":
+    case 'jpeg':
       bytesPerPixel = quality * 2; // Lossy compression
       break;
-    case "webp":
+    case 'webp':
       bytesPerPixel = quality * 2.5; // Better compression
       break;
     default:

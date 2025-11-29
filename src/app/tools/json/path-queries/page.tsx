@@ -1,46 +1,20 @@
-"use client";
+'use client';
 
-import { FileJson } from "lucide-react";
-import Link from "next/link";
-import { JsonToolComplete } from "@/components/tools/json/json-tool-complete";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { JsonPathQueries } from '@/components/tools/json/jsonpath-queries';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileJson } from 'lucide-react';
+import Link from 'next/link';
 
 export default function JsonPathQueriesPage() {
   return (
     <div className="container mx-auto py-6">
       {/* Breadcrumb Navigation */}
-      <nav className="mb-6 flex items-center space-x-2 text-gray-600 text-sm">
-        <Link href="/" className="hover:text-gray-900">
-          Home
-        </Link>
-        <span>/</span>
-        <Link href="/tools" className="hover:text-gray-900">
-          Tools
-        </Link>
-        <span>/</span>
-        <span className="font-medium text-gray-900">JSONPath Queries</span>
-      </nav>
 
       {/* Tool Header */}
-      <div className="mb-6">
-        <div className="mb-4 flex items-center gap-3">
-          <FileJson className="h-8 w-8 text-blue-600" />
-          <div>
-            <h1 className="font-bold text-3xl text-gray-900 dark:text-white">JSONPath Queries</h1>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">Intermediate</Badge>
-              <Badge variant="secondary">Beta</Badge>
-            </div>
-          </div>
-        </div>
-        <p className="text-gray-600 dark:text-gray-400">
-          Extract and query data from JSON using JSONPath expressions
-        </p>
-      </div>
 
       {/* Tool Component */}
-      <JsonToolComplete />
+      <JsonPathQueries />
 
       {/* Tool Features */}
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
@@ -51,19 +25,19 @@ export default function JsonPathQueriesPage() {
           <CardContent>
             <ul className="space-y-2">
               <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600"></div>
+                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
                 <span className="text-gray-700 dark:text-gray-300">JSONPath Expressions</span>
               </li>
               <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600"></div>
+                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
                 <span className="text-gray-700 dark:text-gray-300">Real-time Results</span>
               </li>
               <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600"></div>
+                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
                 <span className="text-gray-700 dark:text-gray-300">Syntax Highlighting</span>
               </li>
               <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600"></div>
+                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
                 <span className="text-gray-700 dark:text-gray-300">Query History</span>
               </li>
             </ul>
@@ -76,15 +50,15 @@ export default function JsonPathQueriesPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <span className="font-medium text-gray-900 dark:text-white">Category:</span>{" "}
+              <span className="font-medium text-gray-900 dark:text-white">Category:</span>{' '}
               <span className="text-gray-600 dark:text-gray-400">JSON Processing</span>
             </div>
             <div>
-              <span className="font-medium text-gray-900 dark:text-white">Processing:</span>{" "}
+              <span className="font-medium text-gray-900 dark:text-white">Processing:</span>{' '}
               <span className="text-gray-600 dark:text-gray-400">Client Side</span>
             </div>
             <div>
-              <span className="font-medium text-gray-900 dark:text-white">Security:</span>{" "}
+              <span className="font-medium text-gray-900 dark:text-white">Security:</span>{' '}
               <span className="text-gray-600 dark:text-gray-400">Local Only</span>
             </div>
           </CardContent>

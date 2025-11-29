@@ -1,50 +1,40 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { ThemeToggle } from "./theme-toggle";
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { ThemeToggle } from './theme-toggle';
 
 export function Header() {
   return (
-    <header
-      className="sticky top-0 z-50 w-full border-b border-gray-200/50 dark:border-gray-800/50 !bg-transparent"
-      style={{ backgroundColor: "transparent" }}
-    >
-      <div className="flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-12 w-full max-w-full">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/70 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center space-x-3 text-lg font-bold text-gray-900 dark:text-white group"
+          className="flex items-center space-x-2 font-bold text-xl tracking-tight transition-opacity hover:opacity-90"
         >
-          <div className="relative">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-white"
-              >
-                {/* Simplified logo */}
-                <path d="M3 4L8 2L13 4L13 8L8 10L3 8L3 4Z" fill="currentColor" fillOpacity="0.9" />
-                <path d="M3 8L8 10L8 14L3 12L3 8Z" fill="currentColor" fillOpacity="0.7" />
-                <path d="M13 8L8 10L8 14L13 12L13 8Z" fill="currentColor" fillOpacity="0.5" />
-              </svg>
-            </div>
-            {/* Subtle glow effect */}
-            <div className="absolute -inset-0.5 bg-blue-600/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
           </div>
-          <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Parsify.dev
+          <span className="hidden bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent sm:inline-block">
+            Parsify
           </span>
         </Link>
 
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-6 text-sm text-gray-600 dark:text-gray-300">
-            <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
-              26+ Tools
-            </span>
-          </div>
+        {/* Right Side Actions */}
+        <div className="flex items-center gap-2">
           <ThemeToggle />
         </div>
       </div>

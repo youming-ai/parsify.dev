@@ -4,12 +4,12 @@
  */
 
 // Import statements for Web Worker context
-import * as tf from "@tensorflow/tfjs";
+import * as tf from '@tensorflow/tfjs';
 
 // Types for worker messages
 export interface WorkerMessage<T = any> {
   id: string;
-  type: "init" | "process" | "load_model" | "dispose" | "health_check";
+  type: 'init' | 'process' | 'load_model' | 'dispose' | 'health_check';
   operation: string;
   data: T;
   timestamp: number;
@@ -17,13 +17,7 @@ export interface WorkerMessage<T = any> {
 
 export interface WorkerResponse<T = any> {
   id: string;
-  type:
-    | "success"
-    | "error"
-    | "progress"
-    | "initialized"
-    | "model_loaded"
-    | "disposed";
+  type: 'success' | 'error' | 'progress' | 'initialized' | 'model_loaded' | 'disposed';
   operation: string;
   data?: T;
   error?: {
@@ -106,27 +100,27 @@ async function initializeWorker(): Promise<void> {
     await tf.ready();
 
     // Set backend for optimal performance in worker
-    await tf.setBackend("webgl");
+    await tf.setBackend('webgl');
 
     workerState.initialized = true;
     workerState.metrics.lastHealthCheck = new Date();
 
-    sendResponse("initialized", "init", {
+    sendResponse('initialized', 'init', {
       backend: tf.getBackend(),
       memory: tf.memory(),
     });
   } catch (error) {
-    sendError("init", "Failed to initialize worker", error as Error);
+    sendError('init', 'Failed to initialize worker', error as Error);
     throw error;
   }
 }
 
 // Send success response
 function sendResponse<T>(
-  type: WorkerResponse["type"],
+  type: WorkerResponse['type'],
   operation: string,
   data?: T,
-  processingTime?: number,
+  processingTime?: number
 ): void {
   const response: WorkerResponse<T> = {
     id: generateId(),
@@ -143,7 +137,7 @@ function sendResponse<T>(
 function sendError(operation: string, message: string, error?: Error): void {
   const response: WorkerResponse = {
     id: generateId(),
-    type: "error",
+    type: 'error',
     operation,
     error: {
       message,
@@ -159,7 +153,7 @@ function sendError(operation: string, message: string, error?: Error): void {
 function sendProgress(operation: string, progress: ProgressData): void {
   const response: WorkerResponse = {
     id: generateId(),
-    type: "progress",
+    type: 'progress',
     operation,
     data: progress,
     timestamp: Date.now(),
@@ -191,50 +185,49 @@ function updateMetrics(success: boolean, processingTime: number): void {
 
   // Update average processing time
   const total = workerState.metrics.totalOperations;
-  const current =
-    workerState.metrics.averageProcessingTime * (total - 1) + processingTime;
+  const current = workerState.metrics.averageProcessingTime * (total - 1) + processingTime;
   workerState.metrics.averageProcessingTime = current / total;
 }
 
 // Load model in worker
 async function loadModel(data: ModelLoadData): Promise<void> {
   try {
-    sendProgress("load_model", {
-      stage: "loading",
+    sendProgress('load_model', {
+      stage: 'loading',
       current: 0,
       total: 100,
-      message: "Starting model load...",
+      message: 'Starting model load...',
     });
 
     let model: any;
 
     if (data.modelUrl) {
-      sendProgress("load_model", {
-        stage: "loading",
+      sendProgress('load_model', {
+        stage: 'loading',
         current: 25,
         total: 100,
-        message: "Fetching model from URL...",
+        message: 'Fetching model from URL...',
       });
 
       model = await tf.loadLayersModel(data.modelUrl);
     } else if (data.modelConfig) {
-      sendProgress("load_model", {
-        stage: "loading",
+      sendProgress('load_model', {
+        stage: 'loading',
         current: 50,
         total: 100,
-        message: "Creating model from config...",
+        message: 'Creating model from config...',
       });
 
       model = tf.sequential(data.modelConfig);
     } else {
-      throw new Error("No model URL or configuration provided");
+      throw new Error('No model URL or configuration provided');
     }
 
-    sendProgress("load_model", {
-      stage: "loading",
+    sendProgress('load_model', {
+      stage: 'loading',
       current: 75,
       total: 100,
-      message: "Compiling model...",
+      message: 'Compiling model...',
     });
 
     // Compile model if optimizer is provided
@@ -245,14 +238,14 @@ async function loadModel(data: ModelLoadData): Promise<void> {
     workerState.models.set(data.modelId, model);
     updateMemoryMetrics();
 
-    sendProgress("load_model", {
-      stage: "loading",
+    sendProgress('load_model', {
+      stage: 'loading',
       current: 100,
       total: 100,
-      message: "Model loaded successfully",
+      message: 'Model loaded successfully',
     });
 
-    sendResponse("model_loaded", "load_model", {
+    sendResponse('model_loaded', 'load_model', {
       modelId: data.modelId,
       memoryInfo: tf.memory(),
       modelInfo: {
@@ -263,11 +256,7 @@ async function loadModel(data: ModelLoadData): Promise<void> {
       },
     });
   } catch (error) {
-    sendError(
-      "load_model",
-      `Failed to load model ${data.modelId}`,
-      error as Error,
-    );
+    sendError('load_model', `Failed to load model ${data.modelId}`, error as Error);
     throw error;
   }
 }
@@ -280,29 +269,29 @@ async function processOperation(data: ProcessingData): Promise<any> {
     const { input, modelId, operation, options = {} } = data;
 
     sendProgress(operation, {
-      stage: "preprocessing",
+      stage: 'preprocessing',
       current: 0,
       total: 100,
-      message: "Starting preprocessing...",
+      message: 'Starting preprocessing...',
     });
 
     // Preprocessing
     let processedInput: any;
-    if (typeof input === "string") {
+    if (typeof input === 'string') {
       processedInput = await preprocessText(input, operation, options);
     } else if (Array.isArray(input)) {
       processedInput = await Promise.all(
-        input.map((text) => preprocessText(text, operation, options)),
+        input.map((text) => preprocessText(text, operation, options))
       );
     } else {
       processedInput = input;
     }
 
     sendProgress(operation, {
-      stage: "inference",
+      stage: 'inference',
       current: 50,
       total: 100,
-      message: "Running model inference...",
+      message: 'Running model inference...',
     });
 
     // Model inference
@@ -312,28 +301,24 @@ async function processOperation(data: ProcessingData): Promise<any> {
       result = await runInference(model, processedInput, operation, options);
     } else {
       // Run without model (rule-based or algorithmic processing)
-      result = await runAlgorithmicOperation(
-        processedInput,
-        operation,
-        options,
-      );
+      result = await runAlgorithmicOperation(processedInput, operation, options);
     }
 
     sendProgress(operation, {
-      stage: "postprocessing",
+      stage: 'postprocessing',
       current: 80,
       total: 100,
-      message: "Postprocessing results...",
+      message: 'Postprocessing results...',
     });
 
     // Postprocessing
     const finalResult = await postprocessResult(result, operation, options);
 
     sendProgress(operation, {
-      stage: "complete",
+      stage: 'complete',
       current: 100,
       total: 100,
-      message: "Processing complete",
+      message: 'Processing complete',
     });
 
     const processingTime = performance.now() - startTime;
@@ -349,17 +334,13 @@ async function processOperation(data: ProcessingData): Promise<any> {
 }
 
 // Text preprocessing
-async function preprocessText(
-  text: string,
-  operation: string,
-  options: any,
-): Promise<any> {
+async function preprocessText(text: string, operation: string, options: any): Promise<any> {
   // Basic preprocessing steps
   let processed = text.toLowerCase().trim();
 
   // Remove special characters for some operations
   if (options.removeSpecialChars) {
-    processed = processed.replace(/[^\w\s]/g, "");
+    processed = processed.replace(/[^\w\s]/g, '');
   }
 
   // Tokenization
@@ -367,15 +348,16 @@ async function preprocessText(
 
   // Convert to numerical representation
   switch (operation) {
-    case "sentiment":
-    case "classification":
+    case 'sentiment':
+    case 'classification':
       return { tokens, text: processed, length: tokens.length };
 
-    case "embedding":
+    case 'embedding': {
       // Convert to token indices (simplified)
       const vocab = getBasicVocabulary();
       const indices = tokens.map((token) => vocab.get(token) || 0);
       return { indices, tokens, length: indices.length };
+    }
 
     default:
       return { text: processed, tokens };
@@ -386,8 +368,8 @@ async function preprocessText(
 async function runInference(
   model: any,
   input: any,
-  operation: string,
-  options: any,
+  _operation: string,
+  _options: any
 ): Promise<any> {
   // Convert input to tensor
   let inputTensor: any;
@@ -396,8 +378,8 @@ async function runInference(
     // Batch processing
     inputTensor = tf.tensor2d(
       input.map(
-        (item) => item.indices || [item.length], // Simple feature extraction
-      ),
+        (item) => item.indices || [item.length] // Simple feature extraction
+      )
     );
   } else {
     // Single input
@@ -415,26 +397,22 @@ async function runInference(
 }
 
 // Algorithmic operations (no ML model)
-async function runAlgorithmicOperation(
-  input: any,
-  operation: string,
-  options: any,
-): Promise<any> {
+async function runAlgorithmicOperation(input: any, operation: string, options: any): Promise<any> {
   switch (operation) {
-    case "sentiment_simple":
+    case 'sentiment_simple':
       return simpleSentimentAnalysis(input.text || input);
 
-    case "keyword_extraction":
+    case 'keyword_extraction':
       return extractKeywords(input.text || input, options.maxKeywords || 5);
 
-    case "language_detection":
+    case 'language_detection':
       return detectLanguage(input.text || input);
 
-    case "text_similarity":
+    case 'text_similarity':
       if (Array.isArray(input) && input.length >= 2) {
         return calculateTextSimilarity(input[0].text, input[1].text);
       }
-      throw new Error("Text similarity requires at least 2 texts");
+      throw new Error('Text similarity requires at least 2 texts');
 
     default:
       throw new Error(`Unknown algorithmic operation: ${operation}`);
@@ -442,17 +420,13 @@ async function runAlgorithmicOperation(
 }
 
 // Postprocessing
-async function postprocessResult(
-  result: any,
-  operation: string,
-  options: any,
-): Promise<any> {
+async function postprocessResult(result: any, operation: string, options: any): Promise<any> {
   switch (operation) {
-    case "sentiment":
-    case "classification":
+    case 'sentiment':
+    case 'classification': {
       const scores = Array.isArray(result) ? result : [result];
       const maxIndex = scores.indexOf(Math.max(...scores));
-      const labels = options.labels || ["negative", "neutral", "positive"];
+      const labels = options.labels || ['negative', 'neutral', 'positive'];
       return {
         prediction: labels[maxIndex],
         confidence: scores[maxIndex],
@@ -461,31 +435,32 @@ async function postprocessResult(
           score: scores[i],
         })),
       };
+    }
 
-    case "embedding":
+    case 'embedding':
       return {
         embedding: result,
         dimensions: result.length,
         normalized: normalizeVector(result),
       };
 
-    case "sentiment_simple":
+    case 'sentiment_simple':
       return result;
 
-    case "keyword_extraction":
+    case 'keyword_extraction':
       return {
         keywords: result,
         count: result.length,
       };
 
-    case "language_detection":
+    case 'language_detection':
       return {
         language: result.language,
         confidence: result.confidence,
         supported: true,
       };
 
-    case "text_similarity":
+    case 'text_similarity':
       return {
         similarity: result,
         threshold: options.threshold || 0.5,
@@ -499,40 +474,22 @@ async function postprocessResult(
 
 // Simple algorithmic implementations
 function simpleSentimentAnalysis(text: string): any {
-  const positiveWords = [
-    "good",
-    "great",
-    "excellent",
-    "amazing",
-    "wonderful",
-    "fantastic",
-  ];
-  const negativeWords = [
-    "bad",
-    "terrible",
-    "awful",
-    "horrible",
-    "disgusting",
-    "worst",
-  ];
+  const positiveWords = ['good', 'great', 'excellent', 'amazing', 'wonderful', 'fantastic'];
+  const negativeWords = ['bad', 'terrible', 'awful', 'horrible', 'disgusting', 'worst'];
 
   const words = text.toLowerCase().split(/\s+/);
-  const positiveCount = words.filter((word) =>
-    positiveWords.includes(word),
-  ).length;
-  const negativeCount = words.filter((word) =>
-    negativeWords.includes(word),
-  ).length;
+  const positiveCount = words.filter((word) => positiveWords.includes(word)).length;
+  const negativeCount = words.filter((word) => negativeWords.includes(word)).length;
 
   const total = positiveCount + negativeCount;
   if (total === 0) {
-    return { sentiment: "neutral", confidence: 0.5, score: 0 };
+    return { sentiment: 'neutral', confidence: 0.5, score: 0 };
   }
 
   const score = (positiveCount - negativeCount) / total;
-  let sentiment = "neutral";
-  if (score > 0.1) sentiment = "positive";
-  else if (score < -0.1) sentiment = "negative";
+  let sentiment = 'neutral';
+  if (score > 0.1) sentiment = 'positive';
+  else if (score < -0.1) sentiment = 'negative';
 
   return { sentiment, confidence: Math.abs(score), score };
 }
@@ -540,25 +497,25 @@ function simpleSentimentAnalysis(text: string): any {
 function extractKeywords(text: string, maxKeywords: number): string[] {
   const words = text.toLowerCase().split(/\s+/);
   const stopWords = new Set([
-    "the",
-    "a",
-    "an",
-    "and",
-    "or",
-    "but",
-    "in",
-    "on",
-    "at",
-    "to",
-    "for",
-    "of",
-    "with",
-    "by",
+    'the',
+    'a',
+    'an',
+    'and',
+    'or',
+    'but',
+    'in',
+    'on',
+    'at',
+    'to',
+    'for',
+    'of',
+    'with',
+    'by',
   ]);
 
   const wordFreq = new Map<string, number>();
   words.forEach((word) => {
-    const clean = word.replace(/[^\w]/g, "");
+    const clean = word.replace(/[^\w]/g, '');
     if (clean.length > 2 && !stopWords.has(clean)) {
       wordFreq.set(clean, (wordFreq.get(clean) || 0) + 1);
     }
@@ -588,7 +545,7 @@ function detectLanguage(text: string): any {
     }
   }
 
-  return { language: "unknown", confidence: 0.1 };
+  return { language: 'unknown', confidence: 0.1 };
 }
 
 function calculateTextSimilarity(text1: string, text2: string): number {
@@ -609,406 +566,406 @@ function normalizeVector(vector: number[]): number[] {
 function getBasicVocabulary(): Map<string, number> {
   // Simple vocabulary for demonstration
   const vocab = [
-    "the",
-    "be",
-    "to",
-    "of",
-    "and",
-    "a",
-    "in",
-    "that",
-    "have",
-    "i",
-    "it",
-    "for",
-    "not",
-    "on",
-    "with",
-    "he",
-    "as",
-    "you",
-    "do",
-    "at",
-    "this",
-    "but",
-    "his",
-    "by",
-    "from",
-    "is",
-    "was",
-    "are",
-    "been",
-    "or",
-    "had",
-    "its",
-    "an",
-    "will",
-    "my",
-    "would",
-    "there",
-    "their",
-    "what",
-    "so",
-    "if",
-    "about",
-    "which",
-    "them",
-    "can",
-    "may",
-    "than",
-    "when",
-    "make",
-    "like",
-    "how",
-    "after",
-    "should",
-    "our",
-    "well",
-    "just",
-    "any",
-    "most",
-    "good",
-    "new",
-    "time",
-    "very",
-    "only",
-    "come",
-    "his",
-    "old",
-    "take",
-    "see",
-    "way",
-    "day",
-    "could",
-    "go",
-    "did",
-    "no",
-    "work",
-    "back",
-    "call",
-    "even",
-    "two",
-    "first",
-    "may",
-    "know",
-    "where",
-    "get",
-    "through",
-    "much",
-    "before",
-    "also",
-    "around",
-    "right",
-    "here",
-    "why",
-    "things",
-    "help",
-    "great",
-    "tell",
-    "try",
-    "ask",
-    "need",
-    "turn",
-    "point",
-    "became",
-    "high",
-    "follow",
-    "came",
-    "week",
-    "leave",
-    "felt",
-    "give",
-    "same",
-    "found",
-    "still",
-    "between",
-    "both",
-    "few",
-    "hand",
-    "place",
-    "such",
-    "again",
-    "case",
-    "big",
-    "group",
-    "last",
-    "important",
-    "left",
-    "night",
-    "next",
-    "part",
-    "another",
-    "begin",
-    "while",
-    "number",
-    "quite",
-    "second",
-    "enough",
-    "along",
-    "different",
-    "something",
-    "still",
-    "public",
-    "read",
-    "already",
-    "those",
-    "always",
-    "show",
-    "large",
-    "often",
-    "school",
-    "until",
-    "put",
-    "keep",
-    "family",
-    "seem",
-    "house",
-    "world",
-    "sometimes",
-    "point",
-    "student",
-    "government",
-    "state",
-    "company",
-    "possible",
-    "head",
-    "group",
-    "problem",
-    "information",
-    "service",
-    "however",
-    "several",
-    "word",
-    "water",
-    "business",
-    "system",
-    "program",
-    "question",
-    "play",
-    "place",
-    "seem",
-    "come",
-    "think",
-    "child",
-    "hand",
-    "high",
-    "use",
-    "against",
-    "history",
-    "party",
-    "within",
-    "grow",
-    "result",
-    "open",
-    "face",
-    "appear",
-    "support",
-    "turn",
-    "reason",
-    "hold",
-    "money",
-    "tell",
-    "week",
-    "thing",
-    "give",
-    "year",
-    "another",
-    "course",
-    "feel",
-    "three",
-    "system",
-    "state",
-    "number",
-    "group",
-    "problem",
-    "fact",
-    "best",
-    "so",
-    "know",
-    "water",
-    "seem",
-    "call",
-    "think",
-    "back",
-    "case",
-    "thing",
-    "study",
-    "where",
-    "job",
-    "government",
-    "place",
-    "work",
-    "hour",
-    "point",
-    "company",
-    "help",
-    "world",
-    "country",
-    "school",
-    "find",
-    "still",
-    "over",
-    "use",
-    "your",
-    "said",
-    "went",
-    "old",
-    "number",
-    "part",
-    "take",
-    "end",
-    "good",
-    "give",
-    "same",
-    "kind",
-    "area",
-    "want",
-    "right",
-    "line",
-    "hand",
-    "now",
-    "little",
-    "man",
-    "year",
-    "than",
-    "work",
-    "part",
-    "again",
-    "place",
-    "case",
-    "week",
-    "company",
-    "system",
-    "each",
-    "right",
-    "program",
-    "hear",
-    "question",
-    "play",
-    "government",
-    "run",
-    "small",
-    "number",
-    "night",
-    "point",
-    "bring",
-    "happen",
-    "next",
-    "carry",
-    "help",
-    "only",
-    "change",
-    "move",
-    "better",
-    "show",
-    "family",
-    "begin",
-    "open",
-    "cause",
-    "try",
-    "once",
-    "around",
-    "book",
-    "eye",
-    "job",
-    "car",
-    "door",
-    "look",
-    "face",
-    "cut",
-    "watch",
-    "stop",
-    "pull",
-    "read",
-    "actually",
-    "lose",
-    "turn",
-    "leave",
-    "write",
-    "test",
-    "hit",
-    "hold",
-    "sure",
-    "pick",
-    "inside",
-    "notice",
-    "stand",
-    "win",
-    "wear",
-    "throw",
-    "wash",
-    "sit",
-    "lie",
-    "fall",
-    "cut",
-    "push",
-    "become",
-    "include",
-    "continue",
-    "develop",
-    "watch",
-    "remain",
-    "allow",
-    "remember",
-    "follow",
-    "support",
-    "play",
-    "appear",
-    "serve",
-    "build",
-    "stay",
-    "reach",
-    "kill",
-    "meet",
-    "send",
-    "buy",
-    "take",
-    "hear",
-    "happen",
-    "write",
-    "provide",
-    "sit",
-    "stand",
-    "lose",
-    "pay",
-    "meet",
-    "include",
-    "continue",
-    "learn",
-    "change",
-    "lead",
-    "understand",
-    "watch",
-    "follow",
-    "stop",
-    "create",
-    "speak",
-    "read",
-    "allow",
-    "add",
-    "spend",
-    "grow",
-    "open",
-    "walk",
-    "win",
-    "offer",
-    "remember",
-    "love",
-    "consider",
-    "appear",
-    "buy",
-    "wait",
-    "serve",
-    "die",
-    "send",
-    "expect",
-    "build",
-    "stay",
-    "fall",
-    "cut",
-    "reach",
-    "kill",
-    "remain",
+    'the',
+    'be',
+    'to',
+    'of',
+    'and',
+    'a',
+    'in',
+    'that',
+    'have',
+    'i',
+    'it',
+    'for',
+    'not',
+    'on',
+    'with',
+    'he',
+    'as',
+    'you',
+    'do',
+    'at',
+    'this',
+    'but',
+    'his',
+    'by',
+    'from',
+    'is',
+    'was',
+    'are',
+    'been',
+    'or',
+    'had',
+    'its',
+    'an',
+    'will',
+    'my',
+    'would',
+    'there',
+    'their',
+    'what',
+    'so',
+    'if',
+    'about',
+    'which',
+    'them',
+    'can',
+    'may',
+    'than',
+    'when',
+    'make',
+    'like',
+    'how',
+    'after',
+    'should',
+    'our',
+    'well',
+    'just',
+    'any',
+    'most',
+    'good',
+    'new',
+    'time',
+    'very',
+    'only',
+    'come',
+    'his',
+    'old',
+    'take',
+    'see',
+    'way',
+    'day',
+    'could',
+    'go',
+    'did',
+    'no',
+    'work',
+    'back',
+    'call',
+    'even',
+    'two',
+    'first',
+    'may',
+    'know',
+    'where',
+    'get',
+    'through',
+    'much',
+    'before',
+    'also',
+    'around',
+    'right',
+    'here',
+    'why',
+    'things',
+    'help',
+    'great',
+    'tell',
+    'try',
+    'ask',
+    'need',
+    'turn',
+    'point',
+    'became',
+    'high',
+    'follow',
+    'came',
+    'week',
+    'leave',
+    'felt',
+    'give',
+    'same',
+    'found',
+    'still',
+    'between',
+    'both',
+    'few',
+    'hand',
+    'place',
+    'such',
+    'again',
+    'case',
+    'big',
+    'group',
+    'last',
+    'important',
+    'left',
+    'night',
+    'next',
+    'part',
+    'another',
+    'begin',
+    'while',
+    'number',
+    'quite',
+    'second',
+    'enough',
+    'along',
+    'different',
+    'something',
+    'still',
+    'public',
+    'read',
+    'already',
+    'those',
+    'always',
+    'show',
+    'large',
+    'often',
+    'school',
+    'until',
+    'put',
+    'keep',
+    'family',
+    'seem',
+    'house',
+    'world',
+    'sometimes',
+    'point',
+    'student',
+    'government',
+    'state',
+    'company',
+    'possible',
+    'head',
+    'group',
+    'problem',
+    'information',
+    'service',
+    'however',
+    'several',
+    'word',
+    'water',
+    'business',
+    'system',
+    'program',
+    'question',
+    'play',
+    'place',
+    'seem',
+    'come',
+    'think',
+    'child',
+    'hand',
+    'high',
+    'use',
+    'against',
+    'history',
+    'party',
+    'within',
+    'grow',
+    'result',
+    'open',
+    'face',
+    'appear',
+    'support',
+    'turn',
+    'reason',
+    'hold',
+    'money',
+    'tell',
+    'week',
+    'thing',
+    'give',
+    'year',
+    'another',
+    'course',
+    'feel',
+    'three',
+    'system',
+    'state',
+    'number',
+    'group',
+    'problem',
+    'fact',
+    'best',
+    'so',
+    'know',
+    'water',
+    'seem',
+    'call',
+    'think',
+    'back',
+    'case',
+    'thing',
+    'study',
+    'where',
+    'job',
+    'government',
+    'place',
+    'work',
+    'hour',
+    'point',
+    'company',
+    'help',
+    'world',
+    'country',
+    'school',
+    'find',
+    'still',
+    'over',
+    'use',
+    'your',
+    'said',
+    'went',
+    'old',
+    'number',
+    'part',
+    'take',
+    'end',
+    'good',
+    'give',
+    'same',
+    'kind',
+    'area',
+    'want',
+    'right',
+    'line',
+    'hand',
+    'now',
+    'little',
+    'man',
+    'year',
+    'than',
+    'work',
+    'part',
+    'again',
+    'place',
+    'case',
+    'week',
+    'company',
+    'system',
+    'each',
+    'right',
+    'program',
+    'hear',
+    'question',
+    'play',
+    'government',
+    'run',
+    'small',
+    'number',
+    'night',
+    'point',
+    'bring',
+    'happen',
+    'next',
+    'carry',
+    'help',
+    'only',
+    'change',
+    'move',
+    'better',
+    'show',
+    'family',
+    'begin',
+    'open',
+    'cause',
+    'try',
+    'once',
+    'around',
+    'book',
+    'eye',
+    'job',
+    'car',
+    'door',
+    'look',
+    'face',
+    'cut',
+    'watch',
+    'stop',
+    'pull',
+    'read',
+    'actually',
+    'lose',
+    'turn',
+    'leave',
+    'write',
+    'test',
+    'hit',
+    'hold',
+    'sure',
+    'pick',
+    'inside',
+    'notice',
+    'stand',
+    'win',
+    'wear',
+    'throw',
+    'wash',
+    'sit',
+    'lie',
+    'fall',
+    'cut',
+    'push',
+    'become',
+    'include',
+    'continue',
+    'develop',
+    'watch',
+    'remain',
+    'allow',
+    'remember',
+    'follow',
+    'support',
+    'play',
+    'appear',
+    'serve',
+    'build',
+    'stay',
+    'reach',
+    'kill',
+    'meet',
+    'send',
+    'buy',
+    'take',
+    'hear',
+    'happen',
+    'write',
+    'provide',
+    'sit',
+    'stand',
+    'lose',
+    'pay',
+    'meet',
+    'include',
+    'continue',
+    'learn',
+    'change',
+    'lead',
+    'understand',
+    'watch',
+    'follow',
+    'stop',
+    'create',
+    'speak',
+    'read',
+    'allow',
+    'add',
+    'spend',
+    'grow',
+    'open',
+    'walk',
+    'win',
+    'offer',
+    'remember',
+    'love',
+    'consider',
+    'appear',
+    'buy',
+    'wait',
+    'serve',
+    'die',
+    'send',
+    'expect',
+    'build',
+    'stay',
+    'fall',
+    'cut',
+    'reach',
+    'kill',
+    'remain',
   ];
 
   const map = new Map<string, number>();
@@ -1056,38 +1013,40 @@ function dispose(): void {
 }
 
 // Message handler
-self.addEventListener("message", async (event: MessageEvent<WorkerMessage>) => {
+self.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
   const { id, type, operation, data, timestamp } = event.data;
 
   try {
     switch (type) {
-      case "init":
+      case 'init':
         if (!workerState.initialized) {
           await initializeWorker();
         } else {
-          sendResponse("initialized", operation, { alreadyInitialized: true });
+          sendResponse('initialized', operation, { alreadyInitialized: true });
         }
         break;
 
-      case "load_model":
+      case 'load_model':
         await loadModel(data as ModelLoadData);
         break;
 
-      case "process":
+      case 'process': {
         const startTime = performance.now();
         const result = await processOperation(data as ProcessingData);
         const processingTime = performance.now() - startTime;
-        sendResponse("success", operation, result, processingTime);
+        sendResponse('success', operation, result, processingTime);
         break;
+      }
 
-      case "health_check":
+      case 'health_check': {
         const health = await healthCheck();
-        sendResponse("success", operation, health);
+        sendResponse('success', operation, health);
         break;
+      }
 
-      case "dispose":
+      case 'dispose':
         dispose();
-        sendResponse("disposed", operation);
+        sendResponse('disposed', operation);
         break;
 
       default:
@@ -1099,9 +1058,6 @@ self.addEventListener("message", async (event: MessageEvent<WorkerMessage>) => {
 });
 
 // Handle worker termination
-self.addEventListener("close", () => {
+self.addEventListener('close', () => {
   dispose();
 });
-
-// Export for type checking
-export {};

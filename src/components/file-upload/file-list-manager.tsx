@@ -1,16 +1,16 @@
-import type React from "react";
-import { useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import type React from 'react';
+import { useState } from 'react';
 import {
   FILE_TYPE_ICONS,
   type FileTypeCategory,
   type FileUploadStatus,
   type UploadedFile,
-} from "./file-upload-types";
+} from './file-upload-types';
 
 interface FileListManagerProps {
   /** List of uploaded files */
@@ -52,37 +52,37 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
   const hasMoreFiles = maxFiles && files.length > maxFiles;
 
   const getFileIcon = (file: UploadedFile): string => {
-    const extension = file.name.toLowerCase().split(".").pop();
+    const extension = file.name.toLowerCase().split('.').pop();
 
-    if (extension === "json") return FILE_TYPE_ICONS.json;
-    if (file.type.startsWith("text/")) return FILE_TYPE_ICONS.text;
-    if (file.type.startsWith("image/")) return FILE_TYPE_ICONS.image;
-    if (file.type.includes("document") || file.type.includes("pdf"))
+    if (extension === 'json') return FILE_TYPE_ICONS.json;
+    if (file.type.startsWith('text/')) return FILE_TYPE_ICONS.text;
+    if (file.type.startsWith('image/')) return FILE_TYPE_ICONS.image;
+    if (file.type.includes('document') || file.type.includes('pdf'))
       return FILE_TYPE_ICONS.document;
-    if (file.type.includes("sheet") || file.type.includes("excel"))
+    if (file.type.includes('sheet') || file.type.includes('excel'))
       return FILE_TYPE_ICONS.spreadsheet;
-    if (file.type.includes("zip") || file.type.includes("rar") || file.type.includes("compressed"))
+    if (file.type.includes('zip') || file.type.includes('rar') || file.type.includes('compressed'))
       return FILE_TYPE_ICONS.archive;
 
     return FILE_TYPE_ICONS.default;
   };
 
   const _getFileCategory = (file: UploadedFile): FileTypeCategory => {
-    if (file.type.includes("json")) return "JSON";
-    if (file.type.startsWith("text/")) return "TEXT";
-    if (file.type.startsWith("image/")) return "IMAGE";
-    if (file.type.includes("document") || file.type.includes("pdf")) return "DOCUMENT";
-    if (file.type.includes("sheet") || file.type.includes("excel")) return "SPREADSHEET";
-    if (file.type.includes("zip") || file.type.includes("rar") || file.type.includes("compressed"))
-      return "ARCHIVE";
+    if (file.type.includes('json')) return 'JSON';
+    if (file.type.startsWith('text/')) return 'TEXT';
+    if (file.type.startsWith('image/')) return 'IMAGE';
+    if (file.type.includes('document') || file.type.includes('pdf')) return 'DOCUMENT';
+    if (file.type.includes('sheet') || file.type.includes('excel')) return 'SPREADSHEET';
+    if (file.type.includes('zip') || file.type.includes('rar') || file.type.includes('compressed'))
+      return 'ARCHIVE';
 
-    return "TEXT"; // default
+    return 'TEXT'; // default
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
@@ -93,24 +93,24 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 
   const getStatusColor = (status: FileUploadStatus): string => {
     switch (status) {
-      case "pending":
-        return "text-yellow-600 bg-yellow-50";
-      case "uploading":
-        return "text-blue-600 bg-blue-50";
-      case "success":
-        return "text-green-600 bg-green-50";
-      case "error":
-        return "text-red-600 bg-red-50";
-      case "cancelled":
-        return "text-gray-600 bg-gray-50";
+      case 'pending':
+        return 'text-yellow-600 bg-yellow-50';
+      case 'uploading':
+        return 'text-blue-600 bg-blue-50';
+      case 'success':
+        return 'text-green-600 bg-green-50';
+      case 'error':
+        return 'text-red-600 bg-red-50';
+      case 'cancelled':
+        return 'text-gray-600 bg-gray-50';
       default:
-        return "text-gray-600 bg-gray-50";
+        return 'text-gray-600 bg-gray-50';
     }
   };
 
   const getStatusIcon = (status: FileUploadStatus): React.ReactNode => {
     switch (status) {
-      case "pending":
+      case 'pending':
         return (
           <svg
             className="h-4 w-4 animate-pulse"
@@ -128,7 +128,7 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
             />
           </svg>
         );
-      case "uploading":
+      case 'uploading':
         return (
           <svg
             className="h-4 w-4 animate-spin"
@@ -146,7 +146,7 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
             />
           </svg>
         );
-      case "success":
+      case 'success':
         return (
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -157,7 +157,7 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
             />
           </svg>
         );
-      case "error":
+      case 'error':
         return (
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -168,7 +168,7 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
             />
           </svg>
         );
-      case "cancelled":
+      case 'cancelled':
         return (
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -196,7 +196,7 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 
   if (files.length === 0) {
     return (
-      <div className={cn("py-8 text-center text-gray-500", className)}>
+      <div className={cn('py-8 text-center text-gray-500', className)}>
         <svg
           className="mx-auto mb-4 h-12 w-12 text-gray-300"
           fill="none"
@@ -216,7 +216,7 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
   }
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn('space-y-4', className)}>
       {displayedFiles.map((file) => (
         <Card key={file.id} className="overflow-hidden">
           <CardContent className="p-0">
@@ -232,7 +232,7 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                       <span className="text-gray-300">•</span>
                       <Badge
                         variant="secondary"
-                        className={cn("text-xs", getStatusColor(file.status))}
+                        className={cn('text-xs', getStatusColor(file.status))}
                       >
                         <span className="flex items-center space-x-1">
                           {getStatusIcon(file.status)}
@@ -245,7 +245,7 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 
                 {showActions && (
                   <div className="flex flex-shrink-0 items-center space-x-2">
-                    {file.status === "success" && (
+                    {file.status === 'success' && (
                       <>
                         {onFilePreview && (
                           <Button
@@ -300,7 +300,7 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                       </>
                     )}
 
-                    {file.status === "error" && onFileRetry && (
+                    {file.status === 'error' && onFileRetry && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -323,7 +323,7 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                       </Button>
                     )}
 
-                    {file.status === "uploading" && onFileCancel && (
+                    {file.status === 'uploading' && onFileCancel && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -346,9 +346,9 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                       </Button>
                     )}
 
-                    {(file.status === "success" ||
-                      file.status === "error" ||
-                      file.status === "cancelled") &&
+                    {(file.status === 'success' ||
+                      file.status === 'error' ||
+                      file.status === 'cancelled') &&
                       onFileRemove && (
                         <Button
                           variant="ghost"
@@ -375,7 +375,7 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                 )}
               </div>
 
-              {showProgress && file.status === "uploading" && (
+              {showProgress && file.status === 'uploading' && (
                 <div className="mt-3">
                   <div className="mb-1 flex items-center justify-between">
                     <span className="text-gray-500 text-xs">Uploading...</span>
@@ -404,7 +404,7 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                     onClick={() => toggleExpanded(file.id)}
                     className="h-auto p-0 text-gray-500 text-xs hover:text-gray-700"
                   >
-                    {expandedFiles.has(file.id) ? "Hide details" : "Show details"}
+                    {expandedFiles.has(file.id) ? 'Hide details' : 'Show details'}
                   </Button>
 
                   {expandedFiles.has(file.id) && (

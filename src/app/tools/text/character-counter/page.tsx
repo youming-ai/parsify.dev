@@ -1,40 +1,28 @@
-import { Shield } from "lucide-react";
-import type { Metadata } from "next";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import TextCounterClient from "./client";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Shield } from 'lucide-react';
+import type { Metadata } from 'next';
+import TextCounterClient from './client';
 
 export const metadata: Metadata = {
-  title: "Text Character Counter - Count Words, Characters & Lines",
+  title: 'Text Character Counter - Count Words, Characters & Lines',
   description:
-    "Advanced text analyzer with character, word, line counting, reading time calculation and more.",
+    'Advanced text analyzer with character, word, line counting, reading time calculation and more.',
   keywords: [
-    "text counter",
-    "character count",
-    "word count",
-    "line count",
-    "reading time",
-    "text analysis",
+    'text counter',
+    'character count',
+    'word count',
+    'line count',
+    'reading time',
+    'text analysis',
   ],
 };
 
 export default function TextCounterPage() {
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4">Text Character Counter</h1>
-          <p className="text-xl text-muted-foreground mb-4">
-            Comprehensive text analysis with real-time statistics
-          </p>
-          <div className="flex justify-center gap-2 mb-4">
-            <Badge variant="secondary">Real-Time</Badge>
-            <Badge variant="outline">Detailed</Badge>
-            <Badge variant="default">Accurate</Badge>
-          </div>
-        </div>
-
+    <div className="container mx-auto px-4 py-8">
+      <div className="mx-auto w-full">
         <Alert className="mb-6">
           <Shield className="h-4 w-4" />
           <AlertDescription>
@@ -51,7 +39,7 @@ export default function TextCounterPage() {
               <CardTitle>Counting Features</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-muted-foreground text-sm">
                 <li>• Character count (with/without spaces)</li>
                 <li>• Word count with intelligent detection</li>
                 <li>• Line count and paragraph analysis</li>
@@ -69,7 +57,7 @@ export default function TextCounterPage() {
               <CardTitle>Additional Metrics</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-muted-foreground text-sm">
                 <li>• Average word length</li>
                 <li>• Average sentence length</li>
                 <li>• Lexical density calculation</li>

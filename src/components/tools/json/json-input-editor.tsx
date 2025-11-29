@@ -1,15 +1,15 @@
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import type { JsonEditorProps } from "./json-types";
-import { validateJson } from "./json-utils";
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+import * as React from 'react';
+import type { JsonEditorProps } from './json-types';
+import { validateJson } from './json-utils';
 
 export function JsonInputEditor({
   value,
   onChange,
   onValidate,
-  placeholder = "Enter or paste JSON here...",
+  placeholder = 'Enter or paste JSON here...',
   height = 400,
   className,
 }: JsonEditorProps) {
@@ -48,16 +48,16 @@ export function JsonInputEditor({
   };
 
   const templates = [
-    { name: "Object", template: '{\n  "key": "value"\n}' },
-    { name: "Array", template: '[\n  {\n    "item": "value"\n  }\n]' },
+    { name: 'Object', template: '{\n  "key": "value"\n}' },
+    { name: 'Array', template: '[\n  {\n    "item": "value"\n  }\n]' },
     {
-      name: "Nested",
+      name: 'Nested',
       template: '{\n  "user": {\n    "id": 1,\n    "name": "John"\n  },\n  "items": []\n}',
     },
   ];
 
   return (
-    <div className={cn("space-y-3", className)}>
+    <div className={cn('space-y-3', className)}>
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-gray-600 text-sm">Templates:</span>
         {templates.map((template) => (
@@ -82,12 +82,12 @@ export function JsonInputEditor({
           onCompositionEnd={() => setIsComposing(false)}
           placeholder={placeholder}
           className={cn(
-            "resize-none font-mono text-sm",
-            "focus:border-blue-500 focus:ring-2 focus:ring-blue-500",
-            "border-gray-300",
+            'resize-none font-mono text-sm',
+            'focus:border-blue-500 focus:ring-2 focus:ring-blue-500',
+            'border-gray-300'
           )}
           style={{
-            height: typeof height === "number" ? `${height}px` : height,
+            height: typeof height === 'number' ? `${height}px` : height,
           }}
           spellCheck={false}
         />
@@ -95,7 +95,7 @@ export function JsonInputEditor({
         <div className="absolute top-2 right-2 flex items-center gap-1 text-gray-500 text-xs">
           <span>{value.length} chars</span>
           <span>•</span>
-          <span>{value.split("\n").length} lines</span>
+          <span>{value.split('\n').length} lines</span>
         </div>
       </div>
 
@@ -105,7 +105,7 @@ export function JsonInputEditor({
           <span>Ctrl/Cmd + Enter to format</span>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => onChange("")} className="text-xs">
+          <Button variant="ghost" size="sm" onClick={() => onChange('')} className="text-xs">
             Clear
           </Button>
           <Button

@@ -2,21 +2,21 @@ import {
   COMMON_MIME_TYPES,
   type FileUploadOptions,
   type FileValidationError,
-} from "./file-upload-types";
+} from './file-upload-types';
 
 /**
  * Validates a single file against the provided options
  */
 export function validateFile(
   file: File,
-  options: FileUploadOptions = {},
+  options: FileUploadOptions = {}
 ): FileValidationError | null {
   const { maxSize, accept, validator } = options;
 
   // Check file size
   if (maxSize && file.size > maxSize) {
     return {
-      code: "size",
+      code: 'size',
       message: `File size (${formatFileSize(file.size)}) exceeds maximum allowed size (${formatFileSize(maxSize)})`,
       file,
     };
@@ -25,13 +25,13 @@ export function validateFile(
   // Check file type
   if (accept && accept.length > 0) {
     const isAccepted = accept.some((type) => {
-      if (type.startsWith(".")) {
+      if (type.startsWith('.')) {
         // Extension match
         return file.name.toLowerCase().endsWith(type.toLowerCase());
       }
-      if (type.includes("/*")) {
+      if (type.includes('/*')) {
         // MIME type wildcard match (e.g., 'image/*')
-        const category = type.split("/")[0];
+        const category = type.split('/')[0];
         return file.type.startsWith(`${category}/`);
       }
       // Exact MIME type match
@@ -40,8 +40,8 @@ export function validateFile(
 
     if (!isAccepted) {
       return {
-        code: "type",
-        message: `File type "${file.type || "unknown"}" is not accepted. Accepted types: ${accept.join(", ")}`,
+        code: 'type',
+        message: `File type "${file.type || 'unknown'}" is not accepted. Accepted types: ${accept.join(', ')}`,
         file,
       };
     }
@@ -52,7 +52,7 @@ export function validateFile(
     const customError = validator(file);
     if (customError) {
       return {
-        code: "custom",
+        code: 'custom',
         message: customError,
         file,
       };
@@ -67,7 +67,7 @@ export function validateFile(
  */
 export function validateFiles(
   files: File[],
-  options: FileUploadOptions = {},
+  options: FileUploadOptions = {}
 ): {
   validFiles: File[];
   errors: FileValidationError[];
@@ -79,7 +79,7 @@ export function validateFiles(
   // Check file count limit
   if (!multiple && files.length > 1) {
     errors.push({
-      code: "count",
+      code: 'count',
       message: `Only one file is allowed, but ${files.length} files were selected`,
     });
     return { validFiles: [], errors };
@@ -109,8 +109,8 @@ export function isPreviewable(file: File): boolean {
   ];
 
   return previewableMimeTypes.some((type) => {
-    if (type.includes("/*")) {
-      const category = type.split("/")[0];
+    if (type.includes('/*')) {
+      const category = type.split('/')[0];
       return file.type.startsWith(`${category}/`);
     }
     return file.type === type;
@@ -124,8 +124,8 @@ export function getFileCategory(file: File): keyof typeof COMMON_MIME_TYPES {
   for (const [category, mimeTypes] of Object.entries(COMMON_MIME_TYPES)) {
     if (
       mimeTypes.some((type) => {
-        if (type.includes("/*")) {
-          const mimeCategory = type.split("/")[0];
+        if (type.includes('/*')) {
+          const mimeCategory = type.split('/')[0];
           return file.type.startsWith(`${mimeCategory}/`);
         }
         return file.type === type;
@@ -135,7 +135,7 @@ export function getFileCategory(file: File): keyof typeof COMMON_MIME_TYPES {
     }
   }
 
-  return "TEXT"; // default category
+  return 'TEXT'; // default category
 }
 
 /**
@@ -145,22 +145,22 @@ export function getFileTypeDescription(file: File): string {
   const category = getFileCategory(file);
 
   const categoryDescriptions: Record<keyof typeof COMMON_MIME_TYPES, string> = {
-    JSON: "JSON file",
-    TEXT: "Text file",
-    IMAGE: "Image file",
-    DOCUMENT: "Document",
-    SPREADSHEET: "Spreadsheet",
-    ARCHIVE: "Archive file",
+    JSON: 'JSON file',
+    TEXT: 'Text file',
+    IMAGE: 'Image file',
+    DOCUMENT: 'Document',
+    SPREADSHEET: 'Spreadsheet',
+    ARCHIVE: 'Archive file',
   };
 
-  return categoryDescriptions[category] || "File";
+  return categoryDescriptions[category] || 'File';
 }
 
 /**
  * Checks if a file is an image
  */
 export function isImageFile(file: File): boolean {
-  return file.type.startsWith("image/");
+  return file.type.startsWith('image/');
 }
 
 /**
@@ -168,8 +168,8 @@ export function isImageFile(file: File): boolean {
  */
 export function isTextFile(file: File): boolean {
   return [...COMMON_MIME_TYPES.JSON, ...COMMON_MIME_TYPES.TEXT].some((type) => {
-    if (type.includes("/*")) {
-      const category = type.split("/")[0];
+    if (type.includes('/*')) {
+      const category = type.split('/')[0];
       return file.type.startsWith(`${category}/`);
     }
     return file.type === type;
@@ -182,12 +182,12 @@ export function isTextFile(file: File): boolean {
 export function isJsonFile(file: File): boolean {
   return (
     COMMON_MIME_TYPES.JSON.some((type) => {
-      if (type.includes("/*")) {
-        const category = type.split("/")[0];
+      if (type.includes('/*')) {
+        const category = type.split('/')[0];
         return file.type.startsWith(`${category}/`);
       }
       return file.type === type;
-    }) || file.name.toLowerCase().endsWith(".json")
+    }) || file.name.toLowerCase().endsWith('.json')
   );
 }
 
@@ -204,7 +204,7 @@ export function validateJsonContent(content: string): {
   } catch (error) {
     return {
       isValid: false,
-      error: error instanceof Error ? error.message : "Invalid JSON format",
+      error: error instanceof Error ? error.message : 'Invalid JSON format',
     };
   }
 }
@@ -215,10 +215,10 @@ export function validateJsonContent(content: string): {
 export function sanitizeFilename(filename: string): string {
   // Remove or replace invalid characters
   return filename
-    .replace(/[<>:"/\\|?*]/g, "_") // Replace invalid characters with underscore
-    .replace(/\s+/g, "_") // Replace spaces with underscores
-    .replace(/_{2,}/g, "_") // Replace multiple underscores with single one
-    .replace(/^_+|_+$/g, "") // Remove leading/trailing underscores
+    .replace(/[<>:"/\\|?*]/g, '_') // Replace invalid characters with underscore
+    .replace(/\s+/g, '_') // Replace spaces with underscores
+    .replace(/_{2,}/g, '_') // Replace multiple underscores with single one
+    .replace(/^_+|_+$/g, '') // Remove leading/trailing underscores
     .toLowerCase(); // Convert to lowercase
 }
 
@@ -226,8 +226,8 @@ export function sanitizeFilename(filename: string): string {
  * Generates a unique filename to avoid conflicts
  */
 export function generateUniqueFilename(originalName: string, existingFiles: string[] = []): string {
-  const name = originalName.substring(0, originalName.lastIndexOf(".")) || originalName;
-  const extension = originalName.substring(originalName.lastIndexOf(".")) || "";
+  const name = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
+  const extension = originalName.substring(originalName.lastIndexOf('.')) || '';
 
   let counter = 1;
   let newName = originalName;
@@ -244,8 +244,8 @@ export function generateUniqueFilename(originalName: string, existingFiles: stri
  * Gets file extension from filename
  */
 export function getFileExtension(filename: string): string {
-  const lastDotIndex = filename.lastIndexOf(".");
-  return lastDotIndex !== -1 ? filename.substring(lastDotIndex + 1).toLowerCase() : "";
+  const lastDotIndex = filename.lastIndexOf('.');
+  return lastDotIndex !== -1 ? filename.substring(lastDotIndex + 1).toLowerCase() : '';
 }
 
 /**
@@ -254,23 +254,23 @@ export function getFileExtension(filename: string): string {
 export function validateMimeType(file: File): boolean {
   const extension = getFileExtension(file.name);
   const expectedTypes: Record<string, string[]> = {
-    json: ["application/json", "text/json"],
-    txt: ["text/plain"],
-    csv: ["text/csv"],
-    html: ["text/html"],
-    css: ["text/css"],
-    js: ["text/javascript", "application/javascript"],
-    xml: ["text/xml", "application/xml"],
-    pdf: ["application/pdf"],
-    jpg: ["image/jpeg"],
-    jpeg: ["image/jpeg"],
-    png: ["image/png"],
-    gif: ["image/gif"],
-    webp: ["image/webp"],
-    svg: ["image/svg+xml"],
-    zip: ["application/zip", "application/x-zip-compressed"],
-    rar: ["application/x-rar-compressed"],
-    "7z": ["application/x-7z-compressed"],
+    json: ['application/json', 'text/json'],
+    txt: ['text/plain'],
+    csv: ['text/csv'],
+    html: ['text/html'],
+    css: ['text/css'],
+    js: ['text/javascript', 'application/javascript'],
+    xml: ['text/xml', 'application/xml'],
+    pdf: ['application/pdf'],
+    jpg: ['image/jpeg'],
+    jpeg: ['image/jpeg'],
+    png: ['image/png'],
+    gif: ['image/gif'],
+    webp: ['image/webp'],
+    svg: ['image/svg+xml'],
+    zip: ['application/zip', 'application/x-zip-compressed'],
+    rar: ['application/x-rar-compressed'],
+    '7z': ['application/x-7z-compressed'],
   };
 
   const expectedMimeTypes = expectedTypes[extension];
@@ -286,10 +286,10 @@ export function validateMimeType(file: File): boolean {
  * Formats file size in human-readable format
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 Bytes";
+  if (bytes === 0) return '0 Bytes';
 
   const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
@@ -317,7 +317,7 @@ export function fileSizeToBytes(size: string): number {
   if (!match) return 0;
 
   const value = Number.parseFloat(match[1]);
-  const unit = match[2] || "bytes";
+  const unit = match[2] || 'bytes';
 
   return Math.round(value * (units[unit] || 1));
 }
@@ -334,7 +334,7 @@ export function createFileValidator(options: FileUploadOptions) {
  */
 export function canUploadFiles(
   files: File[],
-  options: FileUploadOptions = {},
+  options: FileUploadOptions = {}
 ): {
   canUpload: boolean;
   errors: FileValidationError[];
@@ -351,26 +351,26 @@ export function canUploadFiles(
  * Gets common file type groups for convenience
  */
 export const FILE_TYPE_GROUPS = {
-  IMAGES: ["image/*"],
-  DOCUMENTS: [".pdf", ".doc", ".docx", ".txt", ".rtf"],
-  SPREADSHEETS: [".xls", ".xlsx", ".csv"],
-  ARCHIVES: [".zip", ".rar", ".7z", ".tar", ".gz"],
+  IMAGES: ['image/*'],
+  DOCUMENTS: ['.pdf', '.doc', '.docx', '.txt', '.rtf'],
+  SPREADSHEETS: ['.xls', '.xlsx', '.csv'],
+  ARCHIVES: ['.zip', '.rar', '.7z', '.tar', '.gz'],
   CODE: [
-    ".js",
-    ".ts",
-    ".jsx",
-    ".tsx",
-    ".html",
-    ".css",
-    ".json",
-    ".xml",
-    ".py",
-    ".java",
-    ".cpp",
-    ".c",
+    '.js',
+    '.ts',
+    '.jsx',
+    '.tsx',
+    '.html',
+    '.css',
+    '.json',
+    '.xml',
+    '.py',
+    '.java',
+    '.cpp',
+    '.c',
   ],
-  MEDIA: ["image/*", "video/*", "audio/*"],
-  TEXT: [".txt", ".md", ".csv", ".json", ".xml", ".yaml", ".yml"],
+  MEDIA: ['image/*', 'video/*', 'audio/*'],
+  TEXT: ['.txt', '.md', '.csv', '.json', '.xml', '.yaml', '.yml'],
 } as const;
 
 /**
@@ -390,11 +390,11 @@ export const DEFAULT_VALIDATORS = {
     maxSize: 5 * 1024 * 1024, // 5MB
   },
   JSON: {
-    accept: [".json", "application/json"],
+    accept: ['.json', 'application/json'],
     maxSize: 10 * 1024 * 1024, // 10MB
     validator: (file: File) => {
       if (!isJsonFile(file)) {
-        return "File must be a valid JSON file";
+        return 'File must be a valid JSON file';
       }
       return null;
     },

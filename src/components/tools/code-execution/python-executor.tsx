@@ -1,431 +1,407 @@
-/**
- * Python Code Executor
- * Executes Python code in browser using Pyodide WASM runtime
- */
+import { type ToolConfig, ToolWrapper } from '@/components/tools/tool-wrapper';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { MemoryManager } from '@/lib/memory-manager';
+import { PerformanceMonitor } from '@/lib/performance-monitor';
+import { type PythonExecutionResult, pythonRuntime } from '@/lib/runtimes/python-wasm';
+import { FileCode, Image as ImageIcon, Package, Plus, Trash2, X } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Play, Pause, RotateCcw, Download, Package, AlertCircle, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { useWasmRuntimeManager } from "@/hooks/useWasmRuntimeManager";
-import { useConsoleCapture } from "@/hooks/useConsoleCapture";
-import type { PythonWasmRuntime } from "@/lib/runtimes/python-wasm";
-import type { ExecutionResult, ExecutionOptions } from "@/lib/execution-sandbox";
-
-interface PythonExecutorProps {
-  initialCode?: string;
-  onExecutionComplete?: (result: ExecutionResult) => void;
-  className?: string;
-  readOnly?: boolean;
-  showStdin?: boolean;
-  maxExecutionTime?: number;
-  memoryLimit?: number;
+interface PythonExecutorState {
+  code: string;
+  output: string;
+  error: string | null;
+  isRunning: boolean;
+  isInstalling: boolean;
+  packages: string[];
+  inputFiles: Array<{ name: string; content: string }>;
+  graphics: string[];
+  executionTime: number | null;
+  memoryUsage: number | null;
+  packageInput: string;
+  newFileName: string;
+  newFileContent: string;
 }
 
-const DEFAULT_PYTHON_CODE = `# Welcome to Python Execution with Pyodide!
-# This runs entirely in your browser using WebAssembly
+const DEFAULT_CODE = `# Python 3.11 (Pyodide)
+import numpy as np
+import matplotlib.pyplot as plt
+import io
 
-print("Hello, World!")
+# Calculate sine wave
+x = np.linspace(0, 10, 100)
+y = np.sin(x)
 
-# Try some data processing
-import math
-numbers = [1, 2, 3, 4, 5]
-squares = [x**2 for x in numbers]
-print(f"Numbers: {numbers}")
-print(f"Squares: {squares}")
-print(f"Sum of squares: {sum(squares)}")
+# Plot results
+plt.figure(figsize=(8, 4))
+plt.plot(x, y)
+plt.title('Sine Wave')
+plt.grid(True)
+plt.show()
 
-# Pyodide includes popular packages
-try:
-    import numpy as np
-    arr = np.array([1, 2, 3, 4, 5])
-    print(f"NumPy array: {arr}")
-    print(f"Mean: {np.mean(arr)}")
-except ImportError:
-    print("NumPy not available")
+print(f"Calculated {len(x)} points")
+`;
 
-# You can import standard library modules
-import json
-data = {"name": "Python", "version": "3.11"}
-print(json.dumps(data, indent=2))`;
+export const PythonExecutor: React.FC = () => {
+  const [state, setState] = useState<PythonExecutorState>({
+    code: DEFAULT_CODE,
+    output: '',
+    error: null,
+    isRunning: false,
+    isInstalling: false,
+    packages: ['numpy', 'matplotlib'],
+    inputFiles: [],
+    graphics: [],
+    executionTime: null,
+    memoryUsage: null,
+    packageInput: '',
+    newFileName: '',
+    newFileContent: '',
+  });
 
-export const PythonExecutor: React.FC<PythonExecutorProps> = ({
-  initialCode = DEFAULT_PYTHON_CODE,
-  onExecutionComplete,
-  className = "",
-  readOnly = false,
-  showStdin = true,
-  maxExecutionTime = 5000,
-  memoryLimit = 50 * 1024 * 1024, // 50MB
-}) => {
-  const [code, setCode] = useState(initialCode);
-  const [isExecuting, setIsExecuting] = useState(false);
-  const [output, setOutput] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [executionTime, setExecutionTime] = useState<number | null>(null);
-  const [memoryUsage, setMemoryUsage] = useState<number | null>(null);
-  const [availablePackages, setAvailablePackages] = useState<string[]>([]);
-  const [packageInput, setPackageInput] = useState("");
-
-  const runtimeManager = useWasmRuntimeManager("python");
-  const { captureConsole, restoreConsole } = useConsoleCapture();
+  const [runtimeInitialized, setRuntimeInitialized] = useState(false);
   const outputRef = useRef<HTMLDivElement>(null);
-  const runtimeRef = useRef<PythonWasmRuntime | null>(null);
 
-  // Initialize Python runtime
+  // Get singleton instances
+  const memoryManager = MemoryManager.getInstance();
+  const performanceMonitor = PerformanceMonitor.getInstance();
+
+  // Initialize runtime
   useEffect(() => {
-    const initializeRuntime = async () => {
+    const init = async () => {
       try {
-        if (runtimeManager) {
-          const runtime = await runtimeManager.getRuntime();
-          runtimeRef.current = runtime;
-
-          // Get available packages
-          if (runtime.getInstalledPackages) {
-            const packages = await runtime.getInstalledPackages();
-            setAvailablePackages(packages);
-          }
-        }
-      } catch (err) {
-        setError(
-          `Failed to initialize Python runtime: ${err instanceof Error ? err.message : "Unknown error"}`,
-        );
+        await pythonRuntime.initialize();
+        setRuntimeInitialized(true);
+      } catch (_err) {
+        setState((prev) => ({ ...prev, error: 'Failed to initialize Python runtime' }));
       }
     };
+    init();
+  }, []);
 
-    initializeRuntime();
-  }, [runtimeManager]);
-
-  // Auto-scroll output to bottom
+  // Scroll to bottom of output
   useEffect(() => {
-    if (outputRef.current) {
+    if (outputRef.current && state.output) {
       outputRef.current.scrollTop = outputRef.current.scrollHeight;
     }
-  }, [output]);
+  }, [state.output]);
 
-  const executeCode = useCallback(async () => {
-    if (!runtimeRef.current || isExecuting) return;
+  const runCode = useCallback(async () => {
+    if (!runtimeInitialized) {
+      setState((prev) => ({ ...prev, error: 'Runtime not initialized' }));
+      return;
+    }
 
-    setIsExecuting(true);
-    setError(null);
-    setOutput("");
-    setExecutionTime(null);
-    setMemoryUsage(null);
+    setState((prev) => ({ ...prev, isRunning: true, error: null, graphics: [], output: '' }));
+    const startTime = performance.now();
+    performanceMonitor.trackToolLoad('python-executor');
 
     try {
-      // Start console capture
-      captureConsole((data) => {
-        setOutput((prev) => prev + data + "\n");
+      const result: PythonExecutionResult = await pythonRuntime.executeCode({
+        code: state.code,
+        packages: state.packages.map((p) => ({ name: p })),
+        inputFiles: state.inputFiles,
+        captureGraphics: true,
+        timeoutMs: 30000,
       });
 
-      const startTime = performance.now();
+      const executionTime = performance.now() - startTime;
+      const memoryUsage = memoryManager.getMemoryUsage().used;
 
-      // Prepare execution options
-      const options: ExecutionOptions = {
-        timeout: maxExecutionTime,
-        memoryLimit,
-        captureOutput: true,
-        allowNetworking: false, // Security restriction
-        workingDirectory: "/tmp",
-      };
-
-      // Execute Python code
-      const result = await runtimeRef.current.execute(code, options);
-
-      const endTime = performance.now();
-      const totalTime = endTime - startTime;
-
-      setExecutionTime(totalTime);
-
-      if (result.memoryUsage) {
-        setMemoryUsage(result.memoryUsage);
-      }
-
-      // Set final output if not captured by console
-      if (result.output && !output) {
-        setOutput(result.output);
-      }
-
-      if (result.error) {
-        setError(result.error);
-      }
-
-      // Call completion callback
-      if (onExecutionComplete) {
-        onExecutionComplete({
-          ...result,
-          executionTime: totalTime,
-          language: "python",
-        });
+      if (result.exitCode === 0) {
+        setState((prev) => ({
+          ...prev,
+          output: result.stdout || 'Program executed successfully',
+          graphics: result.graphics || [],
+          executionTime,
+          memoryUsage,
+          error: null,
+        }));
+      } else {
+        setState((prev) => ({
+          ...prev,
+          output: result.stdout || '',
+          error: result.stderr || result.error?.message || 'Execution failed',
+          graphics: result.graphics || [],
+          executionTime,
+          memoryUsage,
+        }));
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown execution error";
-      setError(errorMessage);
-      setOutput(`Error: ${errorMessage}\n`);
-
-      if (onExecutionComplete) {
-        onExecutionComplete({
-          output: "",
-          error: errorMessage,
-          executionTime: 0,
-          language: "python",
-          memoryUsage: 0,
-          exitCode: 1,
-        });
-      }
+      setState((prev) => ({
+        ...prev,
+        error: err instanceof Error ? err.message : 'Unknown error',
+      }));
     } finally {
-      // Restore console
-      restoreConsole();
-      setIsExecuting(false);
+      setState((prev) => ({ ...prev, isRunning: false }));
     }
-  }, [
-    code,
-    runtimeRef.current,
-    isExecuting,
-    maxExecutionTime,
-    memoryLimit,
-    captureConsole,
-    restoreConsole,
-    output,
-    onExecutionComplete,
-  ]);
+  }, [runtimeInitialized, state.code, state.packages, state.inputFiles]);
 
   const stopExecution = useCallback(() => {
-    if (runtimeRef.current && isExecuting) {
-      runtimeRef.current.interrupt();
-      setIsExecuting(false);
-      setOutput("\n--- Execution Stopped ---\n");
+    pythonRuntime.interrupt();
+    setState((prev) => ({
+      ...prev,
+      isRunning: false,
+      output: `${prev.output}\nExecution stopped.`,
+    }));
+  }, []);
+
+  const installPackage = useCallback(async () => {
+    if (!state.packageInput.trim()) return;
+
+    setState((prev) => ({ ...prev, isInstalling: true }));
+    try {
+      await pythonRuntime.installPackage(state.packageInput);
+      setState((prev) => ({
+        ...prev,
+        packages: [...prev.packages, prev.packageInput],
+        packageInput: '',
+        isInstalling: false,
+      }));
+    } catch (err) {
+      setState((prev) => ({
+        ...prev,
+        error: `Failed to install package: ${err instanceof Error ? err.message : String(err)}`,
+        isInstalling: false,
+      }));
     }
-  }, [runtimeRef.current, isExecuting]);
+  }, [state.packageInput]);
 
-  const resetCode = useCallback(() => {
-    setCode(initialCode);
-    setOutput("");
-    setError(null);
-    setExecutionTime(null);
-    setMemoryUsage(null);
-  }, [initialCode]);
+  const addInputFile = useCallback(() => {
+    if (!state.newFileName.trim()) return;
 
-  const installPackage = useCallback(
-    async (packageName: string) => {
-      if (!runtimeRef.current || !packageName.trim()) return;
+    setState((prev) => ({
+      ...prev,
+      inputFiles: [...prev.inputFiles, { name: prev.newFileName, content: prev.newFileContent }],
+      newFileName: '',
+      newFileContent: '',
+    }));
+  }, [state.newFileName, state.newFileContent]);
 
-      try {
-        setOutput((prev) => prev + `\nInstalling ${packageName}...\n`);
+  const removeInputFile = useCallback((name: string) => {
+    setState((prev) => ({
+      ...prev,
+      inputFiles: prev.inputFiles.filter((f) => f.name !== name),
+    }));
+  }, []);
 
-        await runtimeRef.current.installPackage(packageName.trim());
+  const removePackage = useCallback((name: string) => {
+    setState((prev) => ({
+      ...prev,
+      packages: prev.packages.filter((p) => p !== name),
+    }));
+  }, []);
 
-        setOutput((prev) => prev + `✓ ${packageName} installed successfully\n`);
-
-        // Update available packages
-        if (runtimeRef.current.getInstalledPackages) {
-          const packages = await runtimeRef.current.getInstalledPackages();
-          setAvailablePackages(packages);
-        }
-
-        setPackageInput("");
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to install package";
-        setOutput((prev) => prev + `✗ Failed to install ${packageName}: ${errorMessage}\n`);
-      }
-    },
-    [runtimeRef.current],
-  );
-
-  const downloadCode = useCallback(() => {
-    const blob = new Blob([code], { type: "text/plain" });
+  const exportCode = useCallback(() => {
+    const blob = new Blob([state.code], { type: 'text/x-python' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = "script.py";
+    a.download = 'main.py';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [code]);
+  }, [state.code]);
 
-  const formatBytes = (bytes: number): string => {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  const importCode = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      setState((prev) => ({ ...prev, code: content }));
+    };
+    reader.readAsText(file);
+  }, []);
+
+  const toolConfig: ToolConfig = {
+    id: 'python-executor',
+    name: 'Python Executor',
+    description: 'Execute Python code in browser using Pyodide WASM runtime',
+    category: 'code',
+    version: '3.11.0',
+    icon: '🐍',
+    tags: ['python', 'pyodide', 'wasm', 'execution', 'data-science'],
+    hasSettings: true,
+    hasHelp: true,
+    canExport: true,
+    canImport: true,
+    canCopy: true,
+    canReset: true,
   };
 
   return (
-    <div className={`space-y-4 ${className}`}>
-      {/* Header with controls */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
-                <span className="text-white font-bold text-sm">Py</span>
-              </div>
-              Python Executor
-              <Badge variant="outline">Pyodide WASM</Badge>
-            </CardTitle>
+    <ToolWrapper
+      config={toolConfig}
+      isLoading={!runtimeInitialized}
+      onExport={exportCode}
+      onImport={() => document.getElementById('python-import')?.click()}
+      onCopy={() => navigator.clipboard.writeText(state.output)}
+      onReset={() => setState((prev) => ({ ...prev, output: '', error: null, graphics: [] }))}
+    >
+      <input type="file" id="python-import" className="hidden" accept=".py" onChange={importCode} />
 
-            <div className="flex items-center gap-2">
-              {executionTime && <Badge variant="secondary">{executionTime.toFixed(0)}ms</Badge>}
-              {memoryUsage && <Badge variant="secondary">{formatBytes(memoryUsage)}</Badge>}
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
-
-      {/* Code editor */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Python Code</h3>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={downloadCode} disabled={readOnly}>
-                <Download className="w-4 h-4 mr-1" />
-                Download
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetCode}
-                disabled={readOnly || isExecuting}
-              >
-                <RotateCcw className="w-4 h-4 mr-1" />
-                Reset
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="Enter your Python code here..."
-            className="font-mono text-sm min-h-[300px]"
-            disabled={readOnly || isExecuting}
-            spellCheck={false}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Package management */}
-      {showStdin && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Package className="w-4 h-4" />
-              Package Management
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={packageInput}
-                onChange={(e) => setPackageInput(e.target.value)}
-                placeholder="Enter package name (e.g., numpy, pandas, requests)"
-                className="flex-1 px-3 py-2 border rounded-md text-sm"
-                disabled={isExecuting}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter" && packageInput.trim()) {
-                    installPackage(packageInput);
-                  }
-                }}
-              />
-              <Button
-                onClick={() => packageInput.trim() && installPackage(packageInput)}
-                disabled={isExecuting || !packageInput.trim()}
-                size="sm"
-              >
-                Install
-              </Button>
-            </div>
-
-            {availablePackages.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium mb-2">Available Packages:</h4>
-                <div className="flex flex-wrap gap-1">
-                  {availablePackages.slice(0, 20).map((pkg) => (
-                    <Badge key={pkg} variant="outline" className="text-xs">
-                      {pkg}
-                    </Badge>
-                  ))}
-                  {availablePackages.length > 20 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{availablePackages.length - 20} more
-                    </Badge>
-                  )}
+      <div className="grid h-[calc(100vh-200px)] grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="flex flex-col gap-4 lg:col-span-2">
+          <Card className="flex flex-1 flex-col">
+            <CardHeader className="py-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="font-medium text-sm">Code Editor</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={state.isRunning ? stopExecution : runCode}
+                    variant={state.isRunning ? 'destructive' : 'default'}
+                    disabled={!runtimeInitialized}
+                  >
+                    {state.isRunning ? 'Stop' : 'Run'}
+                  </Button>
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+            </CardHeader>
+            <CardContent className="flex-1 p-0">
+              <Textarea
+                value={state.code}
+                onChange={(e) => setState((prev) => ({ ...prev, code: e.target.value }))}
+                className="h-full resize-none rounded-none border-0 font-mono text-sm focus-visible:ring-0"
+                spellCheck={false}
+              />
+            </CardContent>
+          </Card>
 
-      {/* Execution controls */}
-      <div className="flex items-center gap-2">
-        <Button
-          onClick={executeCode}
-          disabled={isExecuting || !runtimeRef.current}
-          className="bg-green-600 hover:bg-green-700"
-        >
-          {isExecuting ? (
-            <>
-              <Pause className="w-4 h-4 mr-1" />
-              Running...
-            </>
-          ) : (
-            <>
-              <Play className="w-4 h-4 mr-1" />
-              Run Code
-            </>
-          )}
-        </Button>
+          <Card className="flex h-1/3 flex-col">
+            <CardHeader className="py-3">
+              <CardTitle className="font-medium text-sm">Output</CardTitle>
+            </CardHeader>
+            <CardContent className="relative flex-1 p-0">
+              <div
+                ref={outputRef}
+                className="absolute inset-0 overflow-auto whitespace-pre-wrap p-4 font-mono text-sm"
+              >
+                {state.error && (
+                  <div className="mb-2 font-bold text-red-500">Error: {state.error}</div>
+                )}
+                {state.output}
+                {state.graphics.map((img, i) => (
+                  <img
+                    key={i}
+                    src={`data:image/png;base64,${img}`}
+                    alt={`Plot ${i + 1}`}
+                    className="mt-2 max-w-full"
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-        {isExecuting && (
-          <Button
-            onClick={stopExecution}
-            variant="outline"
-            className="text-red-600 border-red-600 hover:bg-red-50"
-          >
-            <Pause className="w-4 h-4 mr-1" />
-            Stop
-          </Button>
-        )}
+        <div className="flex flex-col gap-4">
+          <Card>
+            <CardHeader className="py-3">
+              <CardTitle className="font-medium text-sm">Environment</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-muted-foreground text-xs">Packages</Label>
+                <div className="mt-1 mb-2 flex gap-2">
+                  <Input
+                    value={state.packageInput}
+                    onChange={(e) =>
+                      setState((prev) => ({ ...prev, packageInput: e.target.value }))
+                    }
+                    placeholder="Package name..."
+                    className="h-8 text-sm"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={installPackage}
+                    disabled={state.isInstalling}
+                  >
+                    {state.isInstalling ? '...' : <Plus className="h-4 w-4" />}
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {state.packages.map((pkg) => (
+                    <Badge
+                      key={pkg}
+                      variant="secondary"
+                      className="flex items-center gap-1 text-xs"
+                    >
+                      {pkg}
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => removePackage(pkg)}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-muted-foreground text-xs">Input Files</Label>
+                <div className="mt-1 space-y-2">
+                  <Input
+                    value={state.newFileName}
+                    onChange={(e) => setState((prev) => ({ ...prev, newFileName: e.target.value }))}
+                    placeholder="filename.txt"
+                    className="h-8 text-sm"
+                  />
+                  <Textarea
+                    value={state.newFileContent}
+                    onChange={(e) =>
+                      setState((prev) => ({ ...prev, newFileContent: e.target.value }))
+                    }
+                    placeholder="File content..."
+                    className="h-20 resize-none text-sm"
+                  />
+                  <Button size="sm" variant="outline" className="w-full" onClick={addInputFile}>
+                    Add File
+                  </Button>
+                </div>
+                <ScrollArea className="mt-2 h-32 rounded-md border p-2">
+                  {state.inputFiles.map((file) => (
+                    <div key={file.name} className="flex items-center justify-between py-1 text-sm">
+                      <span className="flex items-center gap-2">
+                        <FileCode className="h-3 w-3" />
+                        {file.name}
+                      </span>
+                      <Trash2
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => removeInputFile(file.name)}
+                      />
+                    </div>
+                  ))}
+                </ScrollArea>
+              </div>
+
+              {state.executionTime !== null && (
+                <div className="border-t pt-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Time:</span>
+                    <span>{state.executionTime.toFixed(2)}ms</span>
+                  </div>
+                  <div className="mt-1 flex justify-between text-xs">
+                    <span className="text-muted-foreground">Memory:</span>
+                    <span>
+                      {state.memoryUsage ? (state.memoryUsage / 1024 / 1024).toFixed(2) : 0} MB
+                    </span>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      {/* Error display */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Output display */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            {output && !error ? (
-              <CheckCircle className="w-4 h-4 text-green-600" />
-            ) : (
-              <div className="w-4 h-4 border-2 border-gray-300 rounded" />
-            )}
-            Output
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div
-            ref={outputRef}
-            className="bg-gray-50 border rounded-md p-3 font-mono text-sm whitespace-pre-wrap min-h-[200px] max-h-[400px] overflow-auto"
-          >
-            {output || "Run your code to see the output here..."}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    </ToolWrapper>
   );
 };

@@ -1,13 +1,36 @@
 /**
  * Performance Monitoring System
- * Monitors bundle sizes, loading times, and tool performance
+ *
+ * A comprehensive performance monitoring solution for tracking application health,
+ * tool performance metrics, and user experience indicators. This system provides
+ * real-time insights into:
+ *
+ * - Bundle sizes and loading performance
+ * - Individual tool execution metrics
+ * - System resource utilization
+ * - Core Web Vitals tracking
+ * - Automated performance recommendations
+ *
+ * @example
+ * ```typescript
+ * const monitor = PerformanceMonitor.getInstance();
+ * monitor.startMonitoring();
+ *
+ * // Track tool execution
+ * monitor.trackToolExecution('json-formatter', 1500, true);
+ *
+ * // Get performance insights
+ * const report = monitor.generateReport();
+ * ```
+ *
+ * @since 1.0.0
  */
 
-import type { BundleMetrics } from "./bundle-analyzer";
+import type { BundleAnalysis } from './bundle-analyzer';
 
 export interface PerformanceReport {
   timestamp: number;
-  bundleMetrics: BundleMetrics;
+  bundleMetrics: BundleAnalysis;
   toolMetrics: ToolPerformanceMetrics[];
   systemMetrics: SystemMetrics;
   webVitals: WebVitalsMetrics;
@@ -25,7 +48,7 @@ export interface ToolPerformanceMetrics {
   errorCount: number;
   usageCount: number;
   lastUsed: number;
-  status: "idle" | "loading" | "ready" | "processing" | "error";
+  status: 'idle' | 'loading' | 'ready' | 'processing' | 'error';
 }
 
 export interface SystemMetrics {
@@ -56,8 +79,8 @@ export interface PerformanceThreshold {
 }
 
 export interface PerformanceRecommendation {
-  type: "bundle" | "memory" | "performance" | "error";
-  severity: "low" | "medium" | "high" | "critical";
+  type: 'bundle' | 'memory' | 'performance' | 'error';
+  severity: 'low' | 'medium' | 'high' | 'critical';
   title: string;
   description: string;
   action: string;
@@ -67,15 +90,16 @@ export interface PerformanceRecommendation {
 export interface PerformanceAlert {
   id: string;
   type: string;
-  severity: "warning" | "error" | "critical";
+  severity: 'warning' | 'error' | 'critical';
   message: string;
   timestamp: number;
   toolId?: string;
-  metrics?: Record<string, number>;
+  metrics?: Record<string, number | string>;
   acknowledged: boolean;
 }
 
 export class PerformanceMonitor {
+  private static instance: PerformanceMonitor;
   private thresholds: PerformanceThreshold;
   private toolMetrics: Map<string, ToolPerformanceMetrics>;
   private alerts: PerformanceAlert[];
@@ -101,10 +125,19 @@ export class PerformanceMonitor {
     this.observers = [];
     this.isMonitoring = false;
     this.monitoringInterval = null;
+    this.bundleAnalyzer = null;
     this.eventListeners = new Map();
 
     // Initialize bundle analyzer
     this.initializeBundleAnalyzer();
+  }
+
+  private initializeBundleAnalyzer(): void {
+    try {
+      this.bundleAnalyzer = this.bundleAnalyzer || {};
+    } catch (_error) {
+      this.bundleAnalyzer = null;
+    }
   }
 
   public static getInstance(thresholds?: Partial<PerformanceThreshold>): PerformanceMonitor {
@@ -123,7 +156,7 @@ export class PerformanceMonitor {
     this.isMonitoring = true;
     this.setupPerformanceObservers();
     this.startMetricsCollection();
-    this.emit("monitoring:started");
+    this.emit('monitoring:started');
   }
 
   /**
@@ -140,7 +173,7 @@ export class PerformanceMonitor {
       this.monitoringInterval = null;
     }
 
-    this.emit("monitoring:stopped");
+    this.emit('monitoring:stopped');
   }
 
   /**
@@ -157,7 +190,7 @@ export class PerformanceMonitor {
       errorCount: 0,
       usageCount: 0,
       lastUsed: Date.now(),
-      status: "loading",
+      status: 'loading',
     };
 
     this.toolMetrics.set(toolId, metrics);
@@ -165,7 +198,7 @@ export class PerformanceMonitor {
     // Start load time measurement
     (metrics as any).loadStartTime = performance.now();
 
-    this.emit("tool:load:started", { toolId });
+    this.emit('tool:load:started', { toolId });
   }
 
   /**
@@ -177,18 +210,18 @@ export class PerformanceMonitor {
 
     if ((metrics as any).loadStartTime) {
       metrics.loadTime = performance.now() - (metrics as any).loadStartTime;
-      delete (metrics as any).loadStartTime;
+      (metrics as any).loadStartTime = undefined;
     }
 
     if (bundleSize) {
       metrics.bundleSize = bundleSize;
     }
 
-    metrics.status = "ready";
+    metrics.status = 'ready';
     metrics.lastUsed = Date.now();
 
     this.checkThresholds(metrics);
-    this.emit("tool:load:completed", { toolId, metrics });
+    this.emit('tool:load:completed', { toolId, metrics });
   }
 
   /**
@@ -202,32 +235,32 @@ export class PerformanceMonitor {
       metrics.renderTime = renderTime;
     } else if ((metrics as any).renderStartTime) {
       metrics.renderTime = performance.now() - (metrics as any).renderStartTime;
-      delete (metrics as any).renderStartTime;
+      (metrics as any).renderStartTime = undefined;
     }
 
-    metrics.status = "ready";
+    metrics.status = 'ready';
     this.checkThresholds(metrics);
-    this.emit("tool:render:completed", { toolId, metrics });
+    this.emit('tool:render:completed', { toolId, metrics });
   }
 
   /**
    * Track tool execution
    */
-  public trackToolExecution(toolId: string, executionTime: number, success: boolean = true): void {
+  public trackToolExecution(toolId: string, executionTime: number, success = true): void {
     const metrics = this.toolMetrics.get(toolId);
     if (!metrics) return;
 
     metrics.executionTime = executionTime;
     metrics.usageCount++;
     metrics.lastUsed = Date.now();
-    metrics.status = success ? "ready" : "error";
+    metrics.status = success ? 'ready' : 'error';
 
     if (!success) {
       metrics.errorCount++;
     }
 
     this.checkThresholds(metrics);
-    this.emit("tool:execution:completed", { toolId, executionTime, success });
+    this.emit('tool:execution:completed', { toolId, executionTime, success });
   }
 
   /**
@@ -239,15 +272,15 @@ export class PerformanceMonitor {
 
     metrics.interactionTime = Math.max(metrics.interactionTime, interactionTime);
     metrics.lastUsed = Date.now();
-    metrics.status = "processing";
+    metrics.status = 'processing';
 
     setTimeout(() => {
       if (this.toolMetrics.has(toolId)) {
-        this.toolMetrics.get(toolId)!.status = "ready";
+        this.toolMetrics.get(toolId)!.status = 'ready';
       }
     }, 100);
 
-    this.emit("tool:interaction", { toolId, interactionTime });
+    this.emit('tool:interaction', { toolId, interactionTime });
   }
 
   /**
@@ -272,8 +305,8 @@ export class PerformanceMonitor {
       totalMemoryUsage,
       availableMemory,
       cpuUsage: this.getCPUUsage(),
-      activeTools: tools.filter((t) => t.status !== "idle").length,
-      loadedTools: tools.filter((t) => t.status !== "loading").length,
+      activeTools: tools.filter((t) => t.status !== 'idle').length,
+      loadedTools: tools.filter((t) => t.status !== 'loading').length,
       errorRate: this.calculateErrorRate(tools),
       averageResponseTime: this.calculateAverageResponseTime(tools),
     };
@@ -284,11 +317,11 @@ export class PerformanceMonitor {
    */
   public getWebVitals(): WebVitalsMetrics {
     return {
-      fcp: this.getMetric("first-contentful-paint"),
-      lcp: this.getMetric("largest-contentful-paint"),
-      fid: this.getMetric("first-input"),
-      cls: this.getMetric("cumulative-layout-shift"),
-      ttfb: this.getMetric("time-to-first-byte"),
+      fcp: this.getMetric('first-contentful-paint'),
+      lcp: this.getMetric('largest-contentful-paint'),
+      fid: this.getMetric('first-input'),
+      cls: this.getMetric('cumulative-layout-shift'),
+      ttfb: this.getMetric('time-to-first-byte'),
     };
   }
 
@@ -298,12 +331,14 @@ export class PerformanceMonitor {
   public generateReport(): PerformanceReport {
     return {
       timestamp: Date.now(),
-      bundleMetrics: this.bundleAnalyzer?.getBundleMetrics() || {
+      bundleMetrics: this.bundleAnalyzer?.getBundleMetrics?.() || {
         totalSize: 0,
         gzippedSize: 0,
-        toolSizes: {},
-        loadingTimes: {},
-        memoryUsage: 0,
+        chunks: [],
+        dependencies: [],
+        unusedImports: [],
+        optimizationSuggestions: [],
+        lastAnalyzed: new Date(),
       },
       toolMetrics: this.getToolMetrics() as ToolPerformanceMetrics[],
       systemMetrics: this.getSystemMetrics(),
@@ -315,7 +350,7 @@ export class PerformanceMonitor {
   /**
    * Get alerts
    */
-  public getAlerts(severity?: "warning" | "error" | "critical"): PerformanceAlert[] {
+  public getAlerts(severity?: 'warning' | 'error' | 'critical'): PerformanceAlert[] {
     let alerts = this.alerts;
     if (severity) {
       alerts = alerts.filter((alert) => alert.severity === severity);
@@ -330,7 +365,7 @@ export class PerformanceMonitor {
     const alert = this.alerts.find((a) => a.id === alertId);
     if (alert) {
       alert.acknowledged = true;
-      this.emit("alert:acknowledged", { alertId });
+      this.emit('alert:acknowledged', { alertId });
       return true;
     }
     return false;
@@ -346,7 +381,7 @@ export class PerformanceMonitor {
     this.alerts = this.alerts.filter((alert) => alert.timestamp > cutoff && !alert.acknowledged);
 
     const clearedCount = initialCount - this.alerts.length;
-    this.emit("alerts:cleared", { clearedCount });
+    this.emit('alerts:cleared', { clearedCount });
     return clearedCount;
   }
 
@@ -361,13 +396,13 @@ export class PerformanceMonitor {
       this.checkThresholds(metrics);
     });
 
-    this.emit("thresholds:updated", { thresholds: this.thresholds });
+    this.emit('thresholds:updated', { thresholds: this.thresholds });
   }
 
   /**
    * Get performance trends
    */
-  public getTrends(_timeRange: number = 3600000): {
+  public getTrends(_timeRange = 3600000): {
     loadTime: number;
     renderTime: number;
     memoryUsage: number;
@@ -388,17 +423,17 @@ export class PerformanceMonitor {
   }
 
   private setupPerformanceObservers(): void {
-    if (typeof window === "undefined" || !("PerformanceObserver" in window)) {
+    if (typeof window === 'undefined' || !('PerformanceObserver' in window)) {
       return;
     }
 
     // Observe navigation timing
     const navigationObserver = new PerformanceObserver((list) => {
       list.getEntries().forEach((entry) => {
-        if (entry.entryType === "navigation") {
+        if (entry.entryType === 'navigation') {
           const navEntry = entry as PerformanceNavigationTiming;
-          this.emit("navigation", {
-            type: "navigation",
+          this.emit('navigation', {
+            type: 'navigation',
             timestamp: navEntry.fetchStart,
             metrics: {
               domContentLoaded:
@@ -414,9 +449,9 @@ export class PerformanceMonitor {
     // Observe paint timing
     const paintObserver = new PerformanceObserver((list) => {
       list.getEntries().forEach((entry) => {
-        if (entry.entryType === "paint") {
-          this.emit("paint", {
-            type: "paint",
+        if (entry.entryType === 'paint') {
+          this.emit('paint', {
+            type: 'paint',
             name: entry.name,
             timestamp: entry.startTime,
           });
@@ -428,20 +463,20 @@ export class PerformanceMonitor {
     const lcpObserver = new PerformanceObserver((list) => {
       const entries = list.getEntries();
       const lastEntry = entries[entries.length - 1];
-      this.emit("lcp", {
-        type: "lcp",
+      this.emit('lcp', {
+        type: 'lcp',
         timestamp: lastEntry.startTime,
-        element: lastEntry.element,
+        element: (lastEntry as any).element,
       });
     });
 
     // Observe first input
     const fidObserver = new PerformanceObserver((list) => {
       list.getEntries().forEach((entry) => {
-        if (entry.entryType === "first-input") {
+        if (entry.entryType === 'first-input') {
           const fidEntry = entry as PerformanceEventTiming;
-          this.emit("fid", {
-            type: "fid",
+          this.emit('fid', {
+            type: 'fid',
             timestamp: fidEntry.startTime,
             delay: fidEntry.processingStart - fidEntry.startTime,
           });
@@ -452,11 +487,12 @@ export class PerformanceMonitor {
     // Observe layout shift
     const clsObserver = new PerformanceObserver((list) => {
       list.getEntries().forEach((entry) => {
-        if (!entry.hadRecentInput) {
-          this.emit("layout-shift", {
-            type: "layout-shift",
+        const layoutEntry = entry as any;
+        if (!layoutEntry.hadRecentInput) {
+          this.emit('layout-shift', {
+            type: 'layout-shift',
             timestamp: entry.startTime,
-            value: entry.value,
+            value: layoutEntry.value,
           });
         }
       });
@@ -464,15 +500,15 @@ export class PerformanceMonitor {
 
     // Start observers
     try {
-      navigationObserver.observe({ entryTypes: ["navigation"] });
-      paintObserver.observe({ entryTypes: ["paint"] });
-      lcpObserver.observe({ entryTypes: ["largest-contentful-paint"] });
-      fidObserver.observe({ entryTypes: ["first-input"] });
-      clsObserver.observe({ entryTypes: ["layout-shift"] });
+      navigationObserver.observe({ entryTypes: ['navigation'] });
+      paintObserver.observe({ entryTypes: ['paint'] });
+      lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+      fidObserver.observe({ entryTypes: ['first-input'] });
+      clsObserver.observe({ entryTypes: ['layout-shift'] });
 
       this.observers.push(navigationObserver, paintObserver, lcpObserver, fidObserver, clsObserver);
     } catch (error) {
-      console.warn("Failed to setup performance observers:", error);
+      console.warn('Failed to setup performance observers:', error);
     }
   }
 
@@ -487,25 +523,25 @@ export class PerformanceMonitor {
     // Collect system metrics every 5 seconds
     this.monitoringInterval = setInterval(() => {
       const systemMetrics = this.getSystemMetrics();
-      this.emit("system:metrics", systemMetrics);
+      this.emit('system:metrics', systemMetrics);
 
       // Check for memory issues
       if (systemMetrics.totalMemoryUsage > this.thresholds.maxMemoryUsage) {
         this.createAlert(
-          "memory",
-          "critical",
+          'memory',
+          'critical',
           `Memory usage (${this.formatBytes(systemMetrics.totalMemoryUsage)}) exceeds threshold (${this.formatBytes(this.thresholds.maxMemoryUsage)})`,
-          { memoryUsage: systemMetrics.totalMemoryUsage },
+          { memoryUsage: systemMetrics.totalMemoryUsage }
         );
       }
 
       // Check error rate
       if (systemMetrics.errorRate > this.thresholds.maxErrorRate) {
         this.createAlert(
-          "error_rate",
-          "error",
+          'error_rate',
+          'error',
           `Error rate (${systemMetrics.errorRate}%) exceeds threshold (${this.thresholds.maxErrorRate}%)`,
-          { errorRate: systemMetrics.errorRate },
+          { errorRate: systemMetrics.errorRate }
         );
       }
     }, 5000);
@@ -515,49 +551,49 @@ export class PerformanceMonitor {
     // Check bundle size
     if (metrics.bundleSize > this.thresholds.maxBundleSize) {
       this.createAlert(
-        "bundle_size",
-        "warning",
+        'bundle_size',
+        'warning',
         `Tool ${metrics.toolId} bundle size (${this.formatBytes(metrics.bundleSize)}) exceeds threshold (${this.formatBytes(this.thresholds.maxBundleSize)})`,
-        { toolId: metrics.toolId, bundleSize: metrics.bundleSize },
+        { toolId: metrics.toolId, bundleSize: metrics.bundleSize }
       );
     }
 
     // Check load time
     if (metrics.loadTime > this.thresholds.maxLoadTime) {
       this.createAlert(
-        "load_time",
-        "warning",
+        'load_time',
+        'warning',
         `Tool ${metrics.toolId} load time (${metrics.loadTime}ms) exceeds threshold (${this.thresholds.maxLoadTime}ms)`,
-        { toolId: metrics.toolId, loadTime: metrics.loadTime },
+        { toolId: metrics.toolId, loadTime: metrics.loadTime }
       );
     }
 
     // Check render time
     if (metrics.renderTime > this.thresholds.maxRenderTime) {
       this.createAlert(
-        "render_time",
-        "warning",
+        'render_time',
+        'warning',
         `Tool ${metrics.toolId} render time (${metrics.renderTime}ms) exceeds threshold (${this.thresholds.maxRenderTime}ms)`,
-        { toolId: metrics.toolId, renderTime: metrics.renderTime },
+        { toolId: metrics.toolId, renderTime: metrics.renderTime }
       );
     }
 
     // Check execution time
     if (metrics.executionTime && metrics.executionTime > this.thresholds.maxExecutionTime) {
       this.createAlert(
-        "execution_time",
-        "error",
+        'execution_time',
+        'error',
         `Tool ${metrics.toolId} execution time (${metrics.executionTime}ms) exceeds threshold (${this.thresholds.maxExecutionTime}ms)`,
-        { toolId: metrics.toolId, executionTime: metrics.executionTime },
+        { toolId: metrics.toolId, executionTime: metrics.executionTime }
       );
     }
   }
 
   private createAlert(
     type: string,
-    severity: PerformanceAlert["severity"],
+    severity: PerformanceAlert['severity'],
     message: string,
-    metrics?: Record<string, number>,
+    metrics?: Record<string, number | string>
   ): void {
     const alert: PerformanceAlert = {
       id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -576,7 +612,7 @@ export class PerformanceMonitor {
       this.alerts = this.alerts.slice(-100);
     }
 
-    this.emit("alert:created", alert);
+    this.emit('alert:created', alert);
   }
 
   private generateRecommendations(): PerformanceRecommendation[] {
@@ -588,11 +624,11 @@ export class PerformanceMonitor {
     const largeBundles = tools.filter((t) => t.bundleSize > this.thresholds.maxBundleSize);
     if (largeBundles.length > 0) {
       recommendations.push({
-        type: "bundle",
-        severity: "medium",
-        title: "Large Tool Bundles Detected",
+        type: 'bundle',
+        severity: 'medium',
+        title: 'Large Tool Bundles Detected',
         description: `${largeBundles.length} tools exceed the ${this.formatBytes(this.thresholds.maxBundleSize)} bundle size limit`,
-        action: "Consider code splitting, tree shaking, or lazy loading for these tools",
+        action: 'Consider code splitting, tree shaking, or lazy loading for these tools',
         metrics: largeBundles.map((t) => `${t.toolId}: ${this.formatBytes(t.bundleSize)}`),
       });
     }
@@ -600,11 +636,11 @@ export class PerformanceMonitor {
     // Memory usage recommendations
     if (systemMetrics.totalMemoryUsage > this.thresholds.maxMemoryUsage * 0.8) {
       recommendations.push({
-        type: "memory",
-        severity: "high",
-        title: "High Memory Usage",
+        type: 'memory',
+        severity: 'high',
+        title: 'High Memory Usage',
         description: `Memory usage (${this.formatBytes(systemMetrics.totalMemoryUsage)}) is approaching the limit`,
-        action: "Implement memory cleanup, optimize data structures, or unload unused tools",
+        action: 'Implement memory cleanup, optimize data structures, or unload unused tools',
       });
     }
 
@@ -612,11 +648,11 @@ export class PerformanceMonitor {
     const slowTools = tools.filter((t) => t.loadTime > this.thresholds.maxLoadTime);
     if (slowTools.length > 0) {
       recommendations.push({
-        type: "performance",
-        severity: "medium",
-        title: "Slow Loading Tools",
+        type: 'performance',
+        severity: 'medium',
+        title: 'Slow Loading Tools',
         description: `${slowTools.length} tools have load times exceeding ${this.thresholds.maxLoadTime}ms`,
-        action: "Optimize initialization, implement progressive loading, or reduce dependencies",
+        action: 'Optimize initialization, implement progressive loading, or reduce dependencies',
         metrics: slowTools.map((t) => `${t.toolId}: ${t.loadTime}ms`),
       });
     }
@@ -624,11 +660,11 @@ export class PerformanceMonitor {
     // Error rate recommendations
     if (systemMetrics.errorRate > this.thresholds.maxErrorRate) {
       recommendations.push({
-        type: "error",
-        severity: "high",
-        title: "High Error Rate",
+        type: 'error',
+        severity: 'high',
+        title: 'High Error Rate',
         description: `Error rate (${systemMetrics.errorRate}%) exceeds the ${this.thresholds.maxErrorRate}% threshold`,
-        action: "Review error logs, improve error handling, and add input validation",
+        action: 'Review error logs, improve error handling, and add input validation',
       });
     }
 
@@ -637,14 +673,14 @@ export class PerformanceMonitor {
 
   // Utility methods
   private getCurrentMemoryUsage(): number {
-    if (typeof performance !== "undefined" && (performance as any).memory) {
+    if (typeof performance !== 'undefined' && (performance as any).memory) {
       return (performance as any).memory.usedJSHeapSize || 0;
     }
     return 0;
   }
 
   private getAvailableMemory(): number {
-    if (typeof performance !== "undefined" && (performance as any).memory) {
+    if (typeof performance !== 'undefined' && (performance as any).memory) {
       const memory = (performance as any).memory;
       return memory.totalJSHeapSize - memory.usedJSHeapSize;
     }
@@ -683,11 +719,11 @@ export class PerformanceMonitor {
   }
 
   private formatBytes(bytes: number): string {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
+    return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }
 
   /**
@@ -710,7 +746,7 @@ export class PerformanceMonitor {
     }
   }
 
-  private emit(event: string, data: any): void {
+  private emit(event: string, data?: any): void {
     const listeners = this.eventListeners.get(event) || [];
     listeners.forEach((listener) => {
       try {
@@ -729,7 +765,7 @@ export class PerformanceMonitor {
     this.toolMetrics.clear();
     this.alerts = [];
     this.eventListeners.clear();
-    this.emit("monitoring:disposed");
+    this.emit('monitoring:disposed');
   }
 }
 

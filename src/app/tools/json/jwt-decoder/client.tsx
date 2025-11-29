@@ -1,5 +1,11 @@
-"use client";
+'use client';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import {
   CheckCircle,
   Clock,
@@ -10,14 +16,8 @@ import {
   Shield,
   User,
   XCircle,
-} from "lucide-react";
-import { useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+} from 'lucide-react';
+import { useState } from 'react';
 
 interface JWTPayload {
   [key: string]: any;
@@ -45,26 +45,26 @@ interface DecodedJWT {
 }
 
 export default function JWTDecoderClient() {
-  const [jwtInput, setJwtInput] = useState("");
+  const [jwtInput, setJwtInput] = useState('');
   const [decoded, setDecoded] = useState<DecodedJWT | null>(null);
   const [showSignature, setShowSignature] = useState(false);
-  const [copied, setCopied] = useState("");
+  const [copied, setCopied] = useState('');
 
   const decodeJWT = (token: string): DecodedJWT => {
     try {
-      const parts = token.split(".");
+      const parts = token.split('.');
       if (parts.length !== 3) {
         return {
           header: {} as JWTHeader,
           payload: {} as JWTPayload,
-          signature: "",
+          signature: '',
           valid: false,
-          error: "Invalid JWT format. Expected 3 parts separated by dots.",
+          error: 'Invalid JWT format. Expected 3 parts separated by dots.',
         };
       }
 
-      const header = JSON.parse(atob(parts[0].replace(/-/g, "+").replace(/_/g, "/")));
-      const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+      const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
 
       // Check expiration
       const now = Math.floor(Date.now() / 1000);
@@ -75,15 +75,15 @@ export default function JWTDecoderClient() {
         payload,
         signature: parts[2],
         valid: !isExpired,
-        error: isExpired ? "Token has expired" : undefined,
+        error: isExpired ? 'Token has expired' : undefined,
       };
     } catch (error) {
       return {
         header: {} as JWTHeader,
         payload: {} as JWTPayload,
-        signature: "",
+        signature: '',
         valid: false,
-        error: `Failed to decode JWT: ${error instanceof Error ? error.message : "Unknown error"}`,
+        error: `Failed to decode JWT: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   };
@@ -101,9 +101,9 @@ export default function JWTDecoderClient() {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(type);
-      setTimeout(() => setCopied(""), 2000);
+      setTimeout(() => setCopied(''), 2000);
     } catch (error) {
-      console.error("Failed to copy:", error);
+      console.error('Failed to copy:', error);
     }
   };
 
@@ -115,7 +115,7 @@ export default function JWTDecoderClient() {
     const now = Math.floor(Date.now() / 1000);
     const remaining = exp - now;
 
-    if (remaining <= 0) return "Expired";
+    if (remaining <= 0) return 'Expired';
 
     const days = Math.floor(remaining / 86400);
     const hours = Math.floor((remaining % 86400) / 3600);
@@ -127,15 +127,15 @@ export default function JWTDecoderClient() {
   };
 
   const highlightJWT = (token: string) => {
-    const parts = token.split(".");
+    const parts = token.split('.');
     if (parts.length !== 3) return token;
 
     return (
-      <div className="font-mono text-sm break-all">
+      <div className="break-all font-mono text-sm">
         <span className="text-blue-600 dark:text-blue-400">{parts[0]}</span>.
         <span className="text-green-600 dark:text-green-400">{parts[1]}</span>.
         <span className="text-purple-600 dark:text-purple-400">
-          {showSignature ? parts[2] : "•".repeat(Math.min(parts[2].length, 20))}
+          {showSignature ? parts[2] : '•'.repeat(Math.min(parts[2].length, 20))}
         </span>
       </div>
     );
@@ -163,11 +163,11 @@ export default function JWTDecoderClient() {
             {jwtInput && (
               <Button
                 variant="outline"
-                onClick={() => copyToClipboard(jwtInput, "jwt")}
+                onClick={() => copyToClipboard(jwtInput, 'jwt')}
                 className="flex items-center gap-2"
               >
                 <Copy className="h-4 w-4" />
-                {copied === "jwt" ? "Copied!" : "Copy JWT"}
+                {copied === 'jwt' ? 'Copied!' : 'Copy JWT'}
               </Button>
             )}
           </div>
@@ -188,15 +188,15 @@ export default function JWTDecoderClient() {
               <CardTitle className="flex items-center justify-between">
                 <span>Decoded JWT Structure</span>
                 <div className="flex items-center gap-2">
-                  <Badge variant={decoded.valid ? "default" : "destructive"}>
+                  <Badge variant={decoded.valid ? 'default' : 'destructive'}>
                     {decoded.valid ? (
                       <>
-                        <CheckCircle className="h-3 w-3 mr-1" />
+                        <CheckCircle className="mr-1 h-3 w-3" />
                         Valid
                       </>
                     ) : (
                       <>
-                        <XCircle className="h-3 w-3 mr-1" />
+                        <XCircle className="mr-1 h-3 w-3" />
                         Invalid
                       </>
                     )}
@@ -214,11 +214,11 @@ export default function JWTDecoderClient() {
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <h4 className="font-semibold mb-2">Token Structure:</h4>
+                  <h4 className="mb-2 font-semibold">Token Structure:</h4>
                   {highlightJWT(jwtInput)}
                 </div>
 
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   <p>• Blue: Header (algorithm & token type)</p>
                   <p>• Green: Payload (claims & data)</p>
                   <p>• Purple: Signature (verification)</p>
@@ -246,21 +246,21 @@ export default function JWTDecoderClient() {
                   <div className="space-y-4">
                     {/* Time-based claims */}
                     {decoded.payload.exp && (
-                      <div className="p-3 bg-muted rounded-lg">
+                      <div className="rounded-lg bg-muted p-3">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold flex items-center gap-2">
+                          <span className="flex items-center gap-2 font-semibold">
                             <Clock className="h-4 w-4" />
                             Expiration
                           </span>
                           <Badge
                             variant={
-                              decoded.payload.exp < Date.now() / 1000 ? "destructive" : "default"
+                              decoded.payload.exp < Date.now() / 1000 ? 'destructive' : 'default'
                             }
                           >
                             {getTimeRemaining(decoded.payload.exp)}
                           </Badge>
                         </div>
-                        <div className="text-sm text-muted-foreground mt-1">
+                        <div className="mt-1 text-muted-foreground text-sm">
                           {formatTimestamp(decoded.payload.exp)}
                         </div>
                       </div>
@@ -270,15 +270,15 @@ export default function JWTDecoderClient() {
                     <div className="grid gap-3">
                       {Object.entries(decoded.payload).map(
                         ([key, value]) =>
-                          !["exp", "iat", "nbf"].includes(key) && (
+                          !['exp', 'iat', 'nbf'].includes(key) && (
                             <div
                               key={key}
-                              className="flex items-start justify-between p-2 border rounded"
+                              className="flex items-start justify-between rounded border p-2"
                             >
                               <div>
-                                <span className="font-mono text-sm font-semibold">{key}</span>
-                                <div className="text-sm text-muted-foreground break-all">
-                                  {typeof value === "object"
+                                <span className="font-mono font-semibold text-sm">{key}</span>
+                                <div className="break-all text-muted-foreground text-sm">
+                                  {typeof value === 'object'
                                     ? JSON.stringify(value, null, 2)
                                     : String(value)}
                                 </div>
@@ -291,7 +291,7 @@ export default function JWTDecoderClient() {
                                 <Copy className="h-3 w-3" />
                               </Button>
                             </div>
-                          ),
+                          )
                       )}
                     </div>
 
@@ -300,12 +300,12 @@ export default function JWTDecoderClient() {
                         variant="outline"
                         size="sm"
                         onClick={() =>
-                          copyToClipboard(JSON.stringify(decoded.payload, null, 2), "payload-full")
+                          copyToClipboard(JSON.stringify(decoded.payload, null, 2), 'payload-full')
                         }
                         className="w-full"
                       >
-                        <Copy className="h-4 w-4 mr-2" />
-                        {copied === "payload-full" ? "Copied!" : "Copy Full Payload"}
+                        <Copy className="mr-2 h-4 w-4" />
+                        {copied === 'payload-full' ? 'Copied!' : 'Copy Full Payload'}
                       </Button>
                     </div>
                   </div>
@@ -327,12 +327,12 @@ export default function JWTDecoderClient() {
                     {Object.entries(decoded.header).map(([key, value]) => (
                       <div
                         key={key}
-                        className="flex items-start justify-between p-2 border rounded"
+                        className="flex items-start justify-between rounded border p-2"
                       >
                         <div>
-                          <span className="font-mono text-sm font-semibold">{key}</span>
-                          <div className="text-sm text-muted-foreground break-all">
-                            {typeof value === "object"
+                          <span className="font-mono font-semibold text-sm">{key}</span>
+                          <div className="break-all text-muted-foreground text-sm">
+                            {typeof value === 'object'
                               ? JSON.stringify(value, null, 2)
                               : String(value)}
                           </div>
@@ -352,12 +352,12 @@ export default function JWTDecoderClient() {
                         variant="outline"
                         size="sm"
                         onClick={() =>
-                          copyToClipboard(JSON.stringify(decoded.header, null, 2), "header-full")
+                          copyToClipboard(JSON.stringify(decoded.header, null, 2), 'header-full')
                         }
                         className="w-full"
                       >
-                        <Copy className="h-4 w-4 mr-2" />
-                        {copied === "header-full" ? "Copied!" : "Copy Full Header"}
+                        <Copy className="mr-2 h-4 w-4" />
+                        {copied === 'header-full' ? 'Copied!' : 'Copy Full Header'}
                       </Button>
                     </div>
                   </div>

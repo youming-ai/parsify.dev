@@ -1,38 +1,39 @@
-"use client";
+'use client';
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import PerformanceMonitor from '@/lib/performance-monitor';
 import {
-  Send,
-  Download,
-  RefreshCw,
-  Globe,
-  Clock,
   Activity,
-  Play,
-  Square,
+  Clock,
   Code,
-  Zap,
+  Download,
+  Globe,
+  Play,
+  RefreshCw,
+  Send,
   Server,
   Shield,
-} from "lucide-react";
-import { usePerformanceMonitor } from "@/hooks/use-performance-monitor";
+  Square,
+  Zap,
+} from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface HTTPRequestSimulatorProps {
   onRequestComplete?: (result: HTTPResult) => void;
@@ -70,45 +71,45 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
   onRequestComplete,
   maxFileSize = 1024 * 1024, // 1MB
 }) => {
-  const [url, setUrl] = useState("");
-  const [method, setMethod] = useState("GET");
-  const [headers, setHeaders] = useState("Content-Type: application/json");
-  const [body, setBody] = useState("");
+  const [url, setUrl] = useState('');
+  const [method, setMethod] = useState('GET');
+  const [headers, setHeaders] = useState('Content-Type: application/json');
+  const [body, setBody] = useState('');
   const [isRequesting, setIsRequesting] = useState(false);
   const [result, setResult] = useState<HTTPResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [requestHistory, setRequestHistory] = useState<HTTPResult[]>([]);
   const [followRedirects, setFollowRedirects] = useState(true);
-  const [timeout, setTimeout] = useState(10000); // 10 seconds
+  const [timeout, setRequestTimeout] = useState(10000); // 10 seconds
   const [validateSSL, setValidateSSL] = useState(true);
 
-  const { startMonitoring, endMonitoring, getMetrics } = usePerformanceMonitor();
+  const performanceMonitor = PerformanceMonitor.getInstance();
 
   const httpMethods: HTTPMethod[] = [
-    { method: "GET", hasBody: false, description: "Retrieve data" },
-    { method: "POST", hasBody: true, description: "Create new resource" },
-    { method: "PUT", hasBody: true, description: "Update entire resource" },
-    { method: "PATCH", hasBody: true, description: "Partial update" },
-    { method: "DELETE", hasBody: false, description: "Delete resource" },
-    { method: "HEAD", hasBody: false, description: "Get headers only" },
-    { method: "OPTIONS", hasBody: false, description: "Get allowed methods" },
+    { method: 'GET', hasBody: false, description: 'Retrieve data' },
+    { method: 'POST', hasBody: true, description: 'Create new resource' },
+    { method: 'PUT', hasBody: true, description: 'Update entire resource' },
+    { method: 'PATCH', hasBody: true, description: 'Partial update' },
+    { method: 'DELETE', hasBody: false, description: 'Delete resource' },
+    { method: 'HEAD', hasBody: false, description: 'Get headers only' },
+    { method: 'OPTIONS', hasBody: false, description: 'Get allowed methods' },
   ];
 
   const parseHeaders = useCallback((headerText: string): Record<string, string> => {
     const headers: Record<string, string> = {};
-    headerText.split("\n").forEach((line) => {
-      const [key, ...valueParts] = line.split(":");
+    headerText.split('\n').forEach((line) => {
+      const [key, ...valueParts] = line.split(':');
       if (key && valueParts.length > 0) {
-        headers[key.trim()] = valueParts.join(":").trim();
+        headers[key.trim()] = valueParts.join(':').trim();
       }
     });
     return headers;
   }, []);
 
-  const formatHeaders = useCallback((headers: Record<string, string>): string => {
+  const _formatHeaders = useCallback((headers: Record<string, string>): string => {
     return Object.entries(headers)
       .map(([key, value]) => `${key}: ${value}`)
-      .join("\n");
+      .join('\n');
   }, []);
 
   const measureRequest = useCallback(
@@ -118,15 +119,15 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
       try {
         // Use fetch API with Performance API timing
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        const timeoutId = window.setTimeout(() => controller.abort(), timeout);
 
         const response = await fetch(url, {
           ...options,
           signal: controller.signal,
-          redirect: followRedirects ? "follow" : "manual",
+          redirect: followRedirects ? 'follow' : 'manual',
         });
 
-        clearTimeout(timeoutId);
+        window.clearTimeout(timeoutId);
 
         const endTime = performance.now();
         const duration = endTime - startTime;
@@ -134,7 +135,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
         // Get timing information from Performance API
         const entries = performance.getEntriesByName(
           url,
-          "navigation",
+          'navigation'
         ) as PerformanceNavigationTiming[];
         const timing: RequestTiming = {};
 
@@ -158,12 +159,12 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
         });
 
         // Get response text
-        let responseText = "";
+        let responseText = '';
         try {
           const clonedResponse = response.clone();
           responseText = await clonedResponse.text();
-        } catch (textError) {
-          responseText = "[Unable to read response body]";
+        } catch (_textError) {
+          responseText = '[Unable to read response body]';
         }
 
         return {
@@ -173,7 +174,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
           timing,
           responseText,
           url,
-          method: options.method || "GET",
+          method: options.method || 'GET',
           success: response.ok,
           duration,
         };
@@ -183,37 +184,37 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
 
         return {
           status: 0,
-          statusText: error instanceof Error ? error.message : "Request Failed",
+          statusText: error instanceof Error ? error.message : 'Request Failed',
           headers: {},
           timing: {},
-          responseText: "",
+          responseText: '',
           url,
-          method: options.method || "GET",
+          method: options.method || 'GET',
           success: false,
           duration,
         };
       }
     },
-    [followRedirects, timeout],
+    [followRedirects, timeout]
   );
 
   const sendRequest = useCallback(async () => {
     if (!url.trim()) {
-      setError("Please enter a valid URL");
+      setError('Please enter a valid URL');
       return;
     }
 
     // Validate URL format
     try {
       new URL(url);
-    } catch (urlError) {
-      setError("Please enter a valid URL (e.g., https://example.com/api)");
+    } catch (_urlError) {
+      setError('Please enter a valid URL (e.g., https://example.com/api)');
       return;
     }
 
     setIsRequesting(true);
     setError(null);
-    startMonitoring("http-request");
+    performanceMonitor.startMonitoring();
 
     try {
       // Build request options
@@ -223,9 +224,9 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
       const options: RequestInit = {
         method,
         headers: parsedHeaders,
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "omit",
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'omit',
       };
 
       // Add body if method supports it
@@ -243,59 +244,49 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
         onRequestComplete(requestResult);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Request failed";
+      const errorMessage = error instanceof Error ? error.message : 'Request failed';
       setError(errorMessage);
     } finally {
-      endMonitoring();
+      performanceMonitor.stopMonitoring();
       setIsRequesting(false);
     }
-  }, [
-    url,
-    method,
-    headers,
-    body,
-    parseHeaders,
-    measureRequest,
-    startMonitoring,
-    endMonitoring,
-    onRequestComplete,
-  ]);
+  }, [url, method, headers, body, parseHeaders, measureRequest, onRequestComplete]);
 
   const downloadAsCurl = useCallback(
     (request: HTTPResult) => {
       const curlHeaders = Object.entries(request.headers)
         .map(([key, value]) => `-H "${key}: ${value}"`)
-        .join(" \\  \n");
+        .join(' \\  \n');
 
       const curlBody =
-        request.method !== "GET" && request.method !== "HEAD" && body.trim()
+        request.method !== 'GET' && request.method !== 'HEAD' && body.trim()
           ? `-d '${body.replace(/'/g, "\\'")}'`
-          : "";
+          : '';
 
       const curlCommand = `curl -X ${request.method} \\\
   ${curlHeaders} \\\
   ${curlBody} \\\
   "${request.url}"`;
 
-      const blob = new Blob([curlCommand], { type: "text/plain" });
+      const blob = new Blob([curlCommand], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
-      a.download = "request.sh";
+      a.download = 'request.sh';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     },
-    [body],
+    [body]
   );
 
   const downloadAsPostman = useCallback(
     (request: HTTPResult) => {
       const postmanCollection = {
         info: {
-          name: "HTTP Request Collection",
-          schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+          name: 'HTTP Request Collection',
+          schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
         },
         item: [
           {
@@ -308,9 +299,9 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                 value,
               })),
               body:
-                request.method !== "GET" && request.method !== "HEAD"
+                request.method !== 'GET' && request.method !== 'HEAD'
                   ? {
-                      mode: "raw",
+                      mode: 'raw',
                       raw: body,
                     }
                   : undefined,
@@ -320,34 +311,34 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
       };
 
       const blob = new Blob([JSON.stringify(postmanCollection, null, 2)], {
-        type: "application/json",
+        type: 'application/json',
       });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
-      a.download = "http-requests.postman_collection.json";
+      a.download = 'http-requests.postman_collection.json';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     },
-    [body],
+    [body]
   );
 
   const formatBytes = useCallback((bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }, []);
 
   const getColorForStatus = useCallback((status: number): string => {
-    if (status >= 200 && status < 300) return "text-green-600";
-    if (status >= 300 && status < 400) return "text-yellow-600";
-    if (status >= 400 && status < 500) return "text-orange-600";
-    if (status >= 500) return "text-red-600";
-    return "text-gray-600";
+    if (status >= 200 && status < 300) return 'text-green-600';
+    if (status >= 300 && status < 400) return 'text-yellow-600';
+    if (status >= 400 && status < 500) return 'text-orange-600';
+    if (status >= 500) return 'text-red-600';
+    return 'text-gray-600';
   }, []);
 
   const clearHistory = useCallback(() => {
@@ -357,7 +348,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
   useEffect(() => {
     // Cleanup performance entries
     return () => {
-      if (typeof performance !== "undefined" && performance.clearResourceTimings) {
+      if (typeof performance !== 'undefined' && performance.clearResourceTimings) {
         performance.clearResourceTimings();
       }
     };
@@ -378,7 +369,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
         <CardContent>
           <div className="space-y-4">
             {/* Request Configuration */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="url">URL</Label>
@@ -414,7 +405,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                       id="timeout"
                       type="number"
                       value={timeout}
-                      onChange={(e) => setTimeout(parseInt(e.target.value) || 10000)}
+                      onChange={(e) => setRequestTimeout(Number.parseInt(e.target.value) || 10000)}
                       min="1000"
                       max="60000"
                       step="1000"
@@ -474,12 +465,12 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                   <Button onClick={sendRequest} disabled={isRequesting} className="flex-1">
                     {isRequesting ? (
                       <>
-                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                         Sending...
                       </>
                     ) : (
                       <>
-                        <Send className="h-4 w-4 mr-2" />
+                        <Send className="mr-2 h-4 w-4" />
                         Send Request
                       </>
                     )}
@@ -488,16 +479,16 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
 
                 {/* Quick Templates */}
                 <div>
-                  <Label className="text-sm font-medium">Quick Templates</Label>
-                  <div className="grid grid-cols-2 gap-2 mt-1">
+                  <Label className="font-medium text-sm">Quick Templates</Label>
+                  <div className="mt-1 grid grid-cols-2 gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setUrl("https://jsonplaceholder.typicode.com/posts/1");
-                        setMethod("GET");
-                        setHeaders("Content-Type: application/json");
-                        setBody("");
+                        setUrl('https://jsonplaceholder.typicode.com/posts/1');
+                        setMethod('GET');
+                        setHeaders('Content-Type: application/json');
+                        setBody('');
                       }}
                     >
                       JSON GET
@@ -506,9 +497,9 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setUrl("https://jsonplaceholder.typicode.com/posts");
-                        setMethod("POST");
-                        setHeaders("Content-Type: application/json");
+                        setUrl('https://jsonplaceholder.typicode.com/posts');
+                        setMethod('POST');
+                        setHeaders('Content-Type: application/json');
                         setBody('{"title": "Test", "body": "Test post", "userId": 1}');
                       }}
                     >
@@ -518,10 +509,10 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setUrl("https://httpbin.org/status/200");
-                        setMethod("GET");
-                        setHeaders("");
-                        setBody("");
+                        setUrl('https://httpbin.org/status/200');
+                        setMethod('GET');
+                        setHeaders('');
+                        setBody('');
                       }}
                     >
                       Status Check
@@ -530,10 +521,10 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setUrl("https://httpbin.org/delay/2");
-                        setMethod("GET");
-                        setHeaders("");
-                        setBody("");
+                        setUrl('https://httpbin.org/delay/2');
+                        setMethod('GET');
+                        setHeaders('');
+                        setBody('');
                       }}
                     >
                       Slow Request
@@ -544,33 +535,33 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                 {/* Request History */}
                 {requestHistory.length > 0 && (
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <Label className="text-sm font-medium">Recent Requests</Label>
+                    <div className="mb-2 flex items-center justify-between">
+                      <Label className="font-medium text-sm">Recent Requests</Label>
                       <Button variant="ghost" size="sm" onClick={clearHistory}>
                         Clear
                       </Button>
                     </div>
-                    <div className="space-y-1 max-h-40 overflow-y-auto">
+                    <div className="max-h-40 space-y-1 overflow-y-auto">
                       {requestHistory.map((req, index) => (
                         <div
                           key={index}
-                          className="flex items-center justify-between p-2 border rounded hover:bg-gray-50 cursor-pointer"
+                          className="flex cursor-pointer items-center justify-between rounded border p-2 hover:bg-gray-50"
                           onClick={() => setResult(req)}
                         >
                           <div className="flex items-center gap-2">
                             <span
-                              className={`text-sm font-medium ${getColorForStatus(req.status)}`}
+                              className={`font-medium text-sm ${getColorForStatus(req.status)}`}
                             >
                               {req.method}
                             </span>
                             <span className={`text-sm ${getColorForStatus(req.status)}`}>
                               {req.status}
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-gray-500 text-xs">
                               {new URL(req.url).hostname}
                             </span>
                           </div>
-                          <div className="text-xs text-gray-400">{req.duration.toFixed(0)}ms</div>
+                          <div className="text-gray-400 text-xs">{req.duration.toFixed(0)}ms</div>
                         </div>
                       ))}
                     </div>
@@ -600,50 +591,50 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
                         <Badge
-                          variant={result.success ? "default" : "destructive"}
+                          variant={result.success ? 'default' : 'destructive'}
                           className={getColorForStatus(result.status)}
                         >
                           {result.status} {result.statusText}
                         </Badge>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-gray-500 text-sm">
                           {result.duration.toFixed(0)}ms
                         </span>
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={() => downloadAsCurl(result)}>
-                        <Code className="h-4 w-4 mr-2" />
+                        <Code className="mr-2 h-4 w-4" />
                         cURL
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => downloadAsPostman(result)}>
-                        <Download className="h-4 w-4 mr-2" />
+                        <Download className="mr-2 h-4 w-4" />
                         Postman
                       </Button>
                     </div>
                   </div>
 
-                  <div className="border rounded-lg overflow-hidden">
-                    <pre className="p-4 text-sm font-mono bg-gray-50 overflow-x-auto whitespace-pre-wrap">
-                      {result.responseText || "[Empty Response]"}
+                  <div className="overflow-hidden rounded-lg border">
+                    <pre className="overflow-x-auto whitespace-pre-wrap bg-gray-50 p-4 font-mono text-sm">
+                      {result.responseText || '[Empty Response]'}
                     </pre>
                   </div>
                 </TabsContent>
 
                 <TabsContent value="headers" className="space-y-4">
-                  <div className="border rounded-lg overflow-hidden">
+                  <div className="overflow-hidden rounded-lg border">
                     <div className="max-h-96 overflow-y-auto">
                       <table className="w-full">
-                        <thead className="bg-gray-50 sticky top-0">
+                        <thead className="sticky top-0 bg-gray-50">
                           <tr>
-                            <th className="text-left p-2 text-sm font-medium">Header</th>
-                            <th className="text-left p-2 text-sm font-medium">Value</th>
+                            <th className="p-2 text-left font-medium text-sm">Header</th>
+                            <th className="p-2 text-left font-medium text-sm">Value</th>
                           </tr>
                         </thead>
                         <tbody>
                           {Object.entries(result.headers).map(([key, value]) => (
                             <tr key={key} className="border-t">
-                              <td className="p-2 text-sm font-medium">{key}</td>
-                              <td className="p-2 text-sm text-gray-600 break-all">{value}</td>
+                              <td className="p-2 font-medium text-sm">{key}</td>
+                              <td className="break-all p-2 text-gray-600 text-sm">{value}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -653,73 +644,75 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                 </TabsContent>
 
                 <TabsContent value="timing" className="space-y-4">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                     {result.timing.dnsLookup !== undefined && (
-                      <div className="border rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-1">
+                      <div className="rounded-lg border p-3">
+                        <div className="mb-1 flex items-center gap-2">
                           <Activity className="h-4 w-4 text-blue-500" />
-                          <span className="text-sm font-medium">DNS Lookup</span>
+                          <span className="font-medium text-sm">DNS Lookup</span>
                         </div>
-                        <div className="text-2xl font-bold">
+                        <div className="font-bold text-2xl">
                           {result.timing.dnsLookup.toFixed(0)}
                         </div>
-                        <div className="text-xs text-gray-500">ms</div>
+                        <div className="text-gray-500 text-xs">ms</div>
                       </div>
                     )}
 
                     {result.timing.tcpConnection !== undefined && (
-                      <div className="border rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-1">
+                      <div className="rounded-lg border p-3">
+                        <div className="mb-1 flex items-center gap-2">
                           <Server className="h-4 w-4 text-green-500" />
-                          <span className="text-sm font-medium">TCP Connection</span>
+                          <span className="font-medium text-sm">TCP Connection</span>
                         </div>
-                        <div className="text-2xl font-bold">
+                        <div className="font-bold text-2xl">
                           {result.timing.tcpConnection.toFixed(0)}
                         </div>
-                        <div className="text-xs text-gray-500">ms</div>
+                        <div className="text-gray-500 text-xs">ms</div>
                       </div>
                     )}
 
                     {result.timing.tlsHandshake !== undefined && (
-                      <div className="border rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-1">
+                      <div className="rounded-lg border p-3">
+                        <div className="mb-1 flex items-center gap-2">
                           <Shield className="h-4 w-4 text-yellow-500" />
-                          <span className="text-sm font-medium">TLS Handshake</span>
+                          <span className="font-medium text-sm">TLS Handshake</span>
                         </div>
-                        <div className="text-2xl font-bold">
+                        <div className="font-bold text-2xl">
                           {result.timing.tlsHandshake.toFixed(0)}
                         </div>
-                        <div className="text-xs text-gray-500">ms</div>
+                        <div className="text-gray-500 text-xs">ms</div>
                       </div>
                     )}
 
                     {result.timing.firstByte !== undefined && (
-                      <div className="border rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-1">
+                      <div className="rounded-lg border p-3">
+                        <div className="mb-1 flex items-center gap-2">
                           <Zap className="h-4 w-4 text-purple-500" />
-                          <span className="text-sm font-medium">First Byte</span>
+                          <span className="font-medium text-sm">First Byte</span>
                         </div>
-                        <div className="text-2xl font-bold">
+                        <div className="font-bold text-2xl">
                           {result.timing.firstByte.toFixed(0)}
                         </div>
-                        <div className="text-xs text-gray-500">ms</div>
+                        <div className="text-gray-500 text-xs">ms</div>
                       </div>
                     )}
                   </div>
 
                   {result.timing.total && (
                     <div className="mt-4">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="mb-2 flex items-center gap-2">
                         <Clock className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm font-medium">Total Request Time</span>
+                        <span className="font-medium text-sm">Total Request Time</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="h-2 w-full rounded-full bg-gray-200">
                         <div
-                          className="bg-blue-600 h-2 rounded-full"
-                          style={{ width: `${Math.min((result.timing.total / 1000) * 100, 100)}%` }}
+                          className="h-2 rounded-full bg-blue-600"
+                          style={{
+                            width: `${Math.min((result.timing.total / 1000) * 100, 100)}%`,
+                          }}
                         />
                       </div>
-                      <div className="text-center text-sm text-gray-600">
+                      <div className="text-center text-gray-600 text-sm">
                         {result.timing.total.toFixed(0)}ms
                       </div>
                     </div>
@@ -729,35 +722,35 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                 <TabsContent value="details" className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-sm font-medium">Request URL</Label>
-                      <div className="mt-1 p-2 bg-gray-50 rounded text-sm font-mono break-all">
+                      <Label className="font-medium text-sm">Request URL</Label>
+                      <div className="mt-1 break-all rounded bg-gray-50 p-2 font-mono text-sm">
                         {result.url}
                       </div>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium">Method</Label>
-                      <div className="mt-1 p-2 bg-gray-50 rounded text-sm">{result.method}</div>
+                      <Label className="font-medium text-sm">Method</Label>
+                      <div className="mt-1 rounded bg-gray-50 p-2 text-sm">{result.method}</div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <Label className="text-sm font-medium">Status Code</Label>
+                      <Label className="font-medium text-sm">Status Code</Label>
                       <div
-                        className={`mt-1 text-2xl font-bold ${getColorForStatus(result.status)}`}
+                        className={`mt-1 font-bold text-2xl ${getColorForStatus(result.status)}`}
                       >
                         {result.status}
                       </div>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium">Response Size</Label>
-                      <div className="mt-1 text-2xl font-bold">
+                      <Label className="font-medium text-sm">Response Size</Label>
+                      <div className="mt-1 font-bold text-2xl">
                         {formatBytes(new Blob([result.responseText]).size)}
                       </div>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium">Duration</Label>
-                      <div className="mt-1 text-2xl font-bold">{result.duration.toFixed(0)}ms</div>
+                      <Label className="font-medium text-sm">Duration</Label>
+                      <div className="mt-1 font-bold text-2xl">{result.duration.toFixed(0)}ms</div>
                     </div>
                   </div>
                 </TabsContent>

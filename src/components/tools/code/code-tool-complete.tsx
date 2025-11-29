@@ -1,15 +1,15 @@
-import { Copy, Download, Play, RotateCcw, Settings, Upload } from "lucide-react";
-import * as React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { ToolWrapper } from "../tool-wrapper";
-import { CodeEditor } from "./code-editor";
-import { CodeFormatter, type FORMAT_PRESETS, FormatPresetSelector } from "./code-formatter";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Copy, Download, Play, RotateCcw, Settings, Upload } from 'lucide-react';
+import * as React from 'react';
+import { ToolWrapper } from '../tool-wrapper';
+import { CodeEditor } from './code-editor';
+import { CodeFormatter, type FORMAT_PRESETS, FormatPresetSelector } from './code-formatter';
 import type {
   CodeExecutionRequest,
   CodeExecutionResult,
@@ -18,16 +18,16 @@ import type {
   CodeTemplate,
   ExecutionStatus as ExecutionStatusEnum,
   TerminalLine,
-} from "./code-types";
-import { ExecutionStatus } from "./execution-status";
-import { getLanguageConfig, getTemplatesByLanguage } from "./language-configs";
-import { LanguageSelector, QuickLanguageSelector } from "./language-selector";
+} from './code-types';
+import { ExecutionStatus } from './execution-status';
+import { getLanguageConfig, getTemplatesByLanguage } from './language-configs';
+import { LanguageSelector, QuickLanguageSelector } from './language-selector';
 import {
+  Terminal,
   createTerminalLine,
   formatTerminalError,
   formatTerminalOutput,
-  Terminal,
-} from "./terminal";
+} from './terminal';
 
 interface CodeToolCompleteProps {
   className?: string;
@@ -35,14 +35,14 @@ interface CodeToolCompleteProps {
 
 export function CodeToolComplete({ className }: CodeToolCompleteProps) {
   // Code Editor State
-  const [code, setCode] = React.useState("");
-  const [language, setLanguage] = React.useState<CodeLanguage>("javascript");
-  const [stdin, setStdin] = React.useState("");
+  const [code, setCode] = React.useState('');
+  const [language, setLanguage] = React.useState<CodeLanguage>('javascript');
+  const [stdin, setStdin] = React.useState('');
 
   // Execution State
-  const [executionStatus, setExecutionStatus] = React.useState<ExecutionStatusEnum>("idle");
+  const [executionStatus, setExecutionStatus] = React.useState<ExecutionStatusEnum>('idle');
   const [executionResult, setExecutionResult] = React.useState<CodeExecutionResult | null>(null);
-  const [executionError, setExecutionError] = React.useState("");
+  const [executionError, setExecutionError] = React.useState('');
   const [executionProgress, setExecutionProgress] = React.useState(0);
 
   // Terminal State
@@ -51,18 +51,18 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
   // Formatting State
   const [formatOptions, setFormatOptions] = React.useState<CodeFormatOptions>({
     indentSize: 2,
-    indentType: "spaces",
+    indentType: 'spaces',
     maxLineLength: 80,
     semicolons: true,
-    quotes: "double",
+    quotes: 'double',
     trailingComma: false,
   });
-  const [_formattedCode, setFormattedCode] = React.useState("");
+  const [_formattedCode, setFormattedCode] = React.useState('');
   const [selectedFormatPreset, setSelectedFormatPreset] =
-    React.useState<keyof typeof FORMAT_PRESETS>("prettier");
+    React.useState<keyof typeof FORMAT_PRESETS>('standardjs');
 
   // UI State
-  const [activeTab, setActiveTab] = React.useState("editor");
+  const [activeTab, setActiveTab] = React.useState('editor');
   const [_showSettings, _setShowSettings] = React.useState(false);
   const [_selectedTemplate, setSelectedTemplate] = React.useState<CodeTemplate | null>(null);
 
@@ -79,33 +79,33 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
   React.useEffect(() => {
     const welcomeLine = createTerminalLine(
       `Welcome to Code Runner! Selected language: ${languageConfig.name}`,
-      "info",
+      'info'
     );
     setTerminalLines([welcomeLine]);
   }, [languageConfig.name]);
 
   const handleExecutionStart = () => {
-    setExecutionStatus("compiling");
+    setExecutionStatus('compiling');
     setExecutionProgress(0);
     setExecutionResult(null);
-    setExecutionError("");
+    setExecutionError('');
 
     // Add to terminal
-    const startLine = createTerminalLine("Starting code execution...", "info");
+    const startLine = createTerminalLine('Starting code execution...', 'info');
     setTerminalLines((prev) => [...prev, startLine]);
   };
 
   const handleExecutionComplete = (result: CodeExecutionResult) => {
-    setExecutionStatus("completed");
+    setExecutionStatus('completed');
     setExecutionProgress(100);
     setExecutionResult(result);
 
     // Add to terminal
     const lines = [
-      createTerminalLine("Execution completed successfully!", "info"),
-      createTerminalLine(`Exit code: ${result.exitCode}`, "info"),
-      createTerminalLine(`Execution time: ${result.executionTime}ms`, "info"),
-      createTerminalLine(`Memory usage: ${result.memoryUsage}KB`, "info"),
+      createTerminalLine('Execution completed successfully!', 'info'),
+      createTerminalLine(`Exit code: ${result.exitCode}`, 'info'),
+      createTerminalLine(`Execution time: ${result.executionTime}ms`, 'info'),
+      createTerminalLine(`Memory usage: ${result.memoryUsage}KB`, 'info'),
     ];
 
     if (result.output) {
@@ -120,22 +120,22 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
   };
 
   const _handleExecutionError = (error: string) => {
-    setExecutionStatus("error");
+    setExecutionStatus('error');
     setExecutionError(error);
 
     // Add to terminal
     const errorLines = [
-      createTerminalLine("Execution failed!", "error"),
-      createTerminalLine(`Error: ${error}`, "error"),
+      createTerminalLine('Execution failed!', 'error'),
+      createTerminalLine(`Error: ${error}`, 'error'),
     ];
     setTerminalLines((prev) => [...prev, ...errorLines]);
   };
 
   const handleCancelExecution = () => {
-    setExecutionStatus("cancelled");
+    setExecutionStatus('cancelled');
     setExecutionProgress(0);
 
-    const cancelLine = createTerminalLine("Execution cancelled by user", "info");
+    const cancelLine = createTerminalLine('Execution cancelled by user', 'info');
     setTerminalLines((prev) => [...prev, cancelLine]);
   };
 
@@ -143,12 +143,12 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
     setFormattedCode(formatted);
     setCode(formatted);
 
-    const formatLine = createTerminalLine("Code formatted successfully", "info");
+    const formatLine = createTerminalLine('Code formatted successfully', 'info');
     setTerminalLines((prev) => [...prev, formatLine]);
   };
 
   const handleFormatError = (error: string) => {
-    const errorLine = createTerminalLine(`Formatting error: ${error}`, "error");
+    const errorLine = createTerminalLine(`Formatting error: ${error}`, 'error');
     setTerminalLines((prev) => [...prev, errorLine]);
   };
 
@@ -159,27 +159,27 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
       setStdin(template.input);
     }
     setSelectedTemplate(template);
-    setActiveTab("editor");
+    setActiveTab('editor');
 
     const templateLine = createTerminalLine(
       `Loaded template: ${template.name} (${template.language})`,
-      "info",
+      'info'
     );
     setTerminalLines((prev) => [...prev, templateLine]);
   };
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(code).then(() => {
-      const copyLine = createTerminalLine("Code copied to clipboard", "info");
+      const copyLine = createTerminalLine('Code copied to clipboard', 'info');
       setTerminalLines((prev) => [...prev, copyLine]);
     });
   };
 
   const handleDownloadCode = () => {
-    const extension = languageConfig.extensions[0] || ".txt";
-    const blob = new Blob([code], { type: "text/plain" });
+    const extension = languageConfig.extensions[0] || '.txt';
+    const blob = new Blob([code], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = `code-${Date.now()}${extension}`;
     document.body.appendChild(a);
@@ -187,7 +187,7 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    const downloadLine = createTerminalLine("Code downloaded successfully", "info");
+    const downloadLine = createTerminalLine('Code downloaded successfully', 'info');
     setTerminalLines((prev) => [...prev, downloadLine]);
   };
 
@@ -200,16 +200,16 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
         setCode(content);
 
         // Try to detect language from file extension
-        const extension = `.${file.name.split(".").pop()?.toLowerCase()}`;
+        const extension = `.${file.name.split('.').pop()?.toLowerCase()}`;
         const detectedLanguage = Object.entries(languageConfig.extensions).find(([_, exts]) =>
-          exts.includes(extension),
+          exts.includes(extension)
         )?.[0] as CodeLanguage;
 
         if (detectedLanguage) {
           setLanguage(detectedLanguage);
         }
 
-        const uploadLine = createTerminalLine(`File uploaded: ${file.name}`, "info");
+        const uploadLine = createTerminalLine(`File uploaded: ${file.name}`, 'info');
         setTerminalLines((prev) => [...prev, uploadLine]);
       };
       reader.readAsText(file);
@@ -218,18 +218,18 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
 
   const handleFormatPresetChange = (
     preset: keyof typeof FORMAT_PRESETS,
-    options: CodeFormatOptions,
+    options: CodeFormatOptions
   ) => {
     setSelectedFormatPreset(preset);
     setFormatOptions(options);
   };
 
   const handleTerminalInput = (input: string) => {
-    const inputLine = createTerminalLine(input, "input");
+    const inputLine = createTerminalLine(input, 'input');
     setTerminalLines((prev) => [...prev, inputLine]);
 
     // Echo input back (in a real implementation, this would be sent to the running process)
-    const outputLine = createTerminalLine(`Received input: ${input}`, "output");
+    const outputLine = createTerminalLine(`Received input: ${input}`, 'output');
     setTerminalLines((prev) => [...prev, outputLine]);
   };
 
@@ -250,13 +250,13 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
 
     // Simulate compilation
     setTimeout(() => {
-      setExecutionStatus("running");
+      setExecutionStatus('running');
       setExecutionProgress(50);
 
       // Simulate execution completion
       setTimeout(() => {
         const mockResult: CodeExecutionResult = {
-          output: "Hello, World!\nCode executed successfully.",
+          output: 'Hello, World!\nCode executed successfully.',
           exitCode: 0,
           executionTime: 150,
           memoryUsage: 1024,
@@ -267,24 +267,37 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
   };
 
   const resetAll = () => {
-    setCode("");
-    setStdin("");
-    setExecutionStatus("idle");
+    setCode('');
+    setStdin('');
+    setExecutionStatus('idle');
     setExecutionResult(null);
-    setExecutionError("");
+    setExecutionError('');
     setExecutionProgress(0);
     setTerminalLines([]);
-    setFormattedCode("");
+    setFormattedCode('');
   };
 
   const templates = getTemplatesByLanguage(language);
 
+  const toolConfig = {
+    id: 'code-runner',
+    name: 'Code Runner & IDE',
+    description:
+      'Comprehensive code execution environment with multi-language support, formatting, and terminal interface',
+    category: 'code',
+    version: '1.0.0',
+    icon: <Play className="h-6 w-6" />,
+    tags: ['code', 'ide', 'runner', 'multi-language'],
+    hasSettings: true,
+    hasHelp: true,
+    canExport: true,
+    canImport: true,
+    canCopy: true,
+    canReset: true,
+  };
+
   return (
-    <ToolWrapper
-      title="Code Runner & IDE"
-      description="Comprehensive code execution environment with multi-language support, formatting, and terminal interface"
-      error={executionError}
-    >
+    <ToolWrapper config={toolConfig} error={executionError}>
       <div className="space-y-4">
         {/* Language Selection Bar */}
         <Card>
@@ -384,12 +397,12 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
                 {/* Run Button */}
                 <Button
                   onClick={runCode}
-                  disabled={executionStatus === "running" || executionStatus === "compiling"}
+                  disabled={executionStatus === 'running' || executionStatus === 'compiling'}
                   className="w-full"
                   size="lg"
                 >
                   <Play className="mr-2 h-5 w-5" />
-                  {executionStatus === "running" ? "Running..." : "Run Code"}
+                  {executionStatus === 'running' ? 'Running...' : 'Run Code'}
                 </Button>
 
                 {/* Execution Status */}
@@ -426,7 +439,7 @@ export function CodeToolComplete({ className }: CodeToolCompleteProps) {
                       variant="outline"
                       size="sm"
                       className="w-full"
-                      onClick={() => setActiveTab("formatter")}
+                      onClick={() => setActiveTab('formatter')}
                     >
                       <Settings className="mr-2 h-4 w-4" />
                       Format Code

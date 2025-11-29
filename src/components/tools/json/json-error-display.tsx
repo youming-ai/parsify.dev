@@ -1,7 +1,7 @@
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import type { JsonErrorDisplayProps } from "./json-types";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import type { JsonErrorDisplayProps } from './json-types';
 
 export function JsonErrorDisplay({ errors, content, className }: JsonErrorDisplayProps) {
   if (errors.length === 0) {
@@ -9,12 +9,12 @@ export function JsonErrorDisplay({ errors, content, className }: JsonErrorDispla
   }
 
   const getErrorLine = (error: { line: number; column: number }) => {
-    const lines = content.split("\n");
+    const lines = content.split('\n');
     const lineIndex = error.line - 1;
     if (lineIndex >= 0 && lineIndex < lines.length) {
       const lineContent = lines[lineIndex];
       const beforeError = lineContent.substring(0, error.column - 1);
-      const errorChar = lineContent.charAt(error.column - 1) || " ";
+      const errorChar = lineContent.charAt(error.column - 1) || ' ';
       const afterError = lineContent.substring(error.column);
 
       return {
@@ -29,19 +29,19 @@ export function JsonErrorDisplay({ errors, content, className }: JsonErrorDispla
     return null;
   };
 
-  const getErrorIcon = (severity: "error" | "warning") => {
-    return severity === "error" ? "❌" : "⚠️";
+  const getErrorIcon = (severity: 'error' | 'warning') => {
+    return severity === 'error' ? '❌' : '⚠️';
   };
 
-  const getErrorColor = (severity: "error" | "warning") => {
-    return severity === "error" ? "text-red-600" : "text-yellow-600";
+  const getErrorColor = (severity: 'error' | 'warning') => {
+    return severity === 'error' ? 'text-red-600' : 'text-yellow-600';
   };
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn('space-y-4', className)}>
       <Alert variant="destructive">
         <AlertDescription className="font-medium">
-          Found {errors.length} validation {errors.length === 1 ? "error" : "errors"}
+          Found {errors.length} validation {errors.length === 1 ? 'error' : 'errors'}
         </AlertDescription>
       </Alert>
 
@@ -53,26 +53,26 @@ export function JsonErrorDisplay({ errors, content, className }: JsonErrorDispla
             <div
               key={index}
               className={cn(
-                "rounded-lg border p-4",
-                error.severity === "error"
-                  ? "border-red-200 bg-red-50"
-                  : "border-yellow-200 bg-yellow-50",
+                'rounded-lg border p-4',
+                error.severity === 'error'
+                  ? 'border-red-200 bg-red-50'
+                  : 'border-yellow-200 bg-yellow-50'
               )}
             >
               <div className="mb-3 flex items-start gap-3">
-                <span className={cn("text-lg", getErrorColor(error.severity))}>
+                <span className={cn('text-lg', getErrorColor(error.severity))}>
                   {getErrorIcon(error.severity)}
                 </span>
                 <div className="flex-1">
                   <div className="mb-1 flex items-center gap-2">
                     <Badge
-                      variant={error.severity === "error" ? "destructive" : "secondary"}
+                      variant={error.severity === 'error' ? 'destructive' : 'secondary'}
                       className="text-xs"
                     >
                       Line {error.line}, Column {error.column}
                     </Badge>
                   </div>
-                  <p className={cn("font-medium text-sm", getErrorColor(error.severity))}>
+                  <p className={cn('font-medium text-sm', getErrorColor(error.severity))}>
                     {error.message}
                   </p>
                 </div>
@@ -88,8 +88,8 @@ export function JsonErrorDisplay({ errors, content, className }: JsonErrorDispla
                       <span className="text-gray-400">{errorLine.beforeError}</span>
                       <span
                         className={cn(
-                          "rounded bg-red-200 px-0.5",
-                          error.severity === "error" ? "bg-red-200" : "bg-yellow-200",
+                          'rounded bg-red-200 px-0.5',
+                          error.severity === 'error' ? 'bg-red-200' : 'bg-yellow-200'
                         )}
                       >
                         {errorLine.errorChar}
@@ -99,8 +99,8 @@ export function JsonErrorDisplay({ errors, content, className }: JsonErrorDispla
                     {errorLine.errorChar && (
                       <div
                         className={cn(
-                          "absolute top-5 h-0.5 w-4",
-                          error.severity === "error" ? "bg-red-500" : "bg-yellow-500",
+                          'absolute top-5 h-0.5 w-4',
+                          error.severity === 'error' ? 'bg-red-500' : 'bg-yellow-500'
                         )}
                         style={{
                           left: `${errorLine.beforeError.length * 8}px`,

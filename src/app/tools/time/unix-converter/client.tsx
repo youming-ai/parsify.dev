@@ -1,5 +1,21 @@
-"use client";
+'use client';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import {
   ArrowRightLeft,
   Calendar,
@@ -13,24 +29,8 @@ import {
   Upload,
   XCircle,
   Zap,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface ConversionResult {
   timestamp: number;
@@ -38,7 +38,7 @@ interface ConversionResult {
   timezone: string;
   isValid: boolean;
   error?: string;
-  inputType: "timestamp" | "date";
+  inputType: 'timestamp' | 'date';
 }
 
 interface BatchResult {
@@ -49,28 +49,28 @@ interface BatchResult {
 }
 
 const TIMEZONES = [
-  { value: "UTC", label: "UTC", offset: 0 },
-  { value: "America/New_York", label: "Eastern Time (ET)", offset: -5 },
-  { value: "America/Chicago", label: "Central Time (CT)", offset: -6 },
-  { value: "America/Denver", label: "Mountain Time (MT)", offset: -7 },
-  { value: "America/Los_Angeles", label: "Pacific Time (PT)", offset: -8 },
-  { value: "Europe/London", label: "London", offset: 0 },
-  { value: "Europe/Paris", label: "Paris", offset: 1 },
-  { value: "Europe/Berlin", label: "Berlin", offset: 1 },
-  { value: "Asia/Tokyo", label: "Tokyo", offset: 9 },
-  { value: "Asia/Shanghai", label: "Shanghai", offset: 8 },
-  { value: "Australia/Sydney", label: "Sydney", offset: 10 },
+  { value: 'UTC', label: 'UTC', offset: 0 },
+  { value: 'America/New_York', label: 'Eastern Time (ET)', offset: -5 },
+  { value: 'America/Chicago', label: 'Central Time (CT)', offset: -6 },
+  { value: 'America/Denver', label: 'Mountain Time (MT)', offset: -7 },
+  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)', offset: -8 },
+  { value: 'Europe/London', label: 'London', offset: 0 },
+  { value: 'Europe/Paris', label: 'Paris', offset: 1 },
+  { value: 'Europe/Berlin', label: 'Berlin', offset: 1 },
+  { value: 'Asia/Tokyo', label: 'Tokyo', offset: 9 },
+  { value: 'Asia/Shanghai', label: 'Shanghai', offset: 8 },
+  { value: 'Australia/Sydney', label: 'Sydney', offset: 10 },
 ];
 
 export default function TimestampConverterClient() {
-  const [timestamp, setTimestamp] = useState("");
-  const [date, setDate] = useState("");
+  const [timestamp, setTimestamp] = useState('');
+  const [date, setDate] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [timezone, setTimezone] = useState("UTC");
-  const [dateFormat, setDateFormat] = useState("iso");
+  const [timezone, setTimezone] = useState('UTC');
+  const [dateFormat, setDateFormat] = useState('iso');
   const [useMilliseconds, setUseMilliseconds] = useState(false);
   const [result, setResult] = useState<ConversionResult | null>(null);
-  const [batchInput, setBatchInput] = useState("");
+  const [batchInput, setBatchInput] = useState('');
   const [batchResults, setBatchResults] = useState<BatchResult[]>([]);
   const [_copied, setCopied] = useState(false);
   const [_isProcessing, _setIsProcessing] = useState(false);
@@ -93,41 +93,41 @@ export default function TimestampConverterClient() {
       const options: Intl.DateTimeFormatOptions = {};
 
       switch (format) {
-        case "iso":
+        case 'iso':
           return date.toISOString();
-        case "local":
-          options.year = "numeric";
-          options.month = "2-digit";
-          options.day = "2-digit";
-          options.hour = "2-digit";
-          options.minute = "2-digit";
-          options.second = "2-digit";
+        case 'local':
+          options.year = 'numeric';
+          options.month = '2-digit';
+          options.day = '2-digit';
+          options.hour = '2-digit';
+          options.minute = '2-digit';
+          options.second = '2-digit';
           options.timeZone = tz;
           break;
-        case "readable":
-          options.year = "numeric";
-          options.month = "long";
-          options.day = "numeric";
-          options.hour = "2-digit";
-          options.minute = "2-digit";
-          options.second = "2-digit";
-          options.timeZoneName = "short";
+        case 'readable':
+          options.year = 'numeric';
+          options.month = 'long';
+          options.day = 'numeric';
+          options.hour = '2-digit';
+          options.minute = '2-digit';
+          options.second = '2-digit';
+          options.timeZoneName = 'short';
           options.timeZone = tz;
           break;
-        case "custom":
-          options.year = "numeric";
-          options.month = "2-digit";
-          options.day = "2-digit";
-          options.hour = "2-digit";
-          options.minute = "2-digit";
-          options.second = "2-digit";
+        case 'custom':
+          options.year = 'numeric';
+          options.month = '2-digit';
+          options.day = '2-digit';
+          options.hour = '2-digit';
+          options.minute = '2-digit';
+          options.second = '2-digit';
           options.timeZone = tz;
           break;
         default:
           return date.toISOString();
       }
 
-      return new Intl.DateTimeFormat("en-US", options).format(date);
+      return new Intl.DateTimeFormat('en-US', options).format(date);
     } catch (_error) {
       return date.toISOString();
     }
@@ -138,16 +138,15 @@ export default function TimestampConverterClient() {
 
     if (!cleanInput) return null;
 
-    const num = parseInt(cleanInput, 10);
+    const num = Number.parseInt(cleanInput, 10);
     if (Number.isNaN(num)) return null;
 
     // Determine if it's milliseconds or seconds
     if (useMilliseconds) {
       return num;
-    } else {
-      // Check if it looks like milliseconds (13+ digits)
-      return cleanInput.length >= 13 ? num : num;
     }
+    // Check if it looks like milliseconds (13+ digits)
+    return cleanInput.length >= 13 ? num : num;
   };
 
   const parseDate = (input: string): Date | null => {
@@ -168,12 +167,12 @@ export default function TimestampConverterClient() {
       if (match) {
         const [, month, day, year, hour, minute, second] = match;
         date = new Date(
-          parseInt(year, 10),
-          parseInt(month, 10) - 1,
-          parseInt(day, 10),
-          hour ? parseInt(hour, 10) : 0,
-          minute ? parseInt(minute, 10) : 0,
-          second ? parseInt(second, 10) : 0,
+          Number.parseInt(year, 10),
+          Number.parseInt(month, 10) - 1,
+          Number.parseInt(day, 10),
+          hour ? Number.parseInt(hour, 10) : 0,
+          minute ? Number.parseInt(minute, 10) : 0,
+          second ? Number.parseInt(second, 10) : 0
         );
 
         if (!Number.isNaN(date.getTime())) {
@@ -192,11 +191,11 @@ export default function TimestampConverterClient() {
     if (ts === null) {
       setResult({
         timestamp: 0,
-        date: "",
+        date: '',
         timezone,
         isValid: false,
-        error: "Invalid timestamp format",
-        inputType: "timestamp",
+        error: 'Invalid timestamp format',
+        inputType: 'timestamp',
       });
       return;
     }
@@ -209,7 +208,7 @@ export default function TimestampConverterClient() {
       date: formattedDate,
       timezone,
       isValid: true,
-      inputType: "timestamp",
+      inputType: 'timestamp',
     });
   };
 
@@ -218,11 +217,11 @@ export default function TimestampConverterClient() {
     if (parsedDate === null) {
       setResult({
         timestamp: 0,
-        date: "",
+        date: '',
         timezone,
         isValid: false,
-        error: "Invalid date format",
-        inputType: "date",
+        error: 'Invalid date format',
+        inputType: 'date',
       });
       return;
     }
@@ -234,7 +233,7 @@ export default function TimestampConverterClient() {
       date: formatDate(parsedDate, dateFormat, timezone),
       timezone,
       isValid: true,
-      inputType: "date",
+      inputType: 'date',
     });
   };
 
@@ -243,14 +242,14 @@ export default function TimestampConverterClient() {
     const date = new Date(ts * (useMilliseconds ? 1 : 1000));
 
     setTimestamp(ts.toString());
-    setDate(formatDate(date, "local", timezone));
+    setDate(formatDate(date, 'local', timezone));
 
     setResult({
       timestamp: ts,
       date: formatDate(date, dateFormat, timezone),
       timezone,
       isValid: true,
-      inputType: "timestamp",
+      inputType: 'timestamp',
     });
   };
 
@@ -261,7 +260,7 @@ export default function TimestampConverterClient() {
   };
 
   const processBatch = () => {
-    const lines = batchInput.split("\n").filter((line) => line.trim());
+    const lines = batchInput.split('\n').filter((line) => line.trim());
     const results: BatchResult[] = [];
 
     lines.forEach((line) => {
@@ -294,9 +293,9 @@ export default function TimestampConverterClient() {
 
       results.push({
         original: trimmedLine,
-        converted: "",
+        converted: '',
         isValid: false,
-        error: "Invalid format",
+        error: 'Invalid format',
       });
     });
 
@@ -309,12 +308,12 @@ export default function TimestampConverterClient() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error("Failed to copy:", error);
+      console.error('Failed to copy:', error);
     }
   };
 
   const getCurrentTimeDisplay = () => {
-    return formatDate(currentTime, "readable", timezone);
+    return formatDate(currentTime, 'readable', timezone);
   };
 
   const getCurrentTimestampDisplay = () => {
@@ -331,21 +330,22 @@ export default function TimestampConverterClient() {
       return diff < 0
         ? `${Math.floor(absDiff / 1000)} seconds ago`
         : `in ${Math.floor(absDiff / 1000)} seconds`;
-    } else if (absDiff < 3600000) {
+    }
+    if (absDiff < 3600000) {
       // Less than 1 hour
       return diff < 0
         ? `${Math.floor(absDiff / 60000)} minutes ago`
         : `in ${Math.floor(absDiff / 60000)} minutes`;
-    } else if (absDiff < 86400000) {
+    }
+    if (absDiff < 86400000) {
       // Less than 1 day
       return diff < 0
         ? `${Math.floor(absDiff / 3600000)} hours ago`
         : `in ${Math.floor(absDiff / 3600000)} hours`;
-    } else {
-      return diff < 0
-        ? `${Math.floor(absDiff / 86400000)} days ago`
-        : `in ${Math.floor(absDiff / 86400000)} days`;
     }
+    return diff < 0
+      ? `${Math.floor(absDiff / 86400000)} days ago`
+      : `in ${Math.floor(absDiff / 86400000)} days`;
   };
 
   return (
@@ -360,20 +360,20 @@ export default function TimestampConverterClient() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="p-4 bg-muted rounded-lg">
-              <div className="text-sm font-medium text-muted-foreground mb-1">Timestamp</div>
+            <div className="rounded-lg bg-muted p-4">
+              <div className="mb-1 font-medium text-muted-foreground text-sm">Timestamp</div>
               <div className="font-mono text-lg">{getCurrentTimestampDisplay()}</div>
-              <div className="text-xs text-muted-foreground">
-                {useMilliseconds ? "milliseconds" : "seconds"} since epoch
+              <div className="text-muted-foreground text-xs">
+                {useMilliseconds ? 'milliseconds' : 'seconds'} since epoch
               </div>
             </div>
-            <div className="p-4 bg-muted rounded-lg">
-              <div className="text-sm font-medium text-muted-foreground mb-1">Human Time</div>
+            <div className="rounded-lg bg-muted p-4">
+              <div className="mb-1 font-medium text-muted-foreground text-sm">Human Time</div>
               <div className="text-lg">{getCurrentTimeDisplay()}</div>
-              <div className="text-xs text-muted-foreground">{timezone}</div>
+              <div className="text-muted-foreground text-xs">{timezone}</div>
             </div>
           </div>
-          <div className="flex gap-2 mt-4">
+          <div className="mt-4 flex gap-2">
             <Button variant="outline" onClick={useCurrentTime} className="flex items-center gap-2">
               <Zap className="h-4 w-4" />
               Use Current Time
@@ -383,7 +383,7 @@ export default function TimestampConverterClient() {
               onClick={() => setUseMilliseconds(!useMilliseconds)}
               className="flex items-center gap-2"
             >
-              {useMilliseconds ? "Switch to Seconds" : "Switch to Milliseconds"}
+              {useMilliseconds ? 'Switch to Seconds' : 'Switch to Milliseconds'}
             </Button>
           </div>
         </CardContent>
@@ -415,8 +415,8 @@ export default function TimestampConverterClient() {
                     onChange={(e) => setTimestamp(e.target.value)}
                     className="font-mono"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    {useMilliseconds ? "Milliseconds since epoch" : "Seconds since epoch"}
+                  <p className="text-muted-foreground text-xs">
+                    {useMilliseconds ? 'Milliseconds since epoch' : 'Seconds since epoch'}
                   </p>
                 </div>
                 <Button
@@ -424,7 +424,7 @@ export default function TimestampConverterClient() {
                   disabled={!timestamp.trim()}
                   className="w-full"
                 >
-                  <ArrowRightLeft className="h-4 w-4 mr-2" />
+                  <ArrowRightLeft className="mr-2 h-4 w-4" />
                   Convert to Date
                 </Button>
               </CardContent>
@@ -447,12 +447,12 @@ export default function TimestampConverterClient() {
                     onChange={(e) => setDate(e.target.value)}
                     className="font-mono"
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Format: YYYY-MM-DD HH:MM:SS or ISO format
                   </p>
                 </div>
                 <Button onClick={convertDateToTimestamp} disabled={!date.trim()} className="w-full">
-                  <ArrowRightLeft className="h-4 w-4 mr-2" />
+                  <ArrowRightLeft className="mr-2 h-4 w-4" />
                   Convert to Timestamp
                 </Button>
               </CardContent>
@@ -501,7 +501,7 @@ export default function TimestampConverterClient() {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2 mt-4">
+              <div className="mt-4 flex items-center space-x-2">
                 <Switch
                   id="milliseconds"
                   checked={useMilliseconds}
@@ -525,8 +525,8 @@ export default function TimestampConverterClient() {
                     )}
                     Conversion Result
                   </span>
-                  <Badge variant={result.isValid ? "default" : "destructive"}>
-                    {result.isValid ? "Success" : "Error"}
+                  <Badge variant={result.isValid ? 'default' : 'destructive'}>
+                    {result.isValid ? 'Success' : 'Error'}
                   </Badge>
                 </CardTitle>
               </CardHeader>
@@ -534,29 +534,29 @@ export default function TimestampConverterClient() {
                 {result.isValid ? (
                   <div className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
-                      <div className="p-4 bg-muted rounded-lg">
-                        <div className="text-sm font-medium text-muted-foreground mb-1">
-                          {result.inputType === "timestamp"
-                            ? "Input Timestamp"
-                            : "Output Timestamp"}
+                      <div className="rounded-lg bg-muted p-4">
+                        <div className="mb-1 font-medium text-muted-foreground text-sm">
+                          {result.inputType === 'timestamp'
+                            ? 'Input Timestamp'
+                            : 'Output Timestamp'}
                         </div>
                         <div className="font-mono text-lg">{result.timestamp}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {useMilliseconds ? "milliseconds" : "seconds"}
+                        <div className="text-muted-foreground text-xs">
+                          {useMilliseconds ? 'milliseconds' : 'seconds'}
                         </div>
                       </div>
-                      <div className="p-4 bg-muted rounded-lg">
-                        <div className="text-sm font-medium text-muted-foreground mb-1">
-                          {result.inputType === "date" ? "Input Date" : "Output Date"}
+                      <div className="rounded-lg bg-muted p-4">
+                        <div className="mb-1 font-medium text-muted-foreground text-sm">
+                          {result.inputType === 'date' ? 'Input Date' : 'Output Date'}
                         </div>
-                        <div className="font-mono text-lg break-all">{result.date}</div>
-                        <div className="text-xs text-muted-foreground">{result.timezone}</div>
+                        <div className="break-all font-mono text-lg">{result.date}</div>
+                        <div className="text-muted-foreground text-xs">{result.timezone}</div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         {getRelativeTime(result.timestamp * (useMilliseconds ? 1 : 1000))}
                       </span>
                     </div>
@@ -615,7 +615,7 @@ export default function TimestampConverterClient() {
                 />
               </div>
               <Button onClick={processBatch} disabled={!batchInput.trim()} className="w-full">
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <RefreshCw className="mr-2 h-4 w-4" />
                 Process Batch
               </Button>
             </CardContent>
@@ -636,18 +636,18 @@ export default function TimestampConverterClient() {
                   {batchResults.map((result, index) => (
                     <div
                       key={index}
-                      className={`p-3 border rounded-lg ${result.isValid ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}`}
+                      className={`rounded-lg border p-3 ${result.isValid ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}
                     >
                       <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="font-mono text-sm break-all">{result.original}</div>
+                        <div className="min-w-0 flex-1">
+                          <div className="break-all font-mono text-sm">{result.original}</div>
                           {result.converted && (
-                            <div className="font-mono text-sm text-muted-foreground mt-1 break-all">
+                            <div className="mt-1 break-all font-mono text-muted-foreground text-sm">
                               → {result.converted}
                             </div>
                           )}
                           {result.error && (
-                            <div className="text-sm text-red-600 mt-1">Error: {result.error}</div>
+                            <div className="mt-1 text-red-600 text-sm">Error: {result.error}</div>
                           )}
                         </div>
                         {result.isValid && (
@@ -664,7 +664,7 @@ export default function TimestampConverterClient() {
                   ))}
                 </div>
 
-                <div className="flex gap-2 mt-4">
+                <div className="mt-4 flex gap-2">
                   <Button
                     variant="outline"
                     onClick={() =>
@@ -672,7 +672,7 @@ export default function TimestampConverterClient() {
                         batchResults
                           .filter((r) => r.isValid)
                           .map((r) => `${r.original} → ${r.converted}`)
-                          .join("\n"),
+                          .join('\n')
                       )
                     }
                     className="flex items-center gap-2"

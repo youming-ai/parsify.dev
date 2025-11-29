@@ -25,7 +25,7 @@ export interface AnalyticsEvent {
 }
 
 export interface PageViewEvent extends AnalyticsEvent {
-  name: "page_view";
+  name: 'page_view';
   data: {
     /** Page title */
     title: string;
@@ -39,14 +39,14 @@ export interface PageViewEvent extends AnalyticsEvent {
 }
 
 export interface ToolUsageEvent extends AnalyticsEvent {
-  name: "tool_usage";
+  name: 'tool_usage';
   data: {
     /** Tool identifier */
     toolId: string;
     /** Tool name */
     toolName: string;
     /** Action performed */
-    action: "execute" | "validate" | "format" | "convert" | "error";
+    action: 'execute' | 'validate' | 'format' | 'convert' | 'error';
     /** Processing time in milliseconds */
     processingTime?: number;
     /** Input size in bytes */
@@ -61,7 +61,7 @@ export interface ToolUsageEvent extends AnalyticsEvent {
 }
 
 export interface PerformanceEvent extends AnalyticsEvent {
-  name: "performance";
+  name: 'performance';
   data: {
     /** Core Web Vitals */
     lcp?: number; // Largest Contentful Paint
@@ -83,10 +83,10 @@ export interface PerformanceEvent extends AnalyticsEvent {
 }
 
 export interface UserInteractionEvent extends AnalyticsEvent {
-  name: "user_interaction";
+  name: 'user_interaction';
   data: {
     /** Type of interaction */
-    interactionType: "click" | "scroll" | "focus" | "blur" | "submit" | "navigation";
+    interactionType: 'click' | 'scroll' | 'focus' | 'blur' | 'submit' | 'navigation';
     /** Element identifier */
     elementId?: string;
     /** Element tag name */
@@ -101,7 +101,7 @@ export interface UserInteractionEvent extends AnalyticsEvent {
 }
 
 export interface APIUsageEvent extends AnalyticsEvent {
-  name: "api_usage";
+  name: 'api_usage';
   data: {
     /** API endpoint */
     endpoint: string;
@@ -158,7 +158,7 @@ export interface AnalyticsConfig {
     /** Require user consent */
     requireConsent: boolean;
     /** Cookie consent level */
-    cookieConsent: "none" | "necessary" | "functional" | "analytics" | "all";
+    cookieConsent: 'none' | 'necessary' | 'functional' | 'analytics' | 'all';
     /** Data retention period in days */
     dataRetentionDays: number;
   };
@@ -250,7 +250,7 @@ export interface AnalyticsBatch {
   /** Batch creation timestamp */
   timestamp: number;
   /** Delivery status */
-  status: "pending" | "sending" | "sent" | "failed";
+  status: 'pending' | 'sending' | 'sent' | 'failed';
   /** Number of retry attempts */
   retryCount: number;
   /** Error message if failed */

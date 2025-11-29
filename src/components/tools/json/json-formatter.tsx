@@ -1,10 +1,10 @@
-import { Copy, Download, Play, Settings2 } from "lucide-react";
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import type { JsonFormatOptions, JsonFormatterProps } from "./json-types";
-import { copyToClipboard, downloadFile, formatJson } from "./json-utils";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { Copy, Download, Play, Settings2 } from 'lucide-react';
+import * as React from 'react';
+import type { JsonFormatOptions, JsonFormatterProps } from './json-types';
+import { copyToClipboard, downloadFile, formatJson } from './json-utils';
 
 export function JsonFormatter({
   input,
@@ -16,12 +16,12 @@ export function JsonFormatter({
   const [formatOptions, setFormatOptions] = React.useState<JsonFormatOptions>(options);
   const [isFormatting, setIsFormatting] = React.useState(false);
   const [showSettings, setShowSettings] = React.useState(false);
-  const [formattedOutput, setFormattedOutput] = React.useState("");
+  const [formattedOutput, setFormattedOutput] = React.useState('');
   const [showCopyNotification, setShowCopyNotification] = React.useState(false);
 
   const handleFormat = React.useCallback(async () => {
     if (!input.trim()) {
-      onError("No input to format");
+      onError('No input to format');
       return;
     }
 
@@ -32,9 +32,9 @@ export function JsonFormatter({
       setFormattedOutput(formatted);
       onFormat(formatted);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown formatting error";
+      const errorMessage = error instanceof Error ? error.message : 'Unknown formatting error';
       onError(errorMessage);
-      setFormattedOutput("");
+      setFormattedOutput('');
     } finally {
       setIsFormatting(false);
     }
@@ -48,7 +48,7 @@ export function JsonFormatter({
       setShowCopyNotification(true);
       setTimeout(() => setShowCopyNotification(false), 2000);
     } catch (error) {
-      console.error("Failed to copy:", error);
+      console.error('Failed to copy:', error);
     }
   };
 
@@ -56,7 +56,7 @@ export function JsonFormatter({
     if (!formattedOutput) return;
 
     const filename = `formatted-json-${new Date().toISOString().slice(0, 10)}.json`;
-    downloadFile(formattedOutput, filename, "application/json");
+    downloadFile(formattedOutput, filename, 'application/json');
   };
 
   const handleOptionChange = (key: keyof JsonFormatOptions, value: boolean | number) => {
@@ -80,10 +80,10 @@ export function JsonFormatter({
     if (input.trim() && formattedOutput) {
       handleFormat();
     }
-  }, [input, formattedOutput, handleFormat]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [input, formattedOutput, handleFormat]);
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn('space-y-4', className)}>
       {/* Settings Panel */}
       <Card>
         <CardHeader className="pb-3">
@@ -93,7 +93,7 @@ export function JsonFormatter({
               Format Options
             </CardTitle>
             <Button variant="ghost" size="sm" onClick={() => setShowSettings(!showSettings)}>
-              {showSettings ? "Hide" : "Show"} Settings
+              {showSettings ? 'Hide' : 'Show'} Settings
             </Button>
           </div>
         </CardHeader>
@@ -113,7 +113,7 @@ export function JsonFormatter({
                     max="8"
                     value={formatOptions.indent}
                     onChange={(e) =>
-                      handleOptionChange("indent", Number.parseInt(e.target.value, 10))
+                      handleOptionChange('indent', Number.parseInt(e.target.value, 10))
                     }
                     className="flex-1"
                   />
@@ -129,7 +129,7 @@ export function JsonFormatter({
                     type="checkbox"
                     id="sort-keys"
                     checked={formatOptions.sortKeys}
-                    onChange={(e) => handleOptionChange("sortKeys", e.target.checked)}
+                    onChange={(e) => handleOptionChange('sortKeys', e.target.checked)}
                     className="mr-2"
                   />
                   <label htmlFor="sort-keys" className="text-gray-600 text-sm">
@@ -146,7 +146,7 @@ export function JsonFormatter({
                     type="checkbox"
                     id="compact"
                     checked={formatOptions.compact}
-                    onChange={(e) => handleOptionChange("compact", e.target.checked)}
+                    onChange={(e) => handleOptionChange('compact', e.target.checked)}
                     className="mr-2"
                   />
                   <label htmlFor="compact" className="text-gray-600 text-sm">
@@ -163,7 +163,7 @@ export function JsonFormatter({
                     type="checkbox"
                     id="trailing-commas"
                     checked={formatOptions.trailingComma}
-                    onChange={(e) => handleOptionChange("trailingComma", e.target.checked)}
+                    onChange={(e) => handleOptionChange('trailingComma', e.target.checked)}
                     disabled={formatOptions.compact}
                     className="mr-2"
                   />
@@ -185,7 +185,7 @@ export function JsonFormatter({
           className="flex items-center gap-2"
         >
           <Play className="h-4 w-4" />
-          {isFormatting ? "Formatting..." : "Format JSON"}
+          {isFormatting ? 'Formatting...' : 'Format JSON'}
         </Button>
 
         {formattedOutput && (
@@ -214,7 +214,7 @@ export function JsonFormatter({
               {formattedOutput}
             </pre>
             <div className="mt-2 text-gray-600 text-sm">
-              {formattedOutput.split("\n").length} lines, {formattedOutput.length} characters
+              {formattedOutput.split('\n').length} lines, {formattedOutput.length} characters
             </div>
           </CardContent>
         </Card>

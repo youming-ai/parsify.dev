@@ -1,5 +1,9 @@
-"use client";
+'use client';
 
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { toolsData } from '@/data/tools-data';
+import type { Tool } from '@/types/tools';
 import {
   Code,
   Database,
@@ -7,16 +11,14 @@ import {
   Hash,
   Image,
   Palette,
+  Search,
   Settings,
   Shield,
   Terminal,
-} from "lucide-react";
-import Link from "next/link";
-import type * as React from "react";
-import { MainLayout } from "@/components/layout/main-layout";
-import { Badge } from "@/components/ui/badge";
-import { toolsData } from "@/data/tools-data";
-import type { Tool } from "@/types/tools";
+} from 'lucide-react';
+import Link from 'next/link';
+import type React from 'react';
+import { useState } from 'react';
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -44,31 +46,28 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   QrCode: Database,
 };
 
+import { MainLayout } from '@/components/layout/main-layout';
+
 export default function Home() {
-  // Use all tools directly since search is removed
-  const filteredTools = toolsData;
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Get tools by category for display
-  const getToolsForCategory = (categoryName: string) => {
-    return filteredTools.filter((tool) => tool.category === categoryName);
-  };
+  // Filter tools
+  const filteredTools = toolsData.filter(
+    (tool) =>
+      tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tool.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
-  // Get tools for subcategory
-  const getToolsForSubcategory = (categoryName: string, subcategoryName: string) => {
-    return filteredTools.filter(
-      (tool) => tool.category === categoryName && tool.subcategory === subcategoryName,
-    );
-  };
-
-  // Get tool count for display
-  const getToolCount = (categoryName: string, subcategoryName?: string) => {
-    if (subcategoryName) {
-      return filteredTools.filter(
-        (tool) => tool.category === categoryName && tool.subcategory === subcategoryName,
-      ).length;
-    }
-    return filteredTools.filter((tool) => tool.category === categoryName).length;
-  };
+  // Group by category
+  const categories = Array.from(new Set(filteredTools.map((tool) => tool.category)));
+  const groupedTools = categories.reduce(
+    (acc, category) => {
+      acc[category] = filteredTools.filter((tool) => tool.category === category);
+      return acc;
+    },
+    {} as Record<string, Tool[]>
+  );
 
   const ToolCard = ({ tool }: { tool: Tool }) => {
     const IconComponent = iconMap[tool.icon] || Database;
@@ -76,198 +75,102 @@ export default function Home() {
     return (
       <Link
         href={tool.href}
-        className="flex flex-1 gap-2 sm:gap-3 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 sm:p-4 items-center hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 transition-all duration-200 group"
+        className="group hover:-translate-y-1 relative flex flex-col rounded-xl border bg-card p-5 text-card-foreground shadow-sm transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:ring-1 hover:ring-primary/20"
       >
-        <div className="flex-shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/50 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-            <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
+        <div className="mb-3 flex items-start justify-between">
+          <div className="rounded-lg bg-primary/10 p-2 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+            <IconComponent className="h-5 w-5" />
           </div>
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="text-gray-900 dark:text-white text-sm sm:text-base font-bold leading-tight truncate">
-            {tool.name}
-          </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 truncate hidden sm:block">
-            {tool.description}
-          </p>
-        </div>
-        <div className="flex-shrink-0 ml-auto flex items-center gap-1">
           {tool.isNew && (
             <Badge
               variant="secondary"
-              className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+              className="bg-green-100 text-green-800 text-xs dark:bg-green-900 dark:text-green-200"
             >
               New
             </Badge>
           )}
-          {tool.isPopular && (
-            <Badge
-              variant="outline"
-              className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700"
-            >
-              Popular
-            </Badge>
-          )}
         </div>
+        <h3 className="mb-1 font-semibold text-lg transition-colors group-hover:text-primary">
+          {tool.name}
+        </h3>
+        <p className="line-clamp-2 text-muted-foreground text-sm">{tool.description}</p>
       </Link>
     );
   };
 
   return (
     <MainLayout>
-      <div className="bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <main className="flex flex-col gap-6 sm:gap-8">
-            {/* JSON Tools Section */}
-            <section>
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-1 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full"></div>
-                  <h2 className="text-gray-900 dark:text-white text-xl font-bold">JSON Tools</h2>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                    7 tools
-                  </span>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getToolsForCategory("JSON Tools").map((tool) => (
-                  <ToolCard key={tool.id} tool={tool} />
-                ))}
-              </div>
-            </section>
+      <div className="min-h-screen bg-background">
+        {/* Hero Section */}
+        <section className="relative flex flex-col items-center overflow-hidden border-b bg-gradient-to-b from-primary/5 via-background to-background px-6 py-16 text-center lg:px-8 lg:py-24">
+          <div className="-z-10 absolute inset-0 h-full w-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-white [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] dark:bg-black" />
 
-            {/* Common/Auxiliary Tools Section */}
-            <section>
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-1 h-6 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full"></div>
-                  <h2 className="text-gray-900 dark:text-white text-xl font-bold">
-                    Common/Auxiliary Tools
-                  </h2>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                    {getToolCount("Common/Auxiliary Tools")} tools
-                  </span>
-                </div>
-              </div>
+          <div className="fade-in slide-in-from-bottom-4 animate-in duration-700">
+            <Badge variant="outline" className="mb-4 border-primary/20 bg-primary/5 text-primary">
+              v1.0 is now live
+            </Badge>
+            <h1 className="mb-6 max-w-4xl font-extrabold text-4xl text-foreground tracking-tight sm:text-6xl">
+              Developer Tools,{' '}
+              <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                Simplified
+              </span>
+              .
+            </h1>
+            <p className="mb-10 max-w-2xl text-muted-foreground text-xl leading-relaxed">
+              A collection of secure, client-side utilities for your daily development workflow. No
+              server-side processing—your data never leaves your browser.
+            </p>
+          </div>
 
-              {/* Formatting Subcategory */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-3">
-                  Formatting
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {getToolsForSubcategory("Common/Auxiliary Tools", "Formatting").map((tool) => (
+          <div className="fade-in slide-in-from-bottom-8 relative mx-auto w-full max-w-lg animate-in fill-mode-backwards delay-200 duration-1000">
+            <Input
+              type="text"
+              placeholder="Search for tools (e.g., JSON, Base64, Format)..."
+              className="h-14 rounded-full border-muted-foreground/20 bg-background/50 pl-11 text-lg shadow-lg backdrop-blur-sm transition-all hover:border-primary/30 hover:shadow-xl focus-visible:ring-primary/30"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </section>
+
+        {/* Tools Grid */}
+        <section className="mx-auto max-w-7xl px-6 py-12 lg:px-8 lg:py-16">
+          {categories.length > 0 ? (
+            categories.map((category, categoryIndex) => (
+              <div
+                key={category}
+                className="fade-in slide-in-from-bottom-8 mb-16 animate-in fill-mode-backwards duration-700 last:mb-0"
+                style={{ animationDelay: `${categoryIndex * 100}ms` }}
+              >
+                <div className="mb-6 flex items-center gap-3">
+                  <h2 className="font-bold text-2xl text-foreground">{category}</h2>
+                </div>
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {groupedTools[category].map((tool) => (
                     <ToolCard key={tool.id} tool={tool} />
                   ))}
                 </div>
               </div>
-
-              {/* Online Language Support Subcategory */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-3">
-                  Online Language Support
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {getToolsForSubcategory("Common/Auxiliary Tools", "Online Language Support").map(
-                    (tool) => (
-                      <ToolCard key={tool.id} tool={tool} />
-                    ),
-                  )}
-                </div>
+            ))
+          ) : (
+            <div className="fade-in zoom-in animate-in py-20 text-center duration-500">
+              <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                <Search className="h-8 w-8 text-muted-foreground" />
               </div>
-
-              {/* Other Tools Subcategory */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-3">
-                  Other Tools
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {getToolsForSubcategory("Common/Auxiliary Tools", "Other Tools").map((tool) => (
-                    <ToolCard key={tool.id} tool={tool} />
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            {/* Image/Media Tools Section */}
-            <section>
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-1 h-6 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full"></div>
-                  <h2 className="text-gray-900 dark:text-white text-xl font-bold">
-                    Image/Media Tools
-                  </h2>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                    {getToolCount("Image/Media Tools")} tools
-                  </span>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getToolsForCategory("Image/Media Tools").map((tool) => (
-                  <ToolCard key={tool.id} tool={tool} />
-                ))}
-              </div>
-            </section>
-
-            {/* Network/Ops/Encoding Tools Section */}
-            <section>
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-1 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full"></div>
-                  <h2 className="text-gray-900 dark:text-white text-xl font-bold">
-                    Network/Ops/Encoding Tools
-                  </h2>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                    {getToolCount("Network/Ops/Encoding Tools")} tools
-                  </span>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getToolsForCategory("Network/Ops/Encoding Tools").map((tool) => (
-                  <ToolCard key={tool.id} tool={tool} />
-                ))}
-              </div>
-            </section>
-
-            {/* Text Tools Section */}
-            <section>
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-1 h-6 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full"></div>
-                  <h2 className="text-gray-900 dark:text-white text-xl font-bold">Text Tools</h2>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                    {getToolCount("Text Tools")} tools
-                  </span>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getToolsForCategory("Text Tools").map((tool) => (
-                  <ToolCard key={tool.id} tool={tool} />
-                ))}
-              </div>
-            </section>
-
-            {/* Encryption/Hashing/Generation Section */}
-            <section>
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-1 h-6 bg-gradient-to-br from-red-500 to-red-600 rounded-full"></div>
-                  <h2 className="text-gray-900 dark:text-white text-xl font-bold">
-                    Encryption/Hashing/Generation
-                  </h2>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                    {getToolCount("Encryption/Hashing/Generation")} tools
-                  </span>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getToolsForCategory("Encryption/Hashing/Generation").map((tool) => (
-                  <ToolCard key={tool.id} tool={tool} />
-                ))}
-              </div>
-            </section>
-          </main>
-        </div>
+              <h3 className="mb-2 font-semibold text-xl">No tools found</h3>
+              <p className="text-muted-foreground">
+                Try adjusting your search terms or browse all tools.
+              </p>
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="mt-4 font-medium text-primary hover:underline"
+              >
+                Clear search
+              </button>
+            </div>
+          )}
+        </section>
       </div>
     </MainLayout>
   );

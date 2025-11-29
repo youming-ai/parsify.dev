@@ -1,43 +1,17 @@
-"use client";
+'use client';
 
-import { Hash } from "lucide-react";
-import Link from "next/link";
-import { HashGenerator } from "@/components/tools/data/hash-generator";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { HashGenerator } from '@/components/tools/data/hash-generator';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Hash } from 'lucide-react';
+import Link from 'next/link';
 
 export default function HashGeneratorPage() {
   return (
     <div className="container mx-auto py-6">
       {/* Breadcrumb Navigation */}
-      <nav className="mb-6 flex items-center space-x-2 text-gray-600 text-sm">
-        <Link href="/" className="hover:text-gray-900">
-          Home
-        </Link>
-        <span>/</span>
-        <Link href="/tools" className="hover:text-gray-900">
-          Tools
-        </Link>
-        <span>/</span>
-        <span className="font-medium text-gray-900">Hash Generator</span>
-      </nav>
 
       {/* Tool Header */}
-      <div className="mb-6">
-        <div className="mb-4 flex items-center gap-3">
-          <Hash className="h-8 w-8 text-blue-600" />
-          <div>
-            <h1 className="font-bold text-3xl text-gray-900 dark:text-white">Hash Generator</h1>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">Beginner</Badge>
-              <Badge variant="default">Stable</Badge>
-            </div>
-          </div>
-        </div>
-        <p className="text-gray-600 dark:text-gray-400">
-          Generate various hash types for data integrity and security
-        </p>
-      </div>
 
       {/* Tool Component */}
       <div className="space-y-6">
@@ -51,31 +25,31 @@ export default function HashGeneratorPage() {
           <CardContent>
             <ul className="space-y-2">
               <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600"></div>
+                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
                 <span className="text-gray-700 dark:text-gray-300">
                   Multiple hash algorithms (MD5, SHA-1, SHA-256, SHA-384, SHA-512)
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600"></div>
+                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
                 <span className="text-gray-700 dark:text-gray-300">
                   Support for both text and file input
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600"></div>
+                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
                 <span className="text-gray-700 dark:text-gray-300">
                   Batch processing - hash multiple files at once
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600"></div>
+                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
                 <span className="text-gray-700 dark:text-gray-300">
                   One-click hash copying to clipboard
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600"></div>
+                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
                 <span className="text-gray-700 dark:text-gray-300">
                   Uppercase/lowercase output options
                 </span>
@@ -91,25 +65,25 @@ export default function HashGeneratorPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h4 className="font-medium mb-2">Password Security</h4>
+              <h4 className="mb-2 font-medium">Password Security</h4>
               <p className="text-gray-600 text-sm">
                 Generate secure hash values for password storage and verification.
               </p>
             </div>
             <div>
-              <h4 className="font-medium mb-2">File Integrity</h4>
+              <h4 className="mb-2 font-medium">File Integrity</h4>
               <p className="text-gray-600 text-sm">
                 Verify file integrity by comparing hash values before and after transmission.
               </p>
             </div>
             <div>
-              <h4 className="font-medium mb-2">Data Verification</h4>
+              <h4 className="mb-2 font-medium">Data Verification</h4>
               <p className="text-gray-600 text-sm">
                 Generate checksums to ensure data hasn't been corrupted or tampered with.
               </p>
             </div>
             <div>
-              <h4 className="font-medium mb-2">Digital Signatures</h4>
+              <h4 className="mb-2 font-medium">Digital Signatures</h4>
               <p className="text-gray-600 text-sm">
                 Create hash values as part of digital signature processes.
               </p>
@@ -127,10 +101,10 @@ export default function HashGeneratorPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-2">Algorithm</th>
-                    <th className="text-left p-2">Output Length</th>
-                    <th className="text-left p-2">Security</th>
-                    <th className="text-left p-2">Use Case</th>
+                    <th className="p-2 text-left">Algorithm</th>
+                    <th className="p-2 text-left">Output Length</th>
+                    <th className="p-2 text-left">Security</th>
+                    <th className="p-2 text-left">Use Case</th>
                   </tr>
                 </thead>
                 <tbody>

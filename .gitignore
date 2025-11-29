@@ -4,10 +4,11 @@ node_modules/
 
 # Build outputs
 dist/
+build/
+out/
 .next/
 .vercel/
-out/
-build/
+next-env.d.ts
 
 # Environment variables
 .env
@@ -28,7 +29,7 @@ playwright-report/
 .nyc_output/
 junit.xml
 
-# Editor directories and files
+# Editor settings
 .vscode/*
 !.vscode/extensions.json
 .idea/
@@ -49,9 +50,9 @@ desktop.ini
 # Cache
 .cache/
 .turbo/
-.eslintcache
 .stylelintcache
 *.tsbuildinfo
+.biome-cache/
 
 # Temporary files
 *.tmp
@@ -66,22 +67,8 @@ pids
 *.seed
 *.pid.lock
 
-# Vercel
-.vercel/
-
-# Next.js
-.next/static/
-next-env.d.ts
-
-# Biome
-.biome-cache/
-
 # Storybook
 storybook-static/
 
-# Turbo
-.turbo/
-
 # Local development
 .local
-/.vercel/output

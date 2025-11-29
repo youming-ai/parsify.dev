@@ -1,21 +1,21 @@
-import { Braces, ChevronDown, Code, Database, FileCode, Terminal } from "lucide-react";
-import * as React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import type { CodeLanguage, LanguageSelectorProps } from "./code-types";
-import { getLanguageConfig, LANGUAGE_CONFIGS } from "./language-configs";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Braces, ChevronDown, Code, Database, FileCode, Terminal } from 'lucide-react';
+import * as React from 'react';
+import type { CodeLanguage, LanguageSelectorProps } from './code-types';
+import { LANGUAGE_CONFIGS, getLanguageConfig } from './language-configs';
 
 // Language categories for organization
 const LANGUAGE_CATEGORIES = {
-  Popular: ["javascript", "typescript", "python", "java"],
-  Web: ["javascript", "typescript", "php"],
-  Systems: ["c", "cpp", "rust", "go"],
-  Mobile: ["swift", "kotlin"],
-  Enterprise: ["java", "csharp", "scala"],
-  Scripting: ["python", "ruby", "bash", "powershell"],
-  Data: ["sql", "python", "r"],
-  Other: ["go", "rust", "scala"],
+  Popular: ['javascript', 'typescript', 'python', 'java'],
+  Web: ['javascript', 'typescript', 'php'],
+  Systems: ['c', 'cpp', 'rust', 'go'],
+  Mobile: ['swift', 'kotlin'],
+  Enterprise: ['java', 'csharp', 'scala'],
+  Scripting: ['python', 'ruby', 'bash', 'powershell'],
+  Data: ['sql', 'python', 'r'],
+  Other: ['go', 'rust', 'scala'],
 };
 
 const LANGUAGE_ICONS: Record<string, React.ReactNode> = {
@@ -45,8 +45,8 @@ export function LanguageSelector({
   className,
 }: LanguageSelectorProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [selectedCategory, setSelectedCategory] = React.useState<string>("All");
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [selectedCategory, setSelectedCategory] = React.useState<string>('All');
 
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
@@ -61,9 +61,9 @@ export function LanguageSelector({
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -81,7 +81,7 @@ export function LanguageSelector({
     let filtered = languages;
 
     // Filter by category
-    if (selectedCategory !== "All") {
+    if (selectedCategory !== 'All') {
       const categoryLanguages =
         LANGUAGE_CATEGORIES[selectedCategory as keyof typeof LANGUAGE_CATEGORIES] || [];
       filtered = filtered.filter((lang) => categoryLanguages.includes(lang));
@@ -104,13 +104,13 @@ export function LanguageSelector({
   const handleLanguageSelect = (language: CodeLanguage) => {
     onLanguageChange(language);
     setIsOpen(false);
-    setSearchTerm("");
-    setSelectedCategory("All");
+    setSearchTerm('');
+    setSelectedCategory('All');
   };
 
   if (compact) {
     return (
-      <div className={cn("relative", className)}>
+      <div className={cn('relative', className)}>
         <Button
           variant="outline"
           size="sm"
@@ -131,9 +131,9 @@ export function LanguageSelector({
                   key={language}
                   onClick={() => handleLanguageSelect(language)}
                   className={cn(
-                    "flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-700",
+                    'flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-700',
                     selectedLanguage === language &&
-                      "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+                      'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
                   )}
                 >
                   {LANGUAGE_ICONS[language]}
@@ -148,7 +148,7 @@ export function LanguageSelector({
   }
 
   return (
-    <div className={cn("relative", className)} ref={dropdownRef}>
+    <div className={cn('relative', className)} ref={dropdownRef}>
       {/* Trigger Button */}
       <Button
         variant="outline"
@@ -164,7 +164,7 @@ export function LanguageSelector({
             </Badge>
           )}
         </div>
-        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
+        <ChevronDown className={cn('h-4 w-4 transition-transform', isOpen && 'rotate-180')} />
       </Button>
 
       {/* Dropdown */}
@@ -185,12 +185,12 @@ export function LanguageSelector({
           {/* Category Tabs */}
           <div className="flex overflow-x-auto border-b">
             <button
-              onClick={() => setSelectedCategory("All")}
+              onClick={() => setSelectedCategory('All')}
               className={cn(
-                "whitespace-nowrap border-b-2 px-3 py-2 font-medium text-sm transition-colors",
-                selectedCategory === "All"
-                  ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                  : "border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200",
+                'whitespace-nowrap border-b-2 px-3 py-2 font-medium text-sm transition-colors',
+                selectedCategory === 'All'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
               )}
             >
               All Languages
@@ -200,10 +200,10 @@ export function LanguageSelector({
                 key={category}
                 onClick={() => setSelectedCategory(category)}
                 className={cn(
-                  "whitespace-nowrap border-b-2 px-3 py-2 font-medium text-sm transition-colors",
+                  'whitespace-nowrap border-b-2 px-3 py-2 font-medium text-sm transition-colors',
                   selectedCategory === category
-                    ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                    : "border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200",
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
                 )}
               >
                 {category}
@@ -226,9 +226,9 @@ export function LanguageSelector({
                       key={language}
                       onClick={() => handleLanguageSelect(language)}
                       className={cn(
-                        "group flex w-full items-center justify-between rounded-md px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-700",
+                        'group flex w-full items-center justify-between rounded-md px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-700',
                         selectedLanguage === language &&
-                          "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+                          'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
                       )}
                     >
                       <div className="flex items-center gap-3">
@@ -236,7 +236,7 @@ export function LanguageSelector({
                         <div>
                           <div className="font-medium">{config.name}</div>
                           <div className="text-gray-500 text-xs dark:text-gray-400">
-                            {config.extensions.join(", ")}
+                            {config.extensions.join(', ')}
                           </div>
                         </div>
                       </div>
@@ -275,22 +275,22 @@ export function QuickLanguageSelector({
   className?: string;
 }) {
   const popularLanguages: CodeLanguage[] = [
-    "javascript",
-    "typescript",
-    "python",
-    "java",
-    "cpp",
-    "go",
+    'javascript',
+    'typescript',
+    'python',
+    'java',
+    'cpp',
+    'go',
   ];
 
   return (
-    <div className={cn("flex flex-wrap gap-2", className)}>
+    <div className={cn('flex flex-wrap gap-2', className)}>
       {popularLanguages.map((language) => {
         const config = getLanguageConfig(language);
         return (
           <Button
             key={language}
-            variant={selectedLanguage === language ? "default" : "outline"}
+            variant={selectedLanguage === language ? 'default' : 'outline'}
             size="sm"
             onClick={() => onLanguageChange(language)}
             className="flex items-center gap-1"

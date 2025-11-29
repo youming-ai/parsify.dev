@@ -3,8 +3,8 @@
  * High-level interface for managing tools, registration, and lifecycle
  */
 
-import { type DiscoveredTool, ToolDiscovery } from "./tool-discovery";
-import { type ToolConfig, type ToolMetadata, ToolRegistry } from "./tool-registry";
+import { type DiscoveredTool, ToolDiscovery } from './tool-discovery';
+import { type ToolConfig, type ToolMetadata, ToolRegistry } from './tool-registry';
 
 export interface ToolManagerConfig {
   autoDiscover: boolean;
@@ -15,13 +15,14 @@ export interface ToolManagerConfig {
 }
 
 export interface ToolLifecycleEvent {
-  type: "register" | "unregister" | "load" | "unload" | "enable" | "disable" | "error";
+  type: 'register' | 'unregister' | 'load' | 'unload' | 'enable' | 'disable' | 'error';
   toolId: string;
   timestamp: number;
   data?: any;
 }
 
 export class ToolManager {
+  private static instance: ToolManager;
   private toolRegistry: ToolRegistry;
   private toolDiscovery: ToolDiscovery;
   private config: ToolManagerConfig;
@@ -50,6 +51,10 @@ export class ToolManager {
     this.setupEventListeners();
   }
 
+  private setupEventListeners(): void {
+    // Placeholder for event wiring
+  }
+
   public static getInstance(config?: Partial<ToolManagerConfig>): ToolManager {
     if (!ToolManager.instance) {
       ToolManager.instance = new ToolManager(config);
@@ -72,9 +77,9 @@ export class ToolManager {
         await this.toolRegistry.preloadTools();
       }
 
-      console.log("Tool Manager initialized successfully");
+      console.log('Tool Manager initialized successfully');
     } catch (error) {
-      console.error("Failed to initialize Tool Manager:", error);
+      console.error('Failed to initialize Tool Manager:', error);
       throw error;
     }
   }
@@ -199,7 +204,7 @@ export class ToolManager {
   /**
    * Get tools by priority
    */
-  public getToolsByPriority(minPriority: number = 0): ToolMetadata[] {
+  public getToolsByPriority(minPriority = 0): ToolMetadata[] {
     return this.getAllTools()
       .filter((tool) => tool.priority >= minPriority)
       .sort((a, b) => b.priority - a.priority);
@@ -209,7 +214,7 @@ export class ToolManager {
    * Get system statistics
    */
   public getStatistics(): {
-    tools: ReturnType<typeof this.toolRegistry.getStatistics>;
+    tools: ReturnType<ToolRegistry['getStatistics']>;
     categories: { name: string; count: number }[];
     bundleSize: {
       total: number;
@@ -241,21 +246,21 @@ export class ToolManager {
     // Bundle size statistics
     const totalBundleSize = tools.reduce((sum, tool) => sum + tool.bundleSize, 0);
     const averageBundleSize = tools.length > 0 ? totalBundleSize / tools.length : 0;
-    const largest = tools.reduce(
+    const largest = tools.reduce<ToolMetadata | null>(
       (prev, current) => (current.bundleSize > (prev?.bundleSize || 0) ? current : prev),
-      null,
+      null
     );
 
     // Performance statistics
     const averageLoadTime = tools.reduce((sum, tool) => sum + tool.loadTime, 0) / tools.length;
-    const slowestLoad = tools.reduce(
+    const slowestLoad = tools.reduce<ToolMetadata | null>(
       (prev, current) => (current.loadTime > (prev?.loadTime || 0) ? current : prev),
-      null,
+      null
     );
 
     // Compliance statistics
     const constitutionalCompliant = tools.filter(
-      (tool) => tool.bundleSize <= 200 * 1024 && tool.enabled,
+      (tool) => tool.bundleSize <= 200 * 1024 && tool.enabled
     ).length;
     const totalSizeCompliant = totalBundleSize <= 2 * 1024 * 1024 ? 1 : 0;
 
@@ -296,7 +301,7 @@ export class ToolManager {
     tools: ToolMetadata[];
     discoveredTools: DiscoveredTool[];
     config: ToolManagerConfig;
-    statistics: ReturnType<typeof this.getStatistics>;
+    statistics: ReturnType<ToolManager['getStatistics']>;
     lifecycleEvents: ToolLifecycleEvent[];
   } {
     return {
@@ -316,52 +321,52 @@ export class ToolManager {
     const lifecycleEvents = this.lifecycleEvents.slice(-10); // Last 10 events
 
     const report = [
-      "# Tool Manager System Report",
-      "",
+      '# Tool Manager System Report',
+      '',
       `Generated: ${new Date().toISOString()}`,
-      "",
-      "## System Overview",
+      '',
+      '## System Overview',
       `- **Total Tools**: ${stats.tools.totalTools}`,
       `- **Enabled Tools**: ${stats.tools.enabledTools}`,
       `- **Categories**: ${stats.categories.length}`,
       `- **Total Bundle Size**: ${this.formatBytes(stats.bundleSize.total)}`,
-      "",
-      "## Categories",
+      '',
+      '## Categories',
       ...stats.categories.map((cat) => `- **${cat.name}**: ${cat.count} tools`),
-      "",
-      "## Bundle Size Analysis",
+      '',
+      '## Bundle Size Analysis',
       `- **Total**: ${this.formatBytes(stats.bundleSize.total)}`,
       `- **Average**: ${this.formatBytes(stats.bundleSize.average)}`,
-      `- **Largest**: ${stats.bundleSize.largest ? `${stats.bundleSize.largest.name} (${this.formatBytes(stats.bundleSize.largest.bundleSize)})` : "N/A"}`,
-      "",
-      "## Performance",
+      `- **Largest**: ${stats.bundleSize.largest ? `${stats.bundleSize.largest.name} (${this.formatBytes(stats.bundleSize.largest.bundleSize)})` : 'N/A'}`,
+      '',
+      '## Performance',
       `- **Average Load Time**: ${Math.round(stats.performance.averageLoadTime)}ms`,
-      `- **Slowest Loading**: ${stats.performance.slowestLoad ? `${stats.performance.slowestLoad.name} (${stats.performance.slowestLoad.loadTime}ms)` : "N/A"}`,
-      "",
-      "## Constitutional Compliance",
+      `- **Slowest Loading**: ${stats.performance.slowestLoad ? `${stats.performance.slowestLoad.name} (${stats.performance.slowestLoad.loadTime}ms)` : 'N/A'}`,
+      '',
+      '## Constitutional Compliance',
       `- **Compliant Tools**: ${stats.compliance.constitutionalCompliant}/${stats.tools.totalTools}`,
-      `- **Total Size Compliant**: ${stats.compliance.totalSizeCompliant ? "✅" : "❌"}`,
-      "",
-      "### Compliance Issues",
+      `- **Total Size Compliant**: ${stats.compliance.totalSizeCompliant ? '✅' : '❌'}`,
+      '',
+      '### Compliance Issues',
       stats.compliance.issues.length > 0
-        ? stats.compliance.issues.map((issue) => `- ${issue}`).join("\n")
-        : "No compliance issues detected",
-      "",
-      "## Recent Activity",
+        ? stats.compliance.issues.map((issue) => `- ${issue}`).join('\n')
+        : 'No compliance issues detected',
+      '',
+      '## Recent Activity',
       ...lifecycleEvents.map(
         (event) =>
-          `- ${new Date(event.timestamp).toLocaleTimeString()}: ${event.type} - ${event.toolId}`,
+          `- ${new Date(event.timestamp).toLocaleTimeString()}: ${event.type} - ${event.toolId}`
       ),
-      "",
-      "## Configuration",
-      `- **Auto Discover**: ${this.config.autoDiscover ? "✅" : "❌"}`,
-      `- **Auto Register**: ${this.config.autoRegister ? "✅" : "❌"}`,
-      `- **Preload High Priority**: ${this.config.preloadHighPriority ? "✅" : "❌"}`,
-      `- **Performance Monitoring**: ${this.config.enablePerformanceMonitoring ? "✅" : "❌"}`,
-      `- **Constitutional Compliance**: ${this.config.constitutionalCompliance ? "✅" : "❌"}`,
+      '',
+      '## Configuration',
+      `- **Auto Discover**: ${this.config.autoDiscover ? '✅' : '❌'}`,
+      `- **Auto Register**: ${this.config.autoRegister ? '✅' : '❌'}`,
+      `- **Preload High Priority**: ${this.config.preloadHighPriority ? '✅' : '❌'}`,
+      `- **Performance Monitoring**: ${this.config.enablePerformanceMonitoring ? '✅' : '❌'}`,
+      `- **Constitutional Compliance**: ${this.config.constitutionalCompliance ? '✅' : '❌'}`,
     ];
 
-    return report.join("\n");
+    return report.join('\n');
   }
 
   /**
@@ -388,11 +393,11 @@ export class ToolManager {
    * Format bytes to human readable format
    */
   private formatBytes(bytes: number): string {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
+    return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }
 
   /**

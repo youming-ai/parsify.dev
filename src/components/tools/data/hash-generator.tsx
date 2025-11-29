@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { Copy, FileText, Hash, Upload } from "lucide-react";
-import * as React from "react";
-import { toast } from "sonner";
-import { FileUpload } from "@/components/file-upload/file-upload";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+import { FileUpload } from '@/components/file-upload/file-upload';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Copy, FileText, Hash, Upload } from 'lucide-react';
+import * as React from 'react';
+import { toast } from 'sonner';
 
 export interface HashResult {
   algorithm: string;
   input: string;
   hash: string;
   uppercase: boolean;
-  inputType: "text" | "file";
+  inputType: 'text' | 'file';
   fileName?: string;
   fileSize?: number;
 }
@@ -29,27 +29,27 @@ interface HashGeneratorProps {
 // Hash algorithms configuration
 const hashAlgorithms = [
   {
-    value: "md5",
-    label: "MD5",
-    description: "128-bit hash function, widely used but cryptographically broken",
+    value: 'md5',
+    label: 'MD5',
+    description: '128-bit hash function, widely used but cryptographically broken',
   },
   {
-    value: "sha1",
-    label: "SHA-1",
-    description: "160-bit hash function, deprecated for security use",
+    value: 'sha1',
+    label: 'SHA-1',
+    description: '160-bit hash function, deprecated for security use',
   },
-  { value: "sha256", label: "SHA-256", description: "256-bit hash function, part of SHA-2 family" },
-  { value: "sha384", label: "SHA-384", description: "384-bit hash function, part of SHA-2 family" },
-  { value: "sha512", label: "SHA-512", description: "512-bit hash function, part of SHA-2 family" },
+  { value: 'sha256', label: 'SHA-256', description: '256-bit hash function, part of SHA-2 family' },
+  { value: 'sha384', label: 'SHA-384', description: '384-bit hash function, part of SHA-2 family' },
+  { value: 'sha512', label: 'SHA-512', description: '512-bit hash function, part of SHA-2 family' },
 ];
 
 // Web Crypto API supported algorithms
-const webCryptoAlgorithms = ["SHA-1", "SHA-256", "SHA-384", "SHA-512"];
+const webCryptoAlgorithms = ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'];
 
 export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps) {
-  const [inputText, setInputText] = React.useState("");
+  const [inputText, setInputText] = React.useState('');
   const [inputFiles, setInputFiles] = React.useState<File[]>([]);
-  const [selectedAlgorithms, setSelectedAlgorithms] = React.useState<string[]>(["sha256"]);
+  const [selectedAlgorithms, setSelectedAlgorithms] = React.useState<string[]>(['sha256']);
   const [results, setResults] = React.useState<HashResult[]>([]);
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [uppercase, setUppercase] = React.useState(false);
@@ -59,15 +59,15 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
     // Simple MD5 implementation for demo purposes
     // In production, use a proper crypto library
     const msgBuffer = new TextEncoder().encode(message);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+    const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
     return hashHex.substring(0, 32); // Truncate to MD5 length for demo
   };
 
   // Generate hash using Web Crypto API
   const generateHash = async (data: string, algorithm: string): Promise<string> => {
-    if (algorithm === "md5") {
+    if (algorithm === 'md5') {
       return await md5(data);
     }
 
@@ -75,14 +75,14 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
     const dataBuffer = encoder.encode(data);
 
     try {
-      const webCryptoAlgorithm = algorithm.toUpperCase().replace("-", "");
+      const webCryptoAlgorithm = algorithm.toUpperCase().replace('-', '');
       if (webCryptoAlgorithms.includes(webCryptoAlgorithm)) {
         const hashBuffer = await crypto.subtle.digest(
           webCryptoAlgorithm as AlgorithmIdentifier,
-          dataBuffer,
+          dataBuffer
         );
         const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+        const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
         return hashHex;
       }
     } catch (_error) {
@@ -95,7 +95,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
   // Process text input
   const processText = async () => {
     if (!inputText.trim()) {
-      toast.error("Please enter text to hash");
+      toast.error('Please enter text to hash');
       return;
     }
 
@@ -111,7 +111,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
             input: inputText,
             hash: uppercase ? hash.toUpperCase() : hash,
             uppercase,
-            inputType: "text",
+            inputType: 'text',
           };
           newResults.push(result);
           onHashGenerated?.(result);
@@ -123,7 +123,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
       setResults((prev) => [...prev, ...newResults]);
       toast.success(`Generated ${newResults.length} hash(es)`);
     } catch (_error) {
-      toast.error("Failed to generate hashes");
+      toast.error('Failed to generate hashes');
     } finally {
       setIsProcessing(false);
     }
@@ -132,7 +132,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
   // Process file input
   const processFiles = async () => {
     if (inputFiles.length === 0) {
-      toast.error("Please select files to hash");
+      toast.error('Please select files to hash');
       return;
     }
 
@@ -148,10 +148,10 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
             const hash = await generateHash(fileContent, algorithm);
             const result: HashResult = {
               algorithm,
-              input: "File content",
+              input: 'File content',
               hash: uppercase ? hash.toUpperCase() : hash,
               uppercase,
-              inputType: "file",
+              inputType: 'file',
               fileName: file.name,
               fileSize: file.size,
             };
@@ -166,7 +166,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
       setResults((prev) => [...prev, ...newResults]);
       toast.success(`Generated ${newResults.length} hash(es) from ${inputFiles.length} file(s)`);
     } catch (_error) {
-      toast.error("Failed to process files");
+      toast.error('Failed to process files');
     } finally {
       setIsProcessing(false);
     }
@@ -176,9 +176,9 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
   const copyToClipboard = async (hash: string) => {
     try {
       await navigator.clipboard.writeText(hash);
-      toast.success("Hash copied to clipboard");
+      toast.success('Hash copied to clipboard');
     } catch (_error) {
-      toast.error("Failed to copy to clipboard");
+      toast.error('Failed to copy to clipboard');
     }
   };
 
@@ -190,7 +190,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
   // Toggle algorithm selection
   const toggleAlgorithm = (algorithm: string) => {
     setSelectedAlgorithms((prev) =>
-      prev.includes(algorithm) ? prev.filter((a) => a !== algorithm) : [...prev, algorithm],
+      prev.includes(algorithm) ? prev.filter((a) => a !== algorithm) : [...prev, algorithm]
     );
   };
 
@@ -211,7 +211,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
                 {hashAlgorithms.map((algo) => (
                   <Badge
                     key={algo.value}
-                    variant={selectedAlgorithms.includes(algo.value) ? "default" : "outline"}
+                    variant={selectedAlgorithms.includes(algo.value) ? 'default' : 'outline'}
                     className="cursor-pointer"
                     onClick={() => toggleAlgorithm(algo.value)}
                   >
@@ -219,13 +219,13 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
                   </Badge>
                 ))}
               </div>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid gap-4 md:grid-cols-2">
                 {hashAlgorithms
                   .filter((algo) => selectedAlgorithms.includes(algo.value))
                   .map((algo) => (
-                    <div key={algo.value} className="p-3 bg-gray-50 rounded">
+                    <div key={algo.value} className="rounded bg-gray-50 p-3">
                       <div className="font-medium">{algo.label}</div>
-                      <div className="text-sm text-gray-600">{algo.description}</div>
+                      <div className="text-gray-600 text-sm">{algo.description}</div>
                     </div>
                   ))}
               </div>
@@ -276,7 +276,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
                   disabled={isProcessing || selectedAlgorithms.length === 0}
                   className="w-full"
                 >
-                  {isProcessing ? "Generating..." : "Generate Hash"}
+                  {isProcessing ? 'Generating...' : 'Generate Hash'}
                 </Button>
               </CardContent>
             </Card>
@@ -292,7 +292,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
                   files={inputFiles}
                   onFilesChange={setInputFiles}
                   maxFiles={10}
-                  acceptedFormats={["txt", "json", "xml", "csv", "md", "log"]}
+                  acceptedFormats={['txt', 'json', 'xml', 'csv', 'md', 'log']}
                 />
                 <div className="flex items-center space-x-2">
                   <input
@@ -310,7 +310,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
                   }
                   className="w-full"
                 >
-                  {isProcessing ? "Generating..." : "Generate Hash"}
+                  {isProcessing ? 'Generating...' : 'Generate Hash'}
                 </Button>
               </CardContent>
             </Card>
@@ -331,14 +331,14 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
             <CardContent>
               <div className="space-y-4">
                 {results.map((result, index) => (
-                  <div key={index} className="p-4 border rounded-lg space-y-2">
+                  <div key={index} className="space-y-2 rounded-lg border p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Badge variant="outline">{result.algorithm.toUpperCase()}</Badge>
-                        {result.inputType === "file" && (
+                        {result.inputType === 'file' && (
                           <>
-                            <span className="text-sm text-gray-600">{result.fileName}</span>
-                            <span className="text-xs text-gray-500">({result.fileSize} bytes)</span>
+                            <span className="text-gray-600 text-sm">{result.fileName}</span>
+                            <span className="text-gray-500 text-xs">({result.fileSize} bytes)</span>
                           </>
                         )}
                       </div>
@@ -350,13 +350,13 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
                         <Copy className="h-4 w-4" />
                       </Button>
                     </div>
-                    <div className="font-mono text-sm bg-gray-50 p-2 rounded break-all">
+                    <div className="break-all rounded bg-gray-50 p-2 font-mono text-sm">
                       {result.hash}
                     </div>
-                    <div className="text-xs text-gray-500">
-                      Input:{" "}
-                      {result.inputType === "file"
-                        ? "File content"
+                    <div className="text-gray-500 text-xs">
+                      Input:{' '}
+                      {result.inputType === 'file'
+                        ? 'File content'
                         : `${result.input.length} characters`}
                     </div>
                   </div>
@@ -374,20 +374,20 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
           <CardContent>
             <div className="space-y-4">
               {hashAlgorithms.map((algo) => (
-                <div key={algo.value} className="grid md:grid-cols-3 gap-4 p-3 border rounded">
+                <div key={algo.value} className="grid gap-4 rounded border p-3 md:grid-cols-3">
                   <div className="font-medium">{algo.label}</div>
-                  <div className="text-sm text-gray-600">{algo.description}</div>
+                  <div className="text-gray-600 text-sm">{algo.description}</div>
                   <div className="text-sm">
-                    <span className="font-medium">Output:</span>{" "}
-                    {algo.value === "md5"
-                      ? "32 chars"
-                      : algo.value === "sha1"
-                        ? "40 chars"
-                        : algo.value === "sha256"
-                          ? "64 chars"
-                          : algo.value === "sha384"
-                            ? "96 chars"
-                            : "128 chars"}
+                    <span className="font-medium">Output:</span>{' '}
+                    {algo.value === 'md5'
+                      ? '32 chars'
+                      : algo.value === 'sha1'
+                        ? '40 chars'
+                        : algo.value === 'sha256'
+                          ? '64 chars'
+                          : algo.value === 'sha384'
+                            ? '96 chars'
+                            : '128 chars'}
                   </div>
                 </div>
               ))}

@@ -80,8 +80,8 @@ export const PERFORMANCE_THRESHOLDS: PerformanceThresholds = {
 };
 
 export interface PerformanceAlert {
-  type: "bundle_size" | "load_time" | "memory" | "web_vitals" | "execution_time";
-  severity: "warning" | "error" | "critical";
+  type: 'bundle_size' | 'load_time' | 'memory' | 'web_vitals' | 'execution_time';
+  severity: 'warning' | 'error' | 'critical';
   toolId?: string;
   metric: string;
   actual: number;
@@ -93,14 +93,14 @@ export interface PerformanceAlert {
 export function checkBundleSize(toolId: string, bundleSize: number): PerformanceAlert | null {
   if (bundleSize > PERFORMANCE_THRESHOLDS.maxToolBundleSize) {
     return {
-      type: "bundle_size",
-      severity: "error",
+      type: 'bundle_size',
+      severity: 'error',
       toolId,
-      metric: "bundleSize",
+      metric: 'bundleSize',
       actual: bundleSize,
       threshold: PERFORMANCE_THRESHOLDS.maxToolBundleSize,
       message: `Tool ${toolId} bundle size (${formatBytes(bundleSize)}) exceeds 200KB limit`,
-      recommendation: "Consider code splitting, tree shaking, or lazy loading",
+      recommendation: 'Consider code splitting, tree shaking, or lazy loading',
     };
   }
 
@@ -110,14 +110,14 @@ export function checkBundleSize(toolId: string, bundleSize: number): Performance
 export function checkLoadTime(toolId: string, loadTime: number): PerformanceAlert | null {
   if (loadTime > PERFORMANCE_THRESHOLDS.maxToolLoadTime) {
     return {
-      type: "load_time",
-      severity: "warning",
+      type: 'load_time',
+      severity: 'warning',
       toolId,
-      metric: "loadTime",
+      metric: 'loadTime',
       actual: loadTime,
       threshold: PERFORMANCE_THRESHOLDS.maxToolLoadTime,
       message: `Tool ${toolId} load time (${loadTime}ms) exceeds 3 second threshold`,
-      recommendation: "Optimize initialization or implement progressive loading",
+      recommendation: 'Optimize initialization or implement progressive loading',
     };
   }
 
@@ -127,14 +127,14 @@ export function checkLoadTime(toolId: string, loadTime: number): PerformanceAler
 export function checkMemoryUsage(toolId: string, memoryUsage: number): PerformanceAlert | null {
   if (memoryUsage > PERFORMANCE_THRESHOLDS.maxToolMemoryUsage) {
     return {
-      type: "memory",
-      severity: "critical",
+      type: 'memory',
+      severity: 'critical',
       toolId,
-      metric: "memoryUsage",
+      metric: 'memoryUsage',
       actual: memoryUsage,
       threshold: PERFORMANCE_THRESHOLDS.maxToolMemoryUsage,
       message: `Tool ${toolId} memory usage (${formatBytes(memoryUsage)}) exceeds 50MB limit`,
-      recommendation: "Implement memory cleanup and reduce retained objects",
+      recommendation: 'Implement memory cleanup and reduce retained objects',
     };
   }
 
@@ -142,47 +142,47 @@ export function checkMemoryUsage(toolId: string, memoryUsage: number): Performan
 }
 
 export function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 B";
+  if (bytes === 0) return '0 B';
   const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
+  const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
 }
 
 export function formatPerformanceAlert(alert: PerformanceAlert): string {
   const severityIcon =
-    alert.severity === "critical" ? "🔴" : alert.severity === "error" ? "🟠" : "🟡";
-  const toolInfo = alert.toolId ? ` (${alert.toolId})` : "";
-  return `${severityIcon} ${alert.type.replace("_", " ").toUpperCase()}${toolInfo}: ${alert.message}`;
+    alert.severity === 'critical' ? '🔴' : alert.severity === 'error' ? '🟠' : '🟡';
+  const toolInfo = alert.toolId ? ` (${alert.toolId})` : '';
+  return `${severityIcon} ${alert.type.replace('_', ' ').toUpperCase()}${toolInfo}: ${alert.message}`;
 }
 
 // Performance optimization recommendations
 export const OPTIMIZATION_RECOMMENDATIONS = {
   bundleSize: [
-    "Implement dynamic imports for code splitting",
-    "Use tree shaking to eliminate unused code",
-    "Optimize images and assets",
-    "Remove duplicate dependencies",
-    "Use lazy loading for non-critical features",
+    'Implement dynamic imports for code splitting',
+    'Use tree shaking to eliminate unused code',
+    'Optimize images and assets',
+    'Remove duplicate dependencies',
+    'Use lazy loading for non-critical features',
   ],
   loadTime: [
-    "Implement progressive loading",
-    "Cache static resources",
-    "Use CDN for static assets",
-    "Implement service worker caching",
-    "Optimize critical rendering path",
+    'Implement progressive loading',
+    'Cache static resources',
+    'Use CDN for static assets',
+    'Implement service worker caching',
+    'Optimize critical rendering path',
   ],
   memory: [
-    "Implement proper cleanup in useEffect",
-    "Avoid memory leaks in event listeners",
-    "Use object pooling for frequently created objects",
-    "Implement lazy loading for large datasets",
-    "Clear unused references and caches",
+    'Implement proper cleanup in useEffect',
+    'Avoid memory leaks in event listeners',
+    'Use object pooling for frequently created objects',
+    'Implement lazy loading for large datasets',
+    'Clear unused references and caches',
   ],
   webVitals: [
-    "Optimize Largest Contentful Paint by loading critical resources first",
-    "Minimize Cumulative Layout Shift by reserving space for dynamic content",
-    "Reduce First Input Delay by optimizing JavaScript execution",
-    "Improve Time to First Byte with server optimizations",
+    'Optimize Largest Contentful Paint by loading critical resources first',
+    'Minimize Cumulative Layout Shift by reserving space for dynamic content',
+    'Reduce First Input Delay by optimizing JavaScript execution',
+    'Improve Time to First Byte with server optimizations',
   ],
 };

@@ -1,9 +1,9 @@
-import type React from "react";
-import { useCallback, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import type { DragOverEvent, FileChangeEvent, FileUploadEvents } from "./file-upload-types";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import type React from 'react';
+import { useCallback, useRef, useState } from 'react';
+import type { DragOverEvent, FileChangeEvent, FileUploadEvents } from './file-upload-types';
 
 interface FileDropZoneProps {
   /** Whether files can be dropped */
@@ -21,10 +21,10 @@ interface FileDropZoneProps {
   /** Children to render inside the drop zone */
   children?: React.ReactNode;
   /** Event handlers */
-  onDrop?: FileUploadEvents["onDrop"];
-  onDragOver?: FileUploadEvents["onDragOver"];
-  onDragLeave?: FileUploadEvents["onDragLeave"];
-  onFilesSelected?: FileUploadEvents["onFilesSelected"];
+  onDrop?: FileUploadEvents['onDrop'];
+  onDragOver?: FileUploadEvents['onDragOver'];
+  onDragLeave?: FileUploadEvents['onDragLeave'];
+  onFilesSelected?: FileUploadEvents['onFilesSelected'];
 }
 
 export const FileDropZone: React.FC<FileDropZoneProps> = ({
@@ -55,7 +55,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
         onDragOver?.(event);
       }
     },
-    [disabled, onDragOver],
+    [disabled, onDragOver]
   );
 
   const handleDragEnter = useCallback(
@@ -67,7 +67,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
         setIsDragActive(true);
       }
     },
-    [disabled],
+    [disabled]
   );
 
   const handleDragLeave = useCallback(
@@ -81,7 +81,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
         onDragLeave?.(event);
       }
     },
-    [disabled, onDragLeave],
+    [disabled, onDragLeave]
   );
 
   const handleDrop = useCallback(
@@ -102,10 +102,10 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
       const validFiles = files.filter((file) => {
         if (accept.length > 0) {
           const isAccepted = accept.some((type) => {
-            if (type.startsWith(".")) {
+            if (type.startsWith('.')) {
               return file.name.toLowerCase().endsWith(type.toLowerCase());
             }
-            return file.type.match(type.replace("*", ".*"));
+            return file.type.match(type.replace('*', '.*'));
           });
           if (!isAccepted) return false;
         }
@@ -125,7 +125,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
         onFilesSelected?.(filesToProcess);
       }
     },
-    [disabled, accept, maxSize, multiple, onDrop, onFilesSelected],
+    [disabled, accept, maxSize, multiple, onDrop, onFilesSelected]
   );
 
   const handleFileInput = useCallback(
@@ -138,9 +138,9 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
       }
 
       // Reset the input value so the same file can be selected again
-      event.target.value = "";
+      event.target.value = '';
     },
-    [multiple, onFilesSelected],
+    [multiple, onFilesSelected]
   );
 
   const handleClick = useCallback(() => {
@@ -151,24 +151,24 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
-      if (event.key === "Enter" || event.key === " ") {
+      if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         handleClick();
       }
     },
-    [handleClick],
+    [handleClick]
   );
 
   return (
     <Card
       className={cn(
-        "relative cursor-pointer border-2 border-dashed transition-all duration-200",
+        'relative cursor-pointer border-2 border-dashed transition-all duration-200',
         {
-          "border-blue-500 bg-blue-50 dark:bg-blue-950/20": isDragActive,
-          "border-gray-300 bg-gray-50 dark:bg-gray-800/20": !isDragActive,
-          "cursor-not-allowed opacity-50": disabled,
+          'border-blue-500 bg-blue-50 dark:bg-blue-950/20': isDragActive,
+          'border-gray-300 bg-gray-50 dark:bg-gray-800/20': !isDragActive,
+          'cursor-not-allowed opacity-50': disabled,
         },
-        className,
+        className
       )}
       style={style}
       onDragOver={handleDragOver}
@@ -187,7 +187,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
           ref={inputRef}
           type="file"
           multiple={multiple}
-          accept={accept.join(",")}
+          accept={accept.join(',')}
           onChange={handleFileInput}
           disabled={disabled}
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
@@ -216,7 +216,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
 
             <div>
               <p className="font-medium text-gray-900 text-lg dark:text-gray-100">
-                {isDragActive ? "Drop files here" : "Drag & drop files here"}
+                {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
               </p>
               <p className="mt-1 text-gray-500 text-sm dark:text-gray-400">or click to browse</p>
             </div>
@@ -235,7 +235,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
 
             {accept.length > 0 && (
               <p className="text-gray-400 text-xs dark:text-gray-500">
-                Accepted formats: {accept.join(", ")}
+                Accepted formats: {accept.join(', ')}
               </p>
             )}
 
@@ -255,10 +255,10 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
  * Format file size in human readable format
  */
 function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 Bytes";
+  if (bytes === 0) return '0 Bytes';
 
   const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;

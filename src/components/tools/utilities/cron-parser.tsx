@@ -1,0 +1,156 @@
+'use client';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+export function CronParser() {
+  const [expression, setExpression] = useState('* * * * *');
+  const [description, setDescription] = useState('');
+  const [nextRuns, setNextRuns] = useState<string[]>([]);
+  const [error, setError] = useState('');
+
+  const parseCron = (cron: string) => {
+    try {
+      const parts = cron.trim().split(/\s+/);
+      if (parts.length !== 5) {
+        throw new Error('Invalid cron expression: must have 5 parts');
+      }
+
+      const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
+
+      let desc = 'At ';
+
+      // Time
+      if (minute === '*' && hour === '*') {
+        desc += 'every minute';
+      } else if (minute !== '*' && hour === '*') {
+        desc += `minute ${minute} past every hour`;
+      } else if (minute === '0' && hour !== '*') {
+        desc += `${hour}:00`;
+      } else {
+        desc += `${hour}:${minute}`;
+      }
+
+      // Date
+      if (dayOfMonth !== '*') {
+        desc += ` on day-of-month ${dayOfMonth}`;
+      }
+
+      if (month !== '*') {
+        desc += ` in month ${month}`;
+      }
+
+      if (dayOfWeek !== '*') {
+        desc += ` on day-of-week ${dayOfWeek}`;
+      }
+
+      setDescription(desc);
+      setError('');
+
+      // Calculate next runs (simulated for now)
+      const now = new Date();
+      const runs = [];
+      for (let i = 1; i <= 5; i++) {
+        const next = new Date(now.getTime() + i * 60000 * (parts[0] === '*' ? 1 : 60));
+        runs.push(next.toLocaleString());
+      }
+      setNextRuns(runs);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid cron expression');
+      setDescription('');
+      setNextRuns([]);
+    }
+  };
+
+  useEffect(() => {
+    parseCron(expression);
+  }, [expression]);
+
+  const presets = [
+    { name: 'Every minute', value: '* * * * *' },
+    { name: 'Every hour', value: '0 * * * *' },
+    { name: 'Every day at midnight', value: '0 0 * * *' },
+    { name: 'Every Sunday', value: '0 0 * * 0' },
+    { name: 'Every 1st of month', value: '0 0 1 * *' },
+  ];
+
+  return (
+    <div className="mx-auto w-full max-w-4xl space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Cron Expression Parser</CardTitle>
+          <CardDescription>Parse and understand cron schedule expressions</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              {presets.map((preset) => (
+                <Badge
+                  key={preset.name}
+                  variant="secondary"
+                  className="cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700"
+                  onClick={() => setExpression(preset.value)}
+                >
+                  {preset.name}
+                </Badge>
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Cron Expression</Label>
+              <div className="relative">
+                <Input
+                  value={expression}
+                  onChange={(e) => setExpression(e.target.value)}
+                  className="pl-10 font-mono text-lg"
+                  placeholder="* * * * *"
+                />
+                <Clock className="absolute top-3 left-3 h-5 w-5 text-slate-400" />
+              </div>
+            </div>
+
+            {error ? (
+              <div className="flex items-center gap-2 rounded-lg bg-red-50 p-4 text-red-500 dark:bg-red-900/20">
+                <AlertCircle className="h-5 w-5" />
+                <span>{error}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 rounded-lg bg-green-50 p-4 text-green-600 dark:bg-green-900/20">
+                <CheckCircle2 className="h-5 w-5" />
+                <span className="font-medium">{description}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-5 gap-2 text-center text-slate-500 text-sm">
+              <div className="rounded bg-slate-100 p-2 dark:bg-slate-800">minute</div>
+              <div className="rounded bg-slate-100 p-2 dark:bg-slate-800">hour</div>
+              <div className="rounded bg-slate-100 p-2 dark:bg-slate-800">day (month)</div>
+              <div className="rounded bg-slate-100 p-2 dark:bg-slate-800">month</div>
+              <div className="rounded bg-slate-100 p-2 dark:bg-slate-800">day (week)</div>
+            </div>
+          </div>
+
+          {!error && nextRuns.length > 0 && (
+            <div className="space-y-2">
+              <Label>Next Scheduled Runs</Label>
+              <div className="space-y-2 rounded-lg bg-slate-50 p-4 dark:bg-slate-900">
+                {nextRuns.map((run, index) => (
+                  <div key={index} className="font-mono text-slate-600 text-sm dark:text-slate-300">
+                    {run}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default CronParser;

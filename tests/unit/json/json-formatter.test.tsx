@@ -1,45 +1,52 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { JSONFormatter } from "@/components/tools/json/json-formatter";
+import { JSONFormatter } from '@/components/tools/json/json-formatter';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it } from 'vitest';
 
-describe("JSONFormatter", () => {
-  const mockProps = {
-    jsonData: '{"name":"test","value":123}',
-    onFormatChange: vi.fn(),
-    className: "",
-    readOnly: false,
-    showStats: true,
-  };
+// Mock Monaco Editor
+vi.mock('@monaco-editor/react', () => ({
+  default: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+    <textarea
+      data-testid="monaco-editor"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  ),
+}));
+
+describe('JSONFormatter', () => {
+  const mockJsonData = JSON.stringify({ name: 'test', value: 123 }, null, 2);
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    render(<JSONFormatter jsonData={mockJsonData} />);
   });
 
-  it("renders JSON formatter component", () => {
-    render(<JSONFormatter {...mockProps} />);
-    expect(screen.getByText(/format/i)).toBeInTheDocument();
+  it('renders the JSON formatter component', () => {
+    expect(screen.getByTestId('monaco-editor')).toBeInTheDocument();
   });
 
-  it("formats JSON correctly", () => {
-    render(<JSONFormatter {...mockProps} />);
-    const formatButton = screen.getByText(/format/i);
-    fireEvent.click(formatButton);
-
-    // Verify the callback was called
-    expect(mockProps.onFormatChange).toHaveBeenCalled();
+  it('displays initial JSON data', () => {
+    const editor = screen.getByTestId('monaco-editor');
+    expect(editor).toHaveValue(mockJsonData);
   });
 
-  it("validates JSON syntax", () => {
-    const invalidProps = { ...mockProps, jsonData: '{"invalid": json}' };
-    render(<JSONFormatter {...invalidProps} />);
+  it('formats JSON when format button is clicked', async () => {
+    const formatButton = screen.getByText('Format');
+    const editor = screen.getByTestId('monaco-editor');
 
-    // Should show error for invalid JSON
-    expect(screen.getByText(/invalid.*json/i)).toBeInTheDocument();
+    // Set unformatted JSON
+    fireEvent.change(editor, { target: { value: '{"name":"test","value":123}' } });
+
+    await fireEvent.click(formatButton);
+
+    expect(editor).toHaveValue(mockJsonData);
   });
 
-  it("displays statistics when enabled", () => {
-    render(<JSONFormatter {...mockProps} />);
-    expect(screen.getByText(/characters/i)).toBeInTheDocument();
-    expect(screen.getByText(/lines/i)).toBeInTheDocument();
+  it('minifies JSON when minify button is clicked', async () => {
+    const minifyButton = screen.getByText('Minify');
+    const editor = screen.getByTestId('monaco-editor');
+
+    await fireEvent.click(minifyButton);
+
+    expect(editor).toHaveValue('{"name":"test","value":123}');
   });
 });

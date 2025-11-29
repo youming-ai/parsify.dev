@@ -1,9 +1,9 @@
-import { ChevronDown, ChevronRight, Copy, Download } from "lucide-react";
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import type { JsonViewerProps, TreeNode } from "./json-types";
-import { copyToClipboard, downloadFile, parseJsonToTree } from "./json-utils";
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { ChevronDown, ChevronRight, Copy, Download } from 'lucide-react';
+import * as React from 'react';
+import type { JsonViewerProps, TreeNode } from './json-types';
+import { copyToClipboard, downloadFile, parseJsonToTree } from './json-utils';
 
 interface JsonTreeItemProps {
   node: TreeNode;
@@ -18,7 +18,7 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
 
   const hasChildren = node.children && node.children.length > 0;
   const _isLastChild =
-    node.key.endsWith("]") && !Number.isNaN(Number.parseInt(node.key.split("[").pop() || "", 10));
+    node.key.endsWith(']') && !Number.isNaN(Number.parseInt(node.key.split('[').pop() || '', 10));
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
@@ -33,30 +33,30 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
     let valueClass: string;
 
     switch (node.type) {
-      case "string":
+      case 'string':
         displayValue = `"${String(node.value)}"`;
-        valueClass = "text-green-600";
+        valueClass = 'text-green-600';
         break;
-      case "number":
+      case 'number':
         displayValue = String(node.value);
-        valueClass = "text-blue-600";
+        valueClass = 'text-blue-600';
         break;
-      case "boolean":
+      case 'boolean':
         displayValue = String(node.value);
-        valueClass = "text-purple-600";
+        valueClass = 'text-purple-600';
         break;
-      case "null":
-        displayValue = "null";
-        valueClass = "text-gray-500";
+      case 'null':
+        displayValue = 'null';
+        valueClass = 'text-gray-500';
         break;
       default:
         displayValue = String(node.value);
-        valueClass = "text-gray-700";
+        valueClass = 'text-gray-700';
     }
 
     return (
       <span
-        className={cn("font-mono", valueClass, "cursor-pointer hover:opacity-70")}
+        className={cn('font-mono', valueClass, 'cursor-pointer hover:opacity-70')}
         onClick={() => onCopy(node.path, node.value)}
         title="Click to copy value"
       >
@@ -66,14 +66,14 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
   };
 
   const renderKey = () => {
-    if (node.path === "root") {
+    if (node.path === 'root') {
       return null;
     }
 
-    const keyName = node.key.includes("[") ? node.key : `"${node.key}"`;
+    const keyName = node.key.includes('[') ? node.key : `"${node.key}"`;
     return (
       <span
-        className={cn("cursor-pointer font-medium font-mono text-gray-700 hover:opacity-70")}
+        className={cn('cursor-pointer font-medium font-mono text-gray-700 hover:opacity-70')}
         onClick={() => onCopy(node.path, node.value)}
         title={`Copy ${node.path}`}
       >
@@ -83,8 +83,8 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
   };
 
   return (
-    <div className={cn("font-mono text-sm", "select-text")}>
-      <div className={cn("flex items-start gap-1", "rounded px-1 hover:bg-gray-50")}>
+    <div className={cn('font-mono text-sm', 'select-text')}>
+      <div className={cn('flex items-start gap-1', 'rounded px-1 hover:bg-gray-50')}>
         {showLineNumbers && (
           <span className="mr-2 w-8 select-none text-right text-gray-400 text-xs">
             {lineNumber.current++}
@@ -100,9 +100,9 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
             <button
               onClick={toggleExpand}
               className={cn(
-                "mr-1 inline-flex h-4 w-4 items-center justify-center",
-                "text-gray-400 hover:text-gray-600",
-                "focus:text-gray-600 focus:outline-none",
+                'mr-1 inline-flex h-4 w-4 items-center justify-center',
+                'text-gray-400 hover:text-gray-600',
+                'focus:text-gray-600 focus:outline-none'
               )}
             >
               {isExpanded ? (
@@ -124,13 +124,13 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
           {/* Container brackets */}
           {hasChildren && (
             <>
-              <span className="text-gray-600">{node.type === "object" ? "{" : "["}</span>
+              <span className="text-gray-600">{node.type === 'object' ? '{' : '['}</span>
               {!isExpanded && (
                 <>
                   <span className="mx-1 text-gray-400">
-                    {node.children?.length} {node.type === "object" ? "properties" : "items"}
+                    {node.children?.length} {node.type === 'object' ? 'properties' : 'items'}
                   </span>
-                  <span className="text-gray-600">{node.type === "object" ? "}" : "]"}</span>
+                  <span className="text-gray-600">{node.type === 'object' ? '}' : ']'}</span>
                 </>
               )}
             </>
@@ -153,7 +153,7 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
           ))}
 
           {/* Closing bracket */}
-          <div className={cn("flex items-start gap-1", "rounded px-1 hover:bg-gray-50")}>
+          <div className={cn('flex items-start gap-1', 'rounded px-1 hover:bg-gray-50')}>
             {showLineNumbers && (
               <span className="mr-2 w-8 select-none text-right text-gray-400 text-xs">
                 {lineNumber.current++}
@@ -161,7 +161,7 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
             )}
             <div className="flex-1">
               <span className="inline-block" style={{ width: `${(level + 1) * 20}px` }} />
-              <span className="text-gray-600">{node.type === "object" ? "}" : "]"}</span>
+              <span className="text-gray-600">{node.type === 'object' ? '}' : ']'}</span>
             </div>
           </div>
         </div>
@@ -178,7 +178,7 @@ export function JsonViewer({
   className,
 }: JsonViewerProps) {
   const [showCopyNotification, setShowCopyNotification] = React.useState(false);
-  const [_copiedValue, setCopiedValue] = React.useState("");
+  const [_copiedValue, setCopiedValue] = React.useState('');
 
   // Parse data to tree structure
   const treeData = React.useMemo(() => {
@@ -188,7 +188,7 @@ export function JsonViewer({
   const handleCopy = (_path: string, value: unknown) => {
     if (!copyable) return;
 
-    const valueToCopy = typeof value === "object" ? JSON.stringify(value, null, 2) : String(value);
+    const valueToCopy = typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value);
     copyToClipboard(valueToCopy)
       .then(() => {
         setCopiedValue(valueToCopy);
@@ -204,7 +204,7 @@ export function JsonViewer({
     const jsonString = JSON.stringify(data, null, 2);
     copyToClipboard(jsonString)
       .then(() => {
-        setCopiedValue("All JSON data");
+        setCopiedValue('All JSON data');
         setShowCopyNotification(true);
         setTimeout(() => setShowCopyNotification(false), 2000);
       })
@@ -213,19 +213,19 @@ export function JsonViewer({
 
   const handleDownload = () => {
     const jsonString = JSON.stringify(data, null, 2);
-    downloadFile(jsonString, "formatted-json.json", "application/json");
+    downloadFile(jsonString, 'formatted-json.json', 'application/json');
   };
 
   const lineNumber = React.useRef(1);
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn('space-y-4', className)}>
       {/* Toolbar */}
       <div className="flex items-center justify-between border-b pb-3">
         <div className="flex items-center gap-2">
           <h3 className="font-medium text-gray-900 text-lg">JSON Viewer</h3>
           <span className="text-gray-500 text-sm">
-            ({treeData.length} {treeData.length === 1 ? "item" : "items"})
+            ({treeData.length} {treeData.length === 1 ? 'item' : 'items'})
           </span>
         </div>
 

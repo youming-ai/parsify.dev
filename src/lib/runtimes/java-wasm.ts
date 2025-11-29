@@ -6,7 +6,7 @@
 export interface JavaSourceFile {
   name: string;
   content: string;
-  type: "java";
+  type: 'java';
 }
 
 export interface JavaExecutionOptions {
@@ -56,7 +56,7 @@ export class JavaRuntime {
       // TeaVM would need to be loaded via a WASM module
       // For now, we'll create a stub that simulates TeaVM functionality
       // In a real implementation, this would load TeaVM WASM files
-      console.log("Initializing TeaVM runtime...");
+      console.log('Initializing TeaVM runtime...');
 
       // Initialize TeaVM configuration
       this.teavm = {
@@ -68,8 +68,53 @@ export class JavaRuntime {
 
       this.isInitialized = true;
     } catch (error) {
-      throw new Error(`Failed to initialize Java runtime: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error ?? 'Unknown error');
+      throw new Error(`Failed to initialize Java runtime: ${message}`);
     }
+  }
+
+  /**
+   * Compile Java code
+   */
+  async compile(code: string, className: string): Promise<any> {
+    await this.initialize();
+    if (!this.teavm) {
+      throw new Error('Java runtime not initialized');
+    }
+
+    const sourceFiles: JavaSourceFile[] = [
+      {
+        name: `${className}.java`,
+        content: code,
+        type: 'java',
+      },
+    ];
+
+    return this.teavm.compile(sourceFiles);
+  }
+
+  /**
+   * Run compiled Java code
+   */
+  async run(_className: string, mainClass: string, input: string): Promise<JavaExecutionResult> {
+    await this.initialize();
+    if (!this.teavm) {
+      throw new Error('Java runtime not initialized');
+    }
+
+    // In a real implementation, we would use the compiled result
+    // For now, we'll just simulate running
+    return this.teavm.run(null, {
+      mainClass,
+      input,
+    });
+  }
+
+  /**
+   * Stop execution
+   */
+  stop(): void {
+    console.log('Stopping Java execution...');
   }
 
   /**
@@ -79,7 +124,7 @@ export class JavaRuntime {
     await this.initialize();
 
     if (!this.teavm) {
-      throw new Error("Java runtime not initialized");
+      throw new Error('Java runtime not initialized');
     }
 
     const {
@@ -116,8 +161,8 @@ export class JavaRuntime {
       const executionTime = endTime - startTime;
 
       return {
-        stdout: executionResult.stdout || "",
-        stderr: executionResult.stderr || "",
+        stdout: executionResult.stdout || '',
+        stderr: executionResult.stderr || '',
         exitCode: executionResult.exitCode || 0,
         executionTime,
         memoryUsed: this._estimateMemoryUsage(),
@@ -131,7 +176,7 @@ export class JavaRuntime {
       const executionTime = endTime - startTime;
 
       return {
-        stdout: "",
+        stdout: '',
         stderr: error instanceof Error ? error.message : String(error),
         exitCode: 1,
         executionTime,
@@ -149,14 +194,15 @@ export class JavaRuntime {
     await this.initialize();
 
     if (!this.teavm) {
-      throw new Error("Java runtime not initialized");
+      throw new Error('Java runtime not initialized');
     }
 
     try {
       const { sourceFiles, classpath = [] } = options;
       return await this.teavm.compile(sourceFiles, { classpath });
     } catch (error) {
-      throw new Error(`Compilation failed: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error ?? 'Unknown error');
+      throw new Error(`Compilation failed: ${message}`);
     }
   }
 
@@ -178,8 +224,8 @@ export class JavaRuntime {
   getStatus() {
     return {
       initialized: this.isInitialized,
-      version: "17",
-      compiler: "TeaVM",
+      version: '17',
+      compiler: 'TeaVM',
       memoryUsage: this._estimateMemoryUsage(),
     };
   }
@@ -188,7 +234,7 @@ export class JavaRuntime {
   private _compileStub(_sourceFiles: JavaSourceFile[], _options?: any): any {
     return {
       success: true,
-      bytecode: "simulated-bytecode",
+      bytecode: 'simulated-bytecode',
       compilationTime: 100,
       warnings: [],
     };
@@ -196,8 +242,8 @@ export class JavaRuntime {
 
   private _runStub(_compilationResult: any, _options?: any): any {
     return {
-      stdout: "Java execution completed (simulated)",
-      stderr: "",
+      stdout: 'Java execution completed (simulated)',
+      stderr: '',
       exitCode: 0,
       warnings: [],
     };
@@ -211,8 +257,8 @@ export class JavaRuntime {
   private _getStatusStub(): any {
     return {
       available: true,
-      version: "TeaVM 0.9.0",
-      supportedLanguages: ["Java", "Kotlin", "Scala"],
+      version: 'TeaVM 0.9.0',
+      supportedLanguages: ['Java', 'Kotlin', 'Scala'],
     };
   }
 

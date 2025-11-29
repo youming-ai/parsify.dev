@@ -3,21 +3,40 @@
  * Manages lazy loading and lifecycle of WASM runtimes with memory optimization
  */
 
+import { type CppExecutionOptions, type CppExecutionResult, cppRuntime } from './cpp-wasm';
 import {
-  pythonRuntime,
+  type CSharpExecutionOptions,
+  type CSharpExecutionResult,
+  csharpRuntime,
+} from './csharp-wasm';
+import { type GoExecutionOptions, type GoExecutionResult, goRuntime } from './go-wasm';
+import { type JavaExecutionOptions, type JavaExecutionResult, javaRuntime } from './java-wasm';
+import { type LuaExecutionOptions, type LuaExecutionResult, luaRuntime } from './lua-wasm';
+import { type PhpExecutionOptions, type PhpExecutionResult, phpRuntime } from './php-wasm';
+import {
   type PythonExecutionOptions,
   type PythonExecutionResult,
-} from "./python-wasm";
-import { javaRuntime, type JavaExecutionOptions, type JavaExecutionResult } from "./java-wasm";
-import { goRuntime, type GoExecutionOptions, type GoExecutionResult } from "./go-wasm";
-import { rustRuntime, type RustExecutionOptions, type RustExecutionResult } from "./rust-wasm";
+  pythonRuntime,
+} from './python-wasm';
+import { type RubyExecutionOptions, type RubyExecutionResult, rubyRuntime } from './ruby-wasm';
+import { type RustExecutionOptions, type RustExecutionResult, rustRuntime } from './rust-wasm';
 import {
-  typescriptRuntime,
   type TypeScriptExecutionOptions,
   type TypeScriptExecutionResult,
-} from "./typescript-wasm";
+  typescriptRuntime,
+} from './typescript-wasm';
 
-export type SupportedLanguage = "python" | "java" | "go" | "rust" | "typescript";
+export type SupportedLanguage =
+  | 'python'
+  | 'java'
+  | 'go'
+  | 'rust'
+  | 'typescript'
+  | 'cpp'
+  | 'csharp'
+  | 'php'
+  | 'ruby'
+  | 'lua';
 
 export interface WASMRuntimeInfo {
   id: SupportedLanguage;
@@ -44,6 +63,11 @@ export interface WASMExecutionOptions {
   goOptions?: GoExecutionOptions;
   rustOptions?: RustExecutionOptions;
   typescriptOptions?: TypeScriptExecutionOptions;
+  cppOptions?: CppExecutionOptions;
+  csharpOptions?: CSharpExecutionOptions;
+  phpOptions?: PhpExecutionOptions;
+  rubyOptions?: RubyExecutionOptions;
+  luaOptions?: LuaExecutionOptions;
 }
 
 export interface WASMExecutionResult {
@@ -74,7 +98,7 @@ export class WASMRuntimeManager {
   private memoryCleanupTimer: NodeJS.Timeout | null = null;
   private options: Required<WASMManagerOptions>;
 
-  private constructor(options: WASMManagerOptions = {}) {
+  private constructor(options: Partial<WASMManagerOptions> = {}) {
     this.options = {
       maxMemoryUsage: options.maxMemoryUsage || 100 * 1024 * 1024, // 100MB
       maxIdleTime: options.maxIdleTime || 5 * 60 * 1000, // 5 minutes
@@ -104,44 +128,84 @@ export class WASMRuntimeManager {
   private initializeRuntimeInfo(): void {
     const runtimeConfigs: Record<
       SupportedLanguage,
-      Omit<WASMRuntimeInfo, "isLoaded" | "isInitialized" | "lastUsed" | "usageCount">
+      Omit<WASMRuntimeInfo, 'isLoaded' | 'isInitialized' | 'lastUsed' | 'usageCount'>
     > = {
       python: {
-        id: "python",
-        name: "Pyodide",
-        version: "0.26.4",
+        id: 'python',
+        name: 'Pyodide',
+        version: '0.26.4',
         bundleSize: 15 * 1024 * 1024, // 15MB
         loadTime: 0,
         memoryUsage: 0,
       },
       java: {
-        id: "java",
-        name: "TeaVM",
-        version: "0.8.0",
+        id: 'java',
+        name: 'TeaVM',
+        version: '0.8.0',
         bundleSize: 5 * 1024 * 1024, // 5MB
         loadTime: 0,
         memoryUsage: 0,
       },
       go: {
-        id: "go",
-        name: "TinyGo",
-        version: "0.30.0",
+        id: 'go',
+        name: 'TinyGo',
+        version: '0.30.0',
         bundleSize: 3 * 1024 * 1024, // 3MB
         loadTime: 0,
         memoryUsage: 0,
       },
       rust: {
-        id: "rust",
-        name: "Rust WASM",
-        version: "1.75.0",
+        id: 'rust',
+        name: 'Rust WASM',
+        version: '1.75.0',
         bundleSize: 2 * 1024 * 1024, // 2MB
         loadTime: 0,
         memoryUsage: 0,
       },
       typescript: {
-        id: "typescript",
-        name: "Deno Runtime",
-        version: "2.0.0",
+        id: 'typescript',
+        name: 'Deno Runtime',
+        version: '2.0.0',
+        bundleSize: 1 * 1024 * 1024, // 1MB
+        loadTime: 0,
+        memoryUsage: 0,
+      },
+      cpp: {
+        id: 'cpp',
+        name: 'Emscripten C++',
+        version: '3.1.0',
+        bundleSize: 5 * 1024 * 1024, // 5MB
+        loadTime: 0,
+        memoryUsage: 0,
+      },
+      csharp: {
+        id: 'csharp',
+        name: 'Blazor WebAssembly',
+        version: '8.0.0',
+        bundleSize: 8 * 1024 * 1024, // 8MB
+        loadTime: 0,
+        memoryUsage: 0,
+      },
+      php: {
+        id: 'php',
+        name: 'WebAssembly PHP',
+        version: '8.2.0',
+        bundleSize: 4 * 1024 * 1024, // 4MB
+        loadTime: 0,
+        memoryUsage: 0,
+      },
+      ruby: {
+        id: 'ruby',
+        name: 'ruby.wasm',
+        version: '3.2.0',
+        bundleSize: 6 * 1024 * 1024, // 6MB
+        loadTime: 0,
+        memoryUsage: 0,
+      },
+      lua: {
+        id: 'lua',
+        name: 'Fengari',
+        version: '5.4.4',
         bundleSize: 1 * 1024 * 1024, // 1MB
         loadTime: 0,
         memoryUsage: 0,
@@ -164,14 +228,14 @@ export class WASMRuntimeManager {
    */
   private async preloadRuntimes(): Promise<void> {
     const preloadPromises = this.options.preloadRuntimes.map((language) =>
-      this.loadRuntime(language),
+      this.loadRuntime(language)
     );
 
     try {
       await Promise.allSettled(preloadPromises);
-      console.log(`Preloaded ${this.options.preloadRuntimes.join(", ")} runtimes`);
+      console.log(`Preloaded ${this.options.preloadRuntimes.join(', ')} runtimes`);
     } catch (error) {
-      console.warn("Failed to preload some runtimes:", error);
+      console.warn('Failed to preload some runtimes:', error);
     }
   }
 
@@ -202,26 +266,41 @@ export class WASMRuntimeManager {
    */
   private async doLoadRuntime(language: SupportedLanguage): Promise<void> {
     const startTime = performance.now();
-    const info = this.runtimeInfo.get(language)!;
+    const _info = this.runtimeInfo.get(language)!;
 
     try {
       let runtime: any;
 
       switch (language) {
-        case "python":
+        case 'python':
           runtime = pythonRuntime;
           break;
-        case "java":
+        case 'java':
           runtime = javaRuntime;
           break;
-        case "go":
+        case 'go':
           runtime = goRuntime;
           break;
-        case "rust":
+        case 'rust':
           runtime = rustRuntime;
           break;
-        case "typescript":
+        case 'typescript':
           runtime = typescriptRuntime;
+          break;
+        case 'cpp':
+          runtime = cppRuntime;
+          break;
+        case 'csharp':
+          runtime = csharpRuntime;
+          break;
+        case 'php':
+          runtime = phpRuntime;
+          break;
+        case 'ruby':
+          runtime = rubyRuntime;
+          break;
+        case 'lua':
+          runtime = luaRuntime;
           break;
         default:
           throw new Error(`Unsupported language: ${language}`);
@@ -270,20 +349,35 @@ export class WASMRuntimeManager {
       let result: any;
 
       switch (language) {
-        case "python":
+        case 'python':
           result = await runtime.executeCode(options.pythonOptions || options);
           break;
-        case "java":
+        case 'java':
           result = await runtime.compileAndExecute(options.javaOptions || options);
           break;
-        case "go":
+        case 'go':
           result = await runtime.buildAndExecute(options.goOptions || options);
           break;
-        case "rust":
+        case 'rust':
           result = await runtime.executeCode(options.rustOptions || options);
           break;
-        case "typescript":
+        case 'typescript':
           result = await runtime.executeCode(options.typescriptOptions || options);
+          break;
+        case 'cpp':
+          result = await runtime.executeCode(options.cppOptions || options);
+          break;
+        case 'csharp':
+          result = await runtime.executeCode(options.csharpOptions || options);
+          break;
+        case 'php':
+          result = await runtime.executeCode(options.phpOptions || options);
+          break;
+        case 'ruby':
+          result = await runtime.executeCode(options.rubyOptions || options);
+          break;
+        case 'lua':
+          result = await runtime.executeCode(options.luaOptions || options);
           break;
         default:
           throw new Error(`Unsupported language: ${language}`);
@@ -295,18 +389,18 @@ export class WASMRuntimeManager {
 
       this.updateRuntimeInfo(language, {
         lastUsed: Date.now(),
-        usageCount: this.runtimeInfo.get(language)!.usageCount + 1,
+        usageCount: (this.runtimeInfo.get(language)?.usageCount ?? 0) + 1,
         memoryUsage: this.estimateRuntimeMemoryUsage(language),
       });
 
       return {
-        stdout: result.stdout || "",
-        stderr: result.stderr || "",
+        stdout: result.stdout || '',
+        stderr: result.stderr || '',
         exitCode: result.exitCode || 0,
         executionTime,
         memoryUsed,
         language,
-        runtimeInfo: this.getRuntimeInfo(language),
+        runtimeInfo: this.getRuntimeInfo(language) as WASMRuntimeInfo,
         error: result.error,
         warnings: result.warnings,
       };
@@ -314,13 +408,13 @@ export class WASMRuntimeManager {
       const executionTime = performance.now() - startTime;
 
       return {
-        stdout: "",
+        stdout: '',
         stderr: error instanceof Error ? error.message : String(error),
         exitCode: 1,
         executionTime,
         memoryUsed: 0,
         language,
-        runtimeInfo: this.getRuntimeInfo(language),
+        runtimeInfo: this.getRuntimeInfo(language) as WASMRuntimeInfo,
         error: error instanceof Error ? error : new Error(String(error)),
       };
     }
@@ -330,7 +424,7 @@ export class WASMRuntimeManager {
    * Get runtime information
    */
   public getRuntimeInfo(
-    language?: SupportedLanguage,
+    language?: SupportedLanguage
   ): WASMRuntimeInfo | Map<SupportedLanguage, WASMRuntimeInfo> {
     if (language) {
       return { ...this.runtimeInfo.get(language)! };
@@ -361,14 +455,14 @@ export class WASMRuntimeManager {
    * Estimate runtime memory usage
    */
   private estimateRuntimeMemoryUsage(language: SupportedLanguage): number {
-    const baseSizes = {
+    const baseSizes: Partial<Record<SupportedLanguage, number>> = {
       python: 30 * 1024 * 1024, // 30MB
       java: 15 * 1024 * 1024, // 15MB
       go: 10 * 1024 * 1024, // 10MB
       rust: 8 * 1024 * 1024, // 8MB
       typescript: 5 * 1024 * 1024, // 5MB
     };
-    return baseSizes[language];
+    return baseSizes[language] ?? 5 * 1024 * 1024;
   }
 
   /**
@@ -390,7 +484,7 @@ export class WASMRuntimeManager {
    */
   public unloadRuntime(language: SupportedLanguage): void {
     const runtime = this.runtimes.get(language);
-    if (runtime && typeof runtime.cleanup === "function") {
+    if (runtime && typeof runtime.cleanup === 'function') {
       runtime.cleanup();
     }
 
@@ -500,14 +594,14 @@ export class WASMRuntimeManager {
    * Check if a language is supported
    */
   public isSupported(language: string): language is SupportedLanguage {
-    return ["python", "java", "go", "rust", "typescript"].includes(language);
+    return ['python', 'java', 'go', 'rust', 'typescript'].includes(language);
   }
 
   /**
    * Get all supported languages
    */
   public getSupportedLanguages(): SupportedLanguage[] {
-    return ["python", "java", "go", "rust", "typescript"];
+    return ['python', 'java', 'go', 'rust', 'typescript'];
   }
 }
 

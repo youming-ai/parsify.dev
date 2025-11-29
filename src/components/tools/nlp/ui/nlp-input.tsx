@@ -1,66 +1,74 @@
-'use client'
+'use client';
 
-import React, { useCallback, useRef, useState, useEffect } from 'react'
-import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Label } from '@/components/ui/label'
-import { Upload, FileText, Link2, Settings, Info, CheckCircle, AlertCircle } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+import { AlertCircle, CheckCircle, FileText, Info, Link2, Settings, Upload } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface NLPInputOptions {
-  minLength?: number
-  maxLength?: number
-  placeholder?: string
-  allowFileUpload?: boolean
-  allowUrlInput?: boolean
-  showAdvancedOptions?: boolean
-  defaultLanguage?: string
-  supportedLanguages?: string[]
+  minLength?: number;
+  maxLength?: number;
+  placeholder?: string;
+  allowFileUpload?: boolean;
+  allowUrlInput?: boolean;
+  showAdvancedOptions?: boolean;
+  defaultLanguage?: string;
+  supportedLanguages?: string[];
   preprocessOptions?: {
-    normalizeText?: boolean
-    removeStopwords?: boolean
-    applyStemming?: boolean
-    tokenizeSentences?: boolean
-  }
+    normalizeText?: boolean;
+    removeStopwords?: boolean;
+    applyStemming?: boolean;
+    tokenizeSentences?: boolean;
+  };
 }
 
 export interface NLPInputValue {
-  text: string
-  source: 'manual' | 'file' | 'url'
-  filename?: string
-  url?: string
-  language?: string
+  text: string;
+  source: 'manual' | 'file' | 'url';
+  filename?: string;
+  url?: string;
+  language?: string;
   preprocessing?: {
-    normalizeText: boolean
-    removeStopwords: boolean
-    applyStemming: boolean
-    tokenizeSentences: boolean
-  }
+    normalizeText: boolean;
+    removeStopwords: boolean;
+    applyStemming: boolean;
+    tokenizeSentences: boolean;
+  };
   metadata?: {
-    wordCount?: number
-    charCount?: number
-    sentenceCount?: number
-    language?: string
-    confidence?: number
-  }
+    wordCount?: number;
+    charCount?: number;
+    sentenceCount?: number;
+    language?: string;
+    confidence?: number;
+  };
 }
 
 interface NLPInputProps {
-  value?: NLPInputValue
-  onChange?: (value: NLPInputValue) => void
-  onSubmit?: (value: NLPInputValue) => void
-  options?: NLPInputOptions
-  disabled?: boolean
-  loading?: boolean
-  error?: string
-  className?: string
-  showPreview?: boolean
-  onTextAnalysis?: (analysis: NLPInputValue['metadata']) => void
+  value?: NLPInputValue;
+  onChange?: (value: NLPInputValue) => void;
+  onSubmit?: (value: NLPInputValue) => void;
+  options?: NLPInputOptions;
+  disabled?: boolean;
+  loading?: boolean;
+  error?: string;
+  className?: string;
+  showPreview?: boolean;
+  onTextAnalysis?: (analysis: NLPInputValue['metadata']) => void;
 }
+
+const DEFAULT_PREPROCESSING: Required<NLPInputValue['preprocessing']> = {
+  normalizeText: true,
+  removeStopwords: false,
+  applyStemming: false,
+  tokenizeSentences: false,
+};
 
 const DEFAULT_OPTIONS: Required<NLPInputOptions> = {
   minLength: 1,
@@ -71,16 +79,15 @@ const DEFAULT_OPTIONS: Required<NLPInputOptions> = {
   showAdvancedOptions: false,
   defaultLanguage: 'auto',
   supportedLanguages: ['auto', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ja', 'zh', 'ar', 'hi'],
-  preprocessOptions: {
-    normalizeText: true,
-    removeStopwords: false,
-    applyStemming: false,
-    tokenizeSentences: false,
-  },
-}
+  preprocessOptions: DEFAULT_PREPROCESSING,
+};
 
 export function NlpInput({
-  value = { text: '', source: 'manual', preprocessing: DEFAULT_OPTIONS.preprocessOptions },
+  value = {
+    text: '',
+    source: 'manual',
+    preprocessing: DEFAULT_PREPROCESSING,
+  },
   onChange,
   onSubmit,
   options = {},
@@ -91,112 +98,132 @@ export function NlpInput({
   showPreview = true,
   onTextAnalysis,
 }: NLPInputProps) {
-  const config = { ...DEFAULT_OPTIONS, ...options }
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [activeTab, setActiveTab] = useState<'manual' | 'file' | 'url'>('manual')
-  const [textStats, setTextStats] = useState<NLPInputValue['metadata']>()
-  const [dragActive, setDragActive] = useState(false)
+  const config = { ...DEFAULT_OPTIONS, ...options };
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeTab, setActiveTab] = useState<'manual' | 'file' | 'url'>('manual');
+  const [textStats, setTextStats] = useState<NLPInputValue['metadata']>();
+  const [dragActive, setDragActive] = useState(false);
 
   // Analyze text and update stats
-  const analyzeText = useCallback((text: string) => {
-    if (!text.trim()) {
-      setTextStats(undefined)
-      onTextAnalysis?.(undefined)
-      return
-    }
+  const analyzeText = useCallback(
+    (text: string) => {
+      if (!text.trim()) {
+        setTextStats(undefined);
+        onTextAnalysis?.(undefined);
+        return;
+      }
 
-    const words = text.trim().split(/\s+/).filter(word => word.length > 0)
-    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0)
+      const words = text
+        .trim()
+        .split(/\s+/)
+        .filter((word) => word.length > 0);
+      const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
 
-    const stats = {
-      wordCount: words.length,
-      charCount: text.length,
-      sentenceCount: sentences.length,
-    }
+      const stats = {
+        wordCount: words.length,
+        charCount: text.length,
+        sentenceCount: sentences.length,
+      };
 
-    setTextStats(stats)
-    onTextAnalysis?.(stats)
-  }, [onTextAnalysis])
+      setTextStats(stats);
+      onTextAnalysis?.(stats);
+    },
+    [onTextAnalysis]
+  );
 
   // Analyze text on mount and changes
   useEffect(() => {
-    analyzeText(value.text)
-  }, [value.text, analyzeText])
+    analyzeText(value.text);
+  }, [value.text, analyzeText]);
 
-  const handleTextChange = useCallback((newText: string) => {
-    const newValue = { ...value, text: newText }
-    onChange?.(newValue)
-  }, [value, onChange])
+  const handleTextChange = useCallback(
+    (newText: string) => {
+      const newValue = { ...value, text: newText };
+      onChange?.(newValue);
+    },
+    [value, onChange]
+  );
 
   const handleSubmit = useCallback(() => {
-    if (value.text.trim().length >= config.minLength &&
-        value.text.trim().length <= config.maxLength) {
-      onSubmit?.(value)
+    if (
+      value.text.trim().length >= config.minLength &&
+      value.text.trim().length <= config.maxLength
+    ) {
+      onSubmit?.(value);
     }
-  }, [value, onSubmit, config.minLength, config.maxLength])
+  }, [value, onSubmit, config.minLength, config.maxLength]);
 
-  const handleFileUpload = useCallback(async (file: File) => {
-    try {
-      const text = await file.text()
-      const newValue = {
-        text,
-        source: 'file' as const,
-        filename: file.name,
-        preprocessing: value.preprocessing,
+  const handleFileUpload = useCallback(
+    async (file: File) => {
+      try {
+        const text = await file.text();
+        const newValue = {
+          text,
+          source: 'file' as const,
+          filename: file.name,
+          preprocessing: value.preprocessing,
+        };
+        onChange?.(newValue);
+        setActiveTab('manual');
+      } catch (err) {
+        console.error('Failed to read file:', err);
       }
-      onChange?.(newValue)
-      setActiveTab('manual')
-    } catch (err) {
-      console.error('Failed to read file:', err)
-    }
-  }, [value.preprocessing, onChange])
+    },
+    [value.preprocessing, onChange]
+  );
 
-  const handleUrlFetch = useCallback(async (url: string) => {
-    try {
-      const response = await fetch(url)
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const text = await response.text()
+  const handleUrlFetch = useCallback(
+    async (url: string) => {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const text = await response.text();
 
-      const newValue = {
-        text,
-        source: 'url' as const,
-        url,
-        preprocessing: value.preprocessing,
+        const newValue = {
+          text,
+          source: 'url' as const,
+          url,
+          preprocessing: value.preprocessing,
+        };
+        onChange?.(newValue);
+        setActiveTab('manual');
+      } catch (err) {
+        console.error('Failed to fetch URL:', err);
       }
-      onChange?.(newValue)
-      setActiveTab('manual')
-    } catch (err) {
-      console.error('Failed to fetch URL:', err)
-    }
-  }, [value.preprocessing, onChange])
+    },
+    [value.preprocessing, onChange]
+  );
 
   const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+    e.preventDefault();
+    e.stopPropagation();
     if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true)
+      setDragActive(true);
     } else if (e.type === 'dragleave') {
-      setDragActive(false)
+      setDragActive(false);
     }
-  }, [])
+  }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragActive(false)
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDragActive(false);
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0]
-      if (file.type.startsWith('text/') || file.name.endsWith('.txt')) {
-        handleFileUpload(file)
+      if (e.dataTransfer.files?.[0]) {
+        const file = e.dataTransfer.files[0];
+        if (file.type.startsWith('text/') || file.name.endsWith('.txt')) {
+          handleFileUpload(file);
+        }
       }
-    }
-  }, [handleFileUpload])
+    },
+    [handleFileUpload]
+  );
 
-  const isTextValid = value.text.trim().length >= config.minLength &&
-                     value.text.trim().length <= config.maxLength
-  const charCount = value.text.length
-  const isValidLength = charCount >= config.minLength && charCount <= config.maxLength
+  const isTextValid =
+    value.text.trim().length >= config.minLength && value.text.trim().length <= config.maxLength;
+  const charCount = value.text.length;
+  const isValidLength = charCount >= config.minLength && charCount <= config.maxLength;
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -225,7 +252,7 @@ export function NlpInput({
           {/* File Drop Zone */}
           <div
             className={cn(
-              'border-2 border-dashed rounded-lg p-6 text-center transition-colors',
+              'rounded-lg border-2 border-dashed p-6 text-center transition-colors',
               dragActive ? 'border-primary bg-primary/5' : 'border-gray-200',
               'hover:border-primary hover:bg-primary/5'
             )}
@@ -234,8 +261,8 @@ export function NlpInput({
             onDragOver={handleDrag}
             onDrop={handleDrop}
           >
-            <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-            <p className="text-sm text-gray-600 mb-2">
+            <Upload className="mx-auto mb-2 h-8 w-8 text-gray-400" />
+            <p className="mb-2 text-gray-600 text-sm">
               Drag and drop a text file here, or click to browse
             </p>
             <Button
@@ -274,15 +301,11 @@ export function NlpInput({
 
             {/* Character Count */}
             <div className="flex items-center justify-between text-sm">
-              <span className={cn(
-                isValidLength ? 'text-gray-500' : 'text-red-500'
-              )}>
+              <span className={cn(isValidLength ? 'text-gray-500' : 'text-red-500')}>
                 {charCount} / {config.maxLength} characters
               </span>
               {charCount < config.minLength && (
-                <span className="text-red-500">
-                  Minimum {config.minLength} characters required
-                </span>
+                <span className="text-red-500">Minimum {config.minLength} characters required</span>
               )}
             </div>
           </div>
@@ -291,12 +314,12 @@ export function NlpInput({
           {showPreview && value.text && (
             <Card>
               <CardContent className="pt-4">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="mb-2 flex items-center gap-2">
                   <Info className="h-4 w-4 text-blue-500" />
                   <span className="font-medium text-sm">Text Analysis</span>
                 </div>
                 {textStats && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
                     <div>
                       <span className="text-gray-500">Words:</span>
                       <div className="font-medium">{textStats.wordCount}</div>
@@ -325,17 +348,14 @@ export function NlpInput({
         <TabsContent value="file">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-center space-y-4">
-                <Upload className="h-12 w-12 mx-auto text-gray-400" />
+              <div className="space-y-4 text-center">
+                <Upload className="mx-auto h-12 w-12 text-gray-400" />
                 <div>
-                  <h3 className="font-medium mb-2">Upload Text File</h3>
-                  <p className="text-sm text-gray-500 mb-4">
+                  <h3 className="mb-2 font-medium">Upload Text File</h3>
+                  <p className="mb-4 text-gray-500 text-sm">
                     Supported formats: .txt, .csv, .json, .xml
                   </p>
-                  <Button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={disabled}
-                  >
+                  <Button onClick={() => fileInputRef.current?.click()} disabled={disabled}>
                     Choose File
                   </Button>
                 </div>
@@ -353,13 +373,13 @@ export function NlpInput({
                   <input
                     id="url-input"
                     type="url"
-                    className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary"
                     placeholder="https://example.com/text-file.txt"
                     onKeyPress={(e) => {
                       if (e.key === 'Enter') {
-                        const input = e.currentTarget
+                        const input = e.currentTarget;
                         if (input.value) {
-                          handleUrlFetch(input.value)
+                          handleUrlFetch(input.value);
                         }
                       }
                     }}
@@ -368,9 +388,9 @@ export function NlpInput({
                 </div>
                 <Button
                   onClick={() => {
-                    const input = document.getElementById('url-input') as HTMLInputElement
+                    const input = document.getElementById('url-input') as HTMLInputElement;
                     if (input?.value) {
-                      handleUrlFetch(input.value)
+                      handleUrlFetch(input.value);
                     }
                   }}
                   disabled={disabled}
@@ -397,14 +417,13 @@ export function NlpInput({
         <Button
           onClick={handleSubmit}
           disabled={!isTextValid || disabled || loading}
-          loading={loading}
           className="min-w-[120px]"
         >
           {loading ? 'Processing...' : 'Analyze Text'}
         </Button>
       </div>
     </div>
-  )
+  );
 }
 
-export default NlpInput
+export default NlpInput;

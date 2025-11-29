@@ -3,15 +3,9 @@
  * Provides various feature extraction methods for NLP operations
  */
 
-import * as tf from "@tensorflow/tfjs";
-import {
-  FeatureExtractionConfig,
-  LinguisticFeatures,
-  TextEmbedding,
-  NGramFeatures,
-  SyntacticFeatures,
-} from "../types";
-import { modelManager } from "../infrastructure/model-manager";
+import * as tf from '@tensorflow/tfjs';
+import { modelManager } from '../infrastructure/model-manager';
+import type { FeatureExtractionConfig } from '../types';
 
 export interface FeatureExtractionOptions {
   includeEmbeddings?: boolean;
@@ -24,6 +18,61 @@ export interface FeatureExtractionOptions {
   includePos?: boolean;
   includeDependencies?: boolean;
   normalizeFeatures?: boolean;
+}
+
+export interface TextEmbedding {
+  vector: any;
+  dimension: number;
+  model: string;
+  normalized: boolean;
+  cacheHit: boolean;
+  extractionTime: number;
+}
+
+export interface NGramFeatures {
+  ngramSizes: number[];
+  ngrams: Record<number, { gram: string; count: number }[]>;
+  totalNGrams: number;
+  vocabularySize: number;
+  uniqueNGrams: number;
+  tfidfScores: Record<string, number>;
+}
+
+export interface SyntacticFeatures {
+  sentenceCount: number;
+  clauseCount: number;
+  phraseCount: number;
+  partOfSpeechDistribution: Record<string, number>;
+  dependencyRelations: Record<string, number>;
+  sentenceStructures: Record<string, any>;
+  complexityMetrics: {
+    averageSentenceLength: number;
+    averageClauseLength: number;
+    subordinationRatio: number;
+    coordinationRatio: number;
+  };
+}
+
+export interface LinguisticFeatures {
+  wordCount: number;
+  characterCount: number;
+  sentenceCount: number;
+  averageWordLength: number;
+  averageSentenceLength: number;
+  vocabularySize: number;
+  typeTokenRatio: number;
+  readabilityScore: number;
+  complexity: number;
+  formalScore: number;
+  emotionalTone: {
+    positive: number;
+    negative: number;
+    neutral: number;
+  };
+  punctuationCount: number;
+  numberCount: number;
+  urlCount: number;
+  emailCount: number;
 }
 
 export interface ExtractedFeatures {
@@ -41,12 +90,12 @@ export interface ExtractedFeatures {
 
 export class FeatureExtractor {
   private config: FeatureExtractionConfig;
-  private embeddingModel: tf.Model | null = null;
+  private embeddingModel: tf.LayersModel | tf.GraphModel | null = null;
   private embeddingCache: Map<string, tf.Tensor> = new Map();
 
   constructor(config: Partial<FeatureExtractionConfig> = {}) {
     this.config = {
-      defaultEmbeddingModel: "universal-sentence-encoder",
+      defaultEmbeddingModel: 'universal-sentence-encoder',
       embeddingDimension: 512,
       maxSequenceLength: 512,
       batchSize: 32,
@@ -70,9 +119,9 @@ export class FeatureExtractor {
       // Load default embedding model
       this.embeddingModel = await modelManager.load(this.config.defaultEmbeddingModel);
 
-      console.log("Feature Extractor initialized");
+      console.log('Feature Extractor initialized');
     } catch (error) {
-      console.warn("Failed to load embedding model, using fallback:", error);
+      console.warn('Failed to load embedding model, using fallback:', error);
       // Initialize with fallback approach
     }
   }
@@ -82,7 +131,7 @@ export class FeatureExtractor {
    */
   async extractFeatures(
     text: string,
-    options: FeatureExtractionOptions = {},
+    options: FeatureExtractionOptions = {}
   ): Promise<ExtractedFeatures> {
     const startTime = performance.now();
     const mergedOptions = { ...this.config, ...options };
@@ -140,7 +189,7 @@ export class FeatureExtractor {
    */
   async extractEmbeddings(
     text: string,
-    options: FeatureExtractionOptions = {},
+    options: FeatureExtractionOptions = {}
   ): Promise<TextEmbedding> {
     const startTime = performance.now();
     const mergedOptions = { ...this.config, ...options };
@@ -150,7 +199,7 @@ export class FeatureExtractor {
       const cached = this.embeddingCache.get(text)!;
       return {
         vector: await cached.array(),
-        dimension: cached.shape[1],
+        dimension: cached.shape[1] ?? cached.shape[0] ?? 0,
         model: mergedOptions.embeddingModel || this.config.defaultEmbeddingModel,
         normalized: mergedOptions.normalizeVectors,
         cacheHit: true,
@@ -171,11 +220,12 @@ export class FeatureExtractor {
 
       // Normalize if requested
       if (mergedOptions.normalizeVectors) {
-        embeddings = tf.linalg.normalize(embeddings, 2);
+        const norm = tf.norm(embeddings);
+        embeddings = tf.div(embeddings, norm);
       }
 
       const vector = await embeddings.array();
-      const dimension = embeddings.shape[1];
+      const dimension = embeddings.shape[1] ?? embeddings.shape[0] ?? 0;
 
       // Cache the result
       if (mergedOptions.enableCaching) {
@@ -256,7 +306,7 @@ export class FeatureExtractor {
    */
   extractSyntacticFeatures(
     text: string,
-    options: FeatureExtractionOptions = {},
+    options: FeatureExtractionOptions = {}
   ): SyntacticFeatures {
     const words = this.tokenize(text);
     const sentences = this.segmentSentences(text);
@@ -282,7 +332,7 @@ export class FeatureExtractor {
    */
   async extractFeaturesBatch(
     texts: string[],
-    options: FeatureExtractionOptions = {},
+    options: FeatureExtractionOptions = {}
   ): Promise<ExtractedFeatures[]> {
     const mergedOptions = { ...this.config, ...options };
 
@@ -294,16 +344,15 @@ export class FeatureExtractor {
       for (let i = 0; i < texts.length; i += embeddingBatchSize) {
         const batch = texts.slice(i, i + embeddingBatchSize);
         const batchFeatures = await Promise.all(
-          batch.map((text) => this.extractFeatures(text, options)),
+          batch.map((text) => this.extractFeatures(text, options))
         );
         results.push(...batchFeatures);
       }
 
       return results;
-    } else {
-      // Process individually for other features
-      return Promise.all(texts.map((text) => this.extractFeatures(text, options)));
     }
+    // Process individually for other features
+    return Promise.all(texts.map((text) => this.extractFeatures(text, options)));
   }
 
   /**
@@ -311,7 +360,7 @@ export class FeatureExtractor {
    */
   calculateSimilarity(
     features1: ExtractedFeatures,
-    features2: ExtractedFeatures,
+    features2: ExtractedFeatures
   ): {
     cosineSimilarity: number;
     euclideanDistance: number;
@@ -338,10 +387,14 @@ export class FeatureExtractor {
     // Jaccard similarity for n-grams
     if (features1.ngrams && features2.ngrams) {
       const set1 = new Set(
-        Object.values(features1.ngrams).flatMap((ngrams) => ngrams.map((g) => g.gram)),
+        Object.values(features1.ngrams).flatMap((ngrams) =>
+          ngrams.map((g: { gram: string }) => g.gram)
+        )
       );
       const set2 = new Set(
-        Object.values(features2.ngrams).flatMap((ngrams) => ngrams.map((g) => g.gram)),
+        Object.values(features2.ngrams).flatMap((ngrams) =>
+          ngrams.map((g: { gram: string }) => g.gram)
+        )
       );
 
       const intersection = new Set([...set1].filter((x) => set2.has(x)));
@@ -399,7 +452,7 @@ export class FeatureExtractor {
    */
   private async extractWithModel(text: string): Promise<tf.Tensor> {
     if (!this.embeddingModel) {
-      throw new Error("No embedding model loaded");
+      throw new Error('No embedding model loaded');
     }
 
     // Preprocess text for the model
@@ -418,7 +471,7 @@ export class FeatureExtractor {
 
   private async extractFallbackEmbeddings(text: string): Promise<tf.Tensor> {
     // Simple fallback embedding based on character n-grams
-    const chars = text.toLowerCase().split("");
+    const chars = text.toLowerCase().split('');
     const vocab = new Set(chars);
     const vocabArray = Array.from(vocab);
 
@@ -427,7 +480,7 @@ export class FeatureExtractor {
     const indices = chars.map((char) => charToIndex.get(char) || 0);
 
     // Create one-hot encoded tensor (simplified approach)
-    const embedding = tf.oneHot(tf.tensor1d(indices, "int32"), vocabArray.length);
+    const embedding = tf.oneHot(tf.tensor1d(indices, 'int32'), vocabArray.length);
 
     // Reduce to a fixed-size vector using averaging
     const meanEmbedding = tf.mean(embedding, 0);
@@ -441,8 +494,8 @@ export class FeatureExtractor {
     // Basic preprocessing for embedding models
     return text
       .toLowerCase()
-      .replace(/[^\w\s]/g, "")
-      .replace(/\s+/g, " ")
+      .replace(/[^\w\s]/g, '')
+      .replace(/\s+/g, ' ')
       .trim()
       .slice(0, this.config.maxSequenceLength);
   }
@@ -450,7 +503,7 @@ export class FeatureExtractor {
   private tokenize(text: string): string[] {
     return text
       .toLowerCase()
-      .replace(/[^\w\s]/g, " ")
+      .replace(/[^\w\s]/g, ' ')
       .split(/\s+/)
       .filter((word) => word.length > 0);
   }
@@ -489,7 +542,7 @@ export class FeatureExtractor {
   }
 
   private countSyllables(word: string): number {
-    const vowels = "aeiouy";
+    const vowels = 'aeiouy';
     let count = 0;
     let prevWasVowel = false;
 
@@ -517,14 +570,14 @@ export class FeatureExtractor {
 
   private calculateFormalityScore(text: string): number {
     const formalWords = [
-      "therefore",
-      "however",
-      "nevertheless",
-      "furthermore",
-      "consequently",
-      "moreover",
+      'therefore',
+      'however',
+      'nevertheless',
+      'furthermore',
+      'consequently',
+      'moreover',
     ];
-    const informalWords = ["gonna", "wanna", "gotta", "kinda", "sorta", "yeah", "nah", "cool"];
+    const informalWords = ['gonna', 'wanna', 'gotta', 'kinda', 'sorta', 'yeah', 'nah', 'cool'];
 
     const words = this.tokenize(text);
     const formalCount = words.filter((word) => formalWords.includes(word)).length;
@@ -539,28 +592,28 @@ export class FeatureExtractor {
     neutral: number;
   } {
     const positiveWords = [
-      "good",
-      "great",
-      "excellent",
-      "wonderful",
-      "amazing",
-      "fantastic",
-      "love",
-      "happy",
-      "joy",
-      "success",
+      'good',
+      'great',
+      'excellent',
+      'wonderful',
+      'amazing',
+      'fantastic',
+      'love',
+      'happy',
+      'joy',
+      'success',
     ];
     const negativeWords = [
-      "bad",
-      "terrible",
-      "awful",
-      "horrible",
-      "hate",
-      "sad",
-      "angry",
-      "fail",
-      "wrong",
-      "poor",
+      'bad',
+      'terrible',
+      'awful',
+      'horrible',
+      'hate',
+      'sad',
+      'angry',
+      'fail',
+      'wrong',
+      'poor',
     ];
 
     const words = this.tokenize(text);
@@ -578,12 +631,12 @@ export class FeatureExtractor {
   private extractNGrams(
     words: string[],
     n: number,
-    minFrequency: number,
+    minFrequency: number
   ): { gram: string; count: number }[] {
     const ngrams: Map<string, number> = new Map();
 
     for (let i = 0; i <= words.length - n; i++) {
-      const gram = words.slice(i, i + n).join(" ");
+      const gram = words.slice(i, i + n).join(' ');
       ngrams.set(gram, (ngrams.get(gram) || 0) + 1);
     }
 
@@ -595,7 +648,7 @@ export class FeatureExtractor {
 
   private calculateTFIDF(
     words: string[],
-    ngrams: Record<number, { gram: string; count: number }[]>,
+    ngrams: Record<number, { gram: string; count: number }[]>
   ): Record<string, number> {
     const tfidf: Record<string, number> = {};
     const totalDocuments = 1; // Simplified
@@ -622,18 +675,18 @@ export class FeatureExtractor {
   private countClauses(sentences: string[]): number {
     // Simplified clause counting based on conjunctions
     const clauseMarkers = [
-      "and",
-      "but",
-      "or",
-      "nor",
-      "for",
-      "so",
-      "yet",
-      "because",
-      "since",
-      "although",
-      "while",
-      "if",
+      'and',
+      'but',
+      'or',
+      'nor',
+      'for',
+      'so',
+      'yet',
+      'because',
+      'since',
+      'although',
+      'while',
+      'if',
     ];
 
     return sentences.reduce((count, sentence) => {
@@ -659,7 +712,7 @@ export class FeatureExtractor {
     // Simplified noun detection
     return (
       word.length > 3 &&
-      !["the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for"].includes(word)
+      !['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for'].includes(word)
     );
   }
 
@@ -695,17 +748,17 @@ export class FeatureExtractor {
   }
 
   private isVerb(word: string): boolean {
-    const verbEndings = ["ed", "ing", "s", "es"];
+    const verbEndings = ['ed', 'ing', 's', 'es'];
     return verbEndings.some((ending) => word.endsWith(ending)) && word.length > 3;
   }
 
   private isAdjective(word: string): boolean {
-    const adjectiveEndings = ["ful", "less", "ous", "able", "ive", "al"];
+    const adjectiveEndings = ['ful', 'less', 'ous', 'able', 'ive', 'al'];
     return adjectiveEndings.some((ending) => word.endsWith(ending)) && word.length > 4;
   }
 
   private isAdverb(word: string): boolean {
-    const adverbEndings = ["ly"];
+    const adverbEndings = ['ly'];
     return adverbEndings.some((ending) => word.endsWith(ending)) && word.length > 4;
   }
 
@@ -736,7 +789,7 @@ export class FeatureExtractor {
   private calculateSubordinationRatio(sentences: string[]): number {
     const complexSentences = sentences.filter(
       (s) =>
-        s.includes("because") || s.includes("although") || s.includes("while") || s.includes("if"),
+        s.includes('because') || s.includes('although') || s.includes('while') || s.includes('if')
     ).length;
 
     return complexSentences / Math.max(sentences.length, 1);
@@ -744,14 +797,13 @@ export class FeatureExtractor {
 
   private calculateCoordinationRatio(sentences: string[]): number {
     const compoundSentences = sentences.filter(
-      (s) =>
-        s.includes(" and ") || s.includes(" or ") || s.includes(" but ") || s.includes(" nor "),
+      (s) => s.includes(' and ') || s.includes(' or ') || s.includes(' but ') || s.includes(' nor ')
     ).length;
 
     return compoundSentences / Math.max(sentences.length, 1);
   }
 
-  private countLinguisticFeatures(features: LinguisticFeatures): number {
+  private countLinguisticFeatures(_features: LinguisticFeatures): number {
     return 15; // Fixed number of linguistic features
   }
 
@@ -770,7 +822,7 @@ export class FeatureExtractor {
   }
 
   private euclideanDistance(vec1: number[], vec2: number[]): number {
-    return Math.sqrt(vec1.reduce((sum, a, i) => sum + Math.pow(a - vec2[i], 2), 0));
+    return Math.sqrt(vec1.reduce((sum, a, i) => sum + (a - vec2[i]) ** 2, 0));
   }
 
   private manhattanDistance(vec1: number[], vec2: number[]): number {

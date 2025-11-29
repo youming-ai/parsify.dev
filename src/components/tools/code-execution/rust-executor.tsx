@@ -3,9 +3,6 @@
  * Executes Rust code in browser using native WASM compilation
  */
 
-import { Package, Play, Square, } from 'lucide-react';
-import type React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { type ToolConfig, ToolWrapper } from '@/components/tools/tool-wrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,6 +11,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MemoryManager } from '@/lib/memory-manager';
 import { PerformanceMonitor } from '@/lib/performance-monitor';
 import type { RustExecutionResult } from '@/lib/runtimes/rust-wasm';
+import { Package, Play, Square } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface RustExecutorState {
   code: string;
@@ -510,13 +510,12 @@ export function RustExecutor(): React.ReactElement {
   useEffect(() => {
     const initRuntime = async () => {
       try {
-        const { RustWasm } = await import('@/lib/runtimes/rust-wasm');
-        const runtime = RustWasm.getInstance();
-        await runtime.initialize();
-        setRustRuntime(runtime);
+        const { rustRuntime } = await import('@/lib/runtimes/rust-wasm');
+        await rustRuntime.initialize();
+        setRustRuntime(rustRuntime);
       } catch (error) {
         console.error('Failed to initialize Rust runtime:', error);
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           error: 'Failed to initialize Rust runtime. Please refresh the page.',
         }));
@@ -528,7 +527,7 @@ export function RustExecutor(): React.ReactElement {
 
   // Load preset
   const loadPreset = useCallback((preset: RustPreset) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       code: preset.code,
       crateName: preset.crateName,
@@ -544,48 +543,37 @@ export function RustExecutor(): React.ReactElement {
   // Build Rust code
   const buildCode = useCallback(async () => {
     if (!rustRuntime || !state.code.trim()) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: state.code.trim() ? 'Rust runtime not initialized' : 'Please enter Rust code',
       }));
       return;
     }
 
-    setState(prev => ({ ...prev, isRunning: true, error: null }));
+    setState((prev) => ({ ...prev, isRunning: true, error: null }));
 
     try {
       const startTime = performance.now();
       performanceMonitor.trackToolLoad('rust-executor');
 
-      const result = await rustRuntime.compile(
-        state.code,
-        state.crateName,
-        {
-          dependencies: state.dependencies,
-          features: state.features,
-          optimization_level: state.optimizationLevel,
-        }
-      );
+      const result = await rustRuntime.compile(state.code, state.crateName, {
+        dependencies: state.dependencies,
+        features: state.features,
+        optimization_level: state.optimizationLevel,
+      });
       const buildTime = performance.now() - startTime;
 
       if (result.success) {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isCompiled: true,
           wasmFile: result.wasmFile || 'main.wasm',
           buildTime,
-          output: '✅ Build successful!\n' +
-                  `Generated WASM file: ${result.wasmFile || 'main.wasm'}\n` +
-                  `Build time: ${buildTime.toFixed(2)}ms\n` +
-                  `Rust version: ${state.rustVersion}\n` +
-                  `Target: ${state.target}\n` +
-                  `Optimization: ${state.optimizationLevel}\n` +
-                  `Dependencies: ${state.dependencies.join(", ") || "none"}\n` +
-                  `Features: ${state.features.join(", ") || "none"}`,
+          output: `✅ Build successful!\nGenerated WASM file: ${result.wasmFile || 'main.wasm'}\nBuild time: ${buildTime.toFixed(2)}ms\nRust version: ${state.rustVersion}\nTarget: ${state.target}\nOptimization: ${state.optimizationLevel}\nDependencies: ${state.dependencies.join(', ') || 'none'}\nFeatures: ${state.features.join(', ') || 'none'}`,
           error: null,
         }));
       } else {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isCompiled: false,
           error: result.error || 'Build failed',
@@ -593,43 +581,50 @@ export function RustExecutor(): React.ReactElement {
         }));
       }
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: error instanceof Error ? error.message : 'Build error',
         isCompiled: false,
         output: '',
       }));
     } finally {
-      setState(prev => ({ ...prev, isRunning: false }));
+      setState((prev) => ({ ...prev, isRunning: false }));
     }
-  }, [rustRuntime, state.code, state.crateName, state.dependencies, state.features, state.optimizationLevel, state.rustVersion, state.target, performanceMonitor.trackToolLoad]);
+  }, [
+    rustRuntime,
+    state.code,
+    state.crateName,
+    state.dependencies,
+    state.features,
+    state.optimizationLevel,
+    state.rustVersion,
+    state.target,
+    performanceMonitor.trackToolLoad,
+  ]);
 
   // Run compiled Rust code
   const runCode = useCallback(async () => {
     if (!rustRuntime || !state.isCompiled) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: !state.isCompiled ? 'Please build the code first' : 'Rust runtime not initialized',
       }));
       return;
     }
 
-    setState(prev => ({ ...prev, isRunning: true, error: null }));
+    setState((prev) => ({ ...prev, isRunning: true, error: null }));
 
     try {
       const startTime = performance.now();
 
-      const result: RustExecutionResult = await rustRuntime.run(
-        state.wasmFile,
-        state.input
-      );
+      const result: RustExecutionResult = await rustRuntime.run(state.wasmFile, state.input);
 
       const executionTime = performance.now() - startTime;
-      const memoryUsage = memoryManager.getCurrentMemoryUsage();
+      const memoryUsage = memoryManager.getMemoryUsage().used;
 
-      if (result.success) {
-        const output = result.output || '';
-        setState(prev => ({
+      if (result.exitCode === 0) {
+        const output = result.stdout || '';
+        setState((prev) => ({
           ...prev,
           output: output || 'Program executed successfully (no output)',
           executionTime,
@@ -637,22 +632,22 @@ export function RustExecutor(): React.ReactElement {
           error: null,
         }));
       } else {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
-          error: result.error || 'Execution failed',
-          output: result.output || '',
+          error: result.error?.message || result.stderr || 'Execution failed',
+          output: result.stdout || result.stderr || '',
           executionTime,
           memoryUsage,
         }));
       }
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: error instanceof Error ? error.message : 'Execution error',
         output: '',
       }));
     } finally {
-      setState(prev => ({ ...prev, isRunning: false }));
+      setState((prev) => ({ ...prev, isRunning: false }));
     }
   }, [rustRuntime, state.wasmFile, state.input, state.isCompiled, memoryManager]);
 
@@ -668,13 +663,13 @@ export function RustExecutor(): React.ReactElement {
   const stopExecution = useCallback(() => {
     if (rustRuntime) {
       rustRuntime.stop();
-      setState(prev => ({ ...prev, isRunning: false }));
+      setState((prev) => ({ ...prev, isRunning: false }));
     }
   }, [rustRuntime]);
 
   // Clear output
   const clearOutput = useCallback(() => {
-    setState(prev => ({ ...prev, output: '', error: null }));
+    setState((prev) => ({ ...prev, output: '', error: null }));
   }, []);
 
   // Export code
@@ -703,7 +698,7 @@ export function RustExecutor(): React.ReactElement {
       if (fileName.endsWith('.rs')) {
         // Extract crate name from file or use default
         const crateName = file.name.replace(/\.rs$/i, '');
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           code: content,
           crateName,
@@ -718,37 +713,45 @@ export function RustExecutor(): React.ReactElement {
 
   // Add dependency
   const addDependency = useCallback((dep: string) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       dependencies: [...prev.dependencies, dep],
       isCompiled: false,
+      output: '',
+      error: null,
     }));
   }, []);
 
   // Remove dependency
   const removeDependency = useCallback((dep: string) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
-      dependencies: prev.dependencies.filter(d => d !== dep),
+      dependencies: prev.dependencies.filter((d) => d !== dep),
       isCompiled: false,
+      output: '',
+      error: null,
     }));
   }, []);
 
   // Add feature
   const addFeature = useCallback((feature: string) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       features: [...prev.features, feature],
       isCompiled: false,
+      output: '',
+      error: null,
     }));
   }, []);
 
   // Remove feature
   const removeFeature = useCallback((feature: string) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
-      features: prev.features.filter(f => f !== feature),
+      features: prev.features.filter((f) => f !== feature),
       isCompiled: false,
+      output: '',
+      error: null,
     }));
   }, []);
 
@@ -779,7 +782,6 @@ export function RustExecutor(): React.ReactElement {
     <ToolWrapper
       config={toolConfig}
       isLoading={!rustRuntime}
-      loadingMessage="Initializing Rust runtime..."
       onExport={exportCode}
       onImport={() => document.getElementById('rust-import')?.click()}
       onCopy={() => navigator.clipboard.writeText(state.output)}
@@ -790,35 +792,35 @@ export function RustExecutor(): React.ReactElement {
         renderTime: 0,
       }}
       status={state.isRunning ? 'processing' : state.error ? 'error' : 'ready'}
-      notifications={state.error ? [{
-        type: 'error',
-        message: state.error,
-        timestamp: Date.now(),
-      }] : []}
-      onNotificationDismiss={() => setState(prev => ({ ...prev, error: null }))}
+      notifications={
+        state.error
+          ? [
+              {
+                type: 'error',
+                message: state.error,
+                timestamp: Date.now(),
+              },
+            ]
+          : []
+      }
+      onNotificationDismiss={() => setState((prev) => ({ ...prev, error: null }))}
     >
-      <input
-        id="rust-import"
-        type="file"
-        accept=".rs"
-        onChange={importCode}
-        className="hidden"
-      />
+      <input id="rust-import" type="file" accept=".rs" onChange={importCode} className="hidden" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Code Editor Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Rust Code Editor</h3>
+            <h3 className="font-semibold text-lg">Rust Code Editor</h3>
             <div className="flex items-center gap-2">
               <select
                 value={selectedPreset}
                 onChange={(e) => {
-                  const index = parseInt(e.target.value, 10);
+                  const index = Number.parseInt(e.target.value, 10);
                   setSelectedPreset(index);
                   loadPreset(RUST_PRESETS[index]);
                 }}
-                className="px-3 py-1 border rounded-md text-sm"
+                className="rounded-md border px-3 py-1 text-sm"
               >
                 {RUST_PRESETS.map((preset, index) => (
                   <option key={index} value={index}>
@@ -834,12 +836,12 @@ export function RustExecutor(): React.ReactElement {
               >
                 {state.isRunning ? (
                   <>
-                    <Square className="w-4 h-4 mr-1" />
+                    <Square className="mr-1 h-4 w-4" />
                     Stop
                   </>
                 ) : (
                   <>
-                    <Play className="w-4 h-4 mr-1" />
+                    <Play className="mr-1 h-4 w-4" />
                     Build & Run
                   </>
                 )}
@@ -851,24 +853,26 @@ export function RustExecutor(): React.ReactElement {
             <CardContent className="p-4">
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium">Crate Name</label>
+                  <label className="font-medium text-sm">Crate Name</label>
                   <input
                     type="text"
                     value={state.crateName}
-                    onChange={(e) => setState(prev => ({
-                      ...prev,
-                      crateName: e.target.value,
-                      isCompiled: false
-                    }))}
-                    className="w-full mt-1 px-3 py-2 border rounded-md text-sm font-mono"
+                    onChange={(e) =>
+                      setState((prev) => ({
+                        ...prev,
+                        crateName: e.target.value,
+                        isCompiled: false,
+                      }))
+                    }
+                    className="mt-1 w-full rounded-md border px-3 py-2 font-mono text-sm"
                     placeholder="main"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium">Dependencies</label>
-                    <div className="flex flex-wrap gap-1 mt-1">
+                    <label className="font-medium text-sm">Dependencies</label>
+                    <div className="mt-1 flex flex-wrap gap-1">
                       {state.dependencies.map((dep, index) => (
                         <Badge
                           key={index}
@@ -882,7 +886,7 @@ export function RustExecutor(): React.ReactElement {
                       <input
                         type="text"
                         placeholder="Add dependency"
-                        className="px-2 py-1 text-xs border rounded"
+                        className="rounded border px-2 py-1 text-xs"
                         onKeyPress={(e) => {
                           if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                             addDependency(e.currentTarget.value.trim());
@@ -894,8 +898,8 @@ export function RustExecutor(): React.ReactElement {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium">Features</label>
-                    <div className="flex flex-wrap gap-1 mt-1">
+                    <label className="font-medium text-sm">Features</label>
+                    <div className="mt-1 flex flex-wrap gap-1">
                       {state.features.map((feature, index) => (
                         <Badge
                           key={index}
@@ -909,7 +913,7 @@ export function RustExecutor(): React.ReactElement {
                       <input
                         type="text"
                         placeholder="Add feature"
-                        className="px-2 py-1 text-xs border rounded"
+                        className="rounded border px-2 py-1 text-xs"
                         onKeyPress={(e) => {
                           if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                             addFeature(e.currentTarget.value.trim());
@@ -922,15 +926,17 @@ export function RustExecutor(): React.ReactElement {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">Optimization</label>
+                  <label className="font-medium text-sm">Optimization</label>
                   <select
                     value={state.optimizationLevel}
-                    onChange={(e) => setState(prev => ({
-                      ...prev,
-                      optimizationLevel: e.target.value as 'debug' | 'release',
-                      isCompiled: false
-                    }))}
-                    className="w-full mt-1 px-3 py-2 border rounded-md text-sm"
+                    onChange={(e) =>
+                      setState((prev) => ({
+                        ...prev,
+                        optimizationLevel: e.target.value as 'debug' | 'release',
+                        isCompiled: false,
+                      }))
+                    }
+                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
                   >
                     <option value="debug">Debug</option>
                     <option value="release">Release</option>
@@ -938,15 +944,17 @@ export function RustExecutor(): React.ReactElement {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">Rust Code</label>
+                  <label className="font-medium text-sm">Rust Code</label>
                   <textarea
                     value={state.code}
-                    onChange={(e) => setState(prev => ({
-                      ...prev,
-                      code: e.target.value,
-                      isCompiled: false
-                    }))}
-                    className="w-full mt-1 h-64 px-3 py-2 border rounded-md text-sm font-mono resize-none"
+                    onChange={(e) =>
+                      setState((prev) => ({
+                        ...prev,
+                        code: e.target.value,
+                        isCompiled: false,
+                      }))
+                    }
+                    className="mt-1 h-64 w-full resize-none rounded-md border px-3 py-2 font-mono text-sm"
                     placeholder="Enter your Rust code here..."
                     spellCheck={false}
                   />
@@ -966,8 +974,8 @@ export function RustExecutor(): React.ReactElement {
             <CardContent className="p-4">
               <textarea
                 value={state.input}
-                onChange={(e) => setState(prev => ({ ...prev, input: e.target.value }))}
-                className="w-full h-24 px-3 py-2 border rounded-md text-sm font-mono resize-none"
+                onChange={(e) => setState((prev) => ({ ...prev, input: e.target.value }))}
+                className="h-24 w-full resize-none rounded-md border px-3 py-2 font-mono text-sm"
                 placeholder="Enter input for the Rust program..."
               />
             </CardContent>
@@ -977,17 +985,13 @@ export function RustExecutor(): React.ReactElement {
         {/* Output Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Console Output</h3>
+            <h3 className="font-semibold text-lg">Console Output</h3>
             <div className="flex items-center gap-2">
               {state.buildTime > 0 && (
-                <Badge variant="secondary">
-                  Build: {state.buildTime.toFixed(2)}ms
-                </Badge>
+                <Badge variant="secondary">Build: {state.buildTime.toFixed(2)}ms</Badge>
               )}
               {state.executionTime > 0 && (
-                <Badge variant="secondary">
-                  Run: {state.executionTime.toFixed(2)}ms
-                </Badge>
+                <Badge variant="secondary">Run: {state.executionTime.toFixed(2)}ms</Badge>
               )}
               {state.memoryUsage > 0 && (
                 <Badge variant="secondary">
@@ -1003,7 +1007,7 @@ export function RustExecutor(): React.ReactElement {
           <Card>
             <CardContent className="p-4">
               <ScrollArea
-                className="h-80 border rounded-md p-3 font-mono text-sm bg-gray-50 dark:bg-gray-900"
+                className="h-80 rounded-md border bg-gray-50 p-3 font-mono text-sm dark:bg-gray-900"
                 ref={outputRef}
               >
                 {state.output || 'Output will appear here...'}
@@ -1015,12 +1019,12 @@ export function RustExecutor(): React.ReactElement {
           {state.isCompiled && (
             <Card>
               <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Package className="w-4 h-4" />
+                <div className="mb-2 flex items-center gap-2">
+                  <Package className="h-4 w-4" />
                   <h4 className="font-medium">Build Status</h4>
                   <Badge variant="default">Compiled</Badge>
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-gray-600 text-sm dark:text-gray-400">
                   <p>WASM file: {state.wasmFile}</p>
                   <p>Rust version: {state.rustVersion}</p>
                   <p>Target: {state.target}</p>

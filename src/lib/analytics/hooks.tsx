@@ -3,17 +3,17 @@
  * Provides easy-to-use hooks for React components
  */
 
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   type AnalyticsConfig,
   type AnalyticsConsent,
   type AnalyticsSession,
   type CloudflareAnalyticsClient,
   createAnalyticsClient,
-} from "./client";
+} from './client';
 
 /**
  * Hook to initialize and access the analytics client
@@ -52,39 +52,39 @@ export function useAnalytics(config?: Partial<AnalyticsConfig>) {
     isInitialized,
     trackPageView: useCallback(
       (path?: string, title?: string) => client?.trackPageView(path, title),
-      [client],
+      [client]
     ),
     trackToolUsage: useCallback(
-      (params: Parameters<CloudflareAnalyticsClient["trackToolUsage"]>[0]) =>
+      (params: Parameters<CloudflareAnalyticsClient['trackToolUsage']>[0]) =>
         client?.trackToolUsage(params),
-      [client],
+      [client]
     ),
     trackPerformance: useCallback(
-      (params: Parameters<CloudflareAnalyticsClient["trackPerformance"]>[0]) =>
+      (params: Parameters<CloudflareAnalyticsClient['trackPerformance']>[0]) =>
         client?.trackPerformance(params),
-      [client],
+      [client]
     ),
     trackInteraction: useCallback(
-      (params: Parameters<CloudflareAnalyticsClient["trackInteraction"]>[0]) =>
+      (params: Parameters<CloudflareAnalyticsClient['trackInteraction']>[0]) =>
         client?.trackInteraction(params),
-      [client],
+      [client]
     ),
     trackAPIUsage: useCallback(
-      (params: Parameters<CloudflareAnalyticsClient["trackAPIUsage"]>[0]) =>
+      (params: Parameters<CloudflareAnalyticsClient['trackAPIUsage']>[0]) =>
         client?.trackAPIUsage(params),
-      [client],
+      [client]
     ),
     trackCustomEvent: useCallback(
       (
         eventName: string,
         data: Record<string, unknown>,
-        properties?: Record<string, string | number | boolean>,
+        properties?: Record<string, string | number | boolean>
       ) => client?.trackCustomEvent(eventName, data, properties),
-      [client],
+      [client]
     ),
     updateConsent: useCallback(
       (consent: Partial<AnalyticsConsent>) => client?.updateConsent(consent),
-      [client],
+      [client]
     ),
     getSession: useCallback(() => client?.getSession(), [client]),
     getConsent: useCallback(() => client?.getConsent(), [client]),
@@ -119,13 +119,13 @@ export function useToolTracking(toolId: string, toolName: string) {
       trackToolUsage({
         toolId,
         toolName,
-        action: "execute",
+        action: 'execute',
         processingTime,
         inputSize,
         outputSize,
       });
     },
-    [toolId, toolName, trackToolUsage],
+    [toolId, toolName, trackToolUsage]
   );
 
   const trackValidate = useCallback(
@@ -133,12 +133,12 @@ export function useToolTracking(toolId: string, toolName: string) {
       trackToolUsage({
         toolId,
         toolName,
-        action: "validate",
+        action: 'validate',
         processingTime,
         inputSize,
       });
     },
-    [toolId, toolName, trackToolUsage],
+    [toolId, toolName, trackToolUsage]
   );
 
   const trackFormat = useCallback(
@@ -146,13 +146,13 @@ export function useToolTracking(toolId: string, toolName: string) {
       trackToolUsage({
         toolId,
         toolName,
-        action: "format",
+        action: 'format',
         processingTime,
         inputSize,
         outputSize,
       });
     },
-    [toolId, toolName, trackToolUsage],
+    [toolId, toolName, trackToolUsage]
   );
 
   const trackConvert = useCallback(
@@ -160,13 +160,13 @@ export function useToolTracking(toolId: string, toolName: string) {
       trackToolUsage({
         toolId,
         toolName,
-        action: "convert",
+        action: 'convert',
         processingTime,
         inputSize,
         outputSize,
       });
     },
-    [toolId, toolName, trackToolUsage],
+    [toolId, toolName, trackToolUsage]
   );
 
   const trackError = useCallback(
@@ -174,12 +174,12 @@ export function useToolTracking(toolId: string, toolName: string) {
       trackToolUsage({
         toolId,
         toolName,
-        action: "error",
+        action: 'error',
         error,
         processingTime,
       });
     },
-    [toolId, toolName, trackToolUsage],
+    [toolId, toolName, trackToolUsage]
   );
 
   return {
@@ -203,7 +203,7 @@ export function usePerformanceTracking() {
     // Track initial page load performance
     const trackPageLoad = () => {
       const navigation = performance.getEntriesByType(
-        "navigation",
+        'navigation'
       )[0] as PerformanceNavigationTiming;
 
       if (navigation) {
@@ -216,19 +216,19 @@ export function usePerformanceTracking() {
       }
     };
 
-    if (document.readyState === "complete") {
+    if (document.readyState === 'complete') {
       trackPageLoad();
     } else {
-      window.addEventListener("load", trackPageLoad);
-      return () => window.removeEventListener("load", trackPageLoad);
+      window.addEventListener('load', trackPageLoad);
+      return () => window.removeEventListener('load', trackPageLoad);
     }
   }, [trackPerformance]);
 
   const trackCustomPerformance = useCallback(
-    (metrics: Parameters<CloudflareAnalyticsClient["trackPerformance"]>[0]) => {
+    (metrics: Parameters<CloudflareAnalyticsClient['trackPerformance']>[0]) => {
       trackPerformance(metrics);
     },
-    [trackPerformance],
+    [trackPerformance]
   );
 
   return {
@@ -245,44 +245,44 @@ export function useInteractionTracking() {
   const trackClick = useCallback(
     (elementId?: string, elementTag?: string, elementText?: string) => {
       trackInteraction({
-        interactionType: "click",
+        interactionType: 'click',
         elementId,
         elementTag,
         elementText,
       });
     },
-    [trackInteraction],
+    [trackInteraction]
   );
 
   const trackScroll = useCallback(
     (scrollDepth: number) => {
       trackInteraction({
-        interactionType: "scroll",
+        interactionType: 'scroll',
         scrollDepth,
       });
     },
-    [trackInteraction],
+    [trackInteraction]
   );
 
   const trackFocus = useCallback(
     (elementId?: string, elementTag?: string) => {
       trackInteraction({
-        interactionType: "focus",
+        interactionType: 'focus',
         elementId,
         elementTag,
       });
     },
-    [trackInteraction],
+    [trackInteraction]
   );
 
   const trackNavigation = useCallback(
     (targetUrl: string) => {
       trackInteraction({
-        interactionType: "navigation",
+        interactionType: 'navigation',
         targetUrl,
       });
     },
-    [trackInteraction],
+    [trackInteraction]
   );
 
   return {
@@ -311,7 +311,7 @@ export function useAPITracking() {
     }) => {
       trackAPIUsage(params);
     },
-    [trackAPIUsage],
+    [trackAPIUsage]
   );
 
   return {
@@ -334,18 +334,18 @@ export function useAnalyticsConsent() {
   }, [getConsent]);
 
   const grantConsent = useCallback(
-    (level: "minimal" | "full" | "custom" = "full") => {
+    (level: 'minimal' | 'full' | 'custom' = 'full') => {
       const newConsent: Partial<AnalyticsConsent> = {
         analytics: true,
-        performance: level !== "minimal",
-        interactions: level === "full",
+        performance: level !== 'minimal',
+        interactions: level === 'full',
         timestamp: Date.now(),
       };
 
       updateConsent(newConsent);
       setConsent({ ...consent, ...newConsent } as AnalyticsConsent);
     },
-    [consent, updateConsent],
+    [consent, updateConsent]
   );
 
   const revokeConsent = useCallback(() => {
@@ -368,7 +368,7 @@ export function useAnalyticsConsent() {
       });
       setConsent({ ...consent, ...customConsent } as AnalyticsConsent);
     },
-    [consent, updateConsent],
+    [consent, updateConsent]
   );
 
   return {
@@ -413,7 +413,7 @@ export function useEventTracking() {
   const createEventProps = useCallback(
     (eventName: string) => {
       return {
-        "data-track-event": eventName,
+        'data-track-event': eventName,
         onClick: (event: React.MouseEvent) => {
           const target = event.currentTarget;
           trackCustomEvent(eventName, {
@@ -424,7 +424,7 @@ export function useEventTracking() {
         },
       };
     },
-    [trackCustomEvent],
+    [trackCustomEvent]
   );
 
   return {
@@ -440,7 +440,7 @@ export function withPageViewTracking<P extends object>(
   trackProps?: {
     path?: string;
     title?: string;
-  },
+  }
 ) {
   return function TrackedComponent(props: P) {
     const { trackPageView } = useAnalytics();

@@ -3,22 +3,25 @@
  * Advanced Encryption Standard (AES) encryption and decryption using Web Crypto API
  */
 
-import React, { useState, useEffect } from "react";
-import { Lock, Unlock, Copy, Key, Shield, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+'use client';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { AlertCircle, Copy, Key, Lock, Shield, Unlock } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
 interface EncryptionResult {
   encrypted: string;
@@ -37,22 +40,24 @@ const AES_KEY_SIZES = [128, 192, 256] as const;
 type AESKeySize = (typeof AES_KEY_SIZES)[number];
 
 const AES_MODES = [
-  { value: "AES-GCM", label: "GCM (Galois/Counter Mode)", description: "Authenticated encryption" },
+  { value: 'AES-GCM', label: 'GCM (Galois/Counter Mode)', description: 'Authenticated encryption' },
   {
-    value: "AES-CBC",
-    label: "CBC (Cipher Block Chaining)",
-    description: "Traditional block cipher",
+    value: 'AES-CBC',
+    label: 'CBC (Cipher Block Chaining)',
+    description: 'Traditional block cipher',
   },
-  { value: "AES-CTR", label: "CTR (Counter Mode)", description: "Stream cipher" },
+  { value: 'AES-CTR', label: 'CTR (Counter Mode)', description: 'Stream cipher' },
 ] as const;
 
+type AESMode = (typeof AES_MODES)[number]['value'];
+
 export const AESEncryption: React.FC = () => {
-  const [plaintext, setPlaintext] = useState("");
-  const [ciphertext, setCiphertext] = useState("");
-  const [iv, setIv] = useState("");
-  const [key, setKey] = useState("");
+  const [plaintext, setPlaintext] = useState('');
+  const [ciphertext, setCiphertext] = useState('');
+  const [iv, setIv] = useState('');
+  const [key, setKey] = useState('');
   const [keySize, setKeySize] = useState<AESKeySize>(256);
-  const [mode, setMode] = useState(AES_MODES[0].value);
+  const [mode, setMode] = useState<AESMode>(AES_MODES[0].value);
   const [encryptionResult, setEncryptionResult] = useState<EncryptionResult | null>(null);
   const [decryptionResult, setDecryptionResult] = useState<DecryptionResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -63,12 +68,12 @@ export const AESEncryption: React.FC = () => {
   const generateRandomData = (length: number): string => {
     const array = new Uint8Array(length);
     crypto.getRandomValues(array);
-    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
   };
 
   // Generate random IV for GCM and CBC modes
   const generateIV = (): Uint8Array => {
-    const ivLength = mode === "AES-GCM" ? 12 : 16; // GCM uses 96-bit IV, CBC uses 128-bit
+    const ivLength = mode === 'AES-GCM' ? 12 : 16; // GCM uses 96-bit IV, CBC uses 128-bit
     const iv = new Uint8Array(ivLength);
     crypto.getRandomValues(iv);
     return iv;
@@ -76,23 +81,31 @@ export const AESEncryption: React.FC = () => {
 
   // Convert hex string to Uint8Array
   const hexToArray = (hex: string): Uint8Array => {
-    return new Uint8Array(hex.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) || []);
+    const matches = hex.match(/.{1,2}/g);
+    if (!matches) return new Uint8Array();
+
+    const bytes = new Uint8Array(matches.length);
+    matches.forEach((byte, index) => {
+      bytes[index] = Number.parseInt(byte, 16);
+    });
+
+    return bytes;
   };
 
   // Convert Uint8Array to hex string
   const arrayToHex = (array: Uint8Array): string => {
-    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
   };
 
   // Convert base64 to hex
   const base64ToHex = (base64: string): string => {
     try {
       const binary = atob(base64);
-      return Array.from(binary, (char) => char.charCodeAt(0).toString(16).padStart(2, "0")).join(
-        "",
+      return Array.from(binary, (char) => char.charCodeAt(0).toString(16).padStart(2, '0')).join(
+        ''
       );
-    } catch (err) {
-      throw new Error("Invalid base64 input");
+    } catch (_err) {
+      throw new Error('Invalid base64 input');
     }
   };
 
@@ -101,17 +114,25 @@ export const AESEncryption: React.FC = () => {
     try {
       const array = hexToArray(hex);
       return btoa(String.fromCharCode(...array));
-    } catch (err) {
-      throw new Error("Invalid hex input");
+    } catch (_err) {
+      throw new Error('Invalid hex input');
     }
+  };
+
+  const toArrayBuffer = (bytes: Uint8Array): ArrayBuffer => {
+    const buffer = new ArrayBuffer(bytes.byteLength);
+    new Uint8Array(buffer).set(bytes);
+    return buffer;
   };
 
   // Generate encryption key
   const generateKey = async (): Promise<CryptoKey> => {
     const keyData = hexToArray(key);
-    return await crypto.subtle.importKey("raw", keyData, { name: mode }, false, [
-      "encrypt",
-      "decrypt",
+    const keyBuffer = toArrayBuffer(keyData);
+
+    return await crypto.subtle.importKey('raw', keyBuffer, { name: mode }, false, [
+      'encrypt',
+      'decrypt',
     ]);
   };
 
@@ -138,12 +159,12 @@ export const AESEncryption: React.FC = () => {
   // Encrypt data
   const encrypt = async () => {
     if (!plaintext.trim()) {
-      setError("Please enter plaintext to encrypt");
+      setError('Please enter plaintext to encrypt');
       return;
     }
 
     if (!key) {
-      setError("Please enter or generate an encryption key");
+      setError('Please enter or generate an encryption key');
       return;
     }
 
@@ -157,13 +178,23 @@ export const AESEncryption: React.FC = () => {
 
       const encoder = new TextEncoder();
       const data = encoder.encode(plaintext);
+      const ivBuffer = toArrayBuffer(ivArray);
+      const dataBuffer = toArrayBuffer(data);
 
       let encrypted: ArrayBuffer;
 
-      if (mode === "AES-GCM") {
-        encrypted = await crypto.subtle.encrypt({ name: mode, iv: ivArray }, cryptoKey, data);
+      if (mode === 'AES-GCM') {
+        encrypted = await crypto.subtle.encrypt(
+          { name: mode, iv: ivBuffer },
+          cryptoKey,
+          dataBuffer
+        );
       } else {
-        encrypted = await crypto.subtle.encrypt({ name: mode, iv: ivArray }, cryptoKey, data);
+        encrypted = await crypto.subtle.encrypt(
+          { name: mode, iv: ivBuffer },
+          cryptoKey,
+          dataBuffer
+        );
       }
 
       const encryptedHex = arrayToHex(new Uint8Array(encrypted));
@@ -179,7 +210,7 @@ export const AESEncryption: React.FC = () => {
       setCiphertext(encryptedBase64);
       setIv(ivHex);
     } catch (err) {
-      setError(`Encryption failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+      setError(`Encryption failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setIsProcessing(false);
     }
@@ -188,17 +219,17 @@ export const AESEncryption: React.FC = () => {
   // Decrypt data
   const decrypt = async () => {
     if (!ciphertext.trim()) {
-      setError("Please enter ciphertext to decrypt");
+      setError('Please enter ciphertext to decrypt');
       return;
     }
 
     if (!key) {
-      setError("Please enter the decryption key");
+      setError('Please enter the decryption key');
       return;
     }
 
     if (!iv.trim()) {
-      setError("Please enter the initialization vector (IV)");
+      setError('Please enter the initialization vector (IV)');
       return;
     }
 
@@ -209,20 +240,22 @@ export const AESEncryption: React.FC = () => {
       const cryptoKey = await generateKey();
       const ivArray = hexToArray(iv);
       const encryptedArray = hexToArray(base64ToHex(ciphertext));
+      const ivBuffer = toArrayBuffer(ivArray);
+      const encryptedBuffer = toArrayBuffer(encryptedArray);
 
       let decrypted: ArrayBuffer;
 
-      if (mode === "AES-GCM") {
+      if (mode === 'AES-GCM') {
         decrypted = await crypto.subtle.decrypt(
-          { name: mode, iv: ivArray },
+          { name: mode, iv: ivBuffer },
           cryptoKey,
-          encryptedArray,
+          encryptedBuffer
         );
       } else {
         decrypted = await crypto.subtle.decrypt(
-          { name: mode, iv: ivArray },
+          { name: mode, iv: ivBuffer },
           cryptoKey,
-          encryptedArray,
+          encryptedBuffer
         );
       }
 
@@ -236,11 +269,11 @@ export const AESEncryption: React.FC = () => {
 
       setPlaintext(plaintext);
     } catch (err) {
-      setError(`Decryption failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+      setError(`Decryption failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
       setDecryptionResult({
-        decrypted: "",
+        decrypted: '',
         success: false,
-        error: err instanceof Error ? err.message : "Unknown error",
+        error: err instanceof Error ? err.message : 'Unknown error',
       });
     } finally {
       setIsProcessing(false);
@@ -252,13 +285,13 @@ export const AESEncryption: React.FC = () => {
     try {
       await navigator.clipboard.writeText(text);
     } catch (err) {
-      console.error("Failed to copy to clipboard:", err);
+      console.error('Failed to copy to clipboard:', err);
     }
   };
 
   const getModeDescription = () => {
     const modeInfo = AES_MODES.find((m) => m.value === mode);
-    return modeInfo?.description || "";
+    return modeInfo?.description || '';
   };
 
   return (
@@ -267,12 +300,12 @@ export const AESEncryption: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Key className="w-5 h-5" />
+            <Key className="h-5 w-5" />
             Encryption Configuration
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
               <Label htmlFor="keySize">Key Size</Label>
               <Select
@@ -294,7 +327,7 @@ export const AESEncryption: React.FC = () => {
 
             <div>
               <Label htmlFor="mode">Encryption Mode</Label>
-              <Select value={mode} onValueChange={setMode}>
+              <Select value={mode} onValueChange={(value) => setMode(value as AESMode)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -306,7 +339,7 @@ export const AESEncryption: React.FC = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-gray-600 mt-1">{getModeDescription()}</p>
+              <p className="mt-1 text-gray-600 text-xs">{getModeDescription()}</p>
             </div>
 
             <div>
@@ -327,7 +360,7 @@ export const AESEncryption: React.FC = () => {
                   Generate
                 </Button>
               </div>
-              <p className="text-xs text-gray-600 mt-1">
+              <p className="mt-1 text-gray-600 text-xs">
                 {key.length} characters ({key.length * 4} bits)
               </p>
             </div>
@@ -363,7 +396,7 @@ export const AESEncryption: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Lock className="w-5 h-5" />
+                <Lock className="h-5 w-5" />
                 Encrypt Data
               </CardTitle>
             </CardHeader>
@@ -384,8 +417,8 @@ export const AESEncryption: React.FC = () => {
                 disabled={isProcessing || !plaintext.trim() || !key}
                 className="w-full"
               >
-                <Lock className="w-4 h-4 mr-2" />
-                {isProcessing ? "Encrypting..." : "Encrypt"}
+                <Lock className="mr-2 h-4 w-4" />
+                {isProcessing ? 'Encrypting...' : 'Encrypt'}
               </Button>
 
               {encryptionResult && (
@@ -404,7 +437,7 @@ export const AESEncryption: React.FC = () => {
                       onClick={() => copyToClipboard(encryptionResult.encrypted)}
                       className="mt-2"
                     >
-                      <Copy className="w-4 h-4 mr-1" />
+                      <Copy className="mr-1 h-4 w-4" />
                       Copy Encrypted
                     </Button>
                   </div>
@@ -429,7 +462,7 @@ export const AESEncryption: React.FC = () => {
                       onClick={() => copyToClipboard(encryptionResult.iv)}
                       className="mt-2"
                     >
-                      <Copy className="w-4 h-4 mr-1" />
+                      <Copy className="mr-1 h-4 w-4" />
                       Copy IV
                     </Button>
                   </div>
@@ -455,7 +488,7 @@ export const AESEncryption: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Unlock className="w-5 h-5" />
+                <Unlock className="h-5 w-5" />
                 Decrypt Data
               </CardTitle>
             </CardHeader>
@@ -487,8 +520,8 @@ export const AESEncryption: React.FC = () => {
                 disabled={isProcessing || !ciphertext.trim() || !key || !iv.trim()}
                 className="w-full"
               >
-                <Unlock className="w-4 h-4 mr-2" />
-                {isProcessing ? "Decrypting..." : "Decrypt"}
+                <Unlock className="mr-2 h-4 w-4" />
+                {isProcessing ? 'Decrypting...' : 'Decrypt'}
               </Button>
 
               {decryptionResult && (
@@ -509,7 +542,7 @@ export const AESEncryption: React.FC = () => {
                           onClick={() => copyToClipboard(decryptionResult.decrypted)}
                           className="mt-2"
                         >
-                          <Copy className="w-4 h-4 mr-1" />
+                          <Copy className="mr-1 h-4 w-4" />
                           Copy Decrypted
                         </Button>
                       </div>

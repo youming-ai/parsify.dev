@@ -1,8 +1,17 @@
+'use client';
+
 /**
  * ToolWrapper Component
  * Provides consistent UI and behavior across all tools
  */
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import {
   AlertTriangle,
   CheckCircle,
@@ -14,15 +23,8 @@ import {
   Settings,
   Upload,
   Zap,
-} from "lucide-react";
-import React, { useCallback, useRef, useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+} from 'lucide-react';
+import React, { useCallback, useRef, useState } from 'react';
 
 // Types
 export interface ToolConfig {
@@ -61,10 +63,10 @@ export interface ToolWrapperProps {
     memoryUsage: number;
     renderTime: number;
   };
-  status?: "idle" | "loading" | "ready" | "processing" | "error" | "success";
+  status?: 'idle' | 'loading' | 'ready' | 'processing' | 'error' | 'success';
   actions?: React.ReactNode[];
   notifications?: {
-    type: "info" | "warning" | "error" | "success";
+    type: 'info' | 'warning' | 'error' | 'success';
     message: string;
     timestamp: number;
   }[];
@@ -83,9 +85,9 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
   onReset,
   onSettingsToggle,
   onHelpToggle,
-  className = "",
+  className = '',
   performance,
-  status = "idle",
+  status = 'idle',
   actions = [],
   notifications = [],
   onNotificationDismiss,
@@ -106,34 +108,34 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
             const data = JSON.parse(e.target?.result as string);
             onImport(data);
           } catch (error) {
-            console.error("Failed to parse imported file:", error);
+            console.error('Failed to parse imported file:', error);
           }
         };
         reader.readAsText(file);
       }
     },
-    [onImport],
+    [onImport]
   );
 
   // Get status color and icon
   const getStatusInfo = useCallback(() => {
     switch (status) {
-      case "loading":
-        return { color: "text-blue-600", icon: Clock, text: "Loading..." };
-      case "ready":
-        return { color: "text-green-600", icon: CheckCircle, text: "Ready" };
-      case "processing":
+      case 'loading':
+        return { color: 'text-blue-600', icon: Clock, text: 'Loading...' };
+      case 'ready':
+        return { color: 'text-green-600', icon: CheckCircle, text: 'Ready' };
+      case 'processing':
         return {
-          color: "text-yellow-600",
+          color: 'text-yellow-600',
           icon: RefreshCw,
-          text: "Processing...",
+          text: 'Processing...',
         };
-      case "error":
-        return { color: "text-red-600", icon: AlertTriangle, text: "Error" };
-      case "success":
-        return { color: "text-green-600", icon: CheckCircle, text: "Success" };
+      case 'error':
+        return { color: 'text-red-600', icon: AlertTriangle, text: 'Error' };
+      case 'success':
+        return { color: 'text-green-600', icon: CheckCircle, text: 'Success' };
       default:
-        return { color: "text-gray-600", icon: Clock, text: "Idle" };
+        return { color: 'text-gray-600', icon: Clock, text: 'Idle' };
     }
   }, [status]);
 
@@ -141,7 +143,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
   const StatusIcon = statusInfo.icon;
 
   return (
-    <Card className={`w-full max-w-6xl mx-auto ${className}`}>
+    <Card className={`mx-auto w-full ${className}`}>
       {/* Tool Header */}
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
@@ -151,12 +153,12 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
               <CardTitle className="flex items-center gap-2">
                 {config.name}
                 <Badge variant="secondary" className={statusInfo.color}>
-                  <StatusIcon className="w-3 h-3 mr-1" />
+                  <StatusIcon className="mr-1 h-3 w-3" />
                   {statusInfo.text}
                 </Badge>
               </CardTitle>
               <CardDescription className="mt-1">{config.description}</CardDescription>
-              <div className="flex items-center gap-2 mt-2">
+              <div className="mt-2 flex items-center gap-2">
                 <Badge variant="outline">{config.category}</Badge>
                 <Badge variant="outline">v{config.version}</Badge>
                 {config.tags.map((tag) => (
@@ -173,7 +175,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
             {/* Standard Actions */}
             {config.canExport && onExport && (
               <Button variant="outline" size="sm" onClick={onExport}>
-                <Download className="w-4 h-4 mr-1" />
+                <Download className="mr-1 h-4 w-4" />
                 Export
               </Button>
             )}
@@ -181,7 +183,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
             {config.canImport && (
               <>
                 <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                  <Upload className="w-4 h-4 mr-1" />
+                  <Upload className="mr-1 h-4 w-4" />
                   Import
                 </Button>
                 <input
@@ -196,14 +198,14 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
 
             {config.canCopy && onCopy && (
               <Button variant="outline" size="sm" onClick={onCopy}>
-                <Copy className="w-4 h-4 mr-1" />
+                <Copy className="mr-1 h-4 w-4" />
                 Copy
               </Button>
             )}
 
             {config.canReset && onReset && (
               <Button variant="outline" size="sm" onClick={onReset}>
-                <RefreshCw className="w-4 h-4 mr-1" />
+                <RefreshCw className="mr-1 h-4 w-4" />
                 Reset
               </Button>
             )}
@@ -217,12 +219,12 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
             <div className="flex items-center gap-1">
               {config.hasSettings && onSettingsToggle && (
                 <Button variant="ghost" size="sm" onClick={onSettingsToggle}>
-                  <Settings className="w-4 h-4" />
+                  <Settings className="h-4 w-4" />
                 </Button>
               )}
               {config.hasHelp && onHelpToggle && (
                 <Button variant="ghost" size="sm" onClick={onHelpToggle}>
-                  <HelpCircle className="w-4 h-4" />
+                  <HelpCircle className="h-4 w-4" />
                 </Button>
               )}
             </div>
@@ -232,18 +234,18 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
 
       {/* Notifications */}
       {notifications.length > 0 && (
-        <div className="px-6 pb-3 space-y-2">
+        <div className="space-y-2 px-6 pb-3">
           {notifications.map((notification) => (
             <Alert
               key={notification.timestamp}
               variant={
-                notification.type === "error"
-                  ? "destructive"
-                  : notification.type === "warning"
-                    ? "destructive"
-                    : notification.type === "success"
-                      ? "default"
-                      : "default"
+                notification.type === 'error'
+                  ? 'destructive'
+                  : notification.type === 'warning'
+                    ? 'destructive'
+                    : notification.type === 'success'
+                      ? 'default'
+                      : 'default'
               }
             >
               <AlertDescription className="flex items-center justify-between">
@@ -268,10 +270,10 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
       {isLoading && (
         <div className="px-6 pb-4">
           <div className="flex items-center space-x-3">
-            <RefreshCw className="w-4 h-4 animate-spin" />
+            <RefreshCw className="h-4 w-4 animate-spin" />
             <span className="text-sm">Loading tool...</span>
             {loadingProgress > 0 && (
-              <Progress value={loadingProgress} className="flex-1 max-w-xs" />
+              <Progress value={loadingProgress} className="max-w-xs flex-1" />
             )}
           </div>
         </div>
@@ -290,14 +292,14 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
       {/* Performance Info */}
       {performance && (
         <div className="px-6 pb-2">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowPerformance(!showPerformance)}
               className="h-6 px-2 text-xs"
             >
-              <Zap className="w-3 h-3 mr-1" />
+              <Zap className="mr-1 h-3 w-3" />
               Performance
             </Button>
             {showPerformance && (
@@ -325,8 +327,8 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
       </CardContent>
 
       {/* Footer with additional info */}
-      <div className="px-6 py-3 bg-muted/30 border-t">
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div className="border-t bg-muted/30 px-6 py-3">
+        <div className="flex items-center justify-between text-muted-foreground text-xs">
           <div>
             Tool ID: {config.id} | Version: {config.version}
           </div>

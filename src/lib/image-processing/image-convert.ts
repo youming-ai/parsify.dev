@@ -5,7 +5,7 @@
 
 export interface ImageConvertOptions {
   file: File;
-  format: "png" | "jpeg" | "webp" | "bmp" | "gif";
+  format: 'png' | 'jpeg' | 'webp' | 'bmp' | 'gif';
   quality?: number; // 0-1 for JPEG/WebP
   width?: number;
   height?: number;
@@ -38,20 +38,20 @@ export async function convertImage(options: ImageConvertOptions): Promise<ImageC
           img.height,
           options.width,
           options.height,
-          options.maintainAspectRatio !== false,
+          options.maintainAspectRatio !== false
         );
 
         // Create canvas
-        const canvas = document.createElement("canvas");
+        const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
 
         // Draw image
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext('2d');
         if (!ctx) {
           resolve({
             success: false,
-            error: "Failed to get canvas context",
+            error: 'Failed to get canvas context',
           });
           return;
         }
@@ -59,7 +59,7 @@ export async function convertImage(options: ImageConvertOptions): Promise<ImageC
         ctx.drawImage(img, 0, 0, width, height);
 
         // Get original format
-        const originalFormat = options.file.type.split("/")[1] || "unknown";
+        const originalFormat = options.file.type.split('/')[1] || 'unknown';
         const originalSize = options.file.size;
 
         // Convert to desired format
@@ -68,7 +68,7 @@ export async function convertImage(options: ImageConvertOptions): Promise<ImageC
             if (!blob) {
               resolve({
                 success: false,
-                error: "Failed to convert image",
+                error: 'Failed to convert image',
               });
               return;
             }
@@ -90,12 +90,12 @@ export async function convertImage(options: ImageConvertOptions): Promise<ImageC
             reader.readAsDataURL(blob);
           },
           `image/${options.format}`,
-          options.quality || 0.9,
+          options.quality || 0.9
         );
       } catch (error) {
         resolve({
           success: false,
-          error: error instanceof Error ? error.message : "Conversion failed",
+          error: error instanceof Error ? error.message : 'Conversion failed',
         });
       }
     };
@@ -103,7 +103,7 @@ export async function convertImage(options: ImageConvertOptions): Promise<ImageC
     img.onerror = () => {
       resolve({
         success: false,
-        error: "Failed to load image",
+        error: 'Failed to load image',
       });
     };
 
@@ -119,7 +119,7 @@ function calculateDimensions(
   originalHeight: number,
   targetWidth?: number,
   targetHeight?: number,
-  maintainAspectRatio: boolean = true,
+  maintainAspectRatio = true
 ): { width: number; height: number } {
   if (!targetWidth && !targetHeight) {
     return { width: originalWidth, height: originalHeight };
@@ -157,12 +157,11 @@ function calculateDimensions(
       width: calculatedWidth,
       height: targetHeight!,
     };
-  } else {
-    return {
-      width: targetWidth!,
-      height: calculatedHeight,
-    };
   }
+  return {
+    width: targetWidth!,
+    height: calculatedHeight,
+  };
 }
 
 /**
@@ -171,7 +170,7 @@ function calculateDimensions(
 export function toPNG(file: File, width?: number, height?: number): Promise<ImageConvertResult> {
   return convertImage({
     file,
-    format: "png",
+    format: 'png',
     width,
     height,
     maintainAspectRatio: true,
@@ -183,13 +182,13 @@ export function toPNG(file: File, width?: number, height?: number): Promise<Imag
  */
 export function toJPEG(
   file: File,
-  quality: number = 0.9,
+  quality = 0.9,
   width?: number,
-  height?: number,
+  height?: number
 ): Promise<ImageConvertResult> {
   return convertImage({
     file,
-    format: "jpeg",
+    format: 'jpeg',
     quality,
     width,
     height,
@@ -202,13 +201,13 @@ export function toJPEG(
  */
 export function toWebP(
   file: File,
-  quality: number = 0.9,
+  quality = 0.9,
   width?: number,
-  height?: number,
+  height?: number
 ): Promise<ImageConvertResult> {
   return convertImage({
     file,
-    format: "webp",
+    format: 'webp',
     quality,
     width,
     height,
@@ -222,7 +221,7 @@ export function toWebP(
 export function toBMP(file: File, width?: number, height?: number): Promise<ImageConvertResult> {
   return convertImage({
     file,
-    format: "bmp",
+    format: 'bmp',
     width,
     height,
     maintainAspectRatio: true,
@@ -246,7 +245,7 @@ export function getImageDimensions(file: File): Promise<{ width: number; height:
 
     img.onerror = () => {
       URL.revokeObjectURL(img.src);
-      reject(new Error("Failed to load image"));
+      reject(new Error('Failed to load image'));
     };
 
     img.src = URL.createObjectURL(file);

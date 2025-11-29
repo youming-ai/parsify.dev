@@ -2,7 +2,13 @@
  * Infrastructure Types - Types for NLP infrastructure and system operations
  */
 
-import { TaskStatus, Task, NLPEvent, NLPEventListener } from "./core";
+import {
+  type NLPEvent,
+  type NLPEventListener,
+  type NLPEventType,
+  type Task,
+  TaskStatus,
+} from './core';
 
 // Model Management Types
 export interface ModelInfo {
@@ -20,18 +26,18 @@ export interface ModelInfo {
 }
 
 export type ModelType =
-  | "sentiment"
-  | "ner"
-  | "classification"
-  | "translation"
-  | "summarization"
-  | "generation"
-  | "language_detection"
-  | "embeddings"
-  | "tokenization"
-  | "preprocessing";
+  | 'sentiment'
+  | 'ner'
+  | 'classification'
+  | 'translation'
+  | 'summarization'
+  | 'generation'
+  | 'language_detection'
+  | 'embeddings'
+  | 'tokenization'
+  | 'preprocessing';
 
-export type ModelStatus = "unloaded" | "loading" | "loaded" | "error" | "updating" | "unavailable";
+export type ModelStatus = 'unloaded' | 'loading' | 'loaded' | 'error' | 'updating' | 'unavailable';
 
 export interface ModelCapabilities {
   languages: string[];
@@ -43,7 +49,7 @@ export interface ModelCapabilities {
 }
 
 export interface ModelInput {
-  type: "text" | "audio" | "image" | "structured";
+  type: 'text' | 'audio' | 'image' | 'structured';
   format: string[];
   constraints: InputConstraints;
 }
@@ -95,7 +101,7 @@ export interface TrainingDataInfo {
 }
 
 // Performance Monitoring Types
-export interface PerformanceMetrics {
+export interface SystemPerformanceMetrics {
   timestamp: Date;
   operation: string;
   tool: string;
@@ -138,22 +144,22 @@ export interface PerformanceAlert {
   severity: AlertSeverity;
   message: string;
   timestamp: Date;
-  metrics: PerformanceMetrics;
+  metrics: SystemPerformanceMetrics;
   threshold: number;
   suggestion?: string;
 }
 
 export type AlertType =
-  | "memory_usage"
-  | "cpu_usage"
-  | "response_time"
-  | "error_rate"
-  | "cache_miss"
-  | "model_load_failure"
-  | "timeout"
-  | "quota_exceeded";
+  | 'memory_usage'
+  | 'cpu_usage'
+  | 'response_time'
+  | 'error_rate'
+  | 'cache_miss'
+  | 'model_load_failure'
+  | 'timeout'
+  | 'quota_exceeded';
 
-export type AlertSeverity = "info" | "warning" | "error" | "critical";
+export type AlertSeverity = 'info' | 'warning' | 'error' | 'critical';
 
 // Task Management Types
 export interface TaskManager {
@@ -218,7 +224,7 @@ export interface CacheConfig {
   encryption: boolean;
 }
 
-export type CacheStrategy = "lru" | "lfu" | "fifo" | "custom" | "ttl" | "size";
+export type CacheStrategy = 'lru' | 'lfu' | 'fifo' | 'custom' | 'ttl' | 'size';
 
 // Resource Management Types
 export interface ResourceUsage {
@@ -233,7 +239,7 @@ export interface ResourceUsageDetail {
   used: number;
   available: number;
   percentage: number;
-  trend: "increasing" | "decreasing" | "stable";
+  trend: 'increasing' | 'decreasing' | 'stable';
   peak: number;
   average: number;
 }
@@ -258,13 +264,13 @@ export interface ResourceAlert {
 }
 
 export type ResourceType =
-  | "memory"
-  | "cpu"
-  | "storage"
-  | "network"
-  | "models"
-  | "requests"
-  | "bandwidth";
+  | 'memory'
+  | 'cpu'
+  | 'storage'
+  | 'network'
+  | 'models'
+  | 'requests'
+  | 'bandwidth';
 
 // Error Handling Types
 export interface ErrorInfo {
@@ -287,7 +293,7 @@ export interface ErrorContext {
   cause?: Error;
 }
 
-export type ErrorSeverity = "low" | "medium" | "high" | "critical";
+export type ErrorSeverity = 'low' | 'medium' | 'high' | 'critical';
 
 export interface ErrorReport {
   error: ErrorInfo;
@@ -343,14 +349,14 @@ export interface LoggingConfig {
   enableErrorLogs: boolean;
   enableDebugLogs: boolean;
   logRetention: number;
-  format: "json" | "text";
+  format: 'json' | 'text';
   destination: LogDestination[];
 }
 
-export type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 
 export interface LogDestination {
-  type: "console" | "file" | "remote";
+  type: 'console' | 'file' | 'remote';
   config: Record<string, any>;
 }
 
@@ -401,7 +407,7 @@ export interface EventQueue {
 
 // Health Check Types
 export interface HealthCheck {
-  status: "healthy" | "unhealthy" | "degraded";
+  status: 'healthy' | 'unhealthy' | 'degraded';
   timestamp: Date;
   checks: HealthCheckResult[];
   uptime: number;
@@ -411,7 +417,7 @@ export interface HealthCheck {
 
 export interface HealthCheckResult {
   name: string;
-  status: "pass" | "fail" | "warn";
+  status: 'pass' | 'fail' | 'warn';
   message?: string;
   duration: number;
   metadata?: Record<string, any>;
@@ -426,7 +432,7 @@ export interface HealthCheckConfig {
 
 export interface HealthCheckDefinition {
   name: string;
-  type: "dependency" | "resource" | "performance" | "custom";
+  type: 'dependency' | 'resource' | 'performance' | 'custom';
   timeout: number;
   critical: boolean;
   checker: () => Promise<HealthCheckResult>;
@@ -480,11 +486,11 @@ export interface ApiParameter {
   required: boolean;
   description: string;
   default?: any;
-  validation?: ValidationRule[];
+  validation?: ApiValidationRule[];
 }
 
-export interface ValidationRule {
-  type: "required" | "min" | "max" | "pattern" | "custom";
+export interface ApiValidationRule {
+  type: 'required' | 'min' | 'max' | 'pattern' | 'custom';
   value: any;
   message: string;
 }
@@ -578,13 +584,13 @@ export interface ErrorRateStats {
   current: number;
   average24h: number;
   average7d: number;
-  trend: "increasing" | "decreasing" | "stable";
+  trend: 'increasing' | 'decreasing' | 'stable';
 }
 
 export interface PerformanceBottleneck {
   component: string;
   type: string;
-  severity: "low" | "medium" | "high";
+  severity: 'low' | 'medium' | 'high';
   description: string;
   impact: string;
   recommendation: string;
@@ -599,7 +605,7 @@ export interface ResourceDiagnostics {
 }
 
 export interface ResourceHealth {
-  status: "healthy" | "warning" | "critical";
+  status: 'healthy' | 'warning' | 'critical';
   usage: number;
   limit: number;
   percentage: number;
@@ -678,7 +684,7 @@ export interface ErrorTrend {
 }
 
 export interface DiagnosticRecommendation {
-  priority: "low" | "medium" | "high" | "critical";
+  priority: 'low' | 'medium' | 'high' | 'critical';
   category: string;
   description: string;
   impact: string;

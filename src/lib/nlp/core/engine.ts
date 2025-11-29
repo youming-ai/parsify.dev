@@ -3,19 +3,20 @@
  * Provides the main orchestration layer for all NLP operations
  */
 
+import { lazyLoader } from '../infrastructure/lazy-loader';
+import { memoryManager } from '../infrastructure/memory-manager';
+import { modelCache } from '../infrastructure/model-cache';
+import { performanceMonitor } from '../infrastructure/performance-monitor';
 import {
   NLPAnalysis,
-  NLPResult,
-  NLPConfig,
-  TaskStatus,
-  ProcessingPipeline,
+  type NLPConfig,
   NLPEvent,
-  NLPEventListener,
-} from "../types";
-import { performanceMonitor } from "../infrastructure/performance-monitor";
-import { memoryManager } from "../infrastructure/memory-manager";
-import { modelCache } from "../infrastructure/model-cache";
-import { lazyLoader } from "../infrastructure/lazy-loader";
+  type NLPEventListener,
+  type NLPResult,
+  type ProcessingOperation,
+  type ProcessingPipeline,
+  TaskStatus,
+} from '../types';
 
 export interface EngineConfig extends NLPConfig {
   enableCaching: boolean;
@@ -33,32 +34,15 @@ export interface ProcessingRequest {
   operations: ProcessingOperation[];
   config: Partial<NLPConfig>;
   pipeline?: ProcessingPipeline;
-  priority: "low" | "medium" | "high" | "critical";
+  priority: 'low' | 'medium' | 'high' | 'critical';
   timeout?: number;
   metadata?: Record<string, any>;
-}
-
-export interface ProcessingOperation {
-  type:
-    | "sentiment"
-    | "entities"
-    | "keywords"
-    | "language"
-    | "summarization"
-    | "grammar"
-    | "style"
-    | "readability"
-    | "classification"
-    | "translation";
-  tool: string;
-  config?: Record<string, any>;
-  enabled: boolean;
 }
 
 export interface ProcessingResult {
   id: string;
   text: string;
-  operations: ProcessingResult[];
+  operations: OperationResult[];
   pipeline?: ProcessingPipeline;
   performance: PerformanceMetrics;
   metadata: Record<string, any>;
@@ -94,12 +78,12 @@ export interface PerformanceMetrics {
 
 export class NLPEngine {
   private config: EngineConfig;
-  private isInitialized: boolean = false;
+  private isInitialized = false;
   private operationHandlers: Map<string, OperationHandler> = new Map();
   private eventListeners: Map<string, NLPEventListener[]> = new Map();
   private activeRequests: Map<string, ProcessingRequest> = new Map();
   private processingQueue: ProcessingRequest[] = [];
-  private isProcessing: boolean = false;
+  private isProcessing = false;
   private statistics: ProcessingStatistics;
 
   constructor(config: Partial<EngineConfig> = {}) {
@@ -144,7 +128,7 @@ export class NLPEngine {
     if (this.isInitialized) return;
 
     try {
-      this.emitEvent("engine_initialization_started", {});
+      this.emitEvent('engine_initialization_started', {});
 
       // Start monitoring services
       if (this.config.enableProfiling) {
@@ -162,11 +146,11 @@ export class NLPEngine {
       await this.initializeHandlers();
 
       this.isInitialized = true;
-      this.emitEvent("engine_initialized", {});
+      this.emitEvent('engine_initialized', {});
 
-      console.log("NLP Engine initialized successfully");
+      console.log('NLP Engine initialized successfully');
     } catch (error) {
-      this.emitEvent("engine_initialization_failed", { error });
+      this.emitEvent('engine_initialization_failed', { error });
       throw new Error(`Failed to initialize NLP Engine: ${error}`);
     }
   }
@@ -182,7 +166,7 @@ export class NLPEngine {
     const startTime = performance.now();
 
     try {
-      this.emitEvent("processing_started", { requestId: request.id });
+      this.emitEvent('processing_started', { requestId: request.id });
 
       // Validate request
       this.validateRequest(request);
@@ -209,7 +193,7 @@ export class NLPEngine {
       const totalTime = performance.now() - startTime;
       result.performance.totalTime = totalTime;
 
-      this.emitEvent("processing_completed", {
+      this.emitEvent('processing_completed', {
         requestId: request.id,
         success: result.success,
         totalTime,
@@ -240,7 +224,7 @@ export class NLPEngine {
       this.statistics.failed++;
       this.statistics.errorRate = this.statistics.failed / this.statistics.totalProcessed;
 
-      this.emitEvent("processing_failed", {
+      this.emitEvent('processing_failed', {
         requestId: request.id,
         error,
         totalTime,
@@ -335,7 +319,7 @@ export class NLPEngine {
       return false;
     }
 
-    this.emitEvent("request_cancelled", { requestId });
+    this.emitEvent('request_cancelled', { requestId });
 
     // Remove from active requests
     this.activeRequests.delete(requestId);
@@ -354,7 +338,7 @@ export class NLPEngine {
    */
   updateConfig(newConfig: Partial<EngineConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    this.emitEvent("config_updated", { config: this.config });
+    this.emitEvent('config_updated', { config: this.config });
   }
 
   /**
@@ -363,7 +347,7 @@ export class NLPEngine {
   async shutdown(): Promise<void> {
     if (!this.isInitialized) return;
 
-    this.emitEvent("engine_shutdown_started", {});
+    this.emitEvent('engine_shutdown_started', {});
 
     // Cancel all active requests
     for (const requestId of this.activeRequests.keys()) {
@@ -381,9 +365,9 @@ export class NLPEngine {
     await this.unloadAllModels();
 
     this.isInitialized = false;
-    this.emitEvent("engine_shutdown_completed", {});
+    this.emitEvent('engine_shutdown_completed', {});
 
-    console.log("NLP Engine shutdown completed");
+    console.log('NLP Engine shutdown completed');
   }
 
   /**
@@ -393,7 +377,7 @@ export class NLPEngine {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
-    this.eventListeners.get(event)!.push(listener);
+    this.eventListeners.get(event)?.push(listener);
   }
 
   off(event: string, listener: NLPEventListener): void {
@@ -428,7 +412,7 @@ export class NLPEngine {
       performanceMetrics.preprocessingTime = performance.now() - preprocessStart;
 
       // Execute operations
-      const operations = [];
+      const operations: OperationResult[] = [];
       let cacheHits = 0;
       let cacheMisses = 0;
 
@@ -458,7 +442,7 @@ export class NLPEngine {
 
           // Cache the result
           if (this.config.enableCaching && result) {
-            await modelCache.set(cacheKey, "", new ArrayBuffer(0), "1.0.0");
+            await modelCache.set(cacheKey, '', new ArrayBuffer(0), '1.0.0');
           }
         }
 
@@ -518,31 +502,31 @@ export class NLPEngine {
 
     if (preprocessing.normalizeText) {
       // Unicode normalization
-      processed = processed.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      processed = processed.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
 
     if (preprocessing.removeStopwords) {
       // Basic stopword removal (would be more sophisticated in real implementation)
       const stopWords = new Set([
-        "the",
-        "a",
-        "an",
-        "and",
-        "or",
-        "but",
-        "in",
-        "on",
-        "at",
-        "to",
-        "for",
-        "of",
-        "with",
-        "by",
+        'the',
+        'a',
+        'an',
+        'and',
+        'or',
+        'but',
+        'in',
+        'on',
+        'at',
+        'to',
+        'for',
+        'of',
+        'with',
+        'by',
       ]);
       processed = processed
         .split(/\s+/)
         .filter((word) => !stopWords.has(word))
-        .join(" ");
+        .join(' ');
     }
 
     if (preprocessing.stemWords) {
@@ -551,7 +535,7 @@ export class NLPEngine {
     }
 
     if (preprocessing.removePunctuation) {
-      processed = processed.replace(/[^\w\s]/g, "");
+      processed = processed.replace(/[^\w\s]/g, '');
     }
 
     return processed.trim();
@@ -560,7 +544,7 @@ export class NLPEngine {
   private async executeOperation(
     text: string,
     operation: ProcessingOperation,
-    config: Partial<NLPConfig>,
+    config: Partial<NLPConfig>
   ): Promise<any> {
     const handler = this.operationHandlers.get(operation.type);
     if (!handler) {
@@ -571,47 +555,49 @@ export class NLPEngine {
   }
 
   private async postprocessOperations(
-    operations: any[],
-    config: Partial<NLPConfig>,
-  ): Promise<any[]> {
+    operations: OperationResult[],
+    _config: Partial<NLPConfig>
+  ): Promise<OperationResult[]> {
     // Post-processing step - could include result aggregation, formatting, etc.
     return operations;
   }
 
   private validateRequest(request: ProcessingRequest): void {
     if (!request.id) {
-      throw new Error("Request ID is required");
+      throw new Error('Request ID is required');
     }
 
     if (!request.text || request.text.trim().length === 0) {
-      throw new Error("Request text is required and cannot be empty");
+      throw new Error('Request text is required and cannot be empty');
     }
 
     if (!request.operations || request.operations.length === 0) {
-      throw new Error("At least one operation must be specified");
+      throw new Error('At least one operation must be specified');
     }
 
     const enabledOperations = request.operations.filter((op) => op.enabled);
     if (enabledOperations.length === 0) {
-      throw new Error("At least one operation must be enabled");
+      throw new Error('At least one operation must be enabled');
     }
   }
 
   private async checkMemoryAvailability(request: ProcessingRequest): Promise<void> {
     const memoryEstimate = this.estimateMemoryRequirement(request);
-    if (!memoryManager.hasEnoughMemory("nlp_processing", memoryEstimate.totalMemory)) {
+    if (!memoryManager.hasEnoughMemory('nlp_processing', memoryEstimate.totalMemory)) {
       // Try to free up memory
-      const freed = await memoryManager.optimizeMemoryUsage();
+      const _freed = await memoryManager.optimizeMemoryUsage();
 
-      if (!memoryManager.hasEnoughMemory("nlp_processing", memoryEstimate.totalMemory)) {
+      if (!memoryManager.hasEnoughMemory('nlp_processing', memoryEstimate.totalMemory)) {
         throw new Error(
-          `Insufficient memory for processing. Required: ${memoryEstimate.totalMemory}MB, Available: ${memoryManager.getCurrentMemoryUsage().heap.used}MB`,
+          `Insufficient memory for processing. Required: ${memoryEstimate.totalMemory}MB, Available: ${memoryManager.getCurrentMemoryUsage().heap.used}MB`
         );
       }
     }
   }
 
-  private estimateMemoryRequirement(request: ProcessingRequest): { totalMemory: number } {
+  private estimateMemoryRequirement(request: ProcessingRequest): {
+    totalMemory: number;
+  } {
     // Basic memory estimation
     const textLength = request.text.length;
     const operationCount = request.operations.filter((op) => op.enabled).length;
@@ -626,7 +612,7 @@ export class NLPEngine {
     const memoryUsagePercentage = (stats.current.heap.used / stats.current.heap.total) * 100;
 
     if (memoryUsagePercentage > 80) {
-      await memoryManager.performCleanup("medium");
+      await memoryManager.performCleanup('medium');
     }
   }
 
@@ -655,13 +641,13 @@ export class NLPEngine {
     this.statistics.errorRate = this.statistics.failed / this.statistics.totalProcessed;
 
     // Update throughput (operations per second)
-    const now = Date.now();
+    const _now = Date.now();
     // This would need proper time window tracking
   }
 
   private generateCacheKey(text: string, operation: ProcessingOperation): string {
     const hash = this.simpleHash(
-      text + operation.type + operation.tool + JSON.stringify(operation.config || {}),
+      text + operation.type + operation.tool + JSON.stringify(operation.config || {})
     );
     return `${operation.type}:${hash}`;
   }
@@ -683,7 +669,7 @@ export class NLPEngine {
 
   private async initializeHandlers(): Promise<void> {
     // Initialize all registered handlers
-    for (const [operationType, handler] of this.operationHandlers) {
+    for (const [_operationType, handler] of this.operationHandlers) {
       if (handler.initialize) {
         await handler.initialize();
       }
@@ -692,11 +678,11 @@ export class NLPEngine {
 
   private async preloadCriticalModels(): Promise<void> {
     // Preload critical models based on usage patterns
-    const criticalModels = ["sentiment_model", "language_detector", "basic_entities"];
+    const criticalModels = ['sentiment_model', 'language_detector', 'basic_entities'];
 
     for (const modelId of criticalModels) {
       try {
-        await lazyLoader.load(modelId, { priority: "high" });
+        await lazyLoader.load(modelId, { priority: 'high' });
       } catch (error) {
         console.warn(`Failed to preload critical model ${modelId}:`, error);
       }
@@ -705,7 +691,7 @@ export class NLPEngine {
 
   private async unloadAllModels(): Promise<void> {
     // Unload all non-critical models
-    const allItems = lazyLoader.getItems("model", "loaded");
+    const allItems = lazyLoader.getItems('model', 'loaded');
 
     for (const item of allItems) {
       if (!item.persistent) {
@@ -737,7 +723,7 @@ export interface OperationHandler {
   destroy?(): Promise<void>;
 }
 
-export interface ProcessingResult {
+export interface OperationResult {
   type: string;
   tool: string;
   config?: Record<string, any>;
@@ -746,6 +732,8 @@ export interface ProcessingResult {
   processingTime: number;
   error?: Error;
 }
+
+export type { NLPResult };
 
 // Singleton instance
 export const nlpEngine = new NLPEngine();

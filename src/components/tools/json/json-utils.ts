@@ -3,7 +3,7 @@ import type {
   JsonValidationError,
   JsonValidationResult,
   TreeNode,
-} from "./json-types";
+} from './json-types';
 
 export function validateJson(content: string): JsonValidationResult {
   const errors: JsonValidationError[] = [];
@@ -12,7 +12,7 @@ export function validateJson(content: string): JsonValidationResult {
   if (!content.trim()) {
     return {
       isValid: false,
-      errors: [{ line: 1, column: 1, message: "Empty input", severity: "error" }],
+      errors: [{ line: 1, column: 1, message: 'Empty input', severity: 'error' }],
     };
   }
 
@@ -20,7 +20,7 @@ export function validateJson(content: string): JsonValidationResult {
     JSON.parse(content);
   } catch (error) {
     isValid = false;
-    const errorMessage = error instanceof Error ? error.message : "Invalid JSON";
+    const errorMessage = error instanceof Error ? error.message : 'Invalid JSON';
 
     // Parse error message to extract line and column numbers
     const lineMatch = errorMessage.match(/line (\d+)/i);
@@ -35,7 +35,7 @@ export function validateJson(content: string): JsonValidationResult {
     } else if (positionMatch) {
       // Calculate line and column from character position
       const position = Number.parseInt(positionMatch[1], 10);
-      const lines = content.substring(0, position).split("\n");
+      const lines = content.substring(0, position).split('\n');
       line = lines.length;
       column = lines[lines.length - 1].length + 1;
     }
@@ -48,7 +48,7 @@ export function validateJson(content: string): JsonValidationResult {
       line,
       column,
       message: errorMessage,
-      severity: "error",
+      severity: 'error',
     });
   }
 
@@ -74,13 +74,13 @@ export function formatJson(content: string, options: JsonFormatOptions): string 
     }
 
     if (options.trailingComma && !options.compact) {
-      formatted = formatted.replace(/([}\]])/g, "$1,").replace(/,(\s*[}\]])/g, "$1");
+      formatted = formatted.replace(/([}\]])/g, '$1,').replace(/,(\s*[}\]])/g, '$1');
     }
 
     return formatted;
   } catch (error) {
     throw new Error(
-      `Failed to format JSON: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to format JSON: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -90,7 +90,7 @@ export function sortJsonKeys(obj: unknown): unknown {
     return obj.map(sortJsonKeys);
   }
 
-  if (obj !== null && typeof obj === "object") {
+  if (obj !== null && typeof obj === 'object') {
     const sortedObj: Record<string, unknown> = {};
     const keys = Object.keys(obj).sort();
 
@@ -104,8 +104,8 @@ export function sortJsonKeys(obj: unknown): unknown {
   return obj;
 }
 
-export function parseJsonToTree(data: unknown, path = "root", level = 0): TreeNode[] {
-  if (data === null || typeof data !== "object") {
+export function parseJsonToTree(data: unknown, path = 'root', level = 0): TreeNode[] {
+  if (data === null || typeof data !== 'object') {
     return [
       {
         key: path,
@@ -121,7 +121,7 @@ export function parseJsonToTree(data: unknown, path = "root", level = 0): TreeNo
     return data.map((item, index) => ({
       key: `${path}[${index}]`,
       value: item,
-      type: "array",
+      type: 'array',
       path: `${path}[${index}]`,
       children: parseJsonToTree(item, `${path}[${index}]`, level + 1),
       level,
@@ -134,48 +134,48 @@ export function parseJsonToTree(data: unknown, path = "root", level = 0): TreeNo
     type: getValueType(value),
     path: `${path}.${key}`,
     children:
-      typeof value === "object" && value !== null
+      typeof value === 'object' && value !== null
         ? parseJsonToTree(value, `${path}.${key}`, level + 1)
         : undefined,
     level,
   }));
 }
 
-function getValueType(value: unknown): TreeNode["type"] {
-  if (value === null) return "null";
-  if (Array.isArray(value)) return "array";
-  if (typeof value === "object") return "object";
-  if (typeof value === "string") return "string";
-  if (typeof value === "number") return "number";
-  if (typeof value === "boolean") return "boolean";
-  return "string";
+function getValueType(value: unknown): TreeNode['type'] {
+  if (value === null) return 'null';
+  if (Array.isArray(value)) return 'array';
+  if (typeof value === 'object') return 'object';
+  if (typeof value === 'string') return 'string';
+  if (typeof value === 'number') return 'number';
+  if (typeof value === 'boolean') return 'boolean';
+  return 'string';
 }
 
 export function convertJson(
   content: string,
-  targetFormat: "xml" | "yaml" | "csv",
-  options: Record<string, unknown> = {},
+  targetFormat: 'xml' | 'yaml' | 'csv',
+  options: Record<string, unknown> = {}
 ): string {
   try {
     const parsed = JSON.parse(content);
 
     switch (targetFormat) {
-      case "xml":
+      case 'xml':
         return jsonToXml(
           parsed,
-          (options.rootElement as string) || "root",
-          (options.arrayItemName as string) || "item",
+          (options.rootElement as string) || 'root',
+          (options.arrayItemName as string) || 'item'
         );
-      case "yaml":
+      case 'yaml':
         return jsonToYaml(parsed);
-      case "csv":
-        return jsonToCsv(parsed, (options.delimiter as string) || ",");
+      case 'csv':
+        return jsonToCsv(parsed, (options.delimiter as string) || ',');
       default:
         throw new Error(`Unsupported format: ${targetFormat}`);
     }
   } catch (error) {
     throw new Error(
-      `Failed to convert JSON: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to convert JSON: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -184,24 +184,24 @@ function jsonToXml(obj: unknown, rootName: string, itemName: string): string {
   const convertValue = (value: unknown, tagName: string): string => {
     if (value === null) return `<${tagName}/>`;
 
-    if (typeof value === "object" && !Array.isArray(value)) {
+    if (typeof value === 'object' && !Array.isArray(value)) {
       const entries = Object.entries(value as Record<string, unknown>)
         .map(([key, val]) => convertValue(val, key))
-        .join("");
+        .join('');
       return `<${tagName}>${entries}</${tagName}>`;
     }
 
     if (Array.isArray(value)) {
-      const items = value.map((item) => convertValue(item, itemName)).join("");
+      const items = value.map((item) => convertValue(item, itemName)).join('');
       return `<${tagName}>${items}</${tagName}>`;
     }
 
     const escaped = String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
 
     return `<${tagName}>${escaped}</${tagName}>`;
   };
@@ -211,34 +211,34 @@ function jsonToXml(obj: unknown, rootName: string, itemName: string): string {
 
 function jsonToYaml(obj: unknown): string {
   const convertValue = (value: unknown, indent = 0): string => {
-    const spaces = "  ".repeat(indent);
+    const spaces = '  '.repeat(indent);
 
-    if (value === null) return "null";
-    if (typeof value === "boolean") return value.toString();
-    if (typeof value === "number") return value.toString();
-    if (typeof value === "string") return `"${value.replace(/"/g, '\\"')}"`;
+    if (value === null) return 'null';
+    if (typeof value === 'boolean') return value.toString();
+    if (typeof value === 'number') return value.toString();
+    if (typeof value === 'string') return `"${value.replace(/"/g, '\\"')}"`;
 
     if (Array.isArray(value)) {
-      if (value.length === 0) return "[]";
-      return value.map((item) => `\n${spaces}- ${convertValue(item, indent + 1).trim()}`).join("");
+      if (value.length === 0) return '[]';
+      return value.map((item) => `\n${spaces}- ${convertValue(item, indent + 1).trim()}`).join('');
     }
 
-    if (typeof value === "object") {
+    if (typeof value === 'object') {
       const entries = Object.entries(value as Record<string, unknown>);
-      if (entries.length === 0) return "{}";
+      if (entries.length === 0) return '{}';
 
       return entries
         .map(([key, val]) => {
           const yamlValue = convertValue(val, indent + 1);
-          if (typeof val === "object" && val !== null) {
+          if (typeof val === 'object' && val !== null) {
             return `\n${spaces}${key}:${yamlValue}`;
           }
           return `\n${spaces}${key}: ${yamlValue.trim()}`;
         })
-        .join("");
+        .join('');
     }
 
-    return "";
+    return '';
   };
 
   return convertValue(obj).trim();
@@ -246,11 +246,11 @@ function jsonToYaml(obj: unknown): string {
 
 function jsonToCsv(obj: unknown, delimiter: string): string {
   if (!Array.isArray(obj)) {
-    throw new Error("CSV conversion requires an array of objects");
+    throw new Error('CSV conversion requires an array of objects');
   }
 
   if (obj.length === 0) {
-    return "";
+    return '';
   }
 
   const headers = Object.keys(obj[0] as Record<string, unknown>);
@@ -259,8 +259,8 @@ function jsonToCsv(obj: unknown, delimiter: string): string {
   for (const row of obj) {
     const values = headers.map((header) => {
       const value = (row as Record<string, unknown>)[header];
-      if (value === null || value === undefined) return "";
-      if (typeof value === "string" && (value.includes(delimiter) || value.includes('"'))) {
+      if (value === null || value === undefined) return '';
+      if (typeof value === 'string' && (value.includes(delimiter) || value.includes('"'))) {
         return `"${value.replace(/"/g, '""')}"`;
       }
       return String(value);
@@ -268,7 +268,7 @@ function jsonToCsv(obj: unknown, delimiter: string): string {
     csvRows.push(values.join(delimiter));
   }
 
-  return csvRows.join("\n");
+  return csvRows.join('\n');
 }
 
 export function copyToClipboard(text: string): Promise<void> {
@@ -276,29 +276,29 @@ export function copyToClipboard(text: string): Promise<void> {
     return navigator.clipboard.writeText(text);
   }
   // Fallback for older browsers
-  const textArea = document.createElement("textarea");
+  const textArea = document.createElement('textarea');
   textArea.value = text;
-  textArea.style.position = "fixed";
-  textArea.style.left = "-999999px";
-  textArea.style.top = "-999999px";
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-999999px';
+  textArea.style.top = '-999999px';
   document.body.appendChild(textArea);
   textArea.focus();
   textArea.select();
 
   return new Promise((resolve, reject) => {
-    if (document.execCommand("copy")) {
+    if (document.execCommand('copy')) {
       resolve();
     } else {
-      reject(new Error("Failed to copy to clipboard"));
+      reject(new Error('Failed to copy to clipboard'));
     }
     document.body.removeChild(textArea);
   });
 }
 
-export function downloadFile(content: string, filename: string, contentType = "text/plain"): void {
+export function downloadFile(content: string, filename: string, contentType = 'text/plain'): void {
   const blob = new Blob([content], { type: contentType });
   const url = window.URL.createObjectURL(blob);
-  const link = document.createElement("a");
+  const link = document.createElement('a');
   link.href = url;
   link.download = filename;
   document.body.appendChild(link);

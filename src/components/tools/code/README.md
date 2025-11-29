@@ -10,7 +10,7 @@ This package provides a complete code execution environment with support for mul
 
 ### Core Components
 
-- **CodeEditor** - Monaco Editor integration with syntax highlighting
+- **CodeEditor** - CodeMirror integration with syntax highlighting
 - **LanguageSelector** - Dropdown for selecting programming languages
 - **CodeExecution** - Handles code execution with progress tracking
 - **CodeFormatter** - Code formatting with customizable options
@@ -105,7 +105,7 @@ Language configurations are defined in `language-configs.ts` and include:
 - Language name and version
 - File extensions
 - Compilation and execution settings
-- Monaco Editor language mapping
+- CodeMirror language mapping
 - Default code templates
 
 ### Format Options
@@ -149,8 +149,8 @@ Full TypeScript support with comprehensive type definitions for:
 ### Required Dependencies
 
 - `react` - React framework
-- `@monaco-editor/react` - Monaco Editor integration
-- `monaco-editor` - Monaco Editor core
+- `@uiw/react-codemirror` - CodeMirror React wrapper
+- `@codemirror/lang-*` - CodeMirror language support packages
 - `@radix-ui/react-*` - UI primitives
 - `lucide-react` - Icon library
 - `class-variance-authority` - Utility for variant styling

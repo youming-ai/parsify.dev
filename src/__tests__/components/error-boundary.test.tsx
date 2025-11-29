@@ -1,56 +1,58 @@
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { ErrorBoundary } from "@/components/error-boundary";
+import { ErrorBoundary } from '@/components/error-boundary';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 // Component that throws an error
 const ThrowError = ({ shouldThrow = false }: { shouldThrow?: boolean }) => {
   if (shouldThrow) {
-    throw new Error("Test error");
+    throw new Error('Test error');
   }
   return <div>No error</div>;
 };
 
-describe("ErrorBoundary Component", () => {
+describe('ErrorBoundary Component', () => {
   let consoleError: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     // Suppress console.error for these tests
-    consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    consoleError = vi.spyOn(console, 'error').mockImplementation(() => {
+      // Intentionally empty - we're suppressing console.error for tests
+    });
   });
 
   afterEach(() => {
     consoleError.mockRestore();
   });
 
-  it("renders children when there is no error", () => {
+  it('renders children when there is no error', () => {
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={false} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
 
-    expect(screen.getByText("No error")).toBeInTheDocument();
+    expect(screen.getByText('No error')).toBeInTheDocument();
   });
 
-  it("catches and displays error information", () => {
+  it('catches and displays error information', () => {
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
 
     expect(screen.getByText(/出现了一些问题/i)).toBeInTheDocument();
     expect(screen.getByText(/应用程序遇到了意外错误/)).toBeInTheDocument();
   });
 
-  it("displays error details in development mode", () => {
+  it('displays error details in development mode', () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
+    process.env.NODE_ENV = 'development';
 
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
 
     const details = screen.getByText(/错误详情 \(开发模式\)/i);
@@ -59,14 +61,14 @@ describe("ErrorBoundary Component", () => {
     process.env.NODE_ENV = originalEnv;
   });
 
-  it("does not show error details in production", () => {
+  it('does not show error details in production', () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "production";
+    process.env.NODE_ENV = 'production';
 
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
 
     expect(screen.queryByText(/错误详情 \(开发模式\)/i)).not.toBeInTheDocument();
@@ -74,13 +76,13 @@ describe("ErrorBoundary Component", () => {
     process.env.NODE_ENV = originalEnv;
   });
 
-  it("calls onError callback when error occurs", () => {
+  it('calls onError callback when error occurs', () => {
     const onError = vi.fn();
 
     render(
       <ErrorBoundary onError={onError}>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
 
     expect(onError).toHaveBeenCalled();
@@ -88,96 +90,96 @@ describe("ErrorBoundary Component", () => {
       expect.any(Error),
       expect.objectContaining({
         componentStack: expect.any(String),
-      }),
+      })
     );
   });
 
-  it("resets when reset button is clicked", async () => {
+  it('resets when reset button is clicked', async () => {
     const user = userEvent.setup();
 
     const { rerender } = render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
 
     // Should show error state
     expect(screen.getByText(/出现了一些问题/i)).toBeInTheDocument();
 
     // Click reset button
-    const resetButton = screen.getByRole("button", { name: /刷新页面/i });
+    const resetButton = screen.getByRole('button', { name: /刷新页面/i });
     await user.click(resetButton);
 
     // Rerender with non-throwing component
     rerender(
       <ErrorBoundary>
         <ThrowError shouldThrow={false} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
 
     // Should show normal content
-    expect(screen.getByText("No error")).toBeInTheDocument();
+    expect(screen.getByText('No error')).toBeInTheDocument();
   });
 
-  it("limits retry attempts", async () => {
+  it('limits retry attempts', async () => {
     const user = userEvent.setup();
     const maxRetries = 2;
 
     const { rerender } = render(
       <ErrorBoundary maxRetries={maxRetries}>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
 
     // Should show retry button
-    expect(screen.getByRole("button", { name: /重try \(1\/2\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /重try \(1\/2\)/i })).toBeInTheDocument();
 
     // Retry and fail again
-    const retryButton = screen.getByRole("button", { name: /重try \(1\/2\)/i });
+    const retryButton = screen.getByRole('button', { name: /重try \(1\/2\)/i });
     await user.click(retryButton);
 
     rerender(
       <ErrorBoundary maxRetries={maxRetries}>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
 
     // Should show retry button again
-    expect(screen.getByRole("button", { name: /重试 \(2\/2\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /重试 \(2\/2\)/i })).toBeInTheDocument();
 
     // Retry and fail again (max retries reached)
-    const retryButton2 = screen.getByRole("button", { name: /重试 \(2\/2\)/i });
+    const retryButton2 = screen.getByRole('button', { name: /重试 \(2\/2\)/i });
     await user.click(retryButton2);
 
     rerender(
       <ErrorBoundary maxRetries={maxRetries}>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
 
     // Should not show retry button anymore
     expect(screen.queryByText(/重try/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /刷新页面/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /刷新页面/i })).toBeInTheDocument();
   });
 
-  it("renders custom fallback when provided", () => {
+  it('renders custom fallback when provided', () => {
     const customFallback = <div>Custom error message</div>;
 
     render(
       <ErrorBoundary fallback={customFallback}>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
 
-    expect(screen.getByText("Custom error message")).toBeInTheDocument();
+    expect(screen.getByText('Custom error message')).toBeInTheDocument();
     expect(screen.queryByText(/出现了一些问题/i)).not.toBeInTheDocument();
   });
 
-  it("handles resetKeys for automatic reset", () => {
+  it('handles resetKeys for automatic reset', () => {
     const { rerender } = render(
       <ErrorBoundary resetKeys={[1]}>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
 
     // Should show error state
@@ -187,10 +189,10 @@ describe("ErrorBoundary Component", () => {
     rerender(
       <ErrorBoundary resetKeys={[2]}>
         <ThrowError shouldThrow={false} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
 
     // Should automatically reset and show normal content
-    expect(screen.getByText("No error")).toBeInTheDocument();
+    expect(screen.getByText('No error')).toBeInTheDocument();
   });
 });

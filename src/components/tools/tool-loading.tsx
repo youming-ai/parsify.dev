@@ -1,20 +1,20 @@
-import { RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { Button } from '@/components/ui/button';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { RefreshCw } from 'lucide-react';
 
 interface ToolLoadingProps {
   message?: string;
   onRetry?: () => void;
 }
 
-export function ToolLoading({ message = "Loading...", onRetry }: ToolLoadingProps) {
+export function ToolLoading({ message = 'Loading...', onRetry }: ToolLoadingProps) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[200px] space-y-4">
+    <div className="flex min-h-[200px] flex-col items-center justify-center space-y-4">
       <div className="flex items-center space-x-3">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-blue-600 border-b-2" />
         <LoadingSkeleton className="h-4 w-32" />
       </div>
-      <p className="text-gray-600 dark:text-gray-400 text-sm">{message}</p>
+      <p className="text-gray-600 text-sm dark:text-gray-400">{message}</p>
       {onRetry && (
         <Button
           variant="outline"

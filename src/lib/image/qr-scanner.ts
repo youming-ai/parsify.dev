@@ -11,8 +11,8 @@
  * - Memory management and cleanup
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useCanvasOperations } from "./canvas-operations";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCanvasOperations } from './canvas-operations';
 
 export interface QRScanResult {
   data: string;
@@ -27,7 +27,7 @@ export interface QRScanResult {
 }
 
 export interface QRScannerConfig {
-  preferCamera?: "environment" | "user";
+  preferCamera?: 'environment' | 'user';
   maxScanAttempts?: number;
   scanTimeout?: number;
   enableBarcodeDetection?: boolean;
@@ -36,7 +36,7 @@ export interface QRScannerConfig {
 }
 
 export interface QRScanError {
-  type: "permission" | "device" | "timeout" | "invalid" | "unsupported";
+  type: 'permission' | 'device' | 'timeout' | 'invalid' | 'unsupported';
   message: string;
   details?: any;
 }
@@ -46,7 +46,7 @@ export interface QRScanError {
  */
 export const useQRScanner = (config: QRScannerConfig = {}) => {
   const {
-    preferCamera = "environment",
+    preferCamera = 'environment',
     maxScanAttempts = 3,
     scanTimeout = 10000,
     enableBarcodeDetection = true,
@@ -78,9 +78,9 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
     try {
       // Check if we can access permissions API
       if (navigator.permissions?.query) {
-        const result = await navigator.permissions.query({ name: "camera" as PermissionName });
-        setHasPermission(result.state === "granted");
-        return result.state === "granted";
+        const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
+        setHasPermission(result.state === 'granted');
+        return result.state === 'granted';
       }
 
       // Fallback: try to access camera directly
@@ -113,8 +113,8 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
       return true;
     } catch (error: any) {
       const permissionError: QRScanError = {
-        type: "permission",
-        message: "Camera permission denied",
+        type: 'permission',
+        message: 'Camera permission denied',
         details: error,
       };
       setLastError(permissionError);
@@ -123,15 +123,62 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
     }
   }, [preferCamera]);
 
+  const handleSuccessfulScan = useCallback((data: string) => {
+    const result: QRScanResult = {
+      data,
+      format: 'qr_code',
+      confidence: 1.0,
+      scanTime: 0,
+      metadata: {
+        attempts: scanAttemptsRef.current,
+      },
+    };
+
+    setScanResults([result]);
+    setIsScanning(false);
+
+    if (scanTimeoutRef.current) {
+      clearTimeout(scanTimeoutRef.current);
+      scanTimeoutRef.current = null;
+    }
+  }, []);
+
+  const handleScanError = useCallback((error: any) => {
+    let scanError: QRScanError;
+
+    if (error.name === 'NotFoundError') {
+      scanError = {
+        type: 'device',
+        message: 'No camera found',
+        details: error,
+      };
+    } else if (error.name === 'NotAllowedError') {
+      scanError = {
+        type: 'permission',
+        message: 'Camera permission denied',
+        details: error,
+      };
+    } else {
+      scanError = {
+        type: 'invalid',
+        message: 'Scan failed',
+        details: error,
+      };
+    }
+
+    setLastError(scanError);
+    setIsScanning(false);
+  }, []);
+
   /**
    * Initialize scanner
    */
   const initializeScanner = useCallback(async (): Promise<void> => {
     try {
       // Check if qr-scanner is available
-      if (typeof window === "undefined" || !("QrScanner" in window)) {
+      if (typeof window === 'undefined' || !('QrScanner' in window)) {
         // Load qr-scanner dynamically
-        await import("qr-scanner");
+        await import('qr-scanner');
       }
 
       if (!scannerRef.current && videoRef.current) {
@@ -146,23 +193,34 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
             highlightScanRegion: true,
             highlightCodeOutline: true,
             preferredCamera: preferCamera,
-          },
+          }
         );
 
         // Set up error handling
-        scannerRef.current.addEventListener("error", (error: any) => {
+        scannerRef.current.addEventListener('error', (error: any) => {
           handleScanError(error);
         });
       }
     } catch (error: any) {
       const scannerError: QRScanError = {
-        type: "unsupported",
-        message: "QR scanner not supported",
+        type: 'unsupported',
+        message: 'QR scanner not supported',
         details: error,
       };
       setLastError(scannerError);
     }
   }, [preferCamera, handleScanError, handleSuccessfulScan]);
+
+  const handleScanTimeout = useCallback(() => {
+    const timeoutError: QRScanError = {
+      type: 'timeout',
+      message: 'Scanning timed out',
+      details: { timeout: scanTimeout },
+    };
+
+    setLastError(timeoutError);
+    setIsScanning(false);
+  }, [scanTimeout]);
 
   /**
    * Start camera scanning
@@ -185,7 +243,7 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
       await initializeScanner();
 
       if (!scannerRef.current) {
-        throw new Error("Failed to initialize QR scanner");
+        throw new Error('Failed to initialize QR scanner');
       }
 
       await scannerRef.current.start();
@@ -200,8 +258,8 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
       }, scanTimeout);
     } catch (error: any) {
       const scanError: QRScanError = {
-        type: "device",
-        message: "Failed to start camera scanning",
+        type: 'device',
+        message: 'Failed to start camera scanning',
         details: error,
       };
       setLastError(scanError);
@@ -217,98 +275,26 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
     handleScanTimeout,
   ]);
 
-  /**
-   * Scan from image file
-   */
-  const scanFromImage = useCallback(
-    async (imageSource: File | Blob | string | HTMLImageElement): Promise<QRScanResult[]> => {
-      try {
-        setLastError(null);
-        scanAttemptsRef.current = 0;
-        const startTime = performance.now();
+  const estimateScanQuality = useCallback(
+    (image: HTMLImageElement, result: QRScanResult): number => {
+      let quality = 1.0;
 
-        // Load image
-        let image: HTMLImageElement;
-        if (typeof imageSource === "string" && imageSource.startsWith("data:")) {
-          image = await loadImage(imageSource);
-        } else if (imageSource instanceof File || imageSource instanceof Blob) {
-          image = await loadImage(imageSource);
-        } else if (imageSource instanceof HTMLImageElement) {
-          image = imageSource;
-        } else {
-          throw new Error("Invalid image source");
+      if (result.metadata?.position) {
+        const { width, height } = result.metadata.position;
+        const imageArea = image.width * image.height;
+        const codeArea = width * height;
+        const coverageRatio = codeArea / imageArea;
+
+        if (coverageRatio < 0.05) {
+          quality *= 0.7;
+        } else if (coverageRatio > 0.5) {
+          quality *= 0.8;
         }
-
-        const results: QRScanResult[] = [];
-
-        // Try multiple scanning strategies
-        const strategies = [
-          () => scanWithQRScanner(image),
-          ...(enableBarcodeDetection ? [() => scanWithBarcodeDetector(image)] : []),
-          ...(enablePreprocessing
-            ? [
-                () => scanWithPreprocessing(image, "brightness"),
-                () => scanWithPreprocessing(image, "contrast"),
-                () => scanWithPreprocessing(image, "blur"),
-                () => scanWithPreprocessing(image, "grayscale"),
-              ]
-            : []),
-        ];
-
-        for (const strategy of strategies) {
-          try {
-            const strategyResults = await strategy();
-            if (strategyResults.length > 0) {
-              results.push(...strategyResults);
-              break; // Stop on first successful scan
-            }
-          } catch (_strategyError) {
-            // Continue with next strategy
-            continue;
-          }
-
-          scanAttemptsRef.current++;
-          if (scanAttemptsRef.current >= maxScanAttempts) {
-            break;
-          }
-        }
-
-        if (results.length === 0) {
-          throw new Error("No QR code found in image");
-        }
-
-        const scanTime = performance.now() - startTime;
-        results.forEach((result) => {
-          result.scanTime = scanTime;
-          result.metadata = {
-            ...result.metadata,
-            attempts: scanAttemptsRef.current,
-            quality: estimateScanQuality(image, result),
-          };
-        });
-
-        setScanResults(results);
-        return results;
-      } catch (error: any) {
-        const scanError: QRScanError = {
-          type: "invalid",
-          message: "No QR code found in image",
-          details: error,
-        };
-        setLastError(scanError);
-        return [];
       }
+
+      return Math.max(0, quality);
     },
-    [
-      loadImage,
-      enableBarcodeDetection,
-      enablePreprocessing,
-      maxScanAttempts,
-      estimateScanQuality,
-      scanWithBarcodeDetector,
-      scanWithPreprocessing,
-      scanWithQRScanner,
-    ],
+    []
   );
 
   /**
@@ -316,8 +302,8 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
    */
   const scanWithQRScanner = useCallback(
     async (image: HTMLImageElement): Promise<QRScanResult[]> => {
-      if (!("QrScanner" in window)) {
-        throw new Error("QR Scanner not available");
+      if (!('QrScanner' in window)) {
+        throw new Error('QR Scanner not available');
       }
 
       const QrScanner = (window as any).QrScanner;
@@ -329,7 +315,7 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
         return [
           {
             data: result.data,
-            format: result.format || "qr_code",
+            format: result.format || 'qr_code',
             confidence: 1.0,
             scanTime: 0,
             metadata: {
@@ -352,7 +338,7 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
 
       return [];
     },
-    [],
+    []
   );
 
   /**
@@ -360,11 +346,11 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
    */
   const scanWithBarcodeDetector = useCallback(
     async (image: HTMLImageElement): Promise<QRScanResult[]> => {
-      if (!("BarcodeDetector" in window)) {
-        throw new Error("BarcodeDetector not supported");
+      if (!('BarcodeDetector' in window)) {
+        throw new Error('BarcodeDetector not supported');
       }
 
-      const barcodeDetector = new (window as any).BarcodeDetector({ formats: ["qr_code"] });
+      const barcodeDetector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
       const barcodes = await barcodeDetector.detect(image);
 
       return barcodes.map((barcode: any) => ({
@@ -382,7 +368,7 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
         },
       }));
     },
-    [],
+    []
   );
 
   /**
@@ -393,16 +379,16 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
       let filters = {};
 
       switch (filterType) {
-        case "brightness":
+        case 'brightness':
           filters = { brightness: 20 };
           break;
-        case "contrast":
+        case 'contrast':
           filters = { contrast: 30 };
           break;
-        case "blur":
+        case 'blur':
           filters = { blur: 0.5 };
           break;
-        case "grayscale":
+        case 'grayscale':
           filters = { grayscale: true };
           break;
       }
@@ -419,103 +405,99 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
 
       return scanWithQRScanner(processedImage);
     },
-    [applyFilters, scanWithQRScanner],
+    [applyFilters, scanWithQRScanner]
   );
 
   /**
-   * Estimate scan quality
+   * Scan from image file
    */
-  const estimateScanQuality = useCallback(
-    (image: HTMLImageElement, result: QRScanResult): number => {
-      // Simple quality estimation based on various factors
-      let quality = 1.0;
+  const scanFromImage = useCallback(
+    async (imageSource: File | Blob | string | HTMLImageElement): Promise<QRScanResult[]> => {
+      try {
+        setLastError(null);
+        scanAttemptsRef.current = 0;
+        const startTime = performance.now();
 
-      // Check if position information is available
-      if (result.metadata?.position) {
-        const { width, height } = result.metadata.position;
-        const imageArea = image.width * image.height;
-        const codeArea = width * height;
-        const coverageRatio = codeArea / imageArea;
-
-        // Prefer QR codes that occupy reasonable portion of image (5-50%)
-        if (coverageRatio < 0.05) {
-          quality *= 0.7; // Too small
-        } else if (coverageRatio > 0.5) {
-          quality *= 0.8; // Too large
+        let image: HTMLImageElement;
+        if (typeof imageSource === 'string' && imageSource.startsWith('data:')) {
+          image = await loadImage(imageSource);
+        } else if (imageSource instanceof File || imageSource instanceof Blob) {
+          image = await loadImage(imageSource);
+        } else if (imageSource instanceof HTMLImageElement) {
+          image = imageSource;
+        } else {
+          throw new Error('Invalid image source');
         }
+
+        const results: QRScanResult[] = [];
+
+        const strategies = [
+          () => scanWithQRScanner(image),
+          ...(enableBarcodeDetection ? [() => scanWithBarcodeDetector(image)] : []),
+          ...(enablePreprocessing
+            ? [
+                () => scanWithPreprocessing(image, 'brightness'),
+                () => scanWithPreprocessing(image, 'contrast'),
+                () => scanWithPreprocessing(image, 'blur'),
+                () => scanWithPreprocessing(image, 'grayscale'),
+              ]
+            : []),
+        ];
+
+        for (const strategy of strategies) {
+          try {
+            const strategyResults = await strategy();
+            if (strategyResults.length > 0) {
+              results.push(...strategyResults);
+              break;
+            }
+          } catch (_strategyError) {
+            continue;
+          }
+
+          scanAttemptsRef.current++;
+          if (scanAttemptsRef.current >= maxScanAttempts) {
+            break;
+          }
+        }
+
+        if (results.length === 0) {
+          throw new Error('No QR code found in image');
+        }
+
+        const scanTime = performance.now() - startTime;
+        results.forEach((result) => {
+          result.scanTime = scanTime;
+          result.metadata = {
+            ...result.metadata,
+            attempts: scanAttemptsRef.current,
+            quality: estimateScanQuality(image, result),
+          };
+        });
+
+        setScanResults(results);
+        return results;
+      } catch (error: any) {
+        const scanError: QRScanError = {
+          type: 'invalid',
+          message: 'No QR code found in image',
+          details: error,
+        };
+        setLastError(scanError);
+        return [];
       }
-
-      return Math.max(0, quality);
     },
-    [],
+    [
+      loadImage,
+      enableBarcodeDetection,
+      enablePreprocessing,
+      maxScanAttempts,
+      estimateScanQuality,
+      scanWithBarcodeDetector,
+      scanWithPreprocessing,
+      scanWithQRScanner,
+    ]
   );
-
-  /**
-   * Handle successful scan
-   */
-  const handleSuccessfulScan = useCallback((data: string) => {
-    const result: QRScanResult = {
-      data,
-      format: "qr_code",
-      confidence: 1.0,
-      scanTime: 0,
-      metadata: {
-        attempts: scanAttemptsRef.current,
-      },
-    };
-
-    setScanResults([result]);
-    setIsScanning(false);
-
-    if (scanTimeoutRef.current) {
-      clearTimeout(scanTimeoutRef.current);
-      scanTimeoutRef.current = null;
-    }
-  }, []);
-
-  /**
-   * Handle scan error
-   */
-  const handleScanError = useCallback((error: any) => {
-    let scanError: QRScanError;
-
-    if (error.name === "NotFoundError") {
-      scanError = {
-        type: "device",
-        message: "No camera found",
-        details: error,
-      };
-    } else if (error.name === "NotAllowedError") {
-      scanError = {
-        type: "permission",
-        message: "Camera permission denied",
-        details: error,
-      };
-    } else {
-      scanError = {
-        type: "invalid",
-        message: "Scan failed",
-        details: error,
-      };
-    }
-
-    setLastError(scanError);
-    setIsScanning(false);
-  }, []);
-
-  /**
-   * Handle scan timeout
-   */
-  const handleScanTimeout = useCallback(() => {
-    const timeoutError: QRScanError = {
-      type: "timeout",
-      message: "Scanning timed out",
-      details: { timeout: scanTimeout },
-    };
-
-    setLastError(timeoutError);
-    setIsScanning(false);
-  }, [scanTimeout]);
 
   /**
    * Stop scanning
@@ -551,11 +533,11 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
    */
   const isSupported = useCallback((): boolean => {
     return (
-      "QrScanner" in window ||
-      "BarcodeDetector" in window ||
-      (typeof navigator !== "undefined" &&
+      'QrScanner' in window ||
+      'BarcodeDetector' in window ||
+      (typeof navigator !== 'undefined' &&
         navigator.mediaDevices &&
-        "getUserMedia" in navigator.mediaDevices)
+        'getUserMedia' in navigator.mediaDevices)
     );
   }, []);
 
@@ -594,7 +576,7 @@ export const useQRScanner = (config: QRScannerConfig = {}) => {
  * Validate QR code content
  */
 export const validateQRCode = (
-  data: string,
+  data: string
 ): {
   isValid: boolean;
   type?: string;
@@ -606,43 +588,43 @@ export const validateQRCode = (
   // Check if it's a URL
   try {
     const _url = new URL(data);
-    type = "url";
+    type = 'url';
   } catch {
     // Not a URL
   }
 
   // Check if it's email
-  if (data.includes("@") && data.includes(".")) {
-    type = type || "email";
+  if (data.includes('@') && data.includes('.')) {
+    type = type || 'email';
   }
 
   // Check if it's phone number
   if (data.match(/^[+]?[1-9][\d]{3,14}$/)) {
-    type = type || "phone";
+    type = type || 'phone';
   }
 
   // Check if it's WiFi config
-  if (data.startsWith("WIFI:")) {
-    type = type || "wifi";
+  if (data.startsWith('WIFI:')) {
+    type = type || 'wifi';
   }
 
   // Check if it's vCard
-  if (data.startsWith("BEGIN:VCARD")) {
-    type = type || "vcard";
+  if (data.startsWith('BEGIN:VCARD')) {
+    type = type || 'vcard';
   }
 
   // Check if it's text content
   if (!type) {
-    type = "text";
+    type = 'text';
   }
 
   // Basic validation
   if (data.length === 0) {
-    errors.push("Empty QR code");
+    errors.push('Empty QR code');
   }
 
   if (data.length > 4296) {
-    errors.push("QR code too long");
+    errors.push('QR code too long');
   }
 
   return {

@@ -3,12 +3,12 @@
  * Centralized configuration for analytics settings
  */
 
-import type { AnalyticsConfig } from "./types";
+import type { AnalyticsConfig } from './types';
 
 export const DEFAULT_ANALYTICS_CONFIG: AnalyticsConfig = {
-  trackingId: process.env.NEXT_PUBLIC_CLOUDFLARE_ANALYTICS_ID || "",
-  enabled: process.env.NODE_ENV !== "development",
-  debug: process.env.NODE_ENV === "development",
+  trackingId: process.env.NEXT_PUBLIC_CLOUDFLARE_ANALYTICS_ID || '',
+  enabled: process.env.NODE_ENV !== 'development',
+  debug: process.env.NODE_ENV === 'development',
   enablePerformanceMonitoring: true,
   enableInteractionTracking: true,
   sampleRate: 1.0,
@@ -21,77 +21,28 @@ export const DEFAULT_ANALYTICS_CONFIG: AnalyticsConfig = {
     respectDNT: true,
     anonymizeIP: true,
     requireConsent: true,
-    cookieConsent: "analytics",
+    cookieConsent: 'analytics',
     dataRetentionDays: 365,
   },
   customEvents: {
     enabled: true,
     allowedEvents: [
-      "tool_usage",
-      "performance",
-      "user_interaction",
-      "api_usage",
-      "feature_usage",
-      "error",
+      'tool_usage',
+      'performance',
+      'user_interaction',
+      'api_usage',
+      'feature_usage',
+      'error',
     ],
     maxProperties: 20,
   },
 };
 
-// Microsoft Clarity configuration
-export const MICROSOFT_CLARITY_CONFIG = {
-  projectId: process.env.NEXT_PUBLIC_MICROSOFT_CLARITY_ID || "u7vew6ll9z",
-  enabled: process.env.NODE_ENV !== "development",
-  debug: process.env.NODE_ENV === "development",
-
-  // Clarity-specific settings
-  upload: {
-    // Enable automatic data upload
-    enabled: true,
-    // Maximum content length for uploaded data
-    maxContentLength: 50000,
-    // Upload throttle time in milliseconds
-    throttleTime: 1000,
-  },
-
-  // User privacy settings
-  privacy: {
-    // Obfuscate user input data
-    obscureInputElements: true,
-    // Obfuscate numeric data
-    obscureNumbers: false,
-    // Capture all user input
-    captureAllInput: false,
-  },
-
-  // Session recording settings
-  sessionRecording: {
-    // Enable session recording
-    enabled: true,
-    // Maximum recording duration in minutes
-    maxDuration: 30,
-    // Record console logs
-    captureConsoleLog: false,
-  },
-
-  // Heatmap settings
-  heatmap: {
-    // Enable heatmap generation
-    enabled: true,
-    // Track click positions
-    trackClicks: true,
-    // Track scroll depth
-    trackScrolling: true,
-    // Track movement patterns
-    trackMovement: false,
-  },
-} as const;
-
 // Google Analytics configuration
 export const GOOGLE_ANALYTICS_CONFIG = {
-  measurementId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "",
-  enabled: process.env.NODE_ENV !== "development",
-  debug: process.env.NODE_ENV === "development",
+  measurementId: '',
+  enabled: false,
+  debug: process.env.NODE_ENV === 'development',
   anonymizeIp: true,
   allowAdPersonalization: false,
   sendPageView: true,
@@ -131,126 +82,126 @@ export const GOOGLE_ANALYTICS_CONFIG = {
   // Custom dimensions and metrics
   customDimensions: {
     // Tool usage tracking
-    tool_name: "custom_dimension_1",
-    tool_action: "custom_dimension_2",
-    user_role: "custom_dimension_3",
-    feature_usage: "custom_dimension_4",
+    tool_name: 'custom_dimension_1',
+    tool_action: 'custom_dimension_2',
+    user_role: 'custom_dimension_3',
+    feature_usage: 'custom_dimension_4',
   },
 
   // Custom metrics
   customMetrics: {
     // Performance metrics
-    load_time: "custom_metric_1",
-    interaction_time: "custom_metric_2",
-    tool_executions: "custom_metric_3",
+    load_time: 'custom_metric_1',
+    interaction_time: 'custom_metric_2',
+    tool_executions: 'custom_metric_3',
   },
 } as const;
 
 export const ANALYTICS_EVENTS = {
   // Standard events
-  PAGE_VIEW: "page_view",
-  TOOL_USAGE: "tool_usage",
-  PERFORMANCE: "performance",
-  USER_INTERACTION: "user_interaction",
-  API_USAGE: "api_usage",
+  PAGE_VIEW: 'page_view',
+  TOOL_USAGE: 'tool_usage',
+  PERFORMANCE: 'performance',
+  USER_INTERACTION: 'user_interaction',
+  API_USAGE: 'api_usage',
 
   // Custom events
-  FEATURE_USAGE: "feature_usage",
-  ERROR: "error",
-  CONSENT_UPDATE: "consent_update",
+  FEATURE_USAGE: 'feature_usage',
+  ERROR: 'error',
+  CONSENT_UPDATE: 'consent_update',
 
   // Tool-specific events
-  JSON_VALIDATE: "json_validate",
-  JSON_FORMAT: "json_format",
-  JSON_CONVERT: "json_convert",
-  CODE_EXECUTE: "code_execute",
-  CODE_FORMAT: "code_format",
+  JSON_VALIDATE: 'json_validate',
+  JSON_FORMAT: 'json_format',
+  JSON_CONVERT: 'json_convert',
+  CODE_EXECUTE: 'code_execute',
+  CODE_FORMAT: 'code_format',
 
   // GA4 Standard Events
-  GA4_ADD_TO_CART: "add_to_cart",
-  GA4_BEGIN_CHECKOUT: "begin_checkout",
-  GA4_GENERATE_LEAD: "generate_lead",
-  GA4_LOGIN: "login",
-  GA4_PURCHASE: "purchase",
-  GA4_SEARCH: "search",
-  GA4_SELECT_CONTENT: "select_content",
-  GA4_SHARE: "share",
-  GA4_SIGN_UP: "sign_up",
-  GA4_TUTORIAL_BEGIN: "tutorial_begin",
-  GA4_TUTORIAL_COMPLETE: "tutorial_complete",
-  GA4_VIEW_ITEM: "view_item",
-  GA4_VIEW_ITEM_LIST: "view_item_list",
+  GA4_ADD_TO_CART: 'add_to_cart',
+  GA4_BEGIN_CHECKOUT: 'begin_checkout',
+  GA4_GENERATE_LEAD: 'generate_lead',
+  GA4_LOGIN: 'login',
+  GA4_PURCHASE: 'purchase',
+  GA4_SEARCH: 'search',
+  GA4_SELECT_CONTENT: 'select_content',
+  GA4_SHARE: 'share',
+  GA4_SIGN_UP: 'sign_up',
+  GA4_TUTORIAL_BEGIN: 'tutorial_begin',
+  GA4_TUTORIAL_COMPLETE: 'tutorial_complete',
+  GA4_VIEW_ITEM: 'view_item',
+  GA4_VIEW_ITEM_LIST: 'view_item_list',
 } as const;
 
 export const PERFORMANCE_METRICS = {
-  LCP: "largest_contentful_paint",
-  FID: "first_input_delay",
-  CLS: "cumulative_layout_shift",
-  FCP: "first_contentful_paint",
-  TTFB: "time_to_first_byte",
-  DOM_CONTENT_LOADED: "dom_content_loaded",
-  LOAD: "load",
+  LCP: 'largest_contentful_paint',
+  FID: 'first_input_delay',
+  CLS: 'cumulative_layout_shift',
+  FCP: 'first_contentful_paint',
+  TTFB: 'time_to_first_byte',
+  DOM_CONTENT_LOADED: 'dom_content_loaded',
+  LOAD: 'load',
 } as const;
 
 export const INTERACTION_TYPES = {
-  CLICK: "click",
-  SCROLL: "scroll",
-  FOCUS: "focus",
-  BLUR: "blur",
-  SUBMIT: "submit",
-  NAVIGATION: "navigation",
+  CLICK: 'click',
+  SCROLL: 'scroll',
+  FOCUS: 'focus',
+  BLUR: 'blur',
+  SUBMIT: 'submit',
+  NAVIGATION: 'navigation',
 } as const;
 
 export const TOOL_ACTIONS = {
-  EXECUTE: "execute",
-  VALIDATE: "validate",
-  FORMAT: "format",
-  CONVERT: "convert",
-  ERROR: "error",
+  EXECUTE: 'execute',
+  VALIDATE: 'validate',
+  FORMAT: 'format',
+  CONVERT: 'convert',
+  ERROR: 'error',
 } as const;
 
 export const CONSENT_LEVELS = {
-  NONE: "none",
-  NECESSARY: "necessary",
-  FUNCTIONAL: "functional",
-  ANALYTICS: "analytics",
-  ALL: "all",
+  NONE: 'none',
+  NECESSARY: 'necessary',
+  FUNCTIONAL: 'functional',
+  ANALYTICS: 'analytics',
+  ALL: 'all',
 } as const;
 
 // Cloudflare Analytics specific configuration
 export const CLOUDFLARE_ANALYTICS_CONFIG = {
   // Cloudflare Web Analytics endpoint
-  endpoint: "https://cloudflareinsights.com/cdn-cgi/rum",
+  endpoint: 'https://cloudflareinsights.com/cdn-cgi/rum',
 
   // Custom data endpoint
-  customDataEndpoint: "/api/v1/analytics/events",
+  customDataEndpoint: '/api/v1/analytics/events',
 
   // Real-time analytics endpoint
-  realtimeEndpoint: "/api/v1/analytics/realtime",
+  realtimeEndpoint: '/api/v1/analytics/realtime',
 
   // Dashboard data endpoint
-  dashboardEndpoint: "/api/v1/analytics/dashboard",
+  dashboardEndpoint: '/api/v1/analytics/dashboard',
 
   // Cookie configuration
   cookies: {
-    session: "cf_session_id",
-    consent: "cf_analytics_consent",
-    userId: "cf_user_id",
+    session: 'cf_session_id',
+    consent: 'cf_analytics_consent',
+    userId: 'cf_user_id',
   },
 
   // Local storage keys
   storage: {
-    consent: "cf_analytics_consent",
-    sessionId: "cf_session_id",
-    userId: "cf_user_id",
-    config: "cf_analytics_config",
+    consent: 'cf_analytics_consent',
+    sessionId: 'cf_session_id',
+    userId: 'cf_user_id',
+    config: 'cf_analytics_config',
   },
 
   // Request headers
   headers: {
-    traceId: "CF-Trace-ID",
-    requestId: "CF-Request-ID",
-    rayId: "CF-Ray",
+    traceId: 'CF-Trace-ID',
+    requestId: 'CF-Request-ID',
+    rayId: 'CF-Ray',
   },
 } as const;
 

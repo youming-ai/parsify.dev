@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { File as FileIcon, X } from "lucide-react";
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
-import { FileDropZone } from "./file-drop-zone";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
+import { File as FileIcon, X } from 'lucide-react';
+import * as React from 'react';
+import { FileDropZone } from './file-drop-zone';
 
 export interface FileUploadProps {
   files: File[];
@@ -39,7 +39,7 @@ export function FileUpload({
       const isValidFormat =
         acceptedFormats.length === 0 ||
         acceptedFormats.some((format) =>
-          file.name.toLowerCase().endsWith(`.${format.toLowerCase()}`),
+          file.name.toLowerCase().endsWith(`.${format.toLowerCase()}`)
         );
 
       return isValidSize && isValidFormat;
@@ -85,15 +85,15 @@ export function FileUpload({
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
+    return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn('space-y-4', className)}>
       <FileDropZone
         onDrop={handleFilesDrop}
         maxSize={maxFileSize}
@@ -108,8 +108,8 @@ export function FileUpload({
             {Object.entries(uploadProgress).map(([fileName, progress]) => (
               <div key={fileName} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium truncate">{fileName}</span>
-                  <span className="text-sm text-gray-500">{Math.round(progress)}%</span>
+                  <span className="truncate font-medium text-sm">{fileName}</span>
+                  <span className="text-gray-500 text-sm">{Math.round(progress)}%</span>
                 </div>
                 <Progress value={progress} className="h-2" />
               </div>
@@ -125,13 +125,13 @@ export function FileUpload({
               {files.map((file, index) => (
                 <div
                   key={`${file.name}-${index}`}
-                  className="flex items-center justify-between p-3 border rounded-lg"
+                  className="flex items-center justify-between rounded-lg border p-3"
                 >
-                  <div className="flex items-center space-x-3 flex-1 min-w-0">
-                    <FileIcon className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{file.name}</p>
-                      <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                  <div className="flex min-w-0 flex-1 items-center space-x-3">
+                    <FileIcon className="h-5 w-5 flex-shrink-0 text-gray-400" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-sm">{file.name}</p>
+                      <p className="text-gray-500 text-xs">{formatFileSize(file.size)}</p>
                     </div>
                   </div>
                   <Button

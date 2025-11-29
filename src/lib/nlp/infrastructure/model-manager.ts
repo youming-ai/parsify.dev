@@ -2,29 +2,31 @@
  * Model Manager - Manages loading, caching, and lifecycle of TensorFlow.js models
  */
 
-import * as tf from "@tensorflow/tfjs";
+import * as tf from '@tensorflow/tfjs';
 import {
-  ModelInfo,
-  ModelStatus,
-  ModelPerformanceMetrics,
-  PerformanceAlert,
-  AlertType,
   AlertSeverity,
-} from "../types";
-import { modelCache } from "./model-cache";
-import { performanceMonitor } from "./performance-monitor";
-import { memoryManager } from "./memory-manager";
-import { lazyLoader } from "./lazy-loader";
+  AlertType,
+  type ModelInfo,
+  ModelPerformanceMetrics,
+  type ModelStatus,
+  PerformanceAlert,
+} from '../types';
+import { type LoadPriority, lazyLoader } from './lazy-loader';
+import { memoryManager } from './memory-manager';
+import { modelCache } from './model-cache';
+import { performanceMonitor } from './performance-monitor';
 
 export interface ModelLoadOptions {
   timeout?: number;
-  priority?: "low" | "medium" | "high" | "critical";
+  priority?: 'low' | 'medium' | 'high' | 'critical';
   force?: boolean;
   warmup?: boolean;
   quantized?: boolean;
   batchSize?: number;
   maxConcurrency?: number;
 }
+
+type ModelInstance = tf.LayersModel | tf.GraphModel;
 
 export interface ModelRegistry {
   [modelId: string]: ModelDefinition;
@@ -46,16 +48,16 @@ export interface ModelDefinition {
 }
 
 export type ModelType =
-  | "sentiment_analysis"
-  | "entity_recognition"
-  | "text_classification"
-  | "language_detection"
-  | "text_summarization"
-  | "text_generation"
-  | "translation"
-  | "grammar_checking"
-  | "text_embedding"
-  | "tokenization";
+  | 'sentiment_analysis'
+  | 'entity_recognition'
+  | 'text_classification'
+  | 'language_detection'
+  | 'text_summarization'
+  | 'text_generation'
+  | 'translation'
+  | 'grammar_checking'
+  | 'text_embedding'
+  | 'tokenization';
 
 export interface ModelCapabilities {
   inputTypes: string[];
@@ -97,7 +99,7 @@ export class ModelManager {
   private loadingPromises: Map<string, Promise<LoadedModel>> = new Map();
   private metrics: Map<string, ModelMetrics> = new Map();
   private config: ModelManagerConfig;
-  private isInitialized: boolean = false;
+  private isInitialized = false;
 
   constructor(config: Partial<ModelManagerConfig> = {}) {
     this.config = {
@@ -131,11 +133,11 @@ export class ModelManager {
 
       // Set memory management
       if (this.config.enableQuantization) {
-        tf.env().set("WEBGL_FORCE_F16_TEXTURES", true);
+        tf.env().set('WEBGL_FORCE_F16_TEXTURES', true);
       }
 
       this.isInitialized = true;
-      console.log("Model Manager initialized");
+      console.log('Model Manager initialized');
     } catch (error) {
       throw new Error(`Failed to initialize Model Manager: ${error}`);
     }
@@ -150,13 +152,13 @@ export class ModelManager {
     // Register with lazy loader
     lazyLoader.registerItem({
       id: definition.id,
-      type: "model",
+      type: 'model',
       name: definition.name,
       description: definition.description,
       version: definition.version,
       size: definition.size,
       dependencies: definition.dependencies,
-      loadPriority: this.getLoadPriority(definition.type),
+      loadPriority: this.getLoadPriorityLabel(definition.type),
       lazy: true,
       persistent: false,
       timeout: this.config.defaultTimeout,
@@ -167,7 +169,7 @@ export class ModelManager {
   /**
    * Load a model
    */
-  async load(modelId: string, options: ModelLoadOptions = {}): Promise<tf.Model> {
+  async load(modelId: string, options: ModelLoadOptions = {}): Promise<ModelInstance> {
     if (!this.isInitialized) {
       await this.initialize();
     }
@@ -204,12 +206,7 @@ export class ModelManager {
       }
 
       // Record metrics
-      performanceMonitor.recordModelLoad(
-        modelId,
-        loadedModel.metrics.loadTime,
-        definition.size,
-        true,
-      );
+      performanceMonitor.recordModelLoad(modelId, loadedModel.loadTime, definition.size, true);
 
       return loadedModel.model;
     } catch (error) {
@@ -224,7 +221,7 @@ export class ModelManager {
   /**
    * Unload a model
    */
-  async unload(modelId: string, force: boolean = false): Promise<boolean> {
+  async unload(modelId: string, force = false): Promise<boolean> {
     const loadedModel = this.models.get(modelId);
     if (!loadedModel) {
       return false;
@@ -275,21 +272,23 @@ export class ModelManager {
     const loadedModel = this.models.get(modelId);
     const metrics = this.metrics.get(modelId);
 
-    return {
+    const info = {
       id: definition.id,
       name: definition.name,
       version: definition.version,
-      type: definition.type,
+      type: definition.type as import('../types').ModelType,
       size: definition.size,
       local: loadedModel !== undefined,
       status: this.getModelStatus(modelId),
-      capabilities: definition.capabilities,
+      capabilities: definition.capabilities as any,
       dependencies: definition.dependencies,
-      metadata: definition.metadata,
+      metadata: definition.metadata as any,
       loadTime: metrics?.loadTime || 0,
       accuracy: metrics?.accuracy,
       usageCount: metrics?.usageCount || 0,
-    };
+    } as unknown as ModelInfo;
+
+    return info;
   }
 
   /**
@@ -329,7 +328,7 @@ export class ModelManager {
    */
   getModelsByLanguage(language: string): ModelInfo[] {
     return this.getRegisteredModels().filter((model) =>
-      model.capabilities.languages.includes(language),
+      model.capabilities.languages.includes(language)
     );
   }
 
@@ -343,10 +342,10 @@ export class ModelManager {
       .slice(0, this.config.maxConcurrentLoads);
 
     const loadPromises = criticalModels.map((model) =>
-      this.load(model.id, { priority: "high", warmup: true }).catch((error) => {
+      this.load(model.id, { priority: 'high', warmup: true }).catch((error) => {
         console.warn(`Failed to preload critical model ${model.id}:`, error);
         return null;
-      }),
+      })
     );
 
     await Promise.all(loadPromises);
@@ -357,9 +356,9 @@ export class ModelManager {
    */
   async cleanupMemory(): Promise<number> {
     const currentMemory = memoryManager.getCurrentMemoryUsage();
-    const memoryThreshold = this.config.memoryThreshold * currentMemory.total;
+    const memoryThreshold = this.config.memoryThreshold * currentMemory.heap.total;
 
-    if (currentMemory.used < memoryThreshold) {
+    if (currentMemory.heap.used < memoryThreshold) {
       return 0;
     }
 
@@ -368,11 +367,11 @@ export class ModelManager {
 
     // Find least recently used models
     const modelMetrics = Array.from(this.metrics.entries()).sort(
-      ([, a], [, b]) => a.lastUsed.getTime() - b.lastUsed.getTime(),
+      ([, a], [, b]) => a.lastUsed.getTime() - b.lastUsed.getTime()
     );
 
-    for (const [modelId, metrics] of modelMetrics) {
-      if (currentMemory.used - freedMemory < memoryThreshold) {
+    for (const [modelId, _metrics] of modelMetrics) {
+      if (currentMemory.heap.used - freedMemory < memoryThreshold) {
         modelsToUnload.push(modelId);
       } else {
         break;
@@ -396,11 +395,11 @@ export class ModelManager {
   async inference<T>(
     modelId: string,
     input: tf.Tensor | tf.Tensor[],
-    options: {
+    _options: {
       batchSize?: number;
       warmup?: boolean;
       profiling?: boolean;
-    } = {},
+    } = {}
   ): Promise<T> {
     const startTime = performance.now();
 
@@ -422,7 +421,7 @@ export class ModelManager {
       if (Array.isArray(input)) {
         result = (loadedModel.model as any).predict(input) as T;
       } else {
-        result = loadedModel.model.predict(input) as T;
+        result = (loadedModel.model as any).predict(input) as T;
       }
 
       const inferenceTime = performance.now() - startTime;
@@ -449,7 +448,7 @@ export class ModelManager {
     options: {
       batchSize?: number;
       concurrency?: number;
-    } = {},
+    } = {}
   ): Promise<T[]> {
     const batchSize = options.batchSize || 32;
     const concurrency = options.concurrency || 1;
@@ -495,7 +494,7 @@ export class ModelManager {
       loadedModels: loadedModels.length,
       totalSize: allModels.reduce((sum, model) => sum + model.size, 0),
       loadedSize: loadedModels.reduce((sum, model) => sum + model.size, 0),
-      memoryUsage: memoryManager.getCurrentMemoryUsage().used,
+      memoryUsage: memoryManager.getCurrentMemoryUsage().heap.used,
       cacheStats: modelCache.getStats(),
       averageLoadTime: this.calculateAverageLoadTime(),
       averageInferenceTime: this.calculateAverageInferenceTime(),
@@ -519,13 +518,13 @@ export class ModelManager {
     for (const definition of Object.values(registry)) {
       lazyLoader.registerItem({
         id: definition.id,
-        type: "model",
+        type: 'model',
         name: definition.name,
         description: definition.description,
         version: definition.version,
         size: definition.size,
         dependencies: definition.dependencies,
-        loadPriority: this.getLoadPriority(definition.type),
+        loadPriority: this.getLoadPriorityLabel(definition.type),
         lazy: true,
         persistent: false,
         timeout: this.config.defaultTimeout,
@@ -540,7 +539,7 @@ export class ModelManager {
   async shutdown(): Promise<void> {
     // Unload all models
     const unloadPromises = Array.from(this.models.keys()).map((modelId) =>
-      this.unload(modelId, true),
+      this.unload(modelId, true)
     );
 
     await Promise.all(unloadPromises);
@@ -550,7 +549,7 @@ export class ModelManager {
     this.loadingPromises.clear();
 
     this.isInitialized = false;
-    console.log("Model Manager shutdown completed");
+    console.log('Model Manager shutdown completed');
   }
 
   /**
@@ -560,58 +559,58 @@ export class ModelManager {
     // Load default models
     const defaultModels: ModelDefinition[] = [
       {
-        id: "sentiment_en_bert",
-        name: "English Sentiment Analysis (BERT)",
-        description: "BERT-based sentiment analysis for English text",
-        type: "sentiment_analysis",
-        version: "1.0.0",
-        url: "https://tfhub.dev/tensorflow/tfjs-model/roberta_en_classification/1/default/1",
+        id: 'sentiment_en_bert',
+        name: 'English Sentiment Analysis (BERT)',
+        description: 'BERT-based sentiment analysis for English text',
+        type: 'sentiment_analysis',
+        version: '1.0.0',
+        url: 'https://tfhub.dev/tensorflow/tfjs-model/roberta_en_classification/1/default/1',
         size: 420000000, // ~420MB
-        languages: ["en"],
+        languages: ['en'],
         capabilities: {
-          inputTypes: ["text"],
-          outputTypes: ["sentiment"],
+          inputTypes: ['text'],
+          outputTypes: ['sentiment'],
           maxSequenceLength: 512,
           batchSize: [1, 8, 16, 32],
           quantization: true,
           streaming: false,
           multilingual: false,
-          domains: ["general"],
+          domains: ['general'],
         },
         dependencies: [],
         metadata: {
-          author: "TensorFlow Hub",
-          license: "Apache 2.0",
-          created: new Date("2023-01-01"),
-          updated: new Date("2023-01-01"),
+          author: 'TensorFlow Hub',
+          license: 'Apache 2.0',
+          created: new Date('2023-01-01'),
+          updated: new Date('2023-01-01'),
           accuracy: { imdb: 0.93 },
         },
       },
       {
-        id: "ner_multilingual_bert",
-        name: "Multilingual NER (BERT)",
-        description: "Named Entity Recognition for multiple languages",
-        type: "entity_recognition",
-        version: "1.0.0",
-        url: "https://tfhub.dev/tensorflow/tfjs-model/bert_multi_cased_L-12_H-768_A-12/1/default/1",
+        id: 'ner_multilingual_bert',
+        name: 'Multilingual NER (BERT)',
+        description: 'Named Entity Recognition for multiple languages',
+        type: 'entity_recognition',
+        version: '1.0.0',
+        url: 'https://tfhub.dev/tensorflow/tfjs-model/bert_multi_cased_L-12_H-768_A-12/1/default/1',
         size: 680000000, // ~680MB
-        languages: ["en", "de", "fr", "es", "it", "pt", "nl", "ru", "zh", "ja"],
+        languages: ['en', 'de', 'fr', 'es', 'it', 'pt', 'nl', 'ru', 'zh', 'ja'],
         capabilities: {
-          inputTypes: ["text"],
-          outputTypes: ["entities"],
+          inputTypes: ['text'],
+          outputTypes: ['entities'],
           maxSequenceLength: 512,
           batchSize: [1, 8, 16],
           quantization: true,
           streaming: false,
           multilingual: true,
-          domains: ["general", "news", "social"],
+          domains: ['general', 'news', 'social'],
         },
         dependencies: [],
         metadata: {
-          author: "TensorFlow Hub",
-          license: "Apache 2.0",
-          created: new Date("2023-01-01"),
-          updated: new Date("2023-01-01"),
+          author: 'TensorFlow Hub',
+          license: 'Apache 2.0',
+          created: new Date('2023-01-01'),
+          updated: new Date('2023-01-01'),
           accuracy: { conll2003: 0.89 },
         },
       },
@@ -624,7 +623,7 @@ export class ModelManager {
 
   private async performLoad(
     definition: ModelDefinition,
-    options: ModelLoadOptions,
+    options: ModelLoadOptions
   ): Promise<LoadedModel> {
     const startTime = performance.now();
 
@@ -633,7 +632,9 @@ export class ModelManager {
       if (this.config.enableCache && !options.force) {
         const cachedData = await modelCache.get(definition.id);
         if (cachedData) {
-          const model = await tf.loadLayersModel(tf.io.browserFiles(cachedData));
+          const model = await tf.loadLayersModel(
+            tf.io.browserFiles([new File([cachedData], `${definition.id}.bin`)])
+          );
           const loadTime = performance.now() - startTime;
 
           return {
@@ -664,7 +665,7 @@ export class ModelManager {
     try {
       // Create dummy input for warmup
       const dummyInput = tf.zeros([1, 10]);
-      await loadedModel.model.predict(dummyInput);
+      await (loadedModel.model as any).predict(dummyInput);
       dummyInput.dispose();
     } catch (error) {
       console.warn(`Failed to warm up model ${loadedModel.definition.id}:`, error);
@@ -693,14 +694,14 @@ export class ModelManager {
 
   private getModelStatus(modelId: string): ModelStatus {
     if (this.loadingPromises.has(modelId)) {
-      return "loading";
+      return 'loading';
     }
 
     if (this.models.has(modelId)) {
-      return "loaded";
+      return 'loaded';
     }
 
-    return "unloaded";
+    return 'unloaded';
   }
 
   private getLoadPriority(type: ModelType): number {
@@ -720,6 +721,20 @@ export class ModelManager {
     return priorities[type] || 5;
   }
 
+  private getLoadPriorityLabel(type: ModelType): LoadPriority {
+    const priorityValue = this.getLoadPriority(type);
+
+    const labels: Record<number, LoadPriority> = {
+      1: 'critical',
+      2: 'high',
+      3: 'medium',
+      4: 'low',
+      5: 'background',
+    };
+
+    return labels[priorityValue] || 'background';
+  }
+
   private isCriticalModel(definition: ModelDefinition): boolean {
     return this.getLoadPriority(definition.type) <= 1;
   }
@@ -730,7 +745,7 @@ export class ModelManager {
       throw new Error(`Model ${modelId} is not loaded`);
     }
 
-    const results = await Promise.all(inputs.map((input) => model.predict(input) as T));
+    const results = await Promise.all(inputs.map((input) => (model as any).predict(input) as T));
 
     return results;
   }
@@ -768,7 +783,7 @@ interface ModelManagerConfig {
 }
 
 interface LoadedModel {
-  model: tf.Model;
+  model: ModelInstance;
   definition: ModelDefinition;
   loadTime: number;
   loadedAt: Date;

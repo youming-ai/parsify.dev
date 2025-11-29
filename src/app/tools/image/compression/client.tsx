@@ -1,5 +1,17 @@
-"use client";
+'use client';
 
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
 import {
   Download,
   Eye,
@@ -12,20 +24,8 @@ import {
   TrendingDown,
   Upload,
   Zap,
-} from "lucide-react";
-import { useCallback, useRef, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
+} from 'lucide-react';
+import { useCallback, useRef, useState } from 'react';
 
 interface ImageData {
   id: string;
@@ -46,8 +46,8 @@ interface ImageData {
 export default function ImageCompressionClient() {
   const [images, setImages] = useState<ImageData[]>([]);
   const [globalQuality, setGlobalQuality] = useState([80]);
-  const [outputFormat, setOutputFormat] = useState<"original" | "jpeg" | "png" | "webp">(
-    "original",
+  const [outputFormat, setOutputFormat] = useState<'original' | 'jpeg' | 'png' | 'webp'>(
+    'original'
   );
   const [preserveAspectRatio, setPreserveAspectRatio] = useState(true);
   const [showComparison, setShowComparison] = useState(true);
@@ -55,19 +55,19 @@ export default function ImageCompressionClient() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
+    return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
   const getImageFormat = (file: File): string => {
-    return file.type.split("/")[1]?.toUpperCase() || "UNKNOWN";
+    return file.type.split('/')[1]?.toUpperCase() || 'UNKNOWN';
   };
 
   const getOutputFormat = (originalFormat: string): string => {
-    if (outputFormat !== "original") {
+    if (outputFormat !== 'original') {
       return outputFormat.toUpperCase();
     }
     return originalFormat;
@@ -76,9 +76,9 @@ export default function ImageCompressionClient() {
   const compressImage = useCallback(
     async (file: File, quality: number, format: string): Promise<{ blob: Blob; size: number }> => {
       return new Promise((resolve, reject) => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        const img = document.createElement("img");
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = document.createElement('img');
 
         img.onload = () => {
           try {
@@ -92,12 +92,12 @@ export default function ImageCompressionClient() {
 
               // Convert to blob with specified quality and format
               const mimeType =
-                format === "JPEG"
-                  ? "image/jpeg"
-                  : format === "PNG"
-                    ? "image/png"
-                    : format === "WEBP"
-                      ? "image/webp"
+                format === 'JPEG'
+                  ? 'image/jpeg'
+                  : format === 'PNG'
+                    ? 'image/png'
+                    : format === 'WEBP'
+                      ? 'image/webp'
                       : file.type;
 
               canvas.toBlob(
@@ -108,11 +108,11 @@ export default function ImageCompressionClient() {
                       size: blob.size,
                     });
                   } else {
-                    reject(new Error("Failed to create blob"));
+                    reject(new Error('Failed to create blob'));
                   }
                 },
                 mimeType,
-                quality / 100,
+                quality / 100
               );
             }
           } catch (error) {
@@ -120,11 +120,11 @@ export default function ImageCompressionClient() {
           }
         };
 
-        img.onerror = () => reject(new Error("Failed to load image"));
+        img.onerror = () => reject(new Error('Failed to load image'));
         img.src = URL.createObjectURL(file);
       });
     },
-    [],
+    []
   );
 
   const handleFileSelect = async (files: FileList) => {
@@ -134,7 +134,7 @@ export default function ImageCompressionClient() {
       const file = files[i];
 
       // Validate file type
-      if (!file.type.startsWith("image/")) {
+      if (!file.type.startsWith('image/')) {
         continue;
       }
 
@@ -144,7 +144,7 @@ export default function ImageCompressionClient() {
       }
 
       // Get image dimensions
-      const img = document.createElement("img");
+      const img = document.createElement('img');
       const dimensions = await new Promise<{ width: number; height: number }>((resolve, reject) => {
         img.onload = () => resolve({ width: img.width, height: img.height });
         img.onerror = reject;
@@ -176,7 +176,7 @@ export default function ImageCompressionClient() {
         handleFileSelect(files);
       }
     },
-    [handleFileSelect],
+    [handleFileSelect]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -185,14 +185,14 @@ export default function ImageCompressionClient() {
 
   const compressSingleImage = async (imageId: string) => {
     setImages((prev) =>
-      prev.map((img) => (img.id === imageId ? { ...img, isProcessing: true } : img)),
+      prev.map((img) => (img.id === imageId ? { ...img, isProcessing: true } : img))
     );
 
     try {
       const image = images.find((img) => img.id === imageId);
       if (!image) return;
 
-      const outputFormat = image.outputFormat === "ORIGINAL" ? image.format : image.outputFormat;
+      const outputFormat = image.outputFormat === 'ORIGINAL' ? image.format : image.outputFormat;
       const { blob, size } = await compressImage(image.file, image.quality, outputFormat);
 
       const compressionRatio =
@@ -208,13 +208,13 @@ export default function ImageCompressionClient() {
                 compressionRatio,
                 isProcessing: false,
               }
-            : img,
-        ),
+            : img
+        )
       );
     } catch (error) {
-      console.error("Compression failed:", error);
+      console.error('Compression failed:', error);
       setImages((prev) =>
-        prev.map((img) => (img.id === imageId ? { ...img, isProcessing: false } : img)),
+        prev.map((img) => (img.id === imageId ? { ...img, isProcessing: false } : img))
       );
     }
   };
@@ -229,7 +229,7 @@ export default function ImageCompressionClient() {
     try {
       await Promise.all(compressionPromises);
     } catch (error) {
-      console.error("Batch compression failed:", error);
+      console.error('Batch compression failed:', error);
     } finally {
       setIsProcessing(false);
     }
@@ -238,9 +238,9 @@ export default function ImageCompressionClient() {
   const downloadImage = (image: ImageData) => {
     if (!image.compressedUrl) return;
 
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = image.compressedUrl;
-    link.download = `${image.file.name.replace(/\.[^/.]+$/, "")}_compressed.${image.outputFormat.toLowerCase()}`;
+    link.download = `${image.file.name.replace(/\.[^/.]+$/, '')}_compressed.${image.outputFormat.toLowerCase()}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -270,33 +270,36 @@ export default function ImageCompressionClient() {
   };
 
   const clearAllImages = () => {
-    images.forEach((image) => {
+    for (const image of images) {
       URL.revokeObjectURL(image.originalUrl);
       if (image.compressedUrl) {
         URL.revokeObjectURL(image.compressedUrl);
       }
-    });
+    }
     setImages([]);
   };
 
   const updateImageQuality = (imageId: string, quality: number) => {
     setImages((prev) =>
-      prev.map((img) => (img.id === imageId ? { ...img, quality, compressedUrl: undefined } : img)),
+      prev.map((img) => (img.id === imageId ? { ...img, quality, compressedUrl: undefined } : img))
     );
   };
 
   const updateImageFormat = (imageId: string, format: string) => {
     setImages((prev) =>
       prev.map((img) =>
-        img.id === imageId ? { ...img, outputFormat: format, compressedUrl: undefined } : img,
-      ),
+        img.id === imageId ? { ...img, outputFormat: format, compressedUrl: undefined } : img
+      )
     );
   };
 
   const getTotalSavings = () => {
     const compressedImages = images.filter((img) => img.compressedSize);
     const totalOriginal = compressedImages.reduce((sum, img) => sum + img.originalSize, 0);
-    const totalCompressed = compressedImages.reduce((sum, img) => sum + img.compressedSize!, 0);
+    const totalCompressed = compressedImages.reduce(
+      (sum, img) => sum + (img.compressedSize || 0),
+      0
+    );
     return totalOriginal > 0 ? ((totalOriginal - totalCompressed) / totalOriginal) * 100 : 0;
   };
 
@@ -314,7 +317,7 @@ export default function ImageCompressionClient() {
         <CardContent>
           <div className="grid gap-6 md:grid-cols-3">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Quality: {globalQuality[0]}%</label>
+              <label className="font-medium text-sm">Quality: {globalQuality[0]}%</label>
               <Slider
                 value={globalQuality}
                 onValueChange={setGlobalQuality}
@@ -323,11 +326,11 @@ export default function ImageCompressionClient() {
                 step={1}
                 className="w-full"
               />
-              <p className="text-xs text-muted-foreground">Lower quality = smaller file size</p>
+              <p className="text-muted-foreground text-xs">Lower quality = smaller file size</p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Output Format</label>
+              <label className="font-medium text-sm">Output Format</label>
               <Select value={outputFormat} onValueChange={(value: any) => setOutputFormat(value)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -381,14 +384,14 @@ export default function ImageCompressionClient() {
         </CardHeader>
         <CardContent>
           <div
-            className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer"
+            className="cursor-pointer rounded-lg border-2 border-gray-300 border-dashed p-8 text-center transition-colors hover:border-gray-400"
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onClick={() => fileInputRef.current?.click()}
           >
-            <FileImage className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-lg font-medium mb-2">Drop images here or click to upload</p>
-            <p className="text-sm text-muted-foreground">
+            <FileImage className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+            <p className="mb-2 font-medium text-lg">Drop images here or click to upload</p>
+            <p className="text-muted-foreground text-sm">
               Supports JPEG, PNG, WebP, GIF, BMP (Max 50MB per file)
             </p>
             <input
@@ -409,31 +412,31 @@ export default function ImageCompressionClient() {
           <CardContent className="pt-6">
             <div className="flex flex-wrap gap-2">
               <Button onClick={compressAllImages} disabled={isProcessing}>
-                <Zap className="h-4 w-4 mr-2" />
-                {isProcessing ? "Processing..." : "Compress All"}
+                <Zap className="mr-2 h-4 w-4" />
+                {isProcessing ? 'Processing...' : 'Compress All'}
               </Button>
               <Button variant="outline" onClick={downloadAllImages}>
-                <Download className="h-4 w-4 mr-2" />
+                <Download className="mr-2 h-4 w-4" />
                 Download All
               </Button>
               <Button variant="outline" onClick={clearAllImages}>
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="mr-2 h-4 w-4" />
                 Clear All
               </Button>
               <Button variant="outline" onClick={() => setShowComparison(!showComparison)}>
                 {showComparison ? (
-                  <EyeOff className="h-4 w-4 mr-2" />
+                  <EyeOff className="mr-2 h-4 w-4" />
                 ) : (
-                  <Eye className="h-4 w-4 mr-2" />
+                  <Eye className="mr-2 h-4 w-4" />
                 )}
-                {showComparison ? "Hide" : "Show"} Comparison
+                {showComparison ? 'Hide' : 'Show'} Comparison
               </Button>
             </div>
 
             {images.some((img) => img.compressedSize) && (
-              <div className="mt-4 p-4 bg-green-50 rounded-lg">
+              <div className="mt-4 rounded-lg bg-green-50 p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-green-800">
+                  <span className="font-medium text-green-800 text-sm">
                     Total Savings: {getTotalSavings().toFixed(1)}%
                   </span>
                   <TrendingDown className="h-4 w-4 text-green-600" />
@@ -453,7 +456,7 @@ export default function ImageCompressionClient() {
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   {/* Image Preview */}
-                  <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+                  <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
                     <img
                       src={
                         showComparison && image.compressedUrl
@@ -461,11 +464,11 @@ export default function ImageCompressionClient() {
                           : image.originalUrl
                       }
                       alt={image.file.name}
-                      className="w-full h-full object-cover"
+                      className="h-full w-full object-cover"
                     />
                     {image.isProcessing && (
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <RefreshCw className="h-8 w-8 text-white animate-spin" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                        <RefreshCw className="h-8 w-8 animate-spin text-white" />
                       </div>
                     )}
                   </div>
@@ -473,10 +476,10 @@ export default function ImageCompressionClient() {
                   {/* Image Info */}
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="font-medium truncate">{image.file.name}</span>
+                      <span className="truncate font-medium">{image.file.name}</span>
                       <Badge variant="outline">{image.format}</Badge>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                    <div className="grid grid-cols-2 gap-2 text-muted-foreground text-xs">
                       <div>
                         <span>Original: {formatFileSize(image.originalSize)}</span>
                       </div>
@@ -501,14 +504,14 @@ export default function ImageCompressionClient() {
                   {/* Individual Settings */}
                   <div className="space-y-3">
                     <div className="space-y-1">
-                      <label className="text-xs font-medium">Quality: {image.quality}%</label>
+                      <label className="font-medium text-xs">Quality: {image.quality}%</label>
                       <Slider
                         value={[image.quality]}
                         onValueChange={([value]) => updateImageQuality(image.id, value)}
                         max={100}
                         min={1}
                         step={1}
-                        className="w-full h-2"
+                        className="h-2 w-full"
                       />
                     </div>
 
@@ -566,11 +569,11 @@ export default function ImageCompressionClient() {
       {images.length === 0 && (
         <Card>
           <CardContent className="pt-12 pb-12 text-center">
-            <Image className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-medium mb-2">No images uploaded</h3>
-            <p className="text-muted-foreground mb-4">Upload images to start compressing them</p>
+            <Image className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+            <h3 className="mb-2 font-medium text-lg">No images uploaded</h3>
+            <p className="mb-4 text-muted-foreground">Upload images to start compressing them</p>
             <Button onClick={() => fileInputRef.current?.click()}>
-              <Upload className="h-4 w-4 mr-2" />
+              <Upload className="mr-2 h-4 w-4" />
               Select Images
             </Button>
           </CardContent>

@@ -3,7 +3,7 @@ import type {
   FileUploadProgress,
   FileUploadResponse,
   UploadedFile,
-} from "./file-upload-types";
+} from './file-upload-types';
 
 export interface FileUploadApiConfig {
   /** Base URL for upload endpoints */
@@ -34,7 +34,7 @@ export class FileUploadApiService {
 
   constructor(config: FileUploadApiConfig = {}) {
     this.config = {
-      baseUrl: config.baseUrl || "/api/files",
+      baseUrl: config.baseUrl || '/api/files',
       defaultHeaders: config.defaultHeaders || {},
       timeout: config.timeout || 30000,
       useChunkedUpload: config.useChunkedUpload || false,
@@ -54,7 +54,7 @@ export class FileUploadApiService {
   async uploadFile(
     file: File,
     options: FileUploadOptions = {},
-    onProgress?: (progress: FileUploadProgress) => void,
+    onProgress?: (progress: FileUploadProgress) => void
   ): Promise<UploadedFile> {
     const fileId = this.generateFileId(file);
     const _endpoint = options.endpoint || `${this.config.baseUrl}/upload`;
@@ -78,7 +78,7 @@ export class FileUploadApiService {
         size: file.size,
         type: file.type,
         lastModified: file.lastModified,
-        status: "success",
+        status: 'success',
         progress: 100,
       };
 
@@ -90,9 +90,9 @@ export class FileUploadApiService {
         size: file.size,
         type: file.type,
         lastModified: file.lastModified,
-        status: "error",
+        status: 'error',
         progress: 0,
-        error: error instanceof Error ? error.message : "Upload failed",
+        error: error instanceof Error ? error.message : 'Upload failed',
       };
 
       throw error;
@@ -108,18 +108,18 @@ export class FileUploadApiService {
   async uploadFiles(
     files: File[],
     options: FileUploadOptions = {},
-    onProgress?: (fileId: string, progress: FileUploadProgress) => void,
+    onProgress?: (fileId: string, progress: FileUploadProgress) => void
   ): Promise<UploadedFile[]> {
     const uploadPromises = files.map((file) =>
       this.uploadFile(file, options, (progress) => {
         const fileId = this.generateFileId(file);
         onProgress?.(fileId, progress);
-      }),
+      })
     );
 
     return Promise.allSettled(uploadPromises).then((results) => {
       return results.map((result) => {
-        if (result.status === "fulfilled") {
+        if (result.status === 'fulfilled') {
           return result.value;
         }
         // Create error file object for failed uploads
@@ -130,9 +130,9 @@ export class FileUploadApiService {
           size: file.size,
           type: file.type,
           lastModified: file.lastModified,
-          status: "error" as const,
+          status: 'error' as const,
           progress: 0,
-          error: result.reason instanceof Error ? result.reason.message : "Upload failed",
+          error: result.reason instanceof Error ? result.reason.message : 'Upload failed',
         };
       });
     });
@@ -179,12 +179,12 @@ export class FileUploadApiService {
       const fileInfo = await response.json();
       return {
         ...fileInfo,
-        status: "success",
+        status: 'success',
         progress: 100,
       };
     } catch (error) {
       throw new Error(
-        `Failed to get file info: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to get file info: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -195,14 +195,14 @@ export class FileUploadApiService {
   async deleteFile(fileId: string): Promise<boolean> {
     try {
       const response = await fetch(`${this.config.baseUrl}/delete/${fileId}`, {
-        method: "DELETE",
+        method: 'DELETE',
         headers: this.config.defaultHeaders,
       });
 
       return response.ok;
     } catch (error) {
       throw new Error(
-        `Failed to delete file: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to delete file: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -213,9 +213,9 @@ export class FileUploadApiService {
   getDownloadUrl(fileId: string, filename?: string): string {
     const params = new URLSearchParams();
     if (filename) {
-      params.append("filename", filename);
+      params.append('filename', filename);
     }
-    return `${this.config.baseUrl}/download/${fileId}${params.toString() ? `?${params.toString()}` : ""}`;
+    return `${this.config.baseUrl}/download/${fileId}${params.toString() ? `?${params.toString()}` : ''}`;
   }
 
   /**
@@ -224,13 +224,13 @@ export class FileUploadApiService {
   async generateSignedUploadUrl(
     filename: string,
     contentType: string,
-    fileSize: number,
+    fileSize: number
   ): Promise<{ uploadUrl: string; fileId: string }> {
     try {
       const response = await fetch(`${this.config.baseUrl}/signed-url`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           ...this.config.defaultHeaders,
         },
         body: JSON.stringify({
@@ -247,7 +247,7 @@ export class FileUploadApiService {
       return await response.json();
     } catch (error) {
       throw new Error(
-        `Failed to generate signed URL: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to generate signed URL: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -259,7 +259,7 @@ export class FileUploadApiService {
     file: File,
     signedUrl: string,
     fileId: string,
-    onProgress?: (progress: FileUploadProgress) => void,
+    onProgress?: (progress: FileUploadProgress) => void
   ): Promise<void> {
     const controller = new AbortController();
     this.activeUploads.set(fileId, controller);
@@ -275,7 +275,7 @@ export class FileUploadApiService {
     file: File,
     options: FileUploadOptions,
     onProgress?: (progress: FileUploadProgress) => void,
-    controller?: AbortController,
+    controller?: AbortController
   ): Promise<FileUploadResponse> {
     const endpoint = options.endpoint || `${this.config.baseUrl}/upload`;
     const headers = {
@@ -294,15 +294,15 @@ export class FileUploadApiService {
     endpoint: string,
     headers: Record<string, string>,
     onProgress?: (progress: FileUploadProgress) => void,
-    _controller?: AbortController,
+    _controller?: AbortController
   ): Promise<FileUploadResponse> {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append('file', file);
 
     // Add additional metadata
-    if (headers["X-File-Metadata"]) {
-      formData.append("metadata", headers["X-File-Metadata"]);
-      delete headers["X-File-Metadata"];
+    if (headers['X-File-Metadata']) {
+      formData.append('metadata', headers['X-File-Metadata']);
+      delete headers['X-File-Metadata'];
     }
 
     let attempt = 0;
@@ -313,7 +313,7 @@ export class FileUploadApiService {
         const xhr = new XMLHttpRequest();
 
         return await new Promise((resolve, reject) => {
-          xhr.upload.addEventListener("progress", (event) => {
+          xhr.upload.addEventListener('progress', (event) => {
             if (event.lengthComputable && onProgress) {
               const progress: FileUploadProgress = {
                 loaded: event.loaded,
@@ -326,33 +326,33 @@ export class FileUploadApiService {
             }
           });
 
-          xhr.addEventListener("load", () => {
+          xhr.addEventListener('load', () => {
             if (xhr.status >= 200 && xhr.status < 300) {
               try {
                 const response = JSON.parse(xhr.responseText);
                 resolve(response);
               } catch (_error) {
-                reject(new Error("Invalid response from server"));
+                reject(new Error('Invalid response from server'));
               }
             } else {
               reject(new Error(`Upload failed: ${xhr.statusText}`));
             }
           });
 
-          xhr.addEventListener("error", () => {
-            reject(new Error("Network error during upload"));
+          xhr.addEventListener('error', () => {
+            reject(new Error('Network error during upload'));
           });
 
-          xhr.addEventListener("abort", () => {
-            reject(new Error("Upload cancelled"));
+          xhr.addEventListener('abort', () => {
+            reject(new Error('Upload cancelled'));
           });
 
           xhr.timeout = this.config.timeout;
           xhr.ontimeout = () => {
-            reject(new Error("Upload timeout"));
+            reject(new Error('Upload timeout'));
           };
 
-          xhr.open("POST", endpoint);
+          xhr.open('POST', endpoint);
 
           // Set headers
           Object.entries(headers).forEach(([key, value]) => {
@@ -367,7 +367,7 @@ export class FileUploadApiService {
         if (
           attempt >= maxAttempts ||
           !this.config.retryConfig?.retryCondition?.(
-            error instanceof Error ? error : new Error("Unknown error"),
+            error instanceof Error ? error : new Error('Unknown error')
           )
         ) {
           throw error;
@@ -375,12 +375,12 @@ export class FileUploadApiService {
 
         // Wait before retrying
         await new Promise((resolve) =>
-          setTimeout(resolve, this.config.retryConfig.retryDelay * attempt),
+          setTimeout(resolve, this.config.retryConfig.retryDelay * attempt)
         );
       }
     }
 
-    throw new Error("Upload failed after maximum retries");
+    throw new Error('Upload failed after maximum retries');
   }
 
   private async uploadChunked(
@@ -388,13 +388,13 @@ export class FileUploadApiService {
     endpoint: string,
     headers: Record<string, string>,
     onProgress?: (progress: FileUploadProgress) => void,
-    controller?: AbortController,
+    controller?: AbortController
   ): Promise<FileUploadResponse> {
     // Initialize chunked upload
     const initResponse = await fetch(`${endpoint}/init`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         ...headers,
       },
       body: JSON.stringify({
@@ -421,12 +421,12 @@ export class FileUploadApiService {
       const chunk = file.slice(start, end);
 
       const chunkFormData = new FormData();
-      chunkFormData.append("chunk", chunk);
-      chunkFormData.append("uploadId", uploadId);
-      chunkFormData.append("chunkIndex", chunkIndex.toString());
+      chunkFormData.append('chunk', chunk);
+      chunkFormData.append('uploadId', uploadId);
+      chunkFormData.append('chunkIndex', chunkIndex.toString());
 
       const chunkResponse = await fetch(`${endpoint}/chunk`, {
-        method: "POST",
+        method: 'POST',
         headers,
         body: chunkFormData,
         signal: controller?.signal,
@@ -452,9 +452,9 @@ export class FileUploadApiService {
 
     // Complete chunked upload
     const completeResponse = await fetch(`${endpoint}/complete`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         ...headers,
       },
       body: JSON.stringify({ uploadId }),
@@ -472,12 +472,12 @@ export class FileUploadApiService {
     file: File,
     signedUrl: string,
     onProgress?: (progress: FileUploadProgress) => void,
-    _controller?: AbortController,
+    _controller?: AbortController
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
 
-      xhr.upload.addEventListener("progress", (event) => {
+      xhr.upload.addEventListener('progress', (event) => {
         if (event.lengthComputable && onProgress) {
           const progress: FileUploadProgress = {
             loaded: event.loaded,
@@ -490,7 +490,7 @@ export class FileUploadApiService {
         }
       });
 
-      xhr.addEventListener("load", () => {
+      xhr.addEventListener('load', () => {
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve();
         } else {
@@ -498,27 +498,27 @@ export class FileUploadApiService {
         }
       });
 
-      xhr.addEventListener("error", () => {
-        reject(new Error("Network error during upload"));
+      xhr.addEventListener('error', () => {
+        reject(new Error('Network error during upload'));
       });
 
-      xhr.addEventListener("abort", () => {
-        reject(new Error("Upload cancelled"));
+      xhr.addEventListener('abort', () => {
+        reject(new Error('Upload cancelled'));
       });
 
       xhr.timeout = this.config.timeout;
       xhr.ontimeout = () => {
-        reject(new Error("Upload timeout"));
+        reject(new Error('Upload timeout'));
       };
 
-      xhr.open("PUT", signedUrl);
-      xhr.setRequestHeader("Content-Type", file.type);
+      xhr.open('PUT', signedUrl);
+      xhr.setRequestHeader('Content-Type', file.type);
       xhr.send(file);
     });
   }
 
   private async addToQueue(
-    uploadTask: () => Promise<FileUploadResponse>,
+    uploadTask: () => Promise<FileUploadResponse>
   ): Promise<FileUploadResponse> {
     return new Promise((resolve, reject) => {
       this.uploadQueue.push(async () => {

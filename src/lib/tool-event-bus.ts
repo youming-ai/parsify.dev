@@ -11,7 +11,7 @@ export interface ToolEvent {
   timestamp: number;
   data: any;
   metadata?: {
-    priority: "low" | "normal" | "high" | "critical";
+    priority: 'low' | 'normal' | 'high' | 'critical';
     ttl?: number; // Time to live in milliseconds
     retryCount?: number;
     maxRetries?: number;
@@ -31,8 +31,8 @@ export interface Subscription {
   id: string;
   subscriber: string;
   eventType: string;
-  handler: EventHandler["handler"];
-  filter?: EventHandler["filter"];
+  handler: EventHandler['handler'];
+  filter?: EventHandler['filter'];
   createdAt: number;
   lastTriggered?: number;
   triggerCount: number;
@@ -49,9 +49,11 @@ export interface EventBusMetrics {
 }
 
 export class ToolEventBus {
+  private static instance: ToolEventBus;
   private handlers: Map<string, EventHandler[]>;
   private subscriptions: Map<string, Subscription>;
   private eventQueue: ToolEvent[];
+  private processing: boolean;
   private maxQueueSize: number;
   private defaultTTL: number;
   private metrics: EventBusMetrics;
@@ -64,7 +66,7 @@ export class ToolEventBus {
       maxQueueSize?: number;
       defaultTTL?: number;
       maxHistorySize?: number;
-    } = {},
+    } = {}
   ) {
     this.handlers = new Map();
     this.subscriptions = new Map();
@@ -94,6 +96,14 @@ export class ToolEventBus {
     this.startCleanupLoop();
   }
 
+  private startProcessingLoop(): void {
+    // Placeholder for processing queue implementation
+  }
+
+  private startCleanupLoop(): void {
+    // Placeholder for cleanup tasks
+  }
+
   public static getInstance(config?: {
     maxQueueSize?: number;
     defaultTTL?: number;
@@ -108,13 +118,13 @@ export class ToolEventBus {
   /**
    * Publish an event
    */
-  public publish(event: Omit<ToolEvent, "id" | "timestamp">): string {
+  public publish(event: Omit<ToolEvent, 'id' | 'timestamp'>): string {
     const eventId = this.generateEventId();
     const fullEvent: ToolEvent = {
       id: eventId,
       timestamp: Date.now(),
       metadata: {
-        priority: "normal",
+        priority: 'normal',
         ttl: this.defaultTTL,
         retryCount: 0,
         maxRetries: 3,
@@ -129,7 +139,7 @@ export class ToolEventBus {
     if (this.eventQueue.length >= this.maxQueueSize) {
       // Remove oldest event if queue is full
       const dropped = this.eventQueue.shift();
-      this.emit("event:dropped", { event: dropped });
+      this.emit('event:dropped', { event: dropped });
     }
 
     this.eventQueue.push(fullEvent);
@@ -145,7 +155,7 @@ export class ToolEventBus {
     // Add to history
     this.addToHistory(fullEvent);
 
-    this.emit("event:published", { event: fullEvent });
+    this.emit('event:published', { event: fullEvent });
     return eventId;
   }
 
@@ -155,12 +165,12 @@ export class ToolEventBus {
   public subscribe(
     subscriber: string,
     eventType: string,
-    handler: EventHandler["handler"],
+    handler: EventHandler['handler'],
     options: {
       priority?: number;
       once?: boolean;
       filter?: (event: ToolEvent) => boolean;
-    } = {},
+    } = {}
   ): string {
     const subscriptionId = this.generateSubscriptionId();
 
@@ -197,7 +207,7 @@ export class ToolEventBus {
     this.handlers.get(eventType)?.sort((a, b) => b.priority - a.priority);
 
     this.metrics.activeSubscriptions = this.subscriptions.size;
-    this.emit("subscription:created", { subscriptionId, subscriber, eventType });
+    this.emit('subscription:created', { subscriptionId, subscriber, eventType });
 
     return subscriptionId;
   }
@@ -229,7 +239,7 @@ export class ToolEventBus {
     }
 
     this.metrics.activeSubscriptions = this.subscriptions.size;
-    this.emit("subscription:removed", { subscriptionId });
+    this.emit('subscription:removed', { subscriptionId });
     return true;
   }
 
@@ -243,7 +253,7 @@ export class ToolEventBus {
 
     subscriptionIds.forEach((id) => this.unsubscribe(id));
 
-    this.emit("subscriber:removed", { subscriber, subscriptionIds });
+    this.emit('subscriber:removed', { subscriber, subscriptionIds });
     return subscriptionIds.length;
   }
 
@@ -252,7 +262,7 @@ export class ToolEventBus {
    */
   public getSubscriptions(subscriber?: string): Subscription[] {
     return Array.from(this.subscriptions.values()).filter(
-      (sub) => !subscriber || sub.subscriber === subscriber,
+      (sub) => !subscriber || sub.subscriber === subscriber
     );
   }
 
@@ -285,17 +295,17 @@ export class ToolEventBus {
     eventType: string,
     data: any,
     options: {
-      priority?: ToolEvent["metadata"]["priority"];
+      priority?: 'low' | 'normal' | 'high' | 'critical';
       ttl?: number;
-    } = {},
+    } = {}
   ): string {
     return this.publish({
       type: eventType,
-      source: "system",
+      source: 'system',
       target,
       data,
       metadata: {
-        priority: options.priority || "normal",
+        priority: options.priority || 'normal',
         ttl: options.ttl || this.defaultTTL,
         retryCount: 0,
         maxRetries: 3,
@@ -310,17 +320,17 @@ export class ToolEventBus {
     eventType: string,
     data: any,
     options: {
-      priority?: ToolEvent["metadata"]["priority"];
+      priority?: 'low' | 'normal' | 'high' | 'critical';
       ttl?: number;
       exclude?: string[];
-    } = {},
+    } = {}
   ): string {
     return this.publish({
       type: eventType,
-      source: "system",
+      source: 'system',
       data,
       metadata: {
-        priority: options.priority || "normal",
+        priority: options.priority || 'normal',
         ttl: options.ttl || this.defaultTTL,
         retryCount: 0,
         maxRetries: 3,
@@ -331,19 +341,14 @@ export class ToolEventBus {
   /**
    * Request-response pattern
    */
-  public async request(
-    target: string,
-    eventType: string,
-    data: any,
-    timeout: number = 5000,
-  ): Promise<any> {
+  public async request(target: string, eventType: string, data: any, timeout = 5000): Promise<any> {
     const responseEventId = this.generateEventId();
     const responseEventType = `${eventType}:response`;
 
     return new Promise((resolve, reject) => {
       // Subscribe for response
       const subscriptionId = this.subscribe(
-        "requester",
+        'requester',
         responseEventType,
         (event) => {
           if (event.data.requestId === responseEventId) {
@@ -356,13 +361,13 @@ export class ToolEventBus {
             }
           }
         },
-        { once: true },
+        { once: true }
       );
 
       // Send request
       this.publish({
         type: eventType,
-        source: "requester",
+        source: 'requester',
         target,
         data: {
           ...data,
@@ -396,7 +401,7 @@ export class ToolEventBus {
     const clearedCount = this.eventQueue.length;
     this.eventQueue.length = 0;
     this.metrics.queueSize = 0;
-    this.emit("queue:cleared", { clearedCount });
+    this.emit('queue:cleared', { clearedCount });
     return clearedCount;
   }
 
@@ -405,7 +410,7 @@ export class ToolEventBus {
    */
   public clearHistory(): void {
     this.eventHistory.length = 0;
-    this.emit("history:cleared");
+    this.emit('history:cleared');
   }
 
   /**
@@ -425,15 +430,15 @@ export class ToolEventBus {
    */
   private validateEvent(event: ToolEvent): void {
     if (!event.type) {
-      throw new Error("Event must have a type");
+      throw new Error('Event must have a type');
     }
 
     if (!event.source) {
-      throw new Error("Event must have a source");
+      throw new Error('Event must have a source');
     }
 
     if (event.metadata?.ttl && event.metadata.ttl <= 0) {
-      throw new Error("Event TTL must be greater than 0");
+      throw new Error('Event TTL must be greater than 0');
     }
   }
 
@@ -468,7 +473,7 @@ export class ToolEventBus {
     }
   }
 
-  private emit(event: string, data: any): void {
+  private emit(event: string, data?: any): void {
     const listeners = this.eventListeners.get(event) || [];
     listeners.forEach((listener) => {
       try {
@@ -501,7 +506,7 @@ export class ToolEventBus {
       queueSize: 0,
     };
 
-    this.emit("bus:disposed", {});
+    this.emit('bus:disposed', {});
   }
 }
 

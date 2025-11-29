@@ -1,3 +1,8 @@
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import {
   AlertTriangle,
   CheckCircle,
@@ -10,15 +15,10 @@ import {
   Square,
   Terminal,
   XCircle,
-} from "lucide-react";
-import * as React from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import type { CodeExecutionProps, CodeExecutionResult, ExecutionStatus } from "./code-types";
-import { getLanguageConfig } from "./language-configs";
+} from 'lucide-react';
+import * as React from 'react';
+import type { CodeExecutionProps, CodeExecutionResult, ExecutionStatus } from './code-types';
+import { getLanguageConfig } from './language-configs';
 
 interface CodeExecutionComponentProps extends CodeExecutionProps {
   showCompileOutput?: boolean;
@@ -45,9 +45,9 @@ export function CodeExecution({
   onCopyResult,
   className,
 }: CodeExecutionComponentProps) {
-  const [status, setStatus] = React.useState<ExecutionStatus>("idle");
+  const [status, setStatus] = React.useState<ExecutionStatus>('idle');
   const [result, setResult] = React.useState<CodeExecutionResult | null>(null);
-  const [error, setError] = React.useState<string>("");
+  const [error, setError] = React.useState<string>('');
   const [progress, setProgress] = React.useState<number>(0);
   const [startTime, setStartTime] = React.useState<number>(0);
   const [elapsedTime, setElapsedTime] = React.useState<number>(0);
@@ -57,7 +57,7 @@ export function CodeExecution({
 
   // Update elapsed time during execution
   React.useEffect(() => {
-    if (status === "compiling" || status === "running") {
+    if (status === 'compiling' || status === 'running') {
       executionIntervalRef.current = setInterval(() => {
         setElapsedTime(Date.now() - startTime);
       }, 100);
@@ -77,11 +77,11 @@ export function CodeExecution({
 
   const executeCode = async () => {
     try {
-      setStatus("compiling");
+      setStatus('compiling');
       setProgress(0);
       setStartTime(Date.now());
       setElapsedTime(0);
-      setError("");
+      setError('');
       setResult(null);
 
       if (onExecutionStart) {
@@ -99,27 +99,27 @@ export function CodeExecution({
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         if (abortControllerRef.current?.signal.aborted) {
-          throw new Error("Execution cancelled");
+          throw new Error('Execution cancelled');
         }
       }
 
-      setStatus("running");
+      setStatus('running');
       setProgress(50);
 
       // Simulate code execution
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       if (abortControllerRef.current?.signal.aborted) {
-        throw new Error("Execution cancelled");
+        throw new Error('Execution cancelled');
       }
 
       setProgress(90);
 
       // Simulate API call to execute code
-      const response = await fetch("/api/code/execute", {
-        method: "POST",
+      const response = await fetch('/api/code/execute', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(request),
         signal: abortControllerRef.current.signal,
@@ -132,19 +132,19 @@ export function CodeExecution({
       const executionResult: CodeExecutionResult = await response.json();
 
       setProgress(100);
-      setStatus("completed");
+      setStatus('completed');
       setResult(executionResult);
 
       if (onExecutionComplete) {
         onExecutionComplete(executionResult);
       }
     } catch (err: any) {
-      if (err.name === "AbortError" || err.message === "Execution cancelled") {
-        setStatus("cancelled");
-        setError("Execution was cancelled");
+      if (err.name === 'AbortError' || err.message === 'Execution cancelled') {
+        setStatus('cancelled');
+        setError('Execution was cancelled');
       } else {
-        setStatus("error");
-        setError(err.message || "An error occurred during execution");
+        setStatus('error');
+        setError(err.message || 'An error occurred during execution');
         if (onExecutionError) {
           onExecutionError(err.message);
         }
@@ -164,9 +164,9 @@ export function CodeExecution({
   };
 
   const resetExecution = () => {
-    setStatus("idle");
+    setStatus('idle');
     setResult(null);
-    setError("");
+    setError('');
     setProgress(0);
     setElapsedTime(0);
   };
@@ -182,14 +182,14 @@ export function CodeExecution({
           `Execution Time: ${result.executionTime}ms\n`,
           `Memory Usage: ${result.memoryUsage}KB\n`,
           `Output:\n${result.output}\n`,
-          result.error ? `Error:\n${result.error}\n` : "",
-          result.compileOutput ? `Compile Output:\n${result.compileOutput}\n` : "",
+          result.error ? `Error:\n${result.error}\n` : '',
+          result.compileOutput ? `Compile Output:\n${result.compileOutput}\n` : '',
         ],
-        { type: "text/plain" },
+        { type: 'text/plain' }
       );
 
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
       a.download = `execution-result-${Date.now()}.txt`;
       document.body.appendChild(a);
@@ -208,13 +208,13 @@ export function CodeExecution({
         `Exit Code: ${result.exitCode}`,
         `Execution Time: ${result.executionTime}ms`,
         `Memory Usage: ${result.memoryUsage}KB`,
-        "Output:",
+        'Output:',
         result.output,
-        result.error ? `Error:\n${result.error}` : "",
-        result.compileOutput ? `Compile Output:\n${result.compileOutput}` : "",
+        result.error ? `Error:\n${result.error}` : '',
+        result.compileOutput ? `Compile Output:\n${result.compileOutput}` : '',
       ]
         .filter(Boolean)
-        .join("\n");
+        .join('\n');
 
       navigator.clipboard.writeText(text).then(() => {
         // Could show a toast notification here
@@ -234,19 +234,19 @@ export function CodeExecution({
 
   const getStatusIcon = () => {
     switch (status) {
-      case "idle":
+      case 'idle':
         return <Play className="h-4 w-4" />;
-      case "compiling":
+      case 'compiling':
         return <Terminal className="h-4 w-4 animate-pulse" />;
-      case "running":
+      case 'running':
         return <Play className="h-4 w-4 animate-pulse" />;
-      case "completed":
+      case 'completed':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case "error":
+      case 'error':
         return <XCircle className="h-4 w-4 text-red-500" />;
-      case "cancelled":
+      case 'cancelled':
         return <Square className="h-4 w-4 text-yellow-500" />;
-      case "timeout":
+      case 'timeout':
         return <AlertTriangle className="h-4 w-4 text-orange-500" />;
       default:
         return <Play className="h-4 w-4" />;
@@ -255,27 +255,27 @@ export function CodeExecution({
 
   const getStatusColor = () => {
     switch (status) {
-      case "idle":
-        return "default";
-      case "compiling":
-        return "secondary";
-      case "running":
-        return "secondary";
-      case "completed":
-        return "default";
-      case "error":
-        return "destructive";
-      case "cancelled":
-        return "secondary";
-      case "timeout":
-        return "destructive";
+      case 'idle':
+        return 'default';
+      case 'compiling':
+        return 'secondary';
+      case 'running':
+        return 'secondary';
+      case 'completed':
+        return 'default';
+      case 'error':
+        return 'destructive';
+      case 'cancelled':
+        return 'secondary';
+      case 'timeout':
+        return 'destructive';
       default:
-        return "default";
+        return 'default';
     }
   };
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn('space-y-4', className)}>
       {/* Execution Controls */}
       <Card>
         <CardHeader className="pb-3">
@@ -289,24 +289,24 @@ export function CodeExecution({
             </CardTitle>
 
             <div className="flex items-center gap-2">
-              {status === "idle" && (
+              {status === 'idle' && (
                 <Button onClick={executeCode} size="sm">
                   <Play className="mr-2 h-4 w-4" />
                   Run Code
                 </Button>
               )}
 
-              {(status === "compiling" || status === "running") && (
+              {(status === 'compiling' || status === 'running') && (
                 <Button onClick={cancelExecution} variant="outline" size="sm">
                   <Square className="mr-2 h-4 w-4" />
                   Cancel
                 </Button>
               )}
 
-              {(status === "completed" ||
-                status === "error" ||
-                status === "cancelled" ||
-                status === "timeout") && (
+              {(status === 'completed' ||
+                status === 'error' ||
+                status === 'cancelled' ||
+                status === 'timeout') && (
                 <>
                   <Button onClick={resetExecution} variant="outline" size="sm">
                     <RotateCcw className="mr-2 h-4 w-4" />
@@ -333,11 +333,11 @@ export function CodeExecution({
         </CardHeader>
 
         {/* Progress Bar */}
-        {showProgress && (status === "compiling" || status === "running") && (
+        {showProgress && (status === 'compiling' || status === 'running') && (
           <CardContent className="pt-0">
             <div className="space-y-2">
               <div className="flex justify-between text-gray-600 text-sm dark:text-gray-400">
-                <span>{status === "compiling" ? "Compiling..." : "Running..."}</span>
+                <span>{status === 'compiling' ? 'Compiling...' : 'Running...'}</span>
                 <span>{formatExecutionTime(elapsedTime)}</span>
               </div>
               <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">

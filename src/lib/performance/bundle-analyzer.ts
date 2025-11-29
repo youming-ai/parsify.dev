@@ -29,10 +29,11 @@ export interface ToolPerformanceMetrics {
 }
 
 export class BundleAnalyzer {
+  private static instance: BundleAnalyzer;
   private metrics: BundleMetrics;
   private performanceMetrics: PerformanceMetrics;
   private toolMetrics: Map<string, ToolPerformanceMetrics>;
-  private observer: PerformanceObserver;
+  private observer: PerformanceObserver | null;
 
   private constructor() {
     this.metrics = {
@@ -52,7 +53,38 @@ export class BundleAnalyzer {
     };
 
     this.toolMetrics = new Map();
+    this.observer = null;
     this.setupPerformanceObserver();
+  }
+
+  private setupPerformanceObserver(): void {
+    if (typeof PerformanceObserver === 'undefined') {
+      return;
+    }
+
+    try {
+      this.observer = new PerformanceObserver((list) => {
+        list.getEntries().forEach((entry) => {
+          if (entry.entryType === 'paint') {
+            if (entry.name === 'first-contentful-paint') {
+              this.performanceMetrics.fcp = entry.startTime;
+            }
+            if (entry.name === 'largest-contentful-paint') {
+              this.performanceMetrics.lcp = entry.startTime;
+            }
+          }
+          if (entry.entryType === 'navigation') {
+            this.performanceMetrics.ttfb = entry.startTime;
+          }
+        });
+      });
+
+      this.observer.observe({
+        entryTypes: ['paint', 'largest-contentful-paint', 'navigation'] as any,
+      });
+    } catch (_error) {
+      this.observer = null;
+    }
   }
 
   public static getInstance(): BundleAnalyzer {
@@ -88,7 +120,7 @@ export class BundleAnalyzer {
    * Measure memory usage
    */
   public measureMemoryUsage(): number {
-    if (typeof window !== "undefined" && "memory" in performance) {
+    if (typeof window !== 'undefined' && 'memory' in performance) {
       const memory = (performance as any).memory;
       this.metrics.memoryUsage = memory.usedJSHeapSize;
       return memory.usedJSHeapSize;
@@ -137,7 +169,7 @@ export class BundleAnalyzer {
     if (this.metrics.totalSize > 2 * 1024 * 1024) {
       // > 2MB
       criticalIssues.push(
-        `Total bundle size (${this.formatBytes(this.metrics.totalSize)}) exceeds 2MB limit`,
+        `Total bundle size (${this.formatBytes(this.metrics.totalSize)}) exceeds 2MB limit`
       );
     } else if (this.metrics.totalSize > 1024 * 1024) {
       // > 1MB
@@ -149,7 +181,7 @@ export class BundleAnalyzer {
       if (size > 200 * 1024) {
         // > 200KB
         criticalIssues.push(
-          `Tool ${toolId} bundle size (${this.formatBytes(size)}) exceeds 200KB limit`,
+          `Tool ${toolId} bundle size (${this.formatBytes(size)}) exceeds 200KB limit`
         );
       } else if (size > 100 * 1024) {
         // > 100KB
@@ -187,10 +219,10 @@ export class BundleAnalyzer {
 
     // Generate recommendations
     if (criticalIssues.length > 0 || warnings.length > 0) {
-      recommendations.push("Consider implementing code splitting for large tools");
-      recommendations.push("Optimize images and assets to reduce bundle size");
-      recommendations.push("Implement lazy loading for non-critical tools");
-      recommendations.push("Use compression and minification for production builds");
+      recommendations.push('Consider implementing code splitting for large tools');
+      recommendations.push('Optimize images and assets to reduce bundle size');
+      recommendations.push('Implement lazy loading for non-critical tools');
+      recommendations.push('Use compression and minification for production builds');
     }
 
     return {
@@ -204,11 +236,11 @@ export class BundleAnalyzer {
    * Format bytes to human readable format
    */
   private formatBytes(bytes: number): string {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
+    return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }
 
   /**
@@ -218,7 +250,7 @@ export class BundleAnalyzer {
     bundle: BundleMetrics;
     performance: PerformanceMetrics;
     tools: ToolPerformanceMetrics[];
-    analysis: ReturnType<typeof this.analyzeBundle>;
+    analysis: ReturnType<BundleAnalyzer['analyzeBundle']>;
   } {
     return {
       bundle: this.getBundleMetrics(),

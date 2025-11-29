@@ -7,7 +7,7 @@ export interface ResizeOptions {
   file: File;
   width?: number;
   height?: number;
-  algorithm?: "nearest" | "bilinear" | "bicubic";
+  algorithm?: 'nearest' | 'bilinear' | 'bicubic';
   maintainAspectRatio?: boolean;
   quality?: number;
 }
@@ -39,26 +39,26 @@ export async function resizeImage(options: ResizeOptions): Promise<ResizeResult>
           img.height,
           options.width,
           options.height,
-          options.maintainAspectRatio !== false,
+          options.maintainAspectRatio !== false
         );
 
         // Create canvas
-        const canvas = document.createElement("canvas");
+        const canvas = document.createElement('canvas');
         canvas.width = newWidth;
         canvas.height = newHeight;
 
         // Get context and set image smoothing
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext('2d');
         if (!ctx) {
           resolve({
             success: false,
-            error: "Failed to get canvas context",
+            error: 'Failed to get canvas context',
           });
           return;
         }
 
         // Set image smoothing based on algorithm
-        setImageSmoothing(ctx, options.algorithm || "bilinear");
+        setImageSmoothing(ctx, options.algorithm || 'bilinear');
 
         // Draw resized image
         ctx.drawImage(img, 0, 0, newWidth, newHeight);
@@ -74,7 +74,7 @@ export async function resizeImage(options: ResizeOptions): Promise<ResizeResult>
             if (!blob) {
               resolve({
                 success: false,
-                error: "Failed to resize image",
+                error: 'Failed to resize image',
               });
               return;
             }
@@ -95,12 +95,12 @@ export async function resizeImage(options: ResizeOptions): Promise<ResizeResult>
             reader.readAsDataURL(blob);
           },
           options.file.type,
-          options.quality || 0.9,
+          options.quality || 0.9
         );
       } catch (error) {
         resolve({
           success: false,
-          error: error instanceof Error ? error.message : "Resize failed",
+          error: error instanceof Error ? error.message : 'Resize failed',
         });
       }
     };
@@ -108,7 +108,7 @@ export async function resizeImage(options: ResizeOptions): Promise<ResizeResult>
     img.onerror = () => {
       resolve({
         success: false,
-        error: "Failed to load image",
+        error: 'Failed to load image',
       });
     };
 
@@ -124,7 +124,7 @@ function calculateNewDimensions(
   originalHeight: number,
   targetWidth?: number,
   targetHeight?: number,
-  maintainAspectRatio: boolean = true,
+  maintainAspectRatio = true
 ): { width: number; height: number } {
   if (!targetWidth && !targetHeight) {
     return { width: originalWidth, height: originalHeight };
@@ -162,12 +162,11 @@ function calculateNewDimensions(
       width: calculatedWidth,
       height: targetHeight!,
     };
-  } else {
-    return {
-      width: targetWidth!,
-      height: calculatedHeight,
-    };
   }
+  return {
+    width: targetWidth!,
+    height: calculatedHeight,
+  };
 }
 
 /**
@@ -175,19 +174,19 @@ function calculateNewDimensions(
  */
 function setImageSmoothing(
   ctx: CanvasRenderingContext2D,
-  algorithm: "nearest" | "bilinear" | "bicubic",
+  algorithm: 'nearest' | 'bilinear' | 'bicubic'
 ): void {
   switch (algorithm) {
-    case "nearest":
+    case 'nearest':
       ctx.imageSmoothingEnabled = false;
       break;
-    case "bilinear":
+    case 'bilinear':
       ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "medium";
+      ctx.imageSmoothingQuality = 'medium';
       break;
-    case "bicubic":
+    case 'bicubic':
       ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
+      ctx.imageSmoothingQuality = 'high';
       break;
   }
 }
@@ -198,7 +197,7 @@ function setImageSmoothing(
 export function resizeByWidth(
   file: File,
   width: number,
-  algorithm?: "nearest" | "bilinear" | "bicubic",
+  algorithm?: 'nearest' | 'bilinear' | 'bicubic'
 ): Promise<ResizeResult> {
   return resizeImage({
     file,
@@ -214,7 +213,7 @@ export function resizeByWidth(
 export function resizeByHeight(
   file: File,
   height: number,
-  algorithm?: "nearest" | "bilinear" | "bicubic",
+  algorithm?: 'nearest' | 'bilinear' | 'bicubic'
 ): Promise<ResizeResult> {
   return resizeImage({
     file,
@@ -230,7 +229,7 @@ export function resizeByHeight(
 export function resizeByPercentage(
   file: File,
   percentage: number,
-  algorithm?: "nearest" | "bilinear" | "bicubic",
+  algorithm?: 'nearest' | 'bilinear' | 'bicubic'
 ): Promise<ResizeResult> {
   return new Promise((resolve) => {
     const img = new Image();
@@ -251,7 +250,7 @@ export function resizeByPercentage(
     img.onerror = () => {
       resolve({
         success: false,
-        error: "Failed to load image",
+        error: 'Failed to load image',
       });
     };
 
@@ -272,15 +271,15 @@ export function cropToSquare(file: File): Promise<ResizeResult> {
         const x = (img.width - size) / 2;
         const y = (img.height - size) / 2;
 
-        const canvas = document.createElement("canvas");
+        const canvas = document.createElement('canvas');
         canvas.width = size;
         canvas.height = size;
 
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext('2d');
         if (!ctx) {
           resolve({
             success: false,
-            error: "Failed to get canvas context",
+            error: 'Failed to get canvas context',
           });
           return;
         }
@@ -292,7 +291,7 @@ export function cropToSquare(file: File): Promise<ResizeResult> {
             if (!blob) {
               resolve({
                 success: false,
-                error: "Failed to crop image",
+                error: 'Failed to crop image',
               });
               return;
             }
@@ -310,12 +309,12 @@ export function cropToSquare(file: File): Promise<ResizeResult> {
             reader.readAsDataURL(blob);
           },
           file.type,
-          0.9,
+          0.9
         );
       } catch (error) {
         resolve({
           success: false,
-          error: error instanceof Error ? error.message : "Crop failed",
+          error: error instanceof Error ? error.message : 'Crop failed',
         });
       }
     };
@@ -323,7 +322,7 @@ export function cropToSquare(file: File): Promise<ResizeResult> {
     img.onerror = () => {
       resolve({
         success: false,
-        error: "Failed to load image",
+        error: 'Failed to load image',
       });
     };
 

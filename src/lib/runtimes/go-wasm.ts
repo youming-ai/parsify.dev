@@ -6,7 +6,7 @@
 export interface GoSourceFile {
   name: string;
   content: string;
-  type: "go";
+  type: 'go';
 }
 
 export interface GoExecutionOptions {
@@ -55,7 +55,7 @@ export class GoRuntime {
   private async _doInitialize(): Promise<void> {
     try {
       // TinyGo would need to be loaded via command line tools or WASM modules
-      console.log("Initializing TinyGo runtime...");
+      console.log('Initializing TinyGo runtime...');
 
       // Initialize TinyGo configuration
       this.tinygo = {
@@ -68,8 +68,50 @@ export class GoRuntime {
 
       this.isInitialized = true;
     } catch (error) {
-      throw new Error(`Failed to initialize Go runtime: ${error.message}`);
+      throw new Error(
+        `Failed to initialize Go runtime: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
+  }
+
+  /**
+   * Build Go code
+   */
+  async build(code: string, packageName: string): Promise<any> {
+    await this.initialize();
+    if (!this.tinygo) {
+      throw new Error('Go runtime not initialized');
+    }
+
+    const sourceFiles: GoSourceFile[] = [
+      {
+        name: 'main.go',
+        content: code,
+        type: 'go',
+      },
+    ];
+
+    return this.tinygo.build(sourceFiles, { mainPackage: packageName });
+  }
+
+  /**
+   * Run compiled WASM
+   */
+  async run(wasmFile: string, input: string): Promise<GoExecutionResult> {
+    await this.initialize();
+    if (!this.tinygo) {
+      throw new Error('Go runtime not initialized');
+    }
+
+    return this.tinygo.run(wasmFile, { input });
+  }
+
+  /**
+   * Stop execution
+   */
+  stop(): void {
+    // In a real implementation, this would terminate the worker or WASM instance
+    console.log('Stopping Go execution...');
   }
 
   /**
@@ -79,16 +121,16 @@ export class GoRuntime {
     await this.initialize();
 
     if (!this.tinygo) {
-      throw new Error("Go runtime not initialized");
+      throw new Error('Go runtime not initialized');
     }
 
     const {
-      mainPackage = "main",
+      mainPackage = 'main',
       sourceFiles,
       buildTags = [],
-      gcFlags = "",
-      ldFlags = "",
-      goVersion = "1.21",
+      gcFlags = '',
+      ldFlags = '',
+      goVersion = '1.21',
       timeoutMs = 5000,
       memoryLimitMB = 100,
       captureOutput = true,
@@ -108,7 +150,7 @@ export class GoRuntime {
         gcFlags,
         ldFlags,
         goVersion,
-        target: "wasm",
+        target: 'wasm',
       });
 
       const executionResult = await this.tinygo.run(buildResult, {
@@ -120,8 +162,8 @@ export class GoRuntime {
       const executionTime = endTime - startTime;
 
       return {
-        stdout: executionResult.stdout || "",
-        stderr: executionResult.stderr || "",
+        stdout: executionResult.stdout || '',
+        stderr: executionResult.stderr || '',
         exitCode: executionResult.exitCode || 0,
         executionTime,
         memoryUsed: this._estimateMemoryUsage(),
@@ -135,7 +177,7 @@ export class GoRuntime {
       const executionTime = endTime - startTime;
 
       return {
-        stdout: "",
+        stdout: '',
         stderr: error instanceof Error ? error.message : String(error),
         exitCode: 1,
         executionTime,
@@ -153,18 +195,20 @@ export class GoRuntime {
     await this.initialize();
 
     if (!this.tinygo) {
-      throw new Error("Go runtime not initialized");
+      throw new Error('Go runtime not initialized');
     }
 
     try {
-      const { sourceFiles, buildTags = [], goVersion = "1.21" } = options;
+      const { sourceFiles, buildTags = [], goVersion = '1.21' } = options;
       return await this.tinygo.getGoModuleInfo(sourceFiles, {
         buildTags,
         goVersion,
-        target: "wasm",
+        target: 'wasm',
       });
     } catch (error) {
-      throw new Error(`Go module info failed: ${error.message}`);
+      throw new Error(
+        `Go module info failed: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -186,8 +230,8 @@ export class GoRuntime {
   getStatus() {
     return {
       initialized: this.isInitialized,
-      version: "1.21",
-      compiler: "TinyGo",
+      version: '1.21',
+      compiler: 'TinyGo',
       memoryUsage: this._estimateMemoryUsage(),
     };
   }
@@ -196,18 +240,18 @@ export class GoRuntime {
   private _buildStub(_sourceFiles: GoSourceFile[], options?: any): any {
     return {
       success: true,
-      wasmModule: "simulated-wasm-module",
+      wasmModule: 'simulated-wasm-module',
       buildTime: 200,
       warnings: [],
       buildTags: options?.buildTags || [],
-      goVersion: options?.goVersion || "1.21",
+      goVersion: options?.goVersion || '1.21',
     };
   }
 
   private _runStub(_wasmModule: any, _options?: any): any {
     return {
-      stdout: "Go execution completed (simulated)",
-      stderr: "",
+      stdout: 'Go execution completed (simulated)',
+      stderr: '',
       exitCode: 0,
       warnings: [],
     };
@@ -220,13 +264,13 @@ export class GoRuntime {
 
   private _getGoModuleInfoStub(_sourceFiles: GoSourceFile[], options?: any): any {
     return {
-      moduleName: "main",
+      moduleName: 'main',
       dependencies: [],
       buildInfo: {
-        goVersion: options?.goVersion || "1.21",
+        goVersion: options?.goVersion || '1.21',
         buildTags: options?.buildTags || [],
-        target: "wasm",
-        features: ["goroutines", "channels"],
+        target: 'wasm',
+        features: ['goroutines', 'channels'],
       },
     };
   }
@@ -234,9 +278,9 @@ export class GoRuntime {
   private _getStatusStub(): any {
     return {
       available: true,
-      version: "TinyGo 0.30.0",
-      supportedTargets: ["wasm", "js", "wasm-unknown"],
-      features: ["goroutines", "channels", "interfaces", "generics"],
+      version: 'TinyGo 0.30.0',
+      supportedTargets: ['wasm', 'js', 'wasm-unknown'],
+      features: ['goroutines', 'channels', 'interfaces', 'generics'],
     };
   }
 

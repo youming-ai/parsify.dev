@@ -3,30 +3,30 @@
  * Common configuration and utilities for NLP component testing
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { performanceMonitor } from "../../../src/lib/nlp/infrastructure/performance-monitor";
-import { modelCache } from "../../../src/lib/nlp/infrastructure/model-cache";
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { modelCache } from '../../../src/lib/nlp/infrastructure/model-cache';
+import { performanceMonitor } from '../../../src/lib/nlp/infrastructure/performance-monitor';
 
 // Test configuration
 export const NLP_TEST_CONFIG = {
   // Sample texts for testing
   SAMPLE_TEXTS: {
     POSITIVE_SENTIMENT:
-      "I love this amazing product! It works perfectly and exceeded all my expectations.",
+      'I love this amazing product! It works perfectly and exceeded all my expectations.',
     NEGATIVE_SENTIMENT:
-      "This is terrible. The product broke after just one day and customer service was unhelpful.",
+      'This is terrible. The product broke after just one day and customer service was unhelpful.',
     NEUTRAL_SENTIMENT:
-      "The product is a standard office chair with basic features and average quality.",
+      'The product is a standard office chair with basic features and average quality.',
     MULTILINGUAL: {
-      ENGLISH: "Hello, how are you today?",
-      SPANISH: "Hola, ¿cómo estás hoy?",
+      ENGLISH: 'Hello, how are you today?',
+      SPANISH: 'Hola, ¿cómo estás hoy?',
       FRENCH: "Bonjour, comment allez-vous aujourd'hui?",
-      GERMAN: "Hallo, wie geht es Ihnen heute?",
-      CHINESE: "你好，你今天好吗？",
-      JAPANESE: "こんにちは、今日はお元気ですか？",
+      GERMAN: 'Hallo, wie geht es Ihnen heute?',
+      CHINESE: '你好，你今天好吗？',
+      JAPANESE: 'こんにちは、今日はお元気ですか？',
     },
     ENTITIES:
-      "Apple Inc. announced their new iPhone 14 in Cupertino, California on September 7, 2022, priced at $999.",
+      'Apple Inc. announced their new iPhone 14 in Cupertino, California on September 7, 2022, priced at $999.',
     LONG_TEXT: `
       Artificial Intelligence (AI) has revolutionized numerous industries in recent years.
       From healthcare to finance, AI applications are transforming how businesses operate
@@ -43,18 +43,18 @@ export const NLP_TEST_CONFIG = {
   // Expected results for validation
   EXPECTED_RESULTS: {
     SENTIMENT: {
-      POSITIVE: { overall: "positive", minScore: 0.5 },
-      NEGATIVE: { overall: "negative", maxScore: -0.5 },
-      NEUTRAL: { overall: "neutral", minScore: -0.3, maxScore: 0.3 },
+      POSITIVE: { overall: 'positive', minScore: 0.5 },
+      NEGATIVE: { overall: 'negative', maxScore: -0.5 },
+      NEUTRAL: { overall: 'neutral', minScore: -0.3, maxScore: 0.3 },
     },
     ENTITIES: {
       COUNT: 5, // Apple Inc., iPhone 14, Cupertino, California, September 7, 2022, $999
-      TYPES: ["ORGANIZATION", "PRODUCT", "LOCATION", "DATE", "MONEY"],
+      TYPES: ['ORGANIZATION', 'PRODUCT', 'LOCATION', 'DATE', 'MONEY'],
     },
     LANGUAGES: {
-      ENGLISH: { code: "en", minConfidence: 0.8 },
-      SPANISH: { code: "es", minConfidence: 0.8 },
-      FRENCH: { code: "fr", minConfidence: 0.8 },
+      ENGLISH: { code: 'en', minConfidence: 0.8 },
+      SPANISH: { code: 'es', minConfidence: 0.8 },
+      FRENCH: { code: 'fr', minConfidence: 0.8 },
     },
   },
 
@@ -70,51 +70,90 @@ export const NLP_TEST_CONFIG = {
   // Model configuration
   MODEL_CONFIG: {
     LANGUAGE_DETECTION: {
-      MODEL_ID: "fasttext-language-id",
-      VERSION: "1.0.0",
+      MODEL_ID: 'fasttext-language-id',
+      VERSION: '1.0.0',
     },
     SENTIMENT_ANALYSIS: {
-      MODEL_ID: "bert-sentiment-en",
-      VERSION: "1.0.0",
+      MODEL_ID: 'bert-sentiment-en',
+      VERSION: '1.0.0',
     },
     ENTITY_RECOGNITION: {
-      MODEL_ID: "bert-ner-multilingual",
-      VERSION: "1.0.0",
+      MODEL_ID: 'bert-ner-multilingual',
+      VERSION: '1.0.0',
     },
   },
 };
 
 // Mock data generators
-export class MockDataGenerator {
+type SentimentLabel = 'positive' | 'negative' | 'neutral';
+
+interface SentimentResult {
+  overall: SentimentLabel;
+  score: number;
+  confidence: number;
+}
+
+interface ExpectedSentimentResult {
+  overall?: SentimentLabel;
+  minScore?: number;
+  maxScore?: number;
+}
+
+interface EntityResult {
+  text: string;
+  type: string;
+  startIndex: number;
+  endIndex: number;
+  confidence: number;
+}
+
+interface LanguageResult {
+  code: string;
+  confidence: number;
+}
+
+interface ExpectedLanguageResult {
+  code?: string;
+  minConfidence?: number;
+}
+
+interface MockModelResponse<T> {
+  data: T;
+  confidence: number;
+  processingTime: number;
+  modelVersion: string;
+}
+
+export const MockDataGenerator = {
   /**
    * Generate random text of specified length
    */
-  static generateText(length: number): string {
+  generateText(length: number): string {
     const words = [
-      "the",
-      "quick",
-      "brown",
-      "fox",
-      "jumps",
-      "over",
-      "lazy",
-      "dog",
-      "artificial",
-      "intelligence",
-      "machine",
-      "learning",
-      "data",
-      "science",
-      "technology",
-      "innovation",
-      "research",
-      "development",
-      "algorithm",
-      "model",
-      "training",
-      "prediction",
-      "accuracy",
-      "performance",
+      'the',
+      'quick',
+      'brown',
+      'fox',
+      'jumps',
+      'over',
+      'lazy',
+      'dog',
+      'artificial',
+      'intelligence',
+      'machine',
+      'learning',
+      'data',
+      'science',
+      'technology',
+      'innovation',
+      'research',
+      'development',
+      'algorithm',
+      'model',
+      'training',
+      'prediction',
+      'accuracy',
+      'performance',
     ];
     const result: string[] = [];
 
@@ -122,52 +161,49 @@ export class MockDataGenerator {
       result.push(words[Math.floor(Math.random() * words.length)]);
     }
 
-    return result.join(" ");
-  }
+    return result.join(' ');
+  },
 
   /**
    * Generate sentiment-labeled text
    */
-  static generateSentimentText(
-    sentiment: "positive" | "negative" | "neutral",
-    length: number = 50,
-  ): string {
+  generateSentimentText(sentiment: SentimentLabel, length = 50): string {
     const templates = {
       positive: [
-        "amazing",
-        "excellent",
-        "wonderful",
-        "perfect",
-        "outstanding",
-        "brilliant",
-        "fantastic",
-        "great",
-        "love",
-        "enjoy",
+        'amazing',
+        'excellent',
+        'wonderful',
+        'perfect',
+        'outstanding',
+        'brilliant',
+        'fantastic',
+        'great',
+        'love',
+        'enjoy',
       ],
       negative: [
-        "terrible",
-        "awful",
-        "horrible",
-        "disappointing",
-        "bad",
-        "poor",
-        "worst",
-        "hate",
-        "dislike",
-        "frustrated",
+        'terrible',
+        'awful',
+        'horrible',
+        'disappointing',
+        'bad',
+        'poor',
+        'worst',
+        'hate',
+        'dislike',
+        'frustrated',
       ],
       neutral: [
-        "average",
-        "standard",
-        "typical",
-        "normal",
-        "regular",
-        "ordinary",
-        "common",
-        "usual",
-        "general",
-        "basic",
+        'average',
+        'standard',
+        'typical',
+        'normal',
+        'regular',
+        'ordinary',
+        'common',
+        'usual',
+        'general',
+        'basic',
       ],
     };
 
@@ -178,86 +214,86 @@ export class MockDataGenerator {
       result.push(words[Math.floor(Math.random() * words.length)]);
     }
 
-    return result.join(" ");
-  }
+    return result.join(' ');
+  },
 
   /**
    * Generate text with entities
    */
-  static generateEntityText(): string {
-    const companies = ["Google", "Microsoft", "Apple", "Amazon", "Meta", "Tesla"];
-    const locations = ["New York", "San Francisco", "London", "Tokyo", "Paris", "Berlin"];
-    const people = ["John Smith", "Jane Doe", "Robert Johnson", "Mary Williams", "James Brown"];
-    const dates = ["January 1, 2023", "March 15, 2023", "July 4, 2023", "December 25, 2023"];
-    const money = ["$100", "$500", "$1000", "$5000", "$10000"];
+  generateEntityText(): string {
+    const companies = ['Google', 'Microsoft', 'Apple', 'Amazon', 'Meta', 'Tesla'];
+    const locations = ['New York', 'San Francisco', 'London', 'Tokyo', 'Paris', 'Berlin'];
+    const people = ['John Smith', 'Jane Doe', 'Robert Johnson', 'Mary Williams', 'James Brown'];
+    const dates = ['January 1, 2023', 'March 15, 2023', 'July 4, 2023', 'December 25, 2023'];
+    const money = ['$100', '$500', '$1000', '$5000', '$10000'];
 
     return `${companies[Math.floor(Math.random() * companies.length)]} announced a new product in ${locations[Math.floor(Math.random() * locations.length)]}. CEO ${people[Math.floor(Math.random() * people.length)]} stated on ${dates[Math.floor(Math.random() * dates.length)]} that the company invested ${money[Math.floor(Math.random() * money.length)]} in research.`;
-  }
+  },
 
   /**
    * Generate multilingual text
    */
-  static generateMultilingualText(language: string): string {
+  generateMultilingualText(language: string): string {
     const texts: Record<string, string[]> = {
-      en: ["Hello world", "How are you?", "Nice to meet you", "Thank you very much"],
-      es: ["Hola mundo", "¿Cómo estás?", "Mucho gusto", "Muchas gracias"],
-      fr: ["Bonjour le monde", "Comment allez-vous?", "Ravi de vous rencontrer", "Merci beaucoup"],
-      de: ["Hallo Welt", "Wie geht es Ihnen?", "Schön, Sie kennenzulernen", "Vielen Dank"],
-      it: ["Ciao mondo", "Come stai?", "Piacere di conoscerti", "Grazie mille"],
-      pt: ["Olá mundo", "Como vai?", "Prazer em conhecer", "Muito obrigado"],
-      ja: ["こんにちは世界", "お元気ですか？", "お会いできて嬉しい", "どうもありがとうございます"],
-      zh: ["你好世界", "你好吗？", "很高兴见到你", "非常感谢"],
-      ru: ["Привет мир", "Как дела?", "Рад встрече", "Большое спасибо"],
-      ar: ["مرحبا بالعالم", "كيف حالك؟", "سعيد بلقائك", "شكرا جزيلا"],
+      en: ['Hello world', 'How are you?', 'Nice to meet you', 'Thank you very much'],
+      es: ['Hola mundo', '¿Cómo estás?', 'Mucho gusto', 'Muchas gracias'],
+      fr: ['Bonjour le monde', 'Comment allez-vous?', 'Ravi de vous rencontrer', 'Merci beaucoup'],
+      de: ['Hallo Welt', 'Wie geht es Ihnen?', 'Schön, Sie kennenzulernen', 'Vielen Dank'],
+      it: ['Ciao mondo', 'Come stai?', 'Piacere di conoscerti', 'Grazie mille'],
+      pt: ['Olá mundo', 'Como vai?', 'Prazer em conhecer', 'Muito obrigado'],
+      ja: ['こんにちは世界', 'お元気ですか？', 'お会いできて嬉しい', 'どうもありがとうございます'],
+      zh: ['你好世界', '你好吗？', '很高兴见到你', '非常感谢'],
+      ru: ['Привет мир', 'Как дела?', 'Рад встрече', 'Большое спасибо'],
+      ar: ['مرحبا بالعالم', 'كيف حالك؟', 'سعيد بلقائك', 'شكرا جزيلا'],
     };
 
     const languageTexts = texts[language] || texts.en;
     return languageTexts[Math.floor(Math.random() * languageTexts.length)];
-  }
-}
+  },
+};
 
 // Test utilities
-export class NLPTestUtils {
+export const NLPTestUtils = {
   /**
    * Measure execution time of a function
    */
-  static async measureTime<T>(fn: () => Promise<T>): Promise<{ result: T; time: number }> {
+  async measureTime<T>(fn: () => Promise<T>): Promise<{ result: T; time: number }> {
     const start = performance.now();
     const result = await fn();
     const time = performance.now() - start;
     return { result, time };
-  }
+  },
 
   /**
    * Assert performance thresholds
    */
-  static assertPerformance(time: number, threshold: number): void {
+  assertPerformance(time: number, threshold: number): void {
     expect(time).toBeLessThan(threshold);
-  }
+  },
 
   /**
    * Assert accuracy thresholds
    */
-  static assertAccuracy(accuracy: number, threshold: number): void {
+  assertAccuracy(accuracy: number, threshold: number): void {
     expect(accuracy).toBeGreaterThanOrEqual(threshold);
-  }
+  },
 
   /**
    * Create mock model response
    */
-  static createMockModelResponse(data: any, confidence: number = 0.9) {
+  createMockModelResponse<T>(data: T, confidence = 0.9): MockModelResponse<T> {
     return {
       data,
       confidence,
       processingTime: 100,
-      modelVersion: "test-1.0.0",
+      modelVersion: 'test-1.0.0',
     };
-  }
+  },
 
   /**
    * Wait for async operation with timeout
    */
-  static async waitFor(condition: () => boolean, timeout: number = 5000): Promise<void> {
+  async waitFor(condition: () => boolean, timeout = 5000): Promise<void> {
     const start = Date.now();
 
     while (!condition() && Date.now() - start < timeout) {
@@ -267,26 +303,26 @@ export class NLPTestUtils {
     if (!condition()) {
       throw new Error(`Timeout waiting for condition after ${timeout}ms`);
     }
-  }
+  },
 
   /**
    * Generate test batch
    */
-  static generateTestBatch(size: number, textGenerator: () => string): string[] {
+  generateTestBatch(size: number, textGenerator: () => string): string[] {
     return Array.from({ length: size }, textGenerator);
-  }
-}
+  },
+};
 
 // Performance testing utilities
-export class PerformanceTester {
+export const PerformanceTester = {
   /**
    * Run performance test with multiple iterations
    */
-  static async runPerformanceTest<T>(
+  async runPerformanceTest<T>(
     testName: string,
     fn: () => Promise<T>,
-    iterations: number = 10,
-    maxTime: number = NLP_TEST_CONFIG.PERFORMANCE_THRESHOLDS.MAX_PROCESSING_TIME,
+    iterations = 10,
+    maxTime: number = NLP_TEST_CONFIG.PERFORMANCE_THRESHOLDS.MAX_PROCESSING_TIME
   ): Promise<void> {
     describe(`Performance: ${testName}`, () => {
       it(`should complete within ${maxTime}ms`, async () => {
@@ -309,15 +345,15 @@ export class PerformanceTester {
         console.log(`  Min: ${Math.min(...times).toFixed(2)}ms`);
       });
     });
-  }
+  },
 
   /**
    * Test memory usage
    */
-  static async testMemoryUsage<T>(
+  async testMemoryUsage<T>(
     testName: string,
     fn: () => Promise<T>,
-    maxMemory: number = NLP_TEST_CONFIG.PERFORMANCE_THRESHOLDS.MAX_MEMORY_USAGE,
+    maxMemory: number = NLP_TEST_CONFIG.PERFORMANCE_THRESHOLDS.MAX_MEMORY_USAGE
   ): Promise<void> {
     describe(`Memory: ${testName}`, () => {
       it(`should use less than ${maxMemory}MB`, async () => {
@@ -333,18 +369,18 @@ export class PerformanceTester {
         console.log(`Memory - ${testName}: ${memoryUsed.toFixed(2)}MB`);
       });
     });
-  }
-}
+  },
+};
 
 // Accuracy testing utilities
-export class AccuracyTester {
+export const AccuracyTester = {
   /**
    * Test sentiment analysis accuracy
    */
-  static testSentimentAccuracy(actual: any, expected: any): void {
-    expect(actual).toHaveProperty("overall");
-    expect(actual).toHaveProperty("score");
-    expect(actual).toHaveProperty("confidence");
+  testSentimentAccuracy(actual: SentimentResult, expected: ExpectedSentimentResult): void {
+    expect(actual).toHaveProperty('overall');
+    expect(actual).toHaveProperty('score');
+    expect(actual).toHaveProperty('confidence');
 
     if (expected.overall) {
       expect(actual.overall).toBe(expected.overall);
@@ -357,36 +393,40 @@ export class AccuracyTester {
     if (expected.maxScore !== undefined) {
       expect(actual.score).toBeLessThanOrEqual(expected.maxScore);
     }
-  }
+  },
 
   /**
    * Test entity extraction accuracy
    */
-  static testEntityAccuracy(entities: any[], expectedCount: number, expectedTypes: string[]): void {
+  testEntityAccuracy(
+    entities: EntityResult[],
+    expectedCount: number,
+    expectedTypes: string[]
+  ): void {
     expect(entities).toBeInstanceOf(Array);
     expect(entities.length).toBeGreaterThanOrEqual(expectedCount);
 
     const foundTypes = entities.map((e) => e.type);
-    expectedTypes.forEach((type) => {
+    for (const type of expectedTypes) {
       expect(foundTypes).toContain(type);
-    });
+    }
 
     // Test entity structure
-    entities.forEach((entity) => {
-      expect(entity).toHaveProperty("text");
-      expect(entity).toHaveProperty("type");
-      expect(entity).toHaveProperty("startIndex");
-      expect(entity).toHaveProperty("endIndex");
-      expect(entity).toHaveProperty("confidence");
-    });
-  }
+    for (const entity of entities) {
+      expect(entity).toHaveProperty('text');
+      expect(entity).toHaveProperty('type');
+      expect(entity).toHaveProperty('startIndex');
+      expect(entity).toHaveProperty('endIndex');
+      expect(entity).toHaveProperty('confidence');
+    }
+  },
 
   /**
    * Test language detection accuracy
    */
-  static testLanguageAccuracy(detected: any, expected: any): void {
-    expect(detected).toHaveProperty("code");
-    expect(detected).toHaveProperty("confidence");
+  testLanguageAccuracy(detected: LanguageResult, expected: ExpectedLanguageResult): void {
+    expect(detected).toHaveProperty('code');
+    expect(detected).toHaveProperty('confidence');
 
     if (expected.code) {
       expect(detected.code).toBe(expected.code);
@@ -395,8 +435,8 @@ export class AccuracyTester {
     if (expected.minConfidence) {
       expect(detected.confidence).toBeGreaterThanOrEqual(expected.minConfidence);
     }
-  }
-}
+  },
+};
 
 // Global test setup and teardown
 beforeEach(async () => {
@@ -407,8 +447,8 @@ beforeEach(async () => {
   await modelCache.clear();
 
   // Reset performance metrics
-  performanceMonitor["snapshots"] = [];
-  performanceMonitor["alerts"] = [];
+  performanceMonitor.snapshots = [];
+  performanceMonitor.alerts = [];
 });
 
 afterEach(async () => {
@@ -422,4 +462,4 @@ afterEach(async () => {
 // Export utilities for use in test files
 export { describe, it, expect, beforeEach, afterEach };
 
-console.log("NLP Test Setup initialized");
+console.log('NLP Test Setup initialized');

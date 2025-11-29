@@ -1,21 +1,22 @@
 export type CodeLanguage =
-  | "javascript"
-  | "typescript"
-  | "python"
-  | "java"
-  | "cpp"
-  | "c"
-  | "csharp"
-  | "go"
-  | "rust"
-  | "php"
-  | "ruby"
-  | "swift"
-  | "kotlin"
-  | "scala"
-  | "bash"
-  | "powershell"
-  | "sql";
+  | 'javascript'
+  | 'typescript'
+  | 'python'
+  | 'java'
+  | 'cpp'
+  | 'c'
+  | 'csharp'
+  | 'go'
+  | 'rust'
+  | 'php'
+  | 'ruby'
+  | 'lua'
+  | 'swift'
+  | 'kotlin'
+  | 'scala'
+  | 'bash'
+  | 'powershell'
+  | 'sql';
 
 export interface CodeExecutionRequest {
   language: CodeLanguage;
@@ -44,7 +45,7 @@ export interface CodeTemplate {
   code: string;
   input?: string;
   category: string;
-  difficulty: "beginner" | "intermediate" | "advanced";
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
 }
 
 export interface CodeEditorState {
@@ -59,13 +60,13 @@ export interface CodeEditorState {
 }
 
 export type ExecutionStatus =
-  | "idle"
-  | "compiling"
-  | "running"
-  | "completed"
-  | "error"
-  | "timeout"
-  | "cancelled";
+  | 'idle'
+  | 'compiling'
+  | 'running'
+  | 'completed'
+  | 'error'
+  | 'timeout'
+  | 'cancelled';
 
 export interface CodeExecutionState {
   status: ExecutionStatus;
@@ -79,17 +80,17 @@ export interface CodeExecutionState {
 
 export interface TerminalLine {
   id: string;
-  type: "input" | "output" | "error" | "info";
+  type: 'input' | 'output' | 'error' | 'info';
   content: string;
   timestamp: number;
 }
 
 export interface CodeFormatOptions {
   indentSize: number;
-  indentType: "spaces" | "tabs";
+  indentType: 'spaces' | 'tabs';
   maxLineLength: number;
   semicolons: boolean;
-  quotes: "single" | "double";
+  quotes: 'single' | 'double';
   trailingComma: boolean;
 }
 
@@ -117,7 +118,7 @@ export interface CodeExecutionSettings {
   showLineNumbers: boolean;
   wordWrap: boolean;
   fontSize: number;
-  theme: "light" | "dark" | "high-contrast";
+  theme: 'light' | 'dark' | 'high-contrast';
 }
 
 export interface CodeEditorProps {
@@ -128,12 +129,13 @@ export interface CodeEditorProps {
   height?: string | number;
   width?: string | number;
   readOnly?: boolean;
-  theme?: "light" | "dark" | "high-contrast";
+  theme?: 'light' | 'dark' | 'high-contrast';
   fontSize?: number;
   wordWrap?: boolean;
   showLineNumbers?: boolean;
   minimap?: boolean;
   className?: string;
+  placeholder?: string;
   onMount?: (editor: any, monaco: any) => void;
   options?: any;
   loading?: React.ReactNode;
@@ -164,7 +166,7 @@ export interface TerminalProps {
   onClear?: () => void;
   readonly?: boolean;
   height?: string | number;
-  theme?: "light" | "dark" | "high-contrast";
+  theme?: 'light' | 'dark' | 'high-contrast';
   showTimestamps?: boolean;
   showLineNumbers?: boolean;
   className?: string;

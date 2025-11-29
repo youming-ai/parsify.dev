@@ -1,42 +1,42 @@
-import { Code, Github, Mail, Twitter } from "lucide-react";
-import Link from "next/link";
+import { Code, Github, Mail, Twitter } from 'lucide-react';
+import Link from 'next/link';
 
 const navigation = {
   tools: [
-    { name: "JSON Tools", href: "/tools/json" },
-    { name: "Code Tools", href: "/tools/code" },
-    { name: "All Tools", href: "/tools" },
+    { name: 'JSON Tools', href: '/tools/json' },
+    { name: 'Code Tools', href: '/tools/code' },
+    { name: 'All Tools', href: '/tools' },
   ],
   resources: [
-    { name: "Documentation", href: "/docs" },
-    { name: "API Reference", href: "/docs/api" },
-    { name: "Examples", href: "/docs/examples" },
+    { name: 'Documentation', href: '/docs' },
+    { name: 'API Reference', href: '/docs/api' },
+    { name: 'Examples', href: '/docs/examples' },
   ],
   company: [
-    { name: "About", href: "/about" },
-    { name: "Blog", href: "/blog" },
-    { name: "Contact", href: "/contact" },
+    { name: 'About', href: '/about' },
+    { name: 'Blog', href: '/blog' },
+    { name: 'Contact', href: '/contact' },
   ],
   legal: [
-    { name: "Privacy Policy", href: "/privacy" },
-    { name: "Terms of Service", href: "/terms" },
+    { name: 'Privacy Policy', href: '/privacy' },
+    { name: 'Terms of Service', href: '/terms' },
   ],
 };
 
 const socialLinks = [
   {
-    name: "GitHub",
-    href: "https://github.com/your-repo/parsify-dev",
+    name: 'GitHub',
+    href: 'https://github.com/parsify-dev/parsify',
     icon: Github,
   },
-  { name: "Twitter", href: "https://twitter.com/parsifydev", icon: Twitter },
-  { name: "Email", href: "mailto:contact@parsify.dev", icon: Mail },
+  { name: 'Twitter', href: 'https://twitter.com/parsifydev', icon: Twitter },
+  { name: 'Email', href: 'mailto:contact@parsify.dev', icon: Mail },
 ];
 
 export function Footer() {
   return (
     <footer className="border-t bg-background">
-      <div className="container py-12 md:py-16">
+      <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8 lg:py-16">
         <div className="grid grid-cols-2 gap-8 lg:grid-cols-6">
           <div className="col-span-2 lg:col-span-2">
             <Link href="/" className="flex items-center space-x-2">

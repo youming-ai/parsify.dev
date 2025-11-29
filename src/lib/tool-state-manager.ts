@@ -26,7 +26,7 @@ export interface SessionData {
   tools: Record<string, ToolState>;
   globalConfig: Record<string, any>;
   preferences: {
-    theme: "light" | "dark" | "system";
+    theme: 'light' | 'dark' | 'system';
     language: string;
     autoSave: boolean;
     autoSaveInterval: number; // seconds
@@ -36,7 +36,7 @@ export interface SessionData {
 }
 
 export interface StateChangeEvent {
-  type: "created" | "updated" | "deleted" | "restored";
+  type: 'created' | 'updated' | 'deleted' | 'restored';
   toolId: string;
   sessionId: string;
   timestamp: number;
@@ -53,17 +53,18 @@ export interface BackupData {
 }
 
 export class ToolStateManager {
+  private static instance: ToolStateManager;
   private currentSession: SessionData | null = null;
   private autoSaveTimer: NodeJS.Timeout | null = null;
   private eventListeners: Map<string, Function[]>;
   private storageKeys = {
-    currentSession: "parsify-dev:current-session",
-    sessions: "parsify-dev:sessions",
-    backups: "parsify-dev:backups",
-    preferences: "parsify-dev:preferences",
+    currentSession: 'parsify-dev:current-session',
+    sessions: 'parsify-dev:sessions',
+    backups: 'parsify-dev:backups',
+    preferences: 'parsify-dev:preferences',
   };
-  private maxBackups: number = 10;
-  private maxSessions: number = 50;
+  private maxBackups = 10;
+  private maxSessions = 50;
   private sessionTimeout: number = 24 * 60 * 60 * 1000; // 24 hours
 
   private constructor() {
@@ -71,6 +72,14 @@ export class ToolStateManager {
     this.initializeFromStorage();
     this.startAutoSave();
     this.cleanupExpiredSessions();
+  }
+
+  private initializeFromStorage(): void {
+    // Placeholder for loading saved sessions
+  }
+
+  private startAutoSave(): void {
+    // Placeholder for autosave implementation
   }
 
   public static getInstance(): ToolStateManager {
@@ -94,8 +103,8 @@ export class ToolStateManager {
       tools: {},
       globalConfig: {},
       preferences: {
-        theme: "system",
-        language: "en",
+        theme: 'system',
+        language: 'en',
         autoSave: true,
         autoSaveInterval: 30,
         compactMode: false,
@@ -104,7 +113,7 @@ export class ToolStateManager {
     };
 
     this.saveSession();
-    this.emit("session:created", { sessionId, userId });
+    this.emit('session:created', { sessionId, userId });
     return sessionId;
   }
 
@@ -130,7 +139,7 @@ export class ToolStateManager {
     toolId: string,
     data: any,
     config: Record<string, any> = {},
-    metadata?: Partial<ToolState["metadata"]>,
+    metadata?: Partial<ToolState['metadata']>
   ): void {
     if (!this.currentSession) {
       this.createNewSession();
@@ -139,19 +148,21 @@ export class ToolStateManager {
     const previousData = this.currentSession?.tools[toolId];
     const toolState: ToolState = {
       toolId,
-      version: "1.0.0",
+      version: '1.0.0',
       lastModified: Date.now(),
       data: this.cloneData(data),
       config: this.cloneData(config),
       metadata: metadata ? { ...previousData?.metadata, ...metadata } : previousData?.metadata,
     };
 
-    this.currentSession?.tools[toolId] = toolState;
-    this.currentSession!.lastModified = Date.now();
+    if (this.currentSession) {
+      this.currentSession.tools[toolId] = toolState;
+      this.currentSession.lastModified = Date.now();
+    }
 
     this.saveSession();
-    this.emit("state:changed", {
-      type: previousData ? "updated" : "created",
+    this.emit('state:changed', {
+      type: previousData ? 'updated' : 'created',
       toolId,
       sessionId: this.currentSession?.sessionId,
       timestamp: Date.now(),
@@ -201,8 +212,8 @@ export class ToolStateManager {
     this.currentSession.lastModified = Date.now();
 
     this.saveSession();
-    this.emit("state:changed", {
-      type: "deleted",
+    this.emit('state:changed', {
+      type: 'deleted',
       toolId,
       sessionId: this.currentSession.sessionId,
       timestamp: Date.now(),
@@ -224,8 +235,8 @@ export class ToolStateManager {
 
     this.saveSession();
     toolIds.forEach((toolId) => {
-      this.emit("state:changed", {
-        type: "deleted",
+      this.emit('state:changed', {
+        type: 'deleted',
         toolId,
         sessionId: this.currentSession?.sessionId,
         timestamp: Date.now(),
@@ -259,11 +270,11 @@ export class ToolStateManager {
   /**
    * Get user preferences
    */
-  public getPreferences(): SessionData["preferences"] {
+  public getPreferences(): SessionData['preferences'] {
     return (
       this.currentSession?.preferences || {
-        theme: "system",
-        language: "en",
+        theme: 'system',
+        language: 'en',
         autoSave: true,
         autoSaveInterval: 30,
         compactMode: false,
@@ -275,25 +286,31 @@ export class ToolStateManager {
   /**
    * Update user preferences
    */
-  public updatePreferences(preferences: Partial<SessionData["preferences"]>): void {
+  public updatePreferences(preferences: Partial<SessionData['preferences']>): void {
     if (!this.currentSession) {
       this.createNewSession();
     }
 
-    this.currentSession!.preferences = {
-      ...this.currentSession?.preferences,
-      ...preferences,
+    const currentPrefs = this.currentSession?.preferences || {
+      theme: 'light',
+      language: 'en',
+      autoSave: true,
+      autoSaveInterval: 60,
+      compactMode: false,
+      showPerformance: false,
     };
+
+    this.currentSession!.preferences = { ...currentPrefs, ...preferences };
     this.currentSession!.lastModified = Date.now();
 
     // Also save to localStorage for persistence across sessions
     localStorage.setItem(
       this.storageKeys.preferences,
-      JSON.stringify(this.currentSession?.preferences),
+      JSON.stringify(this.currentSession?.preferences)
     );
     this.saveSession();
 
-    this.emit("preferences:updated", {
+    this.emit('preferences:updated', {
       preferences: this.currentSession?.preferences,
     });
   }
@@ -303,7 +320,7 @@ export class ToolStateManager {
    */
   public exportSession(): string {
     if (!this.currentSession) {
-      throw new Error("No active session to export");
+      throw new Error('No active session to export');
     }
 
     return JSON.stringify(this.currentSession, null, 2);
@@ -312,7 +329,7 @@ export class ToolStateManager {
   /**
    * Import session data
    */
-  public importSession(sessionData: string, merge: boolean = false): void {
+  public importSession(sessionData: string, merge = false): void {
     try {
       const parsedData: SessionData = JSON.parse(sessionData);
 
@@ -344,13 +361,13 @@ export class ToolStateManager {
       }
 
       this.saveSession();
-      this.emit("session:imported", {
+      this.emit('session:imported', {
         sessionId: this.currentSession.sessionId,
         merged: merge,
       });
     } catch (error) {
       throw new Error(
-        `Failed to import session: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to import session: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -360,13 +377,13 @@ export class ToolStateManager {
    */
   public createBackup(): string {
     if (!this.currentSession) {
-      throw new Error("No active session to backup");
+      throw new Error('No active session to backup');
     }
 
     const backupData: BackupData = {
       sessionId: this.currentSession.sessionId,
       timestamp: Date.now(),
-      version: "1.0.0",
+      version: '1.0.0',
       data: this.cloneData(this.currentSession),
       checksum: this.calculateChecksum(this.currentSession),
     };
@@ -393,13 +410,13 @@ export class ToolStateManager {
 
       // Validate backup
       if (!backup.data || !backup.checksum) {
-        throw new Error("Invalid backup format");
+        throw new Error('Invalid backup format');
       }
 
       // Verify checksum
       const currentChecksum = this.calculateChecksum(backup.data);
       if (currentChecksum !== backup.checksum) {
-        throw new Error("Backup checksum validation failed");
+        throw new Error('Backup checksum validation failed');
       }
 
       this.currentSession = {
@@ -408,13 +425,13 @@ export class ToolStateManager {
       };
 
       this.saveSession();
-      this.emit("session:restored", {
+      this.emit('session:restored', {
         sessionId: this.currentSession.sessionId,
         backupTimestamp: backup.timestamp,
       });
     } catch (error) {
       throw new Error(
-        `Failed to restore backup: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to restore backup: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -459,7 +476,7 @@ export class ToolStateManager {
       // Also save to sessions list
       const sessions = this.getAllSessions();
       const existingIndex = sessions.findIndex(
-        (s) => s.sessionId === this.currentSession?.sessionId,
+        (s) => s.sessionId === this.currentSession?.sessionId
       );
 
       if (existingIndex !== -1) {
@@ -475,7 +492,7 @@ export class ToolStateManager {
 
       localStorage.setItem(this.storageKeys.sessions, JSON.stringify(sessions));
     } catch (error) {
-      console.error("Failed to save session:", error);
+      console.error('Failed to save session:', error);
     }
   }
 
@@ -509,7 +526,7 @@ export class ToolStateManager {
 
     this.currentSession = { ...targetSession, lastModified: Date.now() };
     this.saveSession();
-    this.emit("session:switched", { sessionId });
+    this.emit('session:switched', { sessionId });
 
     return true;
   }
@@ -533,7 +550,7 @@ export class ToolStateManager {
       this.createNewSession();
     }
 
-    this.emit("session:deleted", { sessionId });
+    this.emit('session:deleted', { sessionId });
     return true;
   }
 
@@ -544,7 +561,7 @@ export class ToolStateManager {
     const sessions = this.getAllSessions();
     const now = Date.now();
     const validSessions = sessions.filter(
-      (session) => now - session.lastModified < this.sessionTimeout,
+      (session) => now - session.lastModified < this.sessionTimeout
     );
 
     if (validSessions.length !== sessions.length) {
@@ -564,7 +581,7 @@ export class ToolStateManager {
 
   private cloneData(data: any): any {
     if (data === null || data === undefined) return data;
-    if (typeof data !== "object") return data;
+    if (typeof data !== 'object') return data;
     if (data instanceof Date) return new Date(data.getTime());
     if (Array.isArray(data)) return data.map((item) => this.cloneData(item));
 
@@ -579,13 +596,13 @@ export class ToolStateManager {
 
   private mergeData(target: any, source: any): any {
     if (source === null || source === undefined) return target;
-    if (typeof source !== "object") return source;
+    if (typeof source !== 'object') return source;
 
     if (Array.isArray(target) && Array.isArray(source)) {
       return [...target, ...source];
     }
 
-    if (typeof target === "object" && typeof source === "object" && !Array.isArray(target)) {
+    if (typeof target === 'object' && typeof source === 'object' && !Array.isArray(target)) {
       return { ...target, ...source };
     }
 
@@ -604,16 +621,16 @@ export class ToolStateManager {
   }
 
   private validateSessionData(data: any): void {
-    if (!data || typeof data !== "object") {
-      throw new Error("Invalid session data format");
+    if (!data || typeof data !== 'object') {
+      throw new Error('Invalid session data format');
     }
 
-    if (!data.tools || typeof data.tools !== "object") {
-      throw new Error("Invalid tools data in session");
+    if (!data.tools || typeof data.tools !== 'object') {
+      throw new Error('Invalid tools data in session');
     }
 
-    if (data.preferences && typeof data.preferences !== "object") {
-      throw new Error("Invalid preferences data in session");
+    if (data.preferences && typeof data.preferences !== 'object') {
+      throw new Error('Invalid preferences data in session');
     }
   }
 

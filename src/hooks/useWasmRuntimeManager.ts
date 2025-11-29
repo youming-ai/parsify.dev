@@ -12,10 +12,10 @@
  * - Integration with the performance monitoring system
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Language runtime types
-export type LanguageRuntime = "python" | "java" | "go" | "rust" | "typescript" | "javascript";
+export type LanguageRuntime = 'python' | 'java' | 'go' | 'rust' | 'typescript' | 'javascript';
 
 // Runtime configuration interface
 interface RuntimeConfig {
@@ -28,7 +28,7 @@ interface RuntimeConfig {
 
 // Runtime state
 interface RuntimeState {
-  status: "loading" | "ready" | "busy" | "error" | "disabled";
+  status: 'loading' | 'ready' | 'busy' | 'error' | 'disabled';
   instance?: any;
   memoryUsage?: number;
   lastUsed?: number;
@@ -91,56 +91,26 @@ export const useWasmRuntimeManager = () => {
     enablePerformanceMonitoring: true,
   });
 
-  // Runtime factory implementations
-  const createRuntime = useCallback(
-    async (language: LanguageRuntime): Promise<LanguageRuntimeImplementation> => {
-      switch (language) {
-        case "python":
-          return await createPythonRuntime();
-        case "java":
-          return await createJavaRuntime();
-        case "go":
-          return await createGoRuntime();
-        case "rust":
-          return await createRustRuntime();
-        case "typescript":
-          return await createTypeScriptRuntime();
-        case "javascript":
-          return await createJavaScriptRuntime();
-        default:
-          throw new Error(`Unsupported language runtime: ${language}`);
-      }
-    },
-    [
-      createGoRuntime,
-      createJavaRuntime,
-      createJavaScriptRuntime,
-      createPythonRuntime,
-      createRustRuntime,
-      createTypeScriptRuntime,
-    ],
-  );
-
   // Python runtime implementation (Pyodide)
   const createPythonRuntime = async (): Promise<LanguageRuntimeImplementation> => {
     // Dynamic import of Pyodide
-    const { loadPyodide } = await import("pyodide");
+    const { loadPyodide } = await import('pyodide');
 
     let pyodide: any = null;
 
     return {
       async initialize() {
         pyodide = await loadPyodide({
-          indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/",
+          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/',
         });
 
         // Preload common packages
-        await pyodide.loadPackage(["numpy", "pandas", "requests"]);
+        await pyodide.loadPackage(['numpy', 'pandas', 'requests']);
       },
 
       async execute(code: string, inputs?: Record<string, any>): Promise<ExecutionResult> {
         if (!pyodide) {
-          throw new Error("Python runtime not initialized");
+          throw new Error('Python runtime not initialized');
         }
 
         const startTime = performance.now();
@@ -178,14 +148,14 @@ except Exception as e:
     output = captured_output.getvalue()
             `);
 
-          const output = pyodide.globals.get("output") || "";
+          const output = pyodide.globals.get('output') || '';
           const executionTime = performance.now() - startTime;
 
           return {
             success: true,
             output,
             executionTime,
-            memoryUsage: this.getMemoryUsage(),
+            memoryUsage: pyodide ? 64 : 0,
           };
         } catch (error) {
           const executionTime = performance.now() - startTime;
@@ -193,7 +163,7 @@ except Exception as e:
             success: false,
             error: error instanceof Error ? error.message : String(error),
             executionTime,
-            memoryUsage: this.getMemoryUsage(),
+            memoryUsage: pyodide ? 64 : 0,
           };
         }
       },
@@ -201,7 +171,7 @@ except Exception as e:
       async cleanup() {
         if (pyodide) {
           // Clean up global variables
-          pyodide.runPython("globals().clear()");
+          pyodide.runPython('globals().clear()');
           pyodide = null;
         }
       },
@@ -212,13 +182,27 @@ except Exception as e:
       },
 
       getVersion(): string {
-        return "Python 3.11 (Pyodide)";
+        return 'Python 3.11 (Pyodide)';
       },
     };
   };
 
   // Java runtime implementation (TeaVM)
   const createJavaRuntime = async (): Promise<LanguageRuntimeImplementation> => {
+    const getJavaMemoryUsage = () => 32;
+
+    const compileJava = async (
+      _code: string
+    ): Promise<{ success: boolean; wasmModule: any; error?: string }> => {
+      // TeaVM compilation logic
+      return { success: true, wasmModule: null };
+    };
+
+    const executeWasm = async (_module: any, _inputs?: Record<string, any>) => {
+      // WebAssembly execution logic
+      return 'Java execution completed';
+    };
+
     return {
       async initialize() {
         // Initialize TeaVM or similar Java-to-WASM compiler
@@ -230,34 +214,31 @@ except Exception as e:
         const startTime = performance.now();
 
         try {
-          // Compile Java to WebAssembly using TeaVM
-          // This is a simplified version - real implementation would use TeaVM API
-          const compileResult = await this.compileJava(code);
+          const compileResult = await compileJava(code);
 
           if (!compileResult.success) {
             return {
               success: false,
               error: compileResult.error,
               executionTime: performance.now() - startTime,
-              memoryUsage: this.getMemoryUsage(),
+              memoryUsage: getJavaMemoryUsage(),
             };
           }
 
-          // Execute compiled WebAssembly
-          const output = await this.executeWasm(compileResult.wasmModule, inputs);
+          const output = await executeWasm(compileResult.wasmModule, inputs);
 
           return {
             success: true,
             output,
             executionTime: performance.now() - startTime,
-            memoryUsage: this.getMemoryUsage(),
+            memoryUsage: getJavaMemoryUsage(),
           };
         } catch (error) {
           return {
             success: false,
             error: error instanceof Error ? error.message : String(error),
             executionTime: performance.now() - startTime,
-            memoryUsage: this.getMemoryUsage(),
+            memoryUsage: getJavaMemoryUsage(),
           };
         }
       },
@@ -267,29 +248,31 @@ except Exception as e:
       },
 
       getMemoryUsage(): number {
-        return 32; // Placeholder
+        return getJavaMemoryUsage();
       },
 
       getVersion(): string {
-        return "Java 17 (TeaVM)";
+        return 'Java 17 (TeaVM)';
       },
-
-      private: {
-        async compileJava(_code: string) {
-          // TeaVM compilation logic
-          return { success: true, wasmModule: null };
-        },
-
-        async executeWasm(_module: any, _inputs?: Record<string, any>) {
-          // WebAssembly execution logic
-          return "Java execution completed";
-        },
-      },
-    } as any;
+    };
   };
 
   // Go runtime implementation (TinyGo)
   const createGoRuntime = async (): Promise<LanguageRuntimeImplementation> => {
+    const getGoMemoryUsage = () => 28;
+
+    const compileGo = async (
+      _code: string
+    ): Promise<{ success: boolean; wasmModule: any; error?: string }> => {
+      // TinyGo compilation logic
+      return { success: true, wasmModule: null };
+    };
+
+    const executeWasm = async (_module: any, _inputs?: Record<string, any>) => {
+      // WebAssembly execution logic
+      return 'Go execution completed';
+    };
+
     return {
       async initialize() {
         // Initialize TinyGo compiler
@@ -300,33 +283,31 @@ except Exception as e:
         const startTime = performance.now();
 
         try {
-          // Compile Go to WebAssembly using TinyGo
-          const compileResult = await this.compileGo(code);
+          const compileResult = await compileGo(code);
 
           if (!compileResult.success) {
             return {
               success: false,
               error: compileResult.error,
               executionTime: performance.now() - startTime,
-              memoryUsage: this.getMemoryUsage(),
+              memoryUsage: getGoMemoryUsage(),
             };
           }
 
-          // Execute compiled WebAssembly
-          const output = await this.executeWasm(compileResult.wasmModule, inputs);
+          const output = await executeWasm(compileResult.wasmModule, inputs);
 
           return {
             success: true,
             output,
             executionTime: performance.now() - startTime,
-            memoryUsage: this.getMemoryUsage(),
+            memoryUsage: getGoMemoryUsage(),
           };
         } catch (error) {
           return {
             success: false,
             error: error instanceof Error ? error.message : String(error),
             executionTime: performance.now() - startTime,
-            memoryUsage: this.getMemoryUsage(),
+            memoryUsage: getGoMemoryUsage(),
           };
         }
       },
@@ -336,29 +317,31 @@ except Exception as e:
       },
 
       getMemoryUsage(): number {
-        return 28; // Placeholder
+        return getGoMemoryUsage();
       },
 
       getVersion(): string {
-        return "Go 1.21 (TinyGo)";
+        return 'Go 1.21 (TinyGo)';
       },
-
-      private: {
-        async compileGo(_code: string) {
-          // TinyGo compilation logic
-          return { success: true, wasmModule: null };
-        },
-
-        async executeWasm(_module: any, _inputs?: Record<string, any>) {
-          // WebAssembly execution logic
-          return "Go execution completed";
-        },
-      },
-    } as any;
+    };
   };
 
   // Rust runtime implementation
   const createRustRuntime = async (): Promise<LanguageRuntimeImplementation> => {
+    const getRustMemoryUsage = () => 40;
+
+    const compileRust = async (
+      _code: string
+    ): Promise<{ success: boolean; wasmModule: any; error?: string }> => {
+      // Rust compilation logic
+      return { success: true, wasmModule: null };
+    };
+
+    const executeWasm = async (_module: any, _inputs?: Record<string, any>) => {
+      // WebAssembly execution logic
+      return 'Rust execution completed';
+    };
+
     return {
       async initialize() {
         // Initialize Rust compiler
@@ -369,33 +352,31 @@ except Exception as e:
         const startTime = performance.now();
 
         try {
-          // Compile Rust to WebAssembly
-          const compileResult = await this.compileRust(code);
+          const compileResult = await compileRust(code);
 
           if (!compileResult.success) {
             return {
               success: false,
               error: compileResult.error,
               executionTime: performance.now() - startTime,
-              memoryUsage: this.getMemoryUsage(),
+              memoryUsage: getRustMemoryUsage(),
             };
           }
 
-          // Execute compiled WebAssembly
-          const output = await this.executeWasm(compileResult.wasmModule, inputs);
+          const output = await executeWasm(compileResult.wasmModule, inputs);
 
           return {
             success: true,
             output,
             executionTime: performance.now() - startTime,
-            memoryUsage: this.getMemoryUsage(),
+            memoryUsage: getRustMemoryUsage(),
           };
         } catch (error) {
           return {
             success: false,
             error: error instanceof Error ? error.message : String(error),
             executionTime: performance.now() - startTime,
-            memoryUsage: this.getMemoryUsage(),
+            memoryUsage: getRustMemoryUsage(),
           };
         }
       },
@@ -405,29 +386,31 @@ except Exception as e:
       },
 
       getMemoryUsage(): number {
-        return 40; // Placeholder
+        return getRustMemoryUsage();
       },
 
       getVersion(): string {
-        return "Rust 1.75 (WebAssembly)";
+        return 'Rust 1.75 (WebAssembly)';
       },
-
-      private: {
-        async compileRust(_code: string) {
-          // Rust compilation logic
-          return { success: true, wasmModule: null };
-        },
-
-        async executeWasm(_module: any, _inputs?: Record<string, any>) {
-          // WebAssembly execution logic
-          return "Rust execution completed";
-        },
-      },
-    } as any;
+    };
   };
 
   // TypeScript runtime implementation (Deno)
   const createTypeScriptRuntime = async (): Promise<LanguageRuntimeImplementation> => {
+    const getTypeScriptMemoryUsage = () => 20;
+
+    const transpileTypeScript = async (
+      code: string
+    ): Promise<{ success: boolean; jsCode?: string; error?: string }> => {
+      // TypeScript transpilation logic
+      return { success: true, jsCode: code };
+    };
+
+    const executeJavaScript = async (_jsCode: string, _inputs?: Record<string, any>) => {
+      // JavaScript execution logic
+      return 'TypeScript execution completed';
+    };
+
     return {
       async initialize() {
         // Initialize Deno runtime
@@ -438,33 +421,31 @@ except Exception as e:
         const startTime = performance.now();
 
         try {
-          // Transpile TypeScript to JavaScript
-          const compileResult = await this.transpileTypeScript(code);
+          const compileResult = await transpileTypeScript(code);
 
           if (!compileResult.success) {
             return {
               success: false,
               error: compileResult.error,
               executionTime: performance.now() - startTime,
-              memoryUsage: this.getMemoryUsage(),
+              memoryUsage: getTypeScriptMemoryUsage(),
             };
           }
 
-          // Execute JavaScript
-          const output = await this.executeJavaScript(compileResult.jsCode, inputs);
+          const output = await executeJavaScript(compileResult.jsCode ?? code, inputs);
 
           return {
             success: true,
             output,
             executionTime: performance.now() - startTime,
-            memoryUsage: this.getMemoryUsage(),
+            memoryUsage: getTypeScriptMemoryUsage(),
           };
         } catch (error) {
           return {
             success: false,
             error: error instanceof Error ? error.message : String(error),
             executionTime: performance.now() - startTime,
-            memoryUsage: this.getMemoryUsage(),
+            memoryUsage: getTypeScriptMemoryUsage(),
           };
         }
       },
@@ -474,29 +455,19 @@ except Exception as e:
       },
 
       getMemoryUsage(): number {
-        return 20; // Placeholder
+        return getTypeScriptMemoryUsage();
       },
 
       getVersion(): string {
-        return "TypeScript 5.2 (Deno)";
+        return 'TypeScript 5.2 (Deno)';
       },
-
-      private: {
-        async transpileTypeScript(code: string) {
-          // TypeScript transpilation logic
-          return { success: true, jsCode: code };
-        },
-
-        async executeJavaScript(_jsCode: string, _inputs?: Record<string, any>) {
-          // JavaScript execution logic
-          return "TypeScript execution completed";
-        },
-      },
-    } as any;
+    };
   };
 
   // JavaScript runtime implementation
   const createJavaScriptRuntime = async (): Promise<LanguageRuntimeImplementation> => {
+    const getJavaScriptMemoryUsage = () => 16;
+
     return {
       async initialize() {
         // Initialize JavaScript runtime (using existing V8 engine)
@@ -515,22 +486,22 @@ except Exception as e:
           console.log = (...args) => {
             logs.push(
               args
-                .map((arg) => (typeof arg === "object" ? JSON.stringify(arg) : String(arg)))
-                .join(" "),
+                .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg) : String(arg)))
+                .join(' ')
             );
           };
 
           console.error = (...args) => {
-            logs.push(`ERROR: ${args.map((arg) => String(arg)).join(" ")}`);
+            logs.push(`ERROR: ${args.map((arg) => String(arg)).join(' ')}`);
           };
 
           // Create isolated execution context
           const executeCode = new Function(
-            "inputs",
+            'inputs',
             `
-            const { ${Object.keys(inputs || {}).join(", ")} } = inputs;
+            const { ${Object.keys(inputs || {}).join(', ')} } = inputs;
             ${code}
-          `,
+          `
           );
 
           await executeCode(inputs);
@@ -541,16 +512,16 @@ except Exception as e:
 
           return {
             success: true,
-            output: logs.join("\\n"),
+            output: logs.join('\\n'),
             executionTime: performance.now() - startTime,
-            memoryUsage: this.getMemoryUsage(),
+            memoryUsage: getJavaScriptMemoryUsage(),
           };
         } catch (error) {
           return {
             success: false,
             error: error instanceof Error ? error.message : String(error),
             executionTime: performance.now() - startTime,
-            memoryUsage: this.getMemoryUsage(),
+            memoryUsage: getJavaScriptMemoryUsage(),
           };
         }
       },
@@ -560,27 +531,57 @@ except Exception as e:
       },
 
       getMemoryUsage(): number {
-        return 16; // Placeholder
+        return getJavaScriptMemoryUsage();
       },
 
       getVersion(): string {
-        return "JavaScript (V8)";
+        return 'JavaScript (V8)';
       },
     };
   };
+
+  // Runtime factory implementations
+  const createRuntime = useCallback(
+    async (language: LanguageRuntime): Promise<LanguageRuntimeImplementation> => {
+      switch (language) {
+        case 'python':
+          return await createPythonRuntime();
+        case 'java':
+          return await createJavaRuntime();
+        case 'go':
+          return await createGoRuntime();
+        case 'rust':
+          return await createRustRuntime();
+        case 'typescript':
+          return await createTypeScriptRuntime();
+        case 'javascript':
+          return await createJavaScriptRuntime();
+        default:
+          throw new Error(`Unsupported language runtime: ${language}`);
+      }
+    },
+    [
+      createGoRuntime,
+      createJavaRuntime,
+      createJavaScriptRuntime,
+      createPythonRuntime,
+      createRustRuntime,
+      createTypeScriptRuntime,
+    ]
+  );
 
   // Runtime initialization with lazy loading
   const initializeRuntime = useCallback(
     async (language: LanguageRuntime): Promise<void> => {
       const runtimeState = runtimes.current.get(language);
 
-      if (runtimeState?.status === "ready" || runtimeState?.status === "busy") {
+      if (runtimeState?.status === 'ready' || runtimeState?.status === 'busy') {
         return; // Already initialized
       }
 
       // Set loading state
       runtimes.current.set(language, {
-        status: "loading",
+        status: 'loading',
         lastUsed: Date.now(),
         executionCount: 0,
       });
@@ -590,7 +591,7 @@ except Exception as e:
         await runtime.initialize();
 
         runtimes.current.set(language, {
-          status: "ready",
+          status: 'ready',
           instance: runtime,
           memoryUsage: runtime.getMemoryUsage(),
           lastUsed: Date.now(),
@@ -598,7 +599,7 @@ except Exception as e:
         });
       } catch (error) {
         runtimes.current.set(language, {
-          status: "error",
+          status: 'error',
           error: error instanceof Error ? error.message : String(error),
           lastUsed: Date.now(),
         });
@@ -606,7 +607,7 @@ except Exception as e:
         throw error;
       }
     },
-    [createRuntime],
+    [createRuntime]
   );
 
   // Execute code in specified language runtime
@@ -619,7 +620,7 @@ except Exception as e:
         timeout?: number;
         memoryLimit?: number;
         captureOutput?: boolean;
-      },
+      }
     ): Promise<ExecutionResult> => {
       const executionId = `${language}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -628,14 +629,14 @@ except Exception as e:
         await initializeRuntime(language);
 
         const runtimeState = runtimes.current.get(language);
-        if (!runtimeState || runtimeState.status !== "ready" || !runtimeState.instance) {
+        if (!runtimeState || runtimeState.status !== 'ready' || !runtimeState.instance) {
           throw new Error(`Runtime ${language} not available`);
         }
 
         // Set runtime to busy
         runtimes.current.set(language, {
           ...runtimeState,
-          status: "busy",
+          status: 'busy',
           lastUsed: Date.now(),
         });
 
@@ -647,11 +648,11 @@ except Exception as e:
         // Check memory limits
         const currentMemoryUsage = Array.from(runtimes.current.values()).reduce(
           (sum, state) => sum + (state.memoryUsage || 0),
-          0,
+          0
         );
 
         if (currentMemoryUsage > globalConfig.current.maxGlobalMemory) {
-          throw new Error("Global memory limit exceeded");
+          throw new Error('Global memory limit exceeded');
         }
 
         // Execute with timeout
@@ -664,7 +665,7 @@ except Exception as e:
             reject(new Error(`Execution timeout (${timeout}ms)`));
           }, timeout);
 
-          abortController.signal.addEventListener("abort", () => {
+          abortController.signal.addEventListener('abort', () => {
             clearTimeout(timeoutId);
           });
         });
@@ -673,7 +674,7 @@ except Exception as e:
 
         // Update runtime state
         runtimes.current.set(language, {
-          status: "ready",
+          status: 'ready',
           instance: runtimeState.instance,
           memoryUsage: runtimeState.instance.getMemoryUsage(),
           lastUsed: Date.now(),
@@ -683,7 +684,7 @@ except Exception as e:
         // Update global memory usage
         const newMemoryUsage = Array.from(runtimes.current.values()).reduce(
           (sum, state) => sum + (state.memoryUsage || 0),
-          0,
+          0
         );
         setGlobalMemoryUsage(newMemoryUsage);
 
@@ -694,7 +695,7 @@ except Exception as e:
         if (runtimeState) {
           runtimes.current.set(language, {
             ...runtimeState,
-            status: "error",
+            status: 'error',
             error: error instanceof Error ? error.message : String(error),
             lastUsed: Date.now(),
           });
@@ -712,7 +713,7 @@ except Exception as e:
         setActiveExecutionsCount(activeExecutions.current.size);
       }
     },
-    [initializeRuntime],
+    [initializeRuntime]
   );
 
   // Cleanup idle runtimes
@@ -721,14 +722,14 @@ except Exception as e:
     const idleTimeout = globalConfig.current.runtimeIdleTimeout;
 
     for (const [language, state] of runtimes.current.entries()) {
-      if (state.status === "ready" && state.lastUsed && now - state.lastUsed > idleTimeout) {
+      if (state.status === 'ready' && state.lastUsed && now - state.lastUsed > idleTimeout) {
         try {
           if (state.instance) {
             await state.instance.cleanup();
           }
 
           runtimes.current.set(language, {
-            status: "disabled",
+            status: 'disabled',
             lastUsed: now,
             executionCount: state.executionCount,
           });
@@ -741,7 +742,7 @@ except Exception as e:
     // Update global memory usage
     const newMemoryUsage = Array.from(runtimes.current.values()).reduce(
       (sum, state) => sum + (state.memoryUsage || 0),
-      0,
+      0
     );
     setGlobalMemoryUsage(newMemoryUsage);
   }, []);
@@ -819,16 +820,16 @@ except Exception as e:
 
     // Utilities
     getSupportedLanguages: (): LanguageRuntime[] => {
-      return ["python", "java", "go", "rust", "typescript", "javascript"];
+      return ['python', 'java', 'go', 'rust', 'typescript', 'javascript'];
     },
 
     getMetrics: () => ({
       totalRuntimes: runtimes.current.size,
-      readyRuntimes: Array.from(runtimes.current.values()).filter((s) => s.status === "ready")
+      readyRuntimes: Array.from(runtimes.current.values()).filter((s) => s.status === 'ready')
         .length,
       totalExecutions: Array.from(runtimes.current.values()).reduce(
         (sum, s) => sum + (s.executionCount || 0),
-        0,
+        0
       ),
       globalMemoryUsage,
       activeExecutions: activeExecutions.current.size,

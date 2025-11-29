@@ -1,8 +1,8 @@
-import type React from "react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import type { FileDownloadOptions, UploadedFile } from "./file-upload-types";
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import type React from 'react';
+import { useState } from 'react';
+import type { FileDownloadOptions, UploadedFile } from './file-upload-types';
 
 interface DownloadButtonProps {
   /** File to download */
@@ -12,9 +12,9 @@ interface DownloadButtonProps {
   /** Custom class name */
   className?: string;
   /** Button variant */
-  variant?: "default" | "outline" | "ghost" | "destructive" | "secondary";
+  variant?: 'default' | 'outline' | 'ghost' | 'destructive' | 'secondary';
   /** Button size */
-  size?: "default" | "sm" | "lg" | "icon";
+  size?: 'default' | 'sm' | 'lg' | 'icon';
   /** Show progress indicator */
   showProgress?: boolean;
   /** Custom download text */
@@ -29,8 +29,8 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
   file,
   options = {},
   className,
-  variant = "default",
-  size = "default",
+  variant = 'default',
+  size = 'default',
   showProgress = false,
   children,
   onDownloadStart,
@@ -45,7 +45,7 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
 
   const handleDownload = async () => {
     if (!file.url && !(file instanceof File)) {
-      setError("No download URL available");
+      setError('No download URL available');
       return;
     }
 
@@ -56,15 +56,15 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
 
       onDownloadStart?.(file);
 
-      const downloadUrl = file instanceof File ? URL.createObjectURL(file) : file.url || "";
+      const downloadUrl = file instanceof File ? URL.createObjectURL(file) : file.url || '';
       const finalFilename = filename || file.name;
 
       if (openInNewTab) {
         // Open in new tab instead of downloading
-        const link = document.createElement("a");
+        const link = document.createElement('a');
         link.href = downloadUrl;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -76,7 +76,7 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
         // Download the file
         if (file instanceof File) {
           // For File objects, create a download link directly
-          const link = document.createElement("a");
+          const link = document.createElement('a');
           link.href = downloadUrl;
           link.download = finalFilename;
           document.body.appendChild(link);
@@ -90,7 +90,7 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
             throw new Error(`Download failed: ${response.statusText}`);
           }
 
-          const contentLength = response.headers.get("content-length");
+          const contentLength = response.headers.get('content-length');
           const total = contentLength ? Number.parseInt(contentLength, 10) : 0;
           let loaded = 0;
 
@@ -114,12 +114,12 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
           // Create blob from chunks
           const blob = new Blob(
             chunks.map((chunk) => new Uint8Array(chunk)),
-            { type: file.type },
+            { type: file.type }
           );
           const url = URL.createObjectURL(blob);
 
           // Create download link
-          const link = document.createElement("a");
+          const link = document.createElement('a');
           link.href = url;
           link.download = finalFilename;
           document.body.appendChild(link);
@@ -138,7 +138,7 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
         setDownloadProgress(0);
       }, 1000);
     } catch (err) {
-      const error = err instanceof Error ? err : new Error("Download failed");
+      const error = err instanceof Error ? err : new Error('Download failed');
       setError(error.message);
       onDownloadError?.(file, error);
       setIsDownloading(false);
@@ -147,23 +147,23 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
   return (
-    <div className={cn("inline-block", className)}>
+    <div className={cn('inline-block', className)}>
       <Button
         variant={variant}
         size={size}
         onClick={handleDownload}
         disabled={isDownloading || (!file.url && !(file instanceof File))}
         className={cn(
-          "relative",
-          error && "border-red-500 text-red-600 hover:border-red-600 hover:text-red-700",
+          'relative',
+          error && 'border-red-500 text-red-600 hover:border-red-600 hover:text-red-700'
         )}
       >
         {isDownloading ? (
@@ -181,7 +181,7 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               />
             </svg>
-            {showProgress ? `${downloadProgress}%` : "Downloading..."}
+            {showProgress ? `${downloadProgress}%` : 'Downloading...'}
           </>
         ) : (
           <>
@@ -193,7 +193,7 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
               />
             </svg>
-            {children || "Download"}
+            {children || 'Download'}
           </>
         )}
       </Button>
@@ -217,9 +217,9 @@ interface BatchDownloadButtonProps {
   /** Custom class name */
   className?: string;
   /** Button variant */
-  variant?: "default" | "outline" | "ghost" | "destructive" | "secondary";
+  variant?: 'default' | 'outline' | 'ghost' | 'destructive' | 'secondary';
   /** Button size */
-  size?: "default" | "sm" | "lg" | "icon";
+  size?: 'default' | 'sm' | 'lg' | 'icon';
   /** Show progress indicator */
   showProgress?: boolean;
   /** Custom download text */
@@ -234,8 +234,8 @@ export const BatchDownloadButton: React.FC<BatchDownloadButtonProps> = ({
   files,
   options = {},
   className,
-  variant = "default",
-  size = "default",
+  variant = 'default',
+  size = 'default',
   showProgress = false,
   children,
   onDownloadStart,
@@ -250,7 +250,7 @@ export const BatchDownloadButton: React.FC<BatchDownloadButtonProps> = ({
 
   const handleBatchDownload = async () => {
     if (validFiles.length === 0) {
-      setError("No downloadable files available");
+      setError('No downloadable files available');
       return;
     }
 
@@ -265,11 +265,11 @@ export const BatchDownloadButton: React.FC<BatchDownloadButtonProps> = ({
         const file = validFiles[i];
         const downloadUrl = file instanceof File ? URL.createObjectURL(file) : file.url!;
         const finalFilename = options.filename
-          ? `${options.filename.replace(/\.[^/.]+$/, "")}_${i + 1}.${file.name.split(".").pop()}`
+          ? `${options.filename.replace(/\.[^/.]+$/, '')}_${i + 1}.${file.name.split('.').pop()}`
           : file.name;
 
         if (file instanceof File) {
-          const link = document.createElement("a");
+          const link = document.createElement('a');
           link.href = downloadUrl;
           link.download = finalFilename;
           document.body.appendChild(link);
@@ -285,7 +285,7 @@ export const BatchDownloadButton: React.FC<BatchDownloadButtonProps> = ({
           const blob = await response.blob();
           const url = URL.createObjectURL(blob);
 
-          const link = document.createElement("a");
+          const link = document.createElement('a');
           link.href = url;
           link.download = finalFilename;
           document.body.appendChild(link);
@@ -312,7 +312,7 @@ export const BatchDownloadButton: React.FC<BatchDownloadButtonProps> = ({
         setDownloadProgress(0);
       }, 1000);
     } catch (err) {
-      const error = err instanceof Error ? err : new Error("Batch download failed");
+      const error = err instanceof Error ? err : new Error('Batch download failed');
       setError(error.message);
       onDownloadError?.(validFiles, error);
       setIsDownloading(false);
@@ -321,15 +321,15 @@ export const BatchDownloadButton: React.FC<BatchDownloadButtonProps> = ({
   };
 
   return (
-    <div className={cn("inline-block", className)}>
+    <div className={cn('inline-block', className)}>
       <Button
         variant={variant}
         size={size}
         onClick={handleBatchDownload}
         disabled={isDownloading || validFiles.length === 0}
         className={cn(
-          "relative",
-          error && "border-red-500 text-red-600 hover:border-red-600 hover:text-red-700",
+          'relative',
+          error && 'border-red-500 text-red-600 hover:border-red-600 hover:text-red-700'
         )}
       >
         {isDownloading ? (
@@ -368,7 +368,7 @@ export const BatchDownloadButton: React.FC<BatchDownloadButtonProps> = ({
 
       {showProgress && isDownloading && (
         <div className="mt-2 max-w-xs text-gray-500 text-xs">
-          Downloaded {Math.round((downloadProgress / 100) * validFiles.length)} of{" "}
+          Downloaded {Math.round((downloadProgress / 100) * validFiles.length)} of{' '}
           {validFiles.length} files
         </div>
       )}

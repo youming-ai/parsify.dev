@@ -1,6 +1,10 @@
+import { MainLayout } from '@/components/layout/main-layout';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getToolById, toolsData } from '@/data/tools-data';
 import {
   AlertCircle,
-  AlignLeft,
   ArrowLeft,
   ArrowUpRight,
   CheckCircle2,
@@ -8,33 +12,26 @@ import {
   Code,
   Cpu,
   Database,
+  File,
   FileJson,
   FileText,
-  Fingerprint,
-  GitCompare,
+  Globe,
   Hash,
   Image as ImageIcon,
-  Key,
+  KeyRound,
   Link2,
-  Play,
-  QrCode,
-  Regex,
+  Minimize2,
+  Palette,
+  ScanLine,
   Search,
   Settings,
   Shield,
   Sparkles,
-  Tag,
   Terminal,
-  Zap,
-} from "lucide-react";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import * as React from "react";
-import { MainLayout } from "@/components/layout/main-layout";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getToolById, toolsData } from "@/data/tools-data";
+} from 'lucide-react';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import * as React from 'react';
 
 interface ToolPageProps {
   params: {
@@ -47,48 +44,255 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   FileJson,
   Terminal,
   Code,
-  FileText,
   Hash,
-  Zap,
   Settings,
   Shield,
-  Play,
-  Search,
-  Database,
-  Regex,
-  Pattern: Regex,
   Image: ImageIcon,
   Http: Link2,
-  Password: Key,
-  QrCode,
-  Difference: GitCompare,
-  FormatAlignLeft: AlignLeft,
-  Schedule: Clock3,
-  EnhancedEncryption: Shield,
-  Fingerprint,
+  QrCode: Search,
+  Link: Link2,
+  Type: Code,
+  Lock: Shield,
+  Binary: Code,
+  Clock: Clock3,
+  MapPin: Search,
+  Network: Link2,
+  Palette,
+  FileText,
+  Globe,
+  Minimize2,
+  KeyRound,
+  ScanLine,
+  File,
 };
 
-// Tool component mapping - only include existing components
+// Core tool component mapping (28 tools)
 const toolComponents: Record<string, React.ComponentType<any>> = {
-  "json-formatter": React.lazy(() =>
-    import("@/components/tools/json/json-formatter").then((module) => ({
-      default: module.JsonFormatter,
-    })),
+  // JSON Tools (7)
+  'json-formatter': React.lazy(() =>
+    import('@/components/tools/json/json-tool-complete').then((module) => ({
+      default: module.JsonToolComplete,
+    }))
   ),
-  "json-validator": React.lazy(() =>
-    import("@/components/tools/json/json-validator").then((module) => ({
+  'json-validator': React.lazy(() =>
+    import('@/components/tools/json/json-validator').then((module) => ({
       default: module.JsonValidator,
-    })),
+    }))
   ),
-  "code-executor": React.lazy(() =>
-    import("@/components/tools/code/code-execution").then((module) => ({
-      default: module.CodeExecution,
-    })),
+  'json-converter': React.lazy(() =>
+    import('@/components/tools/json/json-converter').then((module) => ({
+      default: module.JsonConverter,
+    }))
   ),
-  "code-formatter": React.lazy(() =>
-    import("@/components/tools/code/code-formatter").then((module) => ({
+  'json-path-queries': React.lazy(() =>
+    import('@/components/tools/json/jsonpath-queries').then((module) => ({
+      default: module.JsonPathQueries,
+    }))
+  ),
+  'json-jwt-decoder': React.lazy(() =>
+    import('@/components/tools/json/json-validator').then((module) => ({
+      default: module.JsonValidator, // Using validator as placeholder
+    }))
+  ),
+  'json-hero-viewer': React.lazy(() =>
+    import('@/components/tools/json/json-hero-viewer').then((module) => ({
+      default: module.JsonHeroViewer,
+    }))
+  ),
+  'json-to-code': React.lazy(() =>
+    import('@/components/tools/json/json-tool-complete').then((module) => ({
+      default: module.JsonToolComplete, // Placeholder, will create dedicated component
+    }))
+  ),
+  'json-to-types': React.lazy(() =>
+    import('@/components/tools/json/json-to-types').then((module) => ({
+      default: module.JsonToTypes,
+    }))
+  ),
+
+  // Code Tools (2)
+  'code-formatter': React.lazy(() =>
+    import('@/components/tools/code/code-formatter').then((module) => ({
       default: module.CodeFormatter,
-    })),
+    }))
+  ),
+  'code-executor': React.lazy(() =>
+    import('@/components/tools/code/code-execution').then((module) => ({
+      default: module.CodeExecution,
+    }))
+  ),
+  'html-viewer': React.lazy(() =>
+    import('@/components/tools/code/html-viewer').then((module) => ({
+      default: module.HtmlViewer,
+    }))
+  ),
+  'html-tools': React.lazy(() =>
+    import('@/components/tools/code/html-tools').then((module) => ({
+      default: module.HtmlTools,
+    }))
+  ),
+
+  // Image Tools (4)
+  'image-compression': React.lazy(() =>
+    import('@/components/tools/image/image-converter').then((module) => ({
+      default: module.ImageConverter,
+    }))
+  ),
+  'image-converter': React.lazy(() =>
+    import('@/components/tools/image/image-converter').then((module) => ({
+      default: module.ImageConverter,
+    }))
+  ),
+  'image-resizer': React.lazy(() =>
+    import('@/components/tools/image/image-resizer').then((module) => ({
+      default: module.ImageResizer,
+    }))
+  ),
+  'qr-reader': React.lazy(() =>
+    import('@/components/tools/image/qr-code-reader').then((module) => ({
+      default: module.QRCodeReader,
+    }))
+  ),
+  'base64-image': React.lazy(() =>
+    import('@/components/tools/image/base64-image-converter').then((module) => ({
+      default: module.Base64ImageConverter,
+    }))
+  ),
+
+  // Network Tools (3)
+  'http-simulator': React.lazy(() =>
+    import('@/components/tools/network/http-request-simulator').then((module) => ({
+      default: module.HTTPRequestSimulator,
+    }))
+  ),
+  'ip-geolocation': React.lazy(() =>
+    import('@/components/tools/network/ip-geolocation').then((module) => ({
+      default: module.IPGeolocationTool,
+    }))
+  ),
+  'url-shortener': React.lazy(() =>
+    import('@/components/tools/network/url-shortener').then((module) => ({
+      default: module.URLShortener,
+    }))
+  ),
+  'dns-lookup': React.lazy(() =>
+    import('@/components/tools/network/dns-lookup').then((module) => ({
+      default: module.DNSLookup,
+    }))
+  ),
+
+  // Text Tools (4)
+  'character-counter': React.lazy(() =>
+    import('@/components/tools/text/text-analyzer').then((module) => ({
+      default: module.default, // Using analyzer as placeholder
+    }))
+  ),
+  'case-converter': React.lazy(() =>
+    import('@/components/tools/text/text-case-converter').then((module) => ({
+      default: module.TextCaseConverter,
+    }))
+  ),
+  'encoding-converter': React.lazy(() =>
+    import('@/components/tools/utils/encoding-converter').then((module) => ({
+      default: module.EncodingConverter,
+    }))
+  ),
+  'text-analyzer': React.lazy(() =>
+    import('@/components/tools/text/text-analyzer').then((module) => ({
+      default: module.default,
+    }))
+  ),
+
+  // Security Tools (3)
+  'password-generator': React.lazy(() =>
+    import('@/components/tools/security/password-generator').then((module) => ({
+      default: module.default,
+    }))
+  ),
+  'hash-generator': React.lazy(() =>
+    import('@/components/tools/data/hash-generator').then((module) => ({
+      default: module.HashGenerator,
+    }))
+  ),
+  'aes-encryption': React.lazy(() =>
+    import('@/components/tools/security/aes-encryption').then((module) => ({
+      default: module.AESEncryption,
+    }))
+  ),
+  'secret-generator': React.lazy(() =>
+    import('@/components/tools/security/secret-generator').then((module) => ({
+      default: module.default,
+    }))
+  ),
+  'id-analyzer': React.lazy(() =>
+    import('@/components/tools/security/id-analyzer').then((module) => ({
+      default: module.IDAnalyzer,
+    }))
+  ),
+
+  // Utilities (3)
+  'url-encoder': React.lazy(() =>
+    import('@/components/tools/utilities/url-encoder').then((module) => ({
+      default: module.URLEncoder,
+    }))
+  ),
+  'base64-converter': React.lazy(() =>
+    import('@/components/tools/utilities/base64-converter').then((module) => ({
+      default: module.Base64Converter,
+    }))
+  ),
+  'qr-generator': React.lazy(() =>
+    import('@/components/tools/utilities/base64-converter').then((module) => ({
+      default: module.Base64Converter, // Using converter as placeholder
+    }))
+  ),
+  'compression-tool': React.lazy(() =>
+    import('@/components/tools/utilities/compression-tool').then((module) => ({
+      default: module.CompressionTool,
+    }))
+  ),
+  'file-generator': React.lazy(() =>
+    import('@/components/tools/file/file-generator').then((module) => ({
+      default: module.FileGenerator,
+    }))
+  ),
+
+  // Converters (3 new)
+  'number-base-converter': React.lazy(() =>
+    import('@/components/tools/converters/number-base-converter').then((module) => ({
+      default: module.NumberBaseConverter,
+    }))
+  ),
+  'color-converter': React.lazy(() =>
+    import('@/components/tools/converters/color-converter').then((module) => ({
+      default: module.ColorConverter,
+    }))
+  ),
+  'html-entity-encoder': React.lazy(() =>
+    import('@/components/tools/converters/html-entity-encoder').then((module) => ({
+      default: module.HtmlEntityEncoder,
+    }))
+  ),
+
+  // Generators (1 new)
+  'lorem-ipsum-generator': React.lazy(() =>
+    import('@/components/tools/generators/lorem-ipsum-generator').then((module) => ({
+      default: module.LoremIpsumGenerator,
+    }))
+  ),
+
+  // Utilities (1 new)
+  'cron-parser': React.lazy(() =>
+    import('@/components/tools/utilities/cron-parser').then((module) => ({
+      default: module.CronParser,
+    }))
+  ),
+
+  // Time Tools (1)
+  'unix-converter': React.lazy(() =>
+    import('@/components/tools/utilities/base64-converter').then((module) => ({
+      default: module.Base64Converter, // Using converter as placeholder
+    }))
   ),
 };
 
@@ -100,7 +304,7 @@ export async function generateStaticParams() {
 }
 
 // Opt out of static generation for pages with interactive components
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function ToolPage({ params }: ToolPageProps) {
   const { slug } = params;
@@ -111,14 +315,14 @@ export default async function ToolPage({ params }: ToolPageProps) {
     notFound();
   }
 
-  const Icon = iconMap[tool.icon] || Settings;
+  const _Icon = iconMap[tool.icon] || Settings;
 
   // Get related tools
   const relatedTools = toolsData
     .filter(
       (t) =>
         t.id !== slug &&
-        (t.category === tool.category || t.tags.some((tag) => tool.tags.includes(tag))),
+        (t.category === tool.category || t.tags.some((tag) => tool.tags.includes(tag)))
     )
     .slice(0, 3);
 
@@ -129,164 +333,21 @@ export default async function ToolPage({ params }: ToolPageProps) {
       <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900/80 dark:to-slate-950">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-gradient-to-br from-blue-500/15 via-indigo-400/10 to-cyan-400/10 blur-3xl dark:from-blue-600/15 dark:via-indigo-500/10 dark:to-purple-500/10" />
 
-        <div className="relative mx-auto flex max-w-6xl flex-col gap-8 px-4 pb-16 pt-10 sm:px-6 lg:px-10">
-          {/* Breadcrumb Navigation */}
-          <nav className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-            <Link
-              href="/"
-              className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-white"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Home
-            </Link>
-            <span className="text-slate-400">/</span>
-            <Link href="/tools" className="hover:text-slate-900 dark:hover:text-white">
-              Tools
-            </Link>
-            <span className="text-slate-400">/</span>
-            <span className="font-medium text-slate-900 dark:text-white">{tool.name}</span>
-          </nav>
-
-          {/* Hero / summary */}
-          <section className="rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-[0_14px_60px_-30px_rgba(15,23,42,0.35)] backdrop-blur-md transition hover:shadow-[0_18px_70px_-30px_rgba(15,23,42,0.35)] dark:border-slate-800/80 dark:bg-slate-900/70">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex items-start gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 text-white shadow-lg shadow-blue-500/25">
-                  <Icon className="h-7 w-7" />
-                </div>
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className="bg-slate-900/5 text-slate-900 dark:bg-slate-100/10 dark:text-slate-100"
-                    >
-                      {tool.category}
-                    </Badge>
-                    <Badge variant="outline" className="capitalize">
-                      {tool.difficulty}
-                    </Badge>
-                    <Badge
-                      variant={tool.status === "stable" ? "default" : "secondary"}
-                      className="capitalize"
-                    >
-                      {tool.status}
-                    </Badge>
-                    {tool.isNew && (
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <Sparkles className="h-3.5 w-3.5" /> New
-                      </Badge>
-                    )}
-                    {tool.isPopular && <Badge variant="outline">Popular</Badge>}
-                  </div>
-
-                  <div>
-                    <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">
-                      {tool.name}
-                    </h1>
-                    <p className="mt-2 max-w-3xl text-base text-slate-600 dark:text-slate-300">
-                      {tool.description}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {tool.tags.slice(0, 6).map((tag) => (
-                      <span
-                        key={tag}
-                        className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                      >
-                        <Tag className="h-3.5 w-3.5 text-blue-500" />
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3 self-start lg:self-center">
-                <Link href="#tool-workspace">
-                  <Button size="lg" className="gap-2">
-                    Launch tool
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="/tools">
-                  <Button variant="outline" size="lg" className="gap-2">
-                    <Search className="h-4 w-4" />
-                    Browse tools
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {[
-                {
-                  label: "Processing",
-                  value: tool.processingType
-                    ? tool.processingType.replace("-", " ")
-                    : "Not specified",
-                  icon: Cpu,
-                },
-                {
-                  label: "Security",
-                  value: tool.security ? tool.security.replace("-", " ") : "Not specified",
-                  icon: Shield,
-                },
-                {
-                  label: "Category",
-                  value: tool.subcategory || tool.category,
-                  icon: Database,
-                },
-                {
-                  label: "Features",
-                  value: `${tool.features.length}+ ready-to-use`,
-                  icon: Sparkles,
-                },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3 shadow-sm backdrop-blur dark:border-slate-800/80 dark:bg-slate-900/70"
-                >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-300">
-                    <item.icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                      {item.label}
-                    </p>
-                    <p className="text-sm font-medium text-slate-900 capitalize dark:text-slate-100">
-                      {item.value}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
+        <div className="relative mx-auto flex w-full flex-col gap-6 px-4 pt-6 pb-12 sm:px-6 lg:px-8">
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="space-y-5 lg:col-span-2">
               <Card className="rounded-2xl border-slate-200/80 bg-white/90 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
-                <CardHeader className="flex flex-col gap-3 pb-4 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <CardTitle className="text-xl text-slate-900 dark:text-white">
-                      Workspace
-                    </CardTitle>
-                    <CardDescription className="text-slate-600 dark:text-slate-300">
-                      Jump into {tool.name} without leaving this page.
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                    <span className="flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 dark:bg-slate-800/80">
-                      <Shield className="h-3.5 w-3.5" /> {tool.security ?? "Local"}
-                    </span>
-                    <span className="flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 capitalize dark:bg-slate-800/80">
-                      <Cpu className="h-3.5 w-3.5" /> {tool.processingType ?? "client"}
-                    </span>
-                  </div>
+                <CardHeader>
+                  <CardTitle className="text-slate-900 text-xl dark:text-white">
+                    Workspace
+                  </CardTitle>
+                  <CardDescription className="text-slate-600 dark:text-slate-300">
+                    Use {tool.name} directly in your browser
+                  </CardDescription>
                 </CardHeader>
                 <CardContent
                   id="tool-workspace"
-                  className="rounded-xl border border-dashed border-slate-200/90 bg-white/70 p-4 dark:border-slate-800 dark:bg-slate-900"
+                  className="rounded-xl bg-white/70 p-4 dark:bg-slate-900"
                 >
                   {ToolComponent ? (
                     <React.Suspense
@@ -294,43 +355,23 @@ export default async function ToolPage({ params }: ToolPageProps) {
                         <div className="flex items-center justify-center py-12">
                           <div className="text-center">
                             <div className="mx-auto mb-4 inline-block h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
-                            <p className="text-sm text-slate-600 dark:text-slate-300">
+                            <p className="text-slate-600 text-sm dark:text-slate-300">
                               Loading {tool.name}...
                             </p>
                           </div>
                         </div>
                       }
                     >
-                      <div className="rounded-xl bg-slate-900/5 p-2 dark:bg-slate-800/50">
-                        <ToolComponent />
-                      </div>
+                      <ToolComponent />
                     </React.Suspense>
                   ) : (
                     <div className="rounded-xl border border-amber-200/60 bg-amber-50/70 p-5 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100">
-                      <div className="flex items-center gap-2 text-sm font-semibold">
+                      <div className="flex items-center gap-2 font-semibold text-sm">
                         <AlertCircle className="h-5 w-5" /> Tool coming soon
                       </div>
-                      <p className="mt-2 text-sm text-amber-900/80 dark:text-amber-100/80">
-                        This experience is currently being built. Check back later or launch another
-                        tool while we finish it.
+                      <p className="mt-2 text-amber-900/80 text-sm dark:text-amber-100/80">
+                        This tool is currently being built. Check back later!
                       </p>
-                      <div className="mt-4 flex gap-2">
-                        <Link href="/tools">
-                          <Button variant="outline" className="gap-2">
-                            <Search className="h-4 w-4" />
-                            Explore other tools
-                          </Button>
-                        </Link>
-                        <Link href="/">
-                          <Button
-                            variant="ghost"
-                            className="gap-2 text-amber-900 hover:bg-amber-100 dark:text-amber-100 dark:hover:bg-amber-900/40"
-                          >
-                            <ArrowLeft className="h-4 w-4" />
-                            Back home
-                          </Button>
-                        </Link>
-                      </div>
                     </div>
                   )}
                 </CardContent>
@@ -338,22 +379,18 @@ export default async function ToolPage({ params }: ToolPageProps) {
 
               <Card className="rounded-2xl border-slate-200/80 bg-white/90 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
                 <CardHeader>
-                  <CardTitle className="text-lg text-slate-900 dark:text-white">
-                    What you get
-                  </CardTitle>
+                  <CardTitle className="text-lg text-slate-900 dark:text-white">Features</CardTitle>
                   <CardDescription className="text-slate-600 dark:text-slate-300">
-                    Core capabilities and reasons this tool speeds up your workflow.
+                    What you get with this tool
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-3 sm:grid-cols-2">
                   {tool.features.map((feature) => (
                     <div
                       key={feature}
-                      className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-slate-50/60 px-3 py-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-200"
+                      className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-slate-50/60 px-3 py-3 text-slate-700 text-sm dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-200"
                     >
-                      <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-300">
-                        <CheckCircle2 className="h-4 w-4" />
-                      </div>
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 text-blue-600 dark:text-blue-300" />
                       <span>{feature}</span>
                     </div>
                   ))}
@@ -364,49 +401,13 @@ export default async function ToolPage({ params }: ToolPageProps) {
             <aside className="space-y-5">
               <Card className="rounded-2xl border-slate-200/80 bg-white/90 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
                 <CardHeader>
-                  <CardTitle className="text-lg text-slate-900 dark:text-white">
-                    Quick facts
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 text-sm">
-                  <div className="flex items-start gap-3">
-                    <GaugeChip label="Difficulty" value={tool.difficulty} />
-                    <GaugeChip
-                      label="Status"
-                      value={tool.status}
-                      tone={tool.status === "stable" ? "success" : "warning"}
-                    />
-                  </div>
-                  <InfoRow
-                    icon={<Cpu className="h-4 w-4" />}
-                    label="Processing"
-                    value={tool.processingType ? tool.processingType.replace("-", " ") : "Local"}
-                  />
-                  <InfoRow
-                    icon={<Shield className="h-4 w-4" />}
-                    label="Security"
-                    value={tool.security ? tool.security.replace("-", " ") : "Local only"}
-                  />
-                  <InfoRow
-                    icon={<Database className="h-4 w-4" />}
-                    label="Category"
-                    value={tool.subcategory || tool.category}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-2xl border-slate-200/80 bg-white/90 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
-                <CardHeader>
                   <CardTitle className="text-lg text-slate-900 dark:text-white">Tags</CardTitle>
-                  <CardDescription className="text-slate-600 dark:text-slate-300">
-                    Use tags to discover related helpers faster.
-                  </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-wrap gap-2">
                   {tool.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                      className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700 text-xs dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                     >
                       {tag}
                     </span>
@@ -420,9 +421,6 @@ export default async function ToolPage({ params }: ToolPageProps) {
                     <CardTitle className="text-lg text-slate-900 dark:text-white">
                       Related tools
                     </CardTitle>
-                    <CardDescription className="text-slate-600 dark:text-slate-300">
-                      Explore similar utilities to pair with {tool.name}.
-                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {relatedTools.map((relatedTool) => {
@@ -431,20 +429,20 @@ export default async function ToolPage({ params }: ToolPageProps) {
                         <Link
                           key={relatedTool.id}
                           href={relatedTool.href}
-                          className="group flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white/80 p-3 transition hover:-translate-y-0.5 hover:border-blue-500/60 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/70 dark:hover:border-blue-500/50"
+                          className="group flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white/80 p-3 transition hover:border-blue-500/60 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/70"
                         >
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 transition group-hover:bg-blue-500 group-hover:text-white dark:text-blue-300">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-300">
                             <RelatedIcon className="h-5 w-5" />
                           </div>
                           <div className="flex-1">
                             <h4 className="font-medium text-slate-900 dark:text-white">
                               {relatedTool.name}
                             </h4>
-                            <p className="text-xs text-slate-600 dark:text-slate-300">
-                              {relatedTool.description}
+                            <p className="text-slate-600 text-xs dark:text-slate-300">
+                              {relatedTool.description.slice(0, 60)}...
                             </p>
                           </div>
-                          <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-blue-500" />
+                          <ArrowUpRight className="h-4 w-4 text-slate-400" />
                         </Link>
                       );
                     })}
@@ -456,49 +454,5 @@ export default async function ToolPage({ params }: ToolPageProps) {
         </div>
       </div>
     </MainLayout>
-  );
-}
-
-interface GaugeChipProps {
-  label: string;
-  value: string;
-  tone?: "success" | "warning" | "neutral";
-}
-
-function GaugeChip({ label, value, tone = "neutral" }: GaugeChipProps) {
-  const toneClasses = {
-    success: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-200",
-    warning: "bg-amber-500/10 text-amber-700 dark:text-amber-200",
-    neutral: "bg-slate-500/10 text-slate-700 dark:text-slate-200",
-  };
-
-  return (
-    <div className="flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wide">
-      <Clock3 className="h-3.5 w-3.5" />
-      <span className={`rounded-full px-2 py-1 ${toneClasses[tone]}`}>{value}</span>
-      <span className="text-slate-500 dark:text-slate-400">{label}</span>
-    </div>
-  );
-}
-
-interface InfoRowProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}
-
-function InfoRow({ icon, label, value }: InfoRowProps) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-800/60">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-300">
-        {icon}
-      </div>
-      <div>
-        <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          {label}
-        </p>
-        <p className="text-sm font-medium text-slate-800 capitalize dark:text-slate-100">{value}</p>
-      </div>
-    </div>
   );
 }

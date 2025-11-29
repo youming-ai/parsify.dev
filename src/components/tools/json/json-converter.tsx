@@ -1,11 +1,11 @@
-import { ArrowRight, Copy, Download, Play } from "lucide-react";
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import type { JsonConversionOptions, JsonConverterProps } from "./json-types";
-import { convertJson, copyToClipboard, downloadFile } from "./json-utils";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
+import { ArrowRight, Copy, Download, Play } from 'lucide-react';
+import * as React from 'react';
+import type { JsonConversionOptions, JsonConverterProps } from './json-types';
+import { convertJson, copyToClipboard, downloadFile } from './json-utils';
 
 export function JsonConverter({
   input,
@@ -17,12 +17,12 @@ export function JsonConverter({
   const [conversionOptions, setConversionOptions] = React.useState<JsonConversionOptions>(options);
   const [isConverting, setIsConverting] = React.useState(false);
   const [_showSettings, _setShowSettings] = React.useState(false);
-  const [convertedOutput, setConvertedOutput] = React.useState("");
+  const [convertedOutput, setConvertedOutput] = React.useState('');
   const [showCopyNotification, setShowCopyNotification] = React.useState(false);
 
   const handleConvert = React.useCallback(async () => {
     if (!input.trim()) {
-      onError("No input to convert");
+      onError('No input to convert');
       return;
     }
 
@@ -39,9 +39,9 @@ export function JsonConverter({
       setConvertedOutput(converted);
       onConvert(converted);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown conversion error";
+      const errorMessage = error instanceof Error ? error.message : 'Unknown conversion error';
       onError(errorMessage);
-      setConvertedOutput("");
+      setConvertedOutput('');
     } finally {
       setIsConverting(false);
     }
@@ -55,7 +55,7 @@ export function JsonConverter({
       setShowCopyNotification(true);
       setTimeout(() => setShowCopyNotification(false), 2000);
     } catch (error) {
-      console.error("Failed to copy:", error);
+      console.error('Failed to copy:', error);
     }
   };
 
@@ -63,15 +63,15 @@ export function JsonConverter({
     if (!convertedOutput) return;
 
     const extensions = {
-      xml: "xml",
-      yaml: "yml",
-      csv: "csv",
+      xml: 'xml',
+      yaml: 'yml',
+      csv: 'csv',
     };
 
     const mimeTypes = {
-      xml: "application/xml",
-      yaml: "text/yaml",
-      csv: "text/csv",
+      xml: 'application/xml',
+      yaml: 'text/yaml',
+      csv: 'text/csv',
     };
 
     const filename = `converted-json-${new Date().toISOString().slice(0, 10)}.${extensions[conversionOptions.targetFormat]}`;
@@ -80,7 +80,7 @@ export function JsonConverter({
 
   const handleOptionChange = (
     key: keyof JsonConversionOptions,
-    value: string | boolean | undefined,
+    value: string | boolean | undefined
   ) => {
     const newOptions = { ...conversionOptions, [key]: value };
     setConversionOptions(newOptions);
@@ -91,33 +91,33 @@ export function JsonConverter({
     if (input.trim() && convertedOutput) {
       handleConvert();
     }
-  }, [input, convertedOutput, handleConvert]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [input, convertedOutput, handleConvert]);
 
   const getTargetFormatInfo = () => {
     switch (conversionOptions.targetFormat) {
-      case "xml":
+      case 'xml':
         return {
-          name: "XML",
-          description: "eXtensible Markup Language",
-          icon: "📄",
+          name: 'XML',
+          description: 'eXtensible Markup Language',
+          icon: '📄',
         };
-      case "yaml":
+      case 'yaml':
         return {
-          name: "YAML",
+          name: 'YAML',
           description: "YAML Ain't Markup Language",
-          icon: "📝",
+          icon: '📝',
         };
-      case "csv":
+      case 'csv':
         return {
-          name: "CSV",
-          description: "Comma-Separated Values",
-          icon: "📊",
+          name: 'CSV',
+          description: 'Comma-Separated Values',
+          icon: '📊',
         };
       default:
         return {
-          name: "Unknown",
-          description: "Unknown format",
-          icon: "❓",
+          name: 'Unknown',
+          description: 'Unknown format',
+          icon: '❓',
         };
     }
   };
@@ -125,7 +125,7 @@ export function JsonConverter({
   const formatInfo = getTargetFormatInfo();
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn('space-y-4', className)}>
       {/* Format Selection */}
       <Card>
         <CardHeader className="pb-3">
@@ -140,7 +140,7 @@ export function JsonConverter({
           {/* Format Selection Tabs */}
           <Tabs
             value={conversionOptions.targetFormat}
-            onValueChange={(value) => handleOptionChange("targetFormat", value)}
+            onValueChange={(value) => handleOptionChange('targetFormat', value)}
           >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="xml" className="flex items-center gap-2">
@@ -165,8 +165,8 @@ export function JsonConverter({
                   </label>
                   <input
                     type="text"
-                    value={conversionOptions.rootElement || "root"}
-                    onChange={(e) => handleOptionChange("rootElement", e.target.value)}
+                    value={conversionOptions.rootElement || 'root'}
+                    onChange={(e) => handleOptionChange('rootElement', e.target.value)}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="root"
                   />
@@ -177,8 +177,8 @@ export function JsonConverter({
                   </label>
                   <input
                     type="text"
-                    value={conversionOptions.arrayItemName || "item"}
-                    onChange={(e) => handleOptionChange("arrayItemName", e.target.value)}
+                    value={conversionOptions.arrayItemName || 'item'}
+                    onChange={(e) => handleOptionChange('arrayItemName', e.target.value)}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="item"
                   />
@@ -199,8 +199,8 @@ export function JsonConverter({
                     CSV Delimiter
                   </label>
                   <select
-                    value={conversionOptions.csvDelimiter || ","}
-                    onChange={(e) => handleOptionChange("csvDelimiter", e.target.value)}
+                    value={conversionOptions.csvDelimiter || ','}
+                    onChange={(e) => handleOptionChange('csvDelimiter', e.target.value)}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value=",">Comma (,)</option>
@@ -218,7 +218,7 @@ export function JsonConverter({
                       type="checkbox"
                       id="flatten-objects"
                       checked={conversionOptions.flatten || false}
-                      onChange={(e) => handleOptionChange("flatten", e.target.checked)}
+                      onChange={(e) => handleOptionChange('flatten', e.target.checked)}
                       className="mr-2"
                     />
                     <label htmlFor="flatten-objects" className="text-gray-600 text-sm">
@@ -246,7 +246,7 @@ export function JsonConverter({
           className="flex items-center gap-2"
         >
           <Play className="h-4 w-4" />
-          {isConverting ? "Converting..." : `Convert to ${formatInfo.name}`}
+          {isConverting ? 'Converting...' : `Convert to ${formatInfo.name}`}
         </Button>
 
         {convertedOutput && (
@@ -277,7 +277,7 @@ export function JsonConverter({
               {convertedOutput}
             </pre>
             <div className="mt-2 text-gray-600 text-sm">
-              {convertedOutput.split("\n").length} lines, {convertedOutput.length} characters
+              {convertedOutput.split('\n').length} lines, {convertedOutput.length} characters
             </div>
           </CardContent>
         </Card>
