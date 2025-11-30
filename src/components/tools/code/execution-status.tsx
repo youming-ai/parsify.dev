@@ -18,7 +18,7 @@ import {
   Zap,
 } from 'lucide-react';
 import * as React from 'react';
-import type { ExecutionStatusProps } from './code-types';
+import type { ExecutionStatus, ExecutionStatusProps } from './code-types';
 
 interface ExecutionStatusComponentProps extends ExecutionStatusProps {
   showDetails?: boolean;

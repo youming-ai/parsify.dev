@@ -3,13 +3,9 @@
 // Export main components
 export { CodeEditor } from './code-editor';
 export { CodeExecution } from './code-execution';
-export {
-  CodeFormatter,
-  FORMAT_PRESETS,
-  FormatPresetSelector,
-} from './code-formatter';
 // Export complete tool
-export { CodeToolComplete } from './code-tool-complete';
+// Note: CodeToolComplete has been deprecated in favor of individual tool pages
+// export { CodeToolComplete } from './code-tool-complete';
 export type {
   CodeEditorProps,
   CodeEditorState,

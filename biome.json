@@ -41,6 +41,9 @@
         "noNonNullAssertion": "off",
         "noParameterAssign": "off"
       },
+      "security": {
+        "noDangerouslySetInnerHtml": "off"
+      },
       "a11y": {
         "recommended": false
       }

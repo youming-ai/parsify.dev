@@ -13,6 +13,7 @@ pnpm dev                    # Start development server at http://localhost:3000
 pnpm build                  # Build for production
 pnpm start                  # Start production server
 pnpm preview                # Build and preview production locally
+pnpm deploy                 # Deploy to Vercel production
 
 # Code Quality
 pnpm lint                   # Run Biome linting checks
@@ -22,7 +23,7 @@ pnpm type-check             # Run TypeScript type checking
 # Testing
 pnpm test                   # Run Vitest unit tests
 pnpm test:coverage          # Run tests with coverage report
-pnpm test:e2e               # Run Playwright E2E tests
+# Note: test:e2e script referenced in README but not defined in package.json
 
 # Maintenance
 pnpm clean                  # Remove node_modules, .next, dist
@@ -38,12 +39,13 @@ cp .env.local.example .env.local
 ## Technology Stack
 
 ### Core Technologies
-- **Framework**: Next.js 16 with App Router
+- **Framework**: Next.js 16 with App Router and Turbopack
 - **Language**: TypeScript 5.7+ (strict mode enabled)
 - **UI**: shadcn/ui components with Tailwind CSS
 - **Code Editor**: CodeMirror 6 for syntax highlighting and editing
 - **State Management**: Zustand for client-side state
 - **Package Manager**: pnpm (required, version >= 9)
+- **Analytics**: Vercel Analytics and Speed Insights
 
 ### Key Dependencies
 - **Code Execution**: Pyodide (Python), TeaVM (Java), WASM runtimes for Go/Rust/CPP
@@ -59,6 +61,7 @@ The project supports multiple language execution through WebAssembly:
 - **Go**: TinyGo (0.30.0) - 3MB bundle
 - **Rust**: Rust WASM (1.75.0) - 2MB bundle
 - **TypeScript**: Deno Runtime (2.0.0) - 1MB bundle
+- **Additional Languages**: C++, C#, Lua, PHP, Ruby
 
 Managed by `WASMRuntimeManager` with lazy loading, memory cleanup, and performance optimization.
 
@@ -69,50 +72,52 @@ Managed by `WASMRuntimeManager` with lazy loading, memory cleanup, and performan
 src/
 ├── app/                     # Next.js App Router pages
 │   ├── tools/              # Individual tool pages by category
-│   │   ├── json/           # JSON processing tools
-│   │   ├── code/           # Code execution and formatting
-│   │   ├── image/          # Image processing tools
+│   │   ├── data-format/    # Data format conversion tools
+│   │   ├── development/    # Development tools
+│   │   ├── file/           # File processing tools
 │   │   ├── network/        # Network utilities
 │   │   ├── security/       # Security and crypto tools
-│   │   ├── text/           # Text processing tools
-│   │   └── utilities/      # General utilities
+│   │   └── utility/        # General utilities
 │   └── globals.css
 ├── components/             # Reusable React components
 │   ├── ui/                # shadcn/ui base components
 │   ├── layout/            # Layout and navigation components
 │   ├── tools/             # Tool-specific components
-│   │   ├── json/          # JSON tool components
-│   │   ├── code-execution/ # Code execution components
-│   │   ├── image/         # Image processing components
-│   │   └── batch/         # Batch processing components
 │   └── file-upload/       # File handling components
 ├── lib/                   # Core utilities and runtime managers
-│   ├── runtimes/         # WASM runtime implementations
-│   ├── registry/         # Tool registration and discovery
+│   ├── runtimes/         # WASM runtime implementations (10+ languages)
 │   ├── nlp/             # Natural language processing
 │   ├── crypto/          # Cryptographic operations
 │   └── utils/           # General utility functions
 ├── types/                # TypeScript type definitions
-├── data/                # Static data and tool configurations
+├── data/                # Static data and tool configurations (tools-data.ts)
 └── hooks/               # Custom React hooks
 ```
+
+**Key Changes from Current Structure:**
+- Tools have been reorganized into new categories: data-format, development, file, network, security, utility
+- Tool registry system centralized in `src/data/tools-data.ts` with 28 tools across 6 categories
+- WASM runtimes expanded to support 10+ languages in `src/lib/runtimes/`
 
 ### Tool System Architecture
 
 #### Tool Registry Pattern
-All tools follow a standardized registration pattern through the `ToolRegistry` system:
+All tools follow a standardized registration pattern through the `tools-data.ts` system:
 
 ```typescript
 // Tool definition in src/data/tools-data.ts
 {
-  id: 'json-formatter',
-  name: 'JSON Formatter',
-  category: 'JSON Tools',
-  href: '/tools/json/formatter',
+  id: 'json-tools',
+  name: 'JSON Tools',
+  category: 'Data Format & Conversion',
+  href: '/tools/data-format/json-tools',
   processingType: 'client-side', // 'client-side' | 'hybrid' | 'server-side'
   security: 'local-only',        // 'local-only' | 'network-required' | 'secure-sandbox'
-  features: ['Format & Beautify', 'Syntax Validation'],
-  tags: ['json', 'formatter', 'validator']
+  features: ['Dual-pane JSON Viewer', 'Search & Filter', 'Validation'],
+  tags: ['json', 'formatter', 'validator', 'beautifier'],
+  difficulty: 'beginner',
+  status: 'stable',
+  isPopular: true
 }
 ```
 
@@ -121,7 +126,7 @@ Tools follow a consistent component structure:
 - **Page Component**: Route handler in `src/app/tools/[category]/[tool]/page.tsx`
 - **Tool Component**: Main logic in `src/components/tools/[category]/[tool].tsx`
 - **Shared Components**: Reusable UI components in `src/components/ui/`
-- **Tool Wrapper**: Standardized layout and error handling
+- **Dynamic Routing**: Tools use dynamic routing via `src/app/tools/[slug]/page.tsx`
 
 #### WASM Execution System
 Code execution is managed through a sophisticated WASM runtime system:
@@ -156,6 +161,8 @@ All tools implement consistent interfaces defined in `src/components/tools/tool-
 ### Code Standards
 - **TypeScript**: Strict mode enabled, explicit return types required
 - **Biome**: Combined linting and formatting (replaces ESLint + Prettier)
+  - Configuration in `biome.json` with custom rules
+  - 2-space indentation, 100 char line width, single quotes
 - **File Naming**:
   - Components: PascalCase (`JsonFormatter.tsx`)
   - Hooks: camelCase (`useToolState.ts`)
@@ -165,11 +172,12 @@ All tools implement consistent interfaces defined in `src/components/tools/tool-
 ### Tool Development Workflow
 
 #### Creating New Tools
-1. **Add Tool Definition**: Update `src/data/tools-data.ts`
+1. **Add Tool Definition**: Update `src/data/tools-data.ts` with proper metadata
 2. **Create Page Route**: `src/app/tools/[category]/[tool]/page.tsx`
 3. **Implement Tool Component**: `src/components/tools/[category]/[tool].tsx`
 4. **Follow Component Pattern**: Use standardized tool interfaces and error handling
-5. **Add Tests**: Unit tests in `src/__tests__/` or `tests/unit/`
+5. **Update Dynamic Routing**: Ensure tool is accessible via `[slug]/page.tsx`
+6. **Add Tests**: Unit tests using Vitest
 
 #### Component Development
 ```typescript
@@ -206,9 +214,9 @@ export const ToolComponent: React.FC<ToolComponentProps> = ({
 
 ### Testing Strategy
 - **Unit Tests**: Vitest for individual components and utilities
-- **Integration Tests**: API endpoints and tool workflows
-- **E2E Tests**: Playwright for critical user journeys
-- **Coverage**: 70% threshold for global coverage
+- **Integration Tests**: Tool workflows and component integration
+- **E2E Tests**: Playwright setup mentioned in README but scripts not defined in package.json
+- **Coverage**: Configured with vitest coverage reporting
 - **Test Environment**: jsdom with mock APIs for WASM testing
 
 ### Performance Considerations
@@ -220,11 +228,12 @@ export const ToolComponent: React.FC<ToolComponentProps> = ({
 ## Configuration Files
 
 ### Build Configuration
-- **Next.js**: `next.config.ts` - Optimized for static export and CDN deployment
+- **Next.js**: `next.config.ts` - Optimized with Turbopack, webpack code splitting, and image optimization
 - **TypeScript**: `tsconfig.json` - Strict mode with path aliases
-- **Biome**: `biome.json` - Code formatting and linting rules
+- **Biome**: `biome.json` - Code formatting and linting rules with custom configuration
 - **Tailwind**: `tailwind.config.ts` - Custom theme with shadcn/ui integration
-- **Vitest**: `vitest.config.ts` - Test configuration with coverage thresholds
+- **Vitest**: `vitest.config.ts` - Test configuration with coverage reporting
+- **Bundle Optimization**: Automatic vendor chunks, UI components splitting, and package optimization
 
 ### Environment Variables
 Key environment variables (see `.env.local.example`):
@@ -234,23 +243,24 @@ Key environment variables (see `.env.local.example`):
 
 ## Common Development Tasks
 
-### Adding a New JSON Tool
-1. Add to `toolsData` in `src/data/tools-data.ts`
-2. Create `src/app/tools/json/[tool-name]/page.tsx`
-3. Create `src/components/tools/json/[tool-name].tsx`
-4. Follow existing patterns from `json-formatter.tsx`
+### Adding a New Tool
+1. Add to `toolsData` in `src/data/tools-data.ts` with proper categorization
+2. Create `src/app/tools/[category]/[tool-name]/page.tsx`
+3. Create `src/components/tools/[category]/[tool-name].tsx`
+4. Follow existing patterns and use standardized interfaces
+5. Ensure tool is accessible through dynamic routing system
 
 ### Adding WASM Language Support
 1. Implement runtime in `src/lib/runtimes/[language]-wasm.ts`
 2. Update `WASMRuntimeManager` with language configuration
-3. Add language to `SupportedLanguage` type
-4. Create executor component in `src/components/tools/code-execution/`
+3. Add language to supported languages in the runtime system
+4. Create corresponding tool components for code execution
 
 ### Performance Optimization
-1. Check bundle size: Analyze webpack output
-2. Monitor Core Web Vitals: Use browser dev tools
-3. Optimize WASM loading: Implement lazy loading where needed
-4. Memory cleanup: Ensure proper cleanup in useEffect
+1. Bundle analysis: webpack optimization configured in `next.config.ts`
+2. Monitor Core Web Vitals: Vercel Speed Insights integrated
+3. Optimize WASM loading: Lazy loading implemented for runtimes
+4. Memory cleanup: Proper cleanup in useEffect for WASM instances
 
 ## Deployment Architecture
 
@@ -281,3 +291,13 @@ Key environment variables (see `.env.local.example`):
 - **No Persistent Storage**: No server-side data storage or databases
 
 This architecture prioritizes performance, security, and maintainability while providing a comprehensive suite of developer tools that work entirely in the browser.
+
+## Key Differences from README
+
+The README mentions several features and scripts that may not be fully implemented:
+- **E2E Testing**: References Playwright E2E tests but `test:e2e` script is not defined in package.json
+- **API Endpoints**: Documentation shows API structure but this appears to be a client-side only application
+- **Bundle Analysis Scripts**: References `pnpm analyze` and related scripts that are not defined
+- **Performance Monitoring**: Mentions scripts like `pnpm size-check` that are not available
+
+**Actual Implementation**: This is a client-side application with all tools running in the browser, no backend API, and Vercel deployment for static hosting.
