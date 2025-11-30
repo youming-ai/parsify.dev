@@ -3,7 +3,7 @@
  * Provides common validation functions and rules for form inputs and data
  */
 
-import { ERROR_MESSAGES, REGEX_PATTERNS } from '@/lib/constants';
+import { REGEX_PATTERNS } from '@/lib/constants';
 import type { ValidationRule } from '@/types/components';
 
 /**

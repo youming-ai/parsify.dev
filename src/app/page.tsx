@@ -24,7 +24,6 @@ import {
   QrCode,
   ScanLine,
   Search,
-  Settings,
   Shield,
   Terminal,
   Type,

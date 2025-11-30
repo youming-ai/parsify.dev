@@ -2,8 +2,7 @@
  * Shared interfaces for tool components
  */
 
-import { FileHandlerProps, type ProcessingStatus, type ToolResult } from '@/types/components';
-import React from 'react';
+import type { ProcessingStatus, ToolResult } from '@/types/components';
 
 // Base tool interface
 export interface BaseTool<TInput = any, TOutput = any> {
@@ -376,7 +375,7 @@ export interface ToolFactory {
   /** Create a new tool instance */
   create<T extends BaseTool>(type: string, config?: ToolConfig): T;
   /** Register a tool type */
-  registerType(type: string, constructor: new (config?: ToolConfig) => BaseTool): void;
+  registerType(type: string, toolConstructor: new (config?: ToolConfig) => BaseTool): void;
   /** Get available tool types */
   getAvailableTypes(): string[];
 }

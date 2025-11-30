@@ -288,8 +288,8 @@ export const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
             <div className="space-y-2">
               <p className="font-medium text-red-800">Validation Errors:</p>
               <ul className="list-inside list-disc space-y-1 text-red-700 text-sm">
-                {errors.map((error, index) => (
-                  <li key={index}>{error.message}</li>
+                {errors.map((error) => (
+                  <li key={error.message}>{error.message}</li>
                 ))}
               </ul>
             </div>

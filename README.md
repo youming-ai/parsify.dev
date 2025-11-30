@@ -2,10 +2,10 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
-[![Next.js](https://img.shields.io/badge/Next.js-14.0-black.svg)](https://nextjs.org/)
-[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-orange.svg)](https://pages.cloudflare.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.0-black.svg)](https://nextjs.org/)
+[![Vercel](https://img.shields.io/badge/Vercel-Deployed-black.svg)](https://vercel.com/)
 
-A comprehensive online developer tools platform focused on JSON processing, code formatting, and secure code execution. Built with modern web technologies and deployed on Cloudflare's edge platform for global performance.
+A comprehensive online developer tools platform focused on JSON processing, code formatting, and secure code execution. Built with modern web technologies and deployed on Vercel's edge platform for global performance.
 
 ## ✨ Key Features
 
@@ -41,24 +41,18 @@ A comprehensive online developer tools platform focused on JSON processing, code
 ### Technology Stack
 
 **Frontend (Web App)**
-- **Framework**: Next.js 14 with App Router
+- **Framework**: Next.js 16 with App Router & Turbopack
 - **UI Library**: shadcn/ui + Tailwind CSS
 - **Code Editor**: Monaco Editor (VS Code editor)
-- **State Management**: TanStack Query + React Router
+- **State Management**: Zustand + React hooks
 - **Language**: TypeScript 5.0+
 
-**Technology Stack**
-- **Deployment**: Cloudflare Pages with Git integration
-- **Runtime**: Edge Runtime for optimal performance
-- **Analytics**: Cloudflare Web Analytics with a built-in lightweight tracker
-- **Language**: TypeScript 5.0+ for type safety
-
 **Infrastructure**
-- **Deployment**: Cloudflare Pages (static site)
-- **CDN**: Cloudflare global network
-- **Performance**: Edge caching for fast global access
-- **Monitoring**: Sentry for error tracking and performance
-- **Security**: Cloudflare WAF, Turnstile (CAPTCHA), rate limiting
+- **Deployment**: Vercel with Git integration
+- **CDN**: Vercel Edge Network (global)
+- **Analytics**: Vercel Analytics + Speed Insights
+- **Performance**: Edge caching, ISR support
+- **Monitoring**: Vercel Analytics for Core Web Vitals
 
 ### System Architecture
 
@@ -70,22 +64,21 @@ A comprehensive online developer tools platform focused on JSON processing, code
           └──────────────────────┼──────────────────────┘
                                  │
                     ┌─────────────▼─────────────┐
-                    │   Cloudflare CDN/Edge     │
+                    │   Vercel Edge Network     │
                     │  (Global Distribution)    │
                     └─────────────┬─────────────┘
                                  │
                     ┌─────────────▼─────────────┐
-                    │   Cloudflare Pages        │
-                    │   (Static Next.js Site)   │
+                    │      Vercel Platform      │
+                    │   (Next.js 16 + SSR/ISR)  │
                     └───────────────────────────┘
+```
 
 **Data Processing:**
 - Client-side JavaScript/TypeScript execution
 - Browser-based tools (JSON, code formatting, etc.)
 - Local storage for user preferences
-- No server-side processing required
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
+- Server-side rendering for SEO optimization
 
 ## 🚀 Quick Start
 
@@ -210,74 +203,67 @@ pnpm clean:build
 
 ## 🌐 Deployment
 
-### Cloudflare Pages Git Integration
+### Vercel Git Integration
 
-The project uses Cloudflare's Git integration for automatic deployment. When you push changes to your repository, Cloudflare automatically builds and deploys your site.
+The project uses Vercel's Git integration for automatic deployment. When you push changes to your repository, Vercel automatically builds and deploys your site.
 
 **Setup Steps:**
 
 1. **Connect Repository**
-   - Go to Cloudflare Dashboard → Pages → Create a project
-   - Connect your Git repository (GitHub, GitLab, etc.)
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard) → Add New Project
+   - Import your Git repository (GitHub, GitLab, Bitbucket)
    - Select the repository
 
 2. **Configure Build Settings**
-   - **Framework preset**: `None` (Custom) – avoids legacy `@cloudflare/next-on-pages` build
+   - **Framework preset**: `Next.js` (auto-detected)
    - **Build command**: `pnpm run build`
-   - **Build output directory**: `.open-next`
-   - **Node.js version**: `20+`
-   - _Tip_: Avoid the **Next.js** preset—Cloudflare will run the legacy `@cloudflare/next-on-pages` builder and fail to produce `.open-next`.
+   - **Output directory**: `.next` (default)
+   - **Node.js version**: `20.x`
 
 3. **Environment Variables**
-   - Set any required environment variables in Cloudflare Pages dashboard
+   - Set any required environment variables in Vercel dashboard
    - See `.env.local.example` for available options
 
 4. **Automatic Deployment**
    - Push to `main` branch → Production deployment
-   - Push to other branches → Preview deployments
+   - Push to other branches → Preview deployments with unique URLs
 
 **Manual Build (for testing):**
 ```bash
 pnpm run build
-# Static files are generated in '.open-next/' directory
+pnpm run start
 ```
 
 ### Environment Configuration
 
 **Development (.env.local)**
 ```env
-# Database
-DATABASE_URL="your-dev-database-url"
-
-# API Configuration
-API_BASE_URL="http://localhost:8787"
 NODE_ENV="development"
-
-# Monitoring
-SENTRY_DSN="your-dev-sentry-dsn"
 ```
 
-**Production (Cloudflare Pages)**
-Environment variables are set through Cloudflare Pages dashboard or Git integration.
+**Production (Vercel)**
+Environment variables are set through Vercel dashboard → Settings → Environment Variables.
 
-### Analytics Configuration
-Analytics is handled by Cloudflare Web Analytics and the built-in lightweight tracker. No Google Analytics configuration is required.
+### Analytics & Monitoring
+
+The project uses Vercel's built-in analytics:
+- **Vercel Analytics** - Page views, visitors, and traffic analysis
+- **Speed Insights** - Core Web Vitals monitoring (LCP, FID, CLS, TTFB)
+
+Both are automatically enabled via `@vercel/analytics` and `@vercel/speed-insights` packages.
 
 ### Custom Domain Setup
 
-1. **Configure DNS**
-   - Add CNAME record for API subdomain
-   - Add CNAME record for web app
+1. **Add Domain in Vercel**
+   - Go to Project Settings → Domains
+   - Add your custom domain (e.g., `parsify.dev`)
 
-2. **Update wrangler.toml**
-   ```toml
-   [routes]
-   pattern = "api.parsify.dev"
-   zone_name = "parsify.dev"
-   ```
+2. **Configure DNS**
+   - Add A record: `76.76.21.21`
+   - Or CNAME: `cname.vercel-dns.com`
 
-3. **Configure Pages custom domain**
-   - Use Cloudflare Dashboard to connect custom domain
+3. **SSL Certificate**
+   - Vercel automatically provisions SSL certificates
 
 ## 📚 API Documentation
 
@@ -577,32 +563,12 @@ We welcome contributions! Please follow these guidelines:
 | `MAX_REQUEST_SIZE` | Maximum request size in bytes | `10485760` (10MB) |
 | `REQUEST_TIMEOUT` | Request timeout in milliseconds | `30000` (30s) |
 
-### Database Configuration
+### Client-Side Architecture
 
-**D1 Database (SQLite)**:
-```sql
--- Migrations location: migrations/
--- Run with: pnpm db:migrate
-
--- Seed data location: migrations/seed.sql
--- Run with: pnpm db:seed
-```
-
-### Cloudflare Services
-
-**KV Namespaces**:
-- `CACHE`: Application cache
-- `SESSIONS`: User sessions
-- `UPLOADS`: File upload metadata
-- `ANALYTICS`: Usage analytics
-
-**R2 Buckets**:
-- `FILES`: User uploaded files
-
-**Durable Objects**:
-- `SESSION_MANAGER`: User session management
-- `COLLABORATION_ROOM`: Real-time collaboration
-- `REALTIME_SYNC`: Data synchronization
+This is a client-side application - all data processing happens in the browser:
+- **No database required** - All tools run locally
+- **No server storage** - User preferences stored in localStorage
+- **Privacy-first** - Your data never leaves your browser
 
 ## 🚨 Troubleshooting
 
@@ -654,11 +620,11 @@ pnpm install
 # Run performance tests
 pnpm test:performance
 
-# Check memory usage
-wrangler dev --memory-limit 512
+# Analyze bundle size
+pnpm analyze
 
-# Monitor logs
-wrangler tail
+# Check build output
+pnpm build
 ```
 
 ### Debug Mode
@@ -666,11 +632,10 @@ wrangler tail
 Enable debug logging:
 ```bash
 # Set environment variable
-export LOG_LEVEL=debug
+export NODE_ENV=development
 
-# Or update wrangler.toml
-[vars]
-LOG_LEVEL = "debug"
+# Or in .env.local
+NODE_ENV="development"
 ```
 
 ### Health Check Endpoints
@@ -695,10 +660,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **Cloudflare** for providing the excellent Workers platform
-- **Vercel** for Next.js and the modern web development ecosystem
+- **Vercel** for Next.js and the excellent deployment platform
 - **Monaco Editor** team for the amazing code editor
-- **Hono.js** for the fast and ergonomic web framework
+- **shadcn/ui** for the beautiful UI components
 - **Open Source community** for all the amazing libraries and tools
 
 ## 📞 Support

@@ -1,16 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  CheckCircle2,
-  Cpu,
-  ExternalLink,
-  Info,
-  Layers,
-  Shield,
-  Sparkles,
-  Zap,
-} from 'lucide-react';
+import { CheckCircle2, Cpu, ExternalLink, Info, Layers, Shield, Sparkles, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 interface ToolPageLayoutProps {
@@ -37,11 +28,11 @@ interface ToolPageLayoutProps {
 }
 
 export function ToolPageLayout({
-  title,
-  description,
-  category = 'Tools',
-  badges,
-  icon,
+  title: _title,
+  description: _description,
+  category: _category = 'Tools',
+  badges: _badges,
+  icon: _icon,
   children,
   features,
   info,
@@ -88,9 +79,9 @@ export function ToolPageLayout({
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
-                    {features.map((feature, index) => (
+                    {features.map((feature) => (
                       <li
-                        key={index}
+                        key={feature}
                         className="flex items-start gap-3 rounded-lg bg-slate-50/80 p-3 transition-colors dark:bg-slate-800/50"
                       >
                         <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
@@ -192,9 +183,9 @@ export function ToolPageLayout({
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {related.map((tool, index) => (
+                    {related.map((tool) => (
                       <Link
-                        key={index}
+                        key={tool.href}
                         href={tool.href}
                         className="group/item flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white p-3 transition-all hover:border-blue-500/50 hover:bg-blue-50/50 hover:shadow-sm dark:border-slate-700 dark:bg-slate-800/50 dark:hover:border-blue-500/50 dark:hover:bg-blue-950/30"
                       >

@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import type { ProcessingStatus, ToolComponentProps } from '@/types/components';
-import { AlertCircle, CheckCircle, Copy, Download, Loader2, RefreshCw, Share } from 'lucide-react';
+import { AlertCircle, CheckCircle, Copy, Download, Loader2, RefreshCw } from 'lucide-react';
 import React, { Suspense } from 'react';
 
 interface ToolWrapperProps extends ToolComponentProps {
@@ -311,7 +311,12 @@ export class ToolErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       const FallbackComponent = this.props.fallback || DefaultErrorFallback;
-      return <FallbackComponent error={this.state.error!} reset={this.reset} />;
+      return (
+        <FallbackComponent
+          error={this.state.error ?? new Error('Unknown error')}
+          reset={this.reset}
+        />
+      );
     }
 
     return this.props.children;

@@ -3,13 +3,10 @@
 import {
   Activity,
   AlertTriangle,
-  BarChart3,
   Cpu,
   Download,
   HardDrive,
   MemoryStick,
-  Package,
-  RefreshCw,
   TrendingDown,
   TrendingUp,
   Users,

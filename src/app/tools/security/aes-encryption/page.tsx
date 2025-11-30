@@ -1,6 +1,6 @@
 import { AESEncryption } from '@/components/tools/security/aes-encryption';
 import { ToolInfoSection } from '@/components/tools/tool-info-section';
-import { Hash, Key, Lock, Shield } from 'lucide-react';
+import { Hash, Key, Shield } from 'lucide-react';
 
 export default function AesEncryptionPage() {
   return (

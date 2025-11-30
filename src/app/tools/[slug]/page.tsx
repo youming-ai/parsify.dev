@@ -1,11 +1,8 @@
 import { MainLayout } from '@/components/layout/main-layout';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getToolById, toolsData } from '@/data/tools-data';
 import {
   AlertCircle,
-  ArrowLeft,
   ArrowUpRight,
   CheckCircle2,
   Clock3,
@@ -67,7 +64,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 // Core tool component mapping (28 tools)
-const toolComponents: Record<string, React.ComponentType<any>> = {
+const toolComponents: Record<string, React.ComponentType<unknown>> = {
   // JSON Tools (7)
   'json-formatter': React.lazy(() =>
     import('@/components/tools/json/json-tool-complete').then((module) => ({
@@ -493,7 +490,9 @@ export default async function ToolPage({ params }: ToolPageProps) {
 
                   {/* Tags */}
                   <div className="pt-2">
-                    <span className="text-xs text-slate-500 dark:text-slate-400 mb-2 block">Tags</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 mb-2 block">
+                      Tags
+                    </span>
                     <div className="flex flex-wrap gap-1.5">
                       {tool.tags.slice(0, 5).map((tag) => (
                         <span

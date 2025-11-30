@@ -17,7 +17,6 @@
 'use client';
 
 import {
-  Calendar,
   ChevronDown,
   ChevronRight,
   Copy,
@@ -27,11 +26,10 @@ import {
   Key,
   Search,
   ToggleLeft,
-  ToggleRight,
   Type,
   X,
 } from 'lucide-react';
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { cn } from '../../../lib/utils';
 import { Alert, AlertDescription } from '../../ui/alert';
 import { Badge } from '../../ui/badge';

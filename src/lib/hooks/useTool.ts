@@ -3,7 +3,7 @@
  * Provides common tool operations and state management
  */
 
-import { ERROR_MESSAGES, SUCCESS_MESSAGES, TIMEOUTS } from '@/lib/constants';
+import { SUCCESS_MESSAGES, TIMEOUTS } from '@/lib/constants';
 import type { ProcessingStatus, ToolComponentProps, ToolResult } from '@/types/components';
 import { useCallback, useEffect, useRef, useState } from 'react';
 

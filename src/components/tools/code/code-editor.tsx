@@ -53,10 +53,10 @@ export function CodeEditor({
   height = 400,
   width = '100%',
   readOnly = false,
-  theme = 'dark',
-  fontSize = 14,
-  wordWrap = true,
-  showLineNumbers = true,
+  theme: _theme = 'dark',
+  fontSize: _fontSize = 14,
+  wordWrap: _wordWrap = true,
+  showLineNumbers: _showLineNumbers = true,
   className,
 }: CodeEditorProps) {
   const languageConfig = getLanguageConfig(language);

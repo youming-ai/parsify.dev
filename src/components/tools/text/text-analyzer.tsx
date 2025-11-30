@@ -13,14 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  AlertCircle,
   BarChart3,
   BookOpen,
-  CheckCircle,
   Clock,
   FileText,
   Hash,
@@ -28,7 +25,6 @@ import {
   Target,
   TrendingUp,
   Users,
-  Zap,
 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';

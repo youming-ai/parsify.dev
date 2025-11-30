@@ -28,7 +28,7 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
   progress,
   status,
   fileName,
-  fileSize,
+  fileSize: _fileSize,
   showCancelButton = true,
   showRetryButton = true,
   className,

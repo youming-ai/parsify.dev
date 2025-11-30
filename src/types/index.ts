@@ -12,9 +12,6 @@ export * from './components';
 // Analytics types
 export * from './analytics';
 
-// NLP types
-export * from './nlp';
-
 // Registry types
 export * from './registry';
 

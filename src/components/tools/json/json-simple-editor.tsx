@@ -46,7 +46,7 @@ export const JsonSimpleEditor: React.FC<JsonSimpleEditorProps> = ({
   const [isValid, setIsValid] = useState(true);
 
   // Validate JSON
-  const validateJson = useCallback(
+  const _validateJson = useCallback(
     (jsonString: string) => {
       const errors: ValidationError[] = [];
       let valid = true;

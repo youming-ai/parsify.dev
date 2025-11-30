@@ -18,8 +18,5 @@ export { ToolWrapper, ToolErrorBoundary } from './shared/ToolWrapper';
 // Tool Components - File Upload
 export { default as FileUpload } from './file-upload/file-upload-component';
 
-// Tool Components - Analytics
-export { GoogleAnalyticsProvider } from './analytics/google-analytics-provider';
-
 // Export component types
 export type * from '../types/components';

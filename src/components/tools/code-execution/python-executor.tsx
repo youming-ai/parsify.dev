@@ -5,12 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { MemoryManager } from '@/lib/memory-manager';
 import { PerformanceMonitor } from '@/lib/performance-monitor';
 import { type PythonExecutionResult, pythonRuntime } from '@/lib/runtimes/python-wasm';
-import { FileCode, Image as ImageIcon, Package, Plus, Trash2, X } from 'lucide-react';
+import { FileCode, Plus, Trash2, X } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 

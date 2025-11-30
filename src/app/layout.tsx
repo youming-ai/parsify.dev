@@ -1,8 +1,7 @@
-import { AnalyticsInitializer } from '@/components/analytics-initializer';
 import { ErrorBoundary } from '@/components/error-boundary';
-import { PerformanceMonitor } from '@/components/performance-monitor';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata } from 'next';
 import type React from 'react';
 
@@ -82,13 +81,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           enableSystem
           disableTransitionOnChange
         >
-          <ErrorBoundary maxRetries={3}>
-            <PerformanceMonitor>
-              <AnalyticsInitializer>{children}</AnalyticsInitializer>
-            </PerformanceMonitor>
-          </ErrorBoundary>
+          <ErrorBoundary maxRetries={3}>{children}</ErrorBoundary>
         </ThemeProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

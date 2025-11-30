@@ -20,7 +20,7 @@ import {
 import { useState } from 'react';
 
 interface JWTPayload {
-  [key: string]: any;
+  [key: string]: unknown;
   iss?: string;
   sub?: string;
   aud?: string | string[];
@@ -33,7 +33,7 @@ interface JWTPayload {
 interface JWTHeader {
   alg: string;
   typ: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface DecodedJWT {

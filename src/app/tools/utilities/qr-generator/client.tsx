@@ -33,14 +33,6 @@ import {
 import QRCode from 'qrcode';
 import { useState } from 'react';
 
-interface QRCodeData {
-  id: string;
-  content: string;
-  type: string;
-  qrDataUrl: string;
-  timestamp: number;
-}
-
 export default function QRGeneratorClient() {
   const [qrType, setQrType] = useState('url');
   const [qrContent, setQrContent] = useState('');

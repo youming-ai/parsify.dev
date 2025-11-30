@@ -263,9 +263,9 @@ export default function TimestampConverterClient() {
     const lines = batchInput.split('\n').filter((line) => line.trim());
     const results: BatchResult[] = [];
 
-    lines.forEach((line) => {
+    for (const line of lines) {
       const trimmedLine = line.trim();
-      if (!trimmedLine) return;
+      if (!trimmedLine) continue;
 
       // Try to parse as timestamp first
       const ts = parseTimestamp(trimmedLine);
@@ -276,7 +276,7 @@ export default function TimestampConverterClient() {
           converted: formatDate(date, dateFormat, timezone),
           isValid: true,
         });
-        return;
+        continue;
       }
 
       // Try to parse as date
@@ -288,7 +288,7 @@ export default function TimestampConverterClient() {
           converted: ts.toString(),
           isValid: true,
         });
-        return;
+        continue;
       }
 
       results.push({
@@ -297,7 +297,7 @@ export default function TimestampConverterClient() {
         isValid: false,
         error: 'Invalid format',
       });
-    });
+    }
 
     setBatchResults(results);
   };
@@ -633,9 +633,9 @@ export default function TimestampConverterClient() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {batchResults.map((result, index) => (
+                  {batchResults.map((result) => (
                     <div
-                      key={index}
+                      key={result.original}
                       className={`rounded-lg border p-3 ${result.isValid ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}
                     >
                       <div className="flex items-start justify-between">

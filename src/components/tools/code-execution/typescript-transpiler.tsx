@@ -16,7 +16,7 @@ import { MemoryManager } from '@/lib/memory-manager';
 import { PerformanceMonitor } from '@/lib/performance-monitor';
 // import * as monaco from 'monaco-editor'; // Removed - using CodeMirror now
 import type React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface TypeScriptExecutorProps {
   onComplete?: (result: string) => void;

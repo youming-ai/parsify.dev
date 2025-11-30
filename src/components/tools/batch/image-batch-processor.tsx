@@ -1,6 +1,4 @@
 'use client';
-
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,22 +13,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   AlertCircle,
-  BarChart3,
   CheckCircle,
   Clock,
   Crop,
   Download,
   Eye,
   FileDown,
-  Filter,
-  Filter as FilterIcon,
-  FolderOpen,
   Image as ImageIcon,
   Maximize2,
   Minimize2,
@@ -38,12 +31,10 @@ import {
   Play,
   RefreshCw,
   RotateCw,
-  Settings,
   Sliders,
   Tag,
   Trash2,
   Upload,
-  Zap,
 } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useRef, useState } from 'react';

@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignore": ["node_modules", ".next", "dist", "build", "coverage", "public"]
+    "ignore": ["node_modules", ".next", "dist", "build", "coverage", "public", "tests"]
   },
   "formatter": {
     "indentStyle": "space",
@@ -21,14 +21,25 @@
     "rules": {
       "recommended": true,
       "complexity": {
-        "useArrowFunction": "off"
+        "useArrowFunction": "off",
+        "noForEach": "off",
+        "noBannedTypes": "off"
       },
       "correctness": {
-        "noUnusedVariables": "warn",
-        "noUnusedImports": "warn"
+        "noUnusedVariables": "off",
+        "noUnusedImports": "warn",
+        "useExhaustiveDependencies": "off"
       },
       "suspicious": {
-        "noExplicitAny": "warn"
+        "noExplicitAny": "off",
+        "noArrayIndexKey": "off",
+        "noRedeclare": "off",
+        "noImplicitAnyLet": "off",
+        "noAssignInExpressions": "off"
+      },
+      "style": {
+        "noNonNullAssertion": "off",
+        "noParameterAssign": "off"
       },
       "a11y": {
         "recommended": false

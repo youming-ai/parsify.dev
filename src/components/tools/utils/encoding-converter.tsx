@@ -4,7 +4,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -13,24 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  AlertCircle,
-  ArrowRightLeft,
-  CheckCircle,
-  Copy,
-  Download,
-  FileText,
-  Globe,
-  Hash,
-  Info,
-  RefreshCw,
-  Shield,
-  Zap,
-} from 'lucide-react';
+import { AlertCircle, ArrowRightLeft, CheckCircle, Copy, Download, Hash, Info } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 
@@ -278,8 +263,8 @@ export const EncodingConverter: React.FC = () => {
       case 'URL Decode':
         return decodeURIComponent(text);
       case 'Punycode':
-        // Simplified punycode encoding
-        if (text.match(/[^\x00-\x7F]/)) {
+        // Simplified punycode encoding - check for non-ASCII characters
+        if (!/^[\x20-\x7E]*$/.test(text)) {
           return `xn--${text.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
         }
         return text;

@@ -16,7 +16,7 @@ import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCanvasOperations } from '@/lib/image/canvas-operations';
 import { useFormatConverter } from '@/lib/image/format-converters';
-import { AlertCircle, Download, Image as ImageIcon, Maximize2, Ruler } from 'lucide-react';
+import { Download, Maximize2 } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 

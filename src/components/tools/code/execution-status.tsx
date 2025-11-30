@@ -18,7 +18,7 @@ import {
   Zap,
 } from 'lucide-react';
 import * as React from 'react';
-import type { ExecutionStatus, ExecutionStatusProps } from './code-types';
+import type { ExecutionStatusProps } from './code-types';
 
 interface ExecutionStatusComponentProps extends ExecutionStatusProps {
   showDetails?: boolean;
@@ -29,7 +29,7 @@ interface ExecutionStatusComponentProps extends ExecutionStatusProps {
   onRetry?: () => void;
 }
 
-export function ExecutionStatus({
+export function ExecutionStatusComponent({
   status,
   progress = 0,
   executionTime = 0,

@@ -3,28 +3,16 @@
  * Manages lazy loading and lifecycle of WASM runtimes with memory optimization
  */
 
-import { type CppExecutionOptions, type CppExecutionResult, cppRuntime } from './cpp-wasm';
-import {
-  type CSharpExecutionOptions,
-  type CSharpExecutionResult,
-  csharpRuntime,
-} from './csharp-wasm';
-import { type GoExecutionOptions, type GoExecutionResult, goRuntime } from './go-wasm';
-import { type JavaExecutionOptions, type JavaExecutionResult, javaRuntime } from './java-wasm';
-import { type LuaExecutionOptions, type LuaExecutionResult, luaRuntime } from './lua-wasm';
-import { type PhpExecutionOptions, type PhpExecutionResult, phpRuntime } from './php-wasm';
-import {
-  type PythonExecutionOptions,
-  type PythonExecutionResult,
-  pythonRuntime,
-} from './python-wasm';
-import { type RubyExecutionOptions, type RubyExecutionResult, rubyRuntime } from './ruby-wasm';
-import { type RustExecutionOptions, type RustExecutionResult, rustRuntime } from './rust-wasm';
-import {
-  type TypeScriptExecutionOptions,
-  type TypeScriptExecutionResult,
-  typescriptRuntime,
-} from './typescript-wasm';
+import { type CppExecutionOptions, cppRuntime } from './cpp-wasm';
+import { type CSharpExecutionOptions, csharpRuntime } from './csharp-wasm';
+import { type GoExecutionOptions, goRuntime } from './go-wasm';
+import { javaRuntime } from './java-wasm';
+import { type LuaExecutionOptions, luaRuntime } from './lua-wasm';
+import { type PhpExecutionOptions, phpRuntime } from './php-wasm';
+import { type PythonExecutionOptions, pythonRuntime } from './python-wasm';
+import { type RubyExecutionOptions, rubyRuntime } from './ruby-wasm';
+import { type RustExecutionOptions, rustRuntime } from './rust-wasm';
+import { type TypeScriptExecutionOptions, typescriptRuntime } from './typescript-wasm';
 
 export type SupportedLanguage =
   | 'python'

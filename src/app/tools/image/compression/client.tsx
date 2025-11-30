@@ -62,16 +62,19 @@ export default function ImageCompressionClient() {
     return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
-  const getImageFormat = (file: File): string => {
+  const getImageFormat = useCallback((file: File): string => {
     return file.type.split('/')[1]?.toUpperCase() || 'UNKNOWN';
-  };
+  }, []);
 
-  const getOutputFormat = (originalFormat: string): string => {
-    if (outputFormat !== 'original') {
-      return outputFormat.toUpperCase();
-    }
-    return originalFormat;
-  };
+  const getOutputFormat = useCallback(
+    (originalFormat: string): string => {
+      if (outputFormat !== 'original') {
+        return outputFormat.toUpperCase();
+      }
+      return originalFormat;
+    },
+    [outputFormat]
+  );
 
   const compressImage = useCallback(
     async (file: File, quality: number, format: string): Promise<{ blob: Blob; size: number }> => {
@@ -127,46 +130,51 @@ export default function ImageCompressionClient() {
     []
   );
 
-  const handleFileSelect = async (files: FileList) => {
-    const newImages: ImageData[] = [];
+  const handleFileSelect = useCallback(
+    async (files: FileList) => {
+      const newImages: ImageData[] = [];
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
 
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        continue;
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          continue;
+        }
+
+        // Validate file size (max 50MB)
+        if (file.size > 50 * 1024 * 1024) {
+          continue;
+        }
+
+        // Get image dimensions
+        const img = document.createElement('img');
+        const dimensions = await new Promise<{ width: number; height: number }>(
+          (resolve, reject) => {
+            img.onload = () => resolve({ width: img.width, height: img.height });
+            img.onerror = reject;
+            img.src = URL.createObjectURL(file);
+          }
+        );
+
+        newImages.push({
+          id: Date.now().toString() + Math.random().toString(36),
+          file,
+          originalUrl: URL.createObjectURL(file),
+          originalSize: file.size,
+          width: dimensions.width,
+          height: dimensions.height,
+          format: getImageFormat(file),
+          outputFormat: getOutputFormat(getImageFormat(file)),
+          quality: globalQuality[0],
+          isProcessing: false,
+        });
       }
 
-      // Validate file size (max 50MB)
-      if (file.size > 50 * 1024 * 1024) {
-        continue;
-      }
-
-      // Get image dimensions
-      const img = document.createElement('img');
-      const dimensions = await new Promise<{ width: number; height: number }>((resolve, reject) => {
-        img.onload = () => resolve({ width: img.width, height: img.height });
-        img.onerror = reject;
-        img.src = URL.createObjectURL(file);
-      });
-
-      newImages.push({
-        id: Date.now().toString() + Math.random().toString(36),
-        file,
-        originalUrl: URL.createObjectURL(file),
-        originalSize: file.size,
-        width: dimensions.width,
-        height: dimensions.height,
-        format: getImageFormat(file),
-        outputFormat: getOutputFormat(getImageFormat(file)),
-        quality: globalQuality[0],
-        isProcessing: false,
-      });
-    }
-
-    setImages((prev) => [...prev, ...newImages]);
-  };
+      setImages((prev) => [...prev, ...newImages]);
+    },
+    [globalQuality, getImageFormat, getOutputFormat]
+  );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -331,7 +339,12 @@ export default function ImageCompressionClient() {
 
             <div className="space-y-2">
               <label className="font-medium text-sm">Output Format</label>
-              <Select value={outputFormat} onValueChange={(value: any) => setOutputFormat(value)}>
+              <Select
+                value={outputFormat}
+                onValueChange={(value: 'original' | 'jpeg' | 'png' | 'webp') =>
+                  setOutputFormat(value)
+                }
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

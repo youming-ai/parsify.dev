@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Copy } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export function ColorConverter() {
   const [hex, setHex] = useState('#2A9D8F');

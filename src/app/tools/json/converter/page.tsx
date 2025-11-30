@@ -68,7 +68,7 @@ export default function JsonConverterPage() {
               targetFormat: 'xml',
               flatten: false,
             }}
-            onConvert={() => { }}
+            onConvert={() => {}}
             onError={(error) => toast.error(error)}
           />
         </div>

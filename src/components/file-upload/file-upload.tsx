@@ -54,7 +54,7 @@ export function FileUpload({
     onFilesChange(updatedFiles);
 
     // Simulate upload progress
-    filesToAdd.forEach((file) => {
+    for (const file of filesToAdd) {
       const fileName = file.name;
       setUploadProgress((prev) => ({ ...prev, [fileName]: 0 }));
 
@@ -76,7 +76,7 @@ export function FileUpload({
         }
         setUploadProgress((prev) => ({ ...prev, [fileName]: progress }));
       }, 200);
-    });
+    }
   };
 
   const removeFile = (index: number) => {

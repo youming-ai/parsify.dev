@@ -7,12 +7,7 @@
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import { ConstitutionalValidator } from '../../src/lib/compliance/constitutional-validator';
 import { PerformanceMonitor } from '../../src/lib/performance-monitor';
-import {
-  ExecutionEnvironment,
-  type ToolEvent,
-  type ToolExecutionRequest,
-  ToolType,
-} from '../../src/lib/registry/tool-discovery';
+import type { ToolEvent, ToolExecutionRequest } from '../../src/lib/registry/tool-discovery';
 import { ToolRegistry } from '../../src/lib/registry/tool-registry';
 import { ToolExecutionService } from '../../src/lib/tool-execution';
 import { ToolStateManager } from '../../src/lib/tool-state-manager';

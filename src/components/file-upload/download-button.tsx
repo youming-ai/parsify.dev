@@ -263,7 +263,7 @@ export const BatchDownloadButton: React.FC<BatchDownloadButtonProps> = ({
 
       for (let i = 0; i < validFiles.length; i++) {
         const file = validFiles[i];
-        const downloadUrl = file instanceof File ? URL.createObjectURL(file) : file.url!;
+        const downloadUrl = file instanceof File ? URL.createObjectURL(file) : (file.url ?? '');
         const finalFilename = options.filename
           ? `${options.filename.replace(/\.[^/.]+$/, '')}_${i + 1}.${file.name.split('.').pop()}`
           : file.name;

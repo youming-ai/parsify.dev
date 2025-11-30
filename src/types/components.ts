@@ -312,7 +312,7 @@ export interface ComponentRegistry {
 
 // Hook return type generics
 export type HookReturn<T> = [T, (value: T) => void];
-export type HookReturnWithActions<T, A extends Record<string, any> = {}> = [
+export type HookReturnWithActions<T, A extends Record<string, unknown> = Record<string, never>> = [
   T,
   (value: T) => void,
   A,

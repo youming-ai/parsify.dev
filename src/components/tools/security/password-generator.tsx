@@ -13,7 +13,6 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  AlertCircle,
   CheckCircle,
   Clock,
   Copy,
@@ -21,13 +20,11 @@ import {
   Eye,
   EyeOff,
   Info,
-  Key,
   Lock,
   RefreshCw,
   Shield,
   ShieldCheck,
   ShieldX,
-  Zap,
 } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';

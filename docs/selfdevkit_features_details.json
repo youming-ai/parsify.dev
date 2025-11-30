@@ -1,0 +1,761 @@
+[
+  {
+    "category": "Data Format & Conversion",
+    "name": "JSON Tools",
+    "url": "https://selfdevkit.com/features/json-tools/",
+    "description": "Format, validate, and manipulate JSON data. Includes JSON beautifier, minifier, and validator.",
+    "details": [
+      {
+        "title": "Paste, Sample, Copy, Clear",
+        "description": "Quickly paste your own JSON, use sample data, copy results, or clear the editor with a single click."
+      },
+      {
+        "title": "Dual-pane JSON Viewer",
+        "description": "View and edit raw JSON on the left, and see a formatted, interactive, collapsible tree view on the right."
+      },
+      {
+        "title": "Search & Filter",
+        "description": "Instantly search and filter through your JSON data to find exactly what you need, even in large files."
+      },
+      {
+        "title": "Indentation & Formatting Options",
+        "description": "Choose your preferred indentation (2 or 4 spaces), toggle quote keys, show array indices, collection count, sort keys, and trailing commas."
+      },
+      {
+        "title": "Font Size & Collapse Controls",
+        "description": "Adjust font size for readability, and collapse or expand all nodes for easy navigation of complex structures."
+      },
+      {
+        "title": "Validation & Error Highlighting",
+        "description": "Instantly validate your JSON and get clear error messages for invalid structures."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All processing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Data Format & Conversion",
+    "name": "Base64 String",
+    "url": "https://selfdevkit.com/features/base64-string-tools/",
+    "description": "Encode and decode text to/from Base64. Useful for data encoding and transmission.",
+    "details": [
+      {
+        "title": "Encode & Decode Modes",
+        "description": "Instantly switch between encoding and decoding text using the mode toggle. See results in real time as you type or paste."
+      },
+      {
+        "title": "Input & Output Areas",
+        "description": "Enter your text in the input area and view the Base64 encoded or decoded output below. Clean separation for easy use."
+      },
+      {
+        "title": "One-Click Actions",
+        "description": "Use Paste, Sample, Copy Input, Copy Output, and Clear buttons for fast workflow. No need to manually select or clear text."
+      },
+      {
+        "title": "Real-Time Results",
+        "description": "Output updates instantly as you type, paste, or switch modes. No page reloads or extra clicks required."
+      },
+      {
+        "title": "Minimal, Intuitive UI",
+        "description": "Clean, distraction-free interface with clear separation between input and output. Designed for speed and clarity."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All processing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Data Format & Conversion",
+    "name": "Base64 Image",
+    "url": "https://selfdevkit.com/features/base64-image-tools/",
+    "description": "Convert images to Base64 and vice versa. Embed images in CSS or HTML.",
+    "details": [
+      {
+        "title": "Encode & Decode Modes",
+        "description": "Instantly switch between encoding images to Base64 and decoding Base64 strings to images using the mode toggle. See results in real time as you interact."
+      },
+      {
+        "title": "Image & Base64 Input",
+        "description": "Upload or paste an image to encode, or paste a Base64 string to decode. Input areas are clearly separated for each mode."
+      },
+      {
+        "title": "Output Preview",
+        "description": "Instantly see the Base64 string or decoded image output. Preview images and copy results with one click."
+      },
+      {
+        "title": "One-Click Actions",
+        "description": "Use Paste, Sample, Copy Input, Copy Output, and Clear buttons for fast workflow. No need to manually select or clear text."
+      },
+      {
+        "title": "Image Info",
+        "description": "See image name, size, and type when encoding. Quickly verify your input before converting."
+      },
+      {
+        "title": "Real-Time Results",
+        "description": "Output updates instantly as you interact. No page reloads or extra clicks required."
+      },
+      {
+        "title": "Minimal, Intuitive UI",
+        "description": "Clean, distraction-free interface with clear separation between input and output. Designed for speed and clarity."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All processing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Data Format & Conversion",
+    "name": "HTML Viewer",
+    "url": "https://selfdevkit.com/features/html-viewer/",
+    "description": "Preview and render HTML code. Test HTML snippets and templates.",
+    "details": [
+      {
+        "title": "Live HTML Preview",
+        "description": "Instantly see your HTML rendered as you type. Edit and preview side-by-side for rapid development and debugging."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All processing happens locally in your browser. Your data never leaves your device."
+      },
+      {
+        "title": "Lightning Fast & Secure",
+        "description": "Built with Rust and React for instant startup and maximum performance. No internet required."
+      }
+    ]
+  },
+  {
+    "category": "Data Format & Conversion",
+    "name": "HTML Tools",
+    "url": "https://selfdevkit.com/features/html-tools/",
+    "description": "Format, minify, and validate HTML code. Clean and optimize HTML markup.",
+    "details": [
+      {
+        "title": "Format HTML",
+        "description": "Beautify your HTML for readability and clean code with a single click."
+      },
+      {
+        "title": "Minify HTML",
+        "description": "Compress your HTML for faster load times and smaller file sizes."
+      },
+      {
+        "title": "Encode & Decode Entities",
+        "description": "Easily encode or decode HTML entities for safe display or editing."
+      },
+      {
+        "title": "Validate HTML",
+        "description": "Instantly validate your HTML and get clear error messages for invalid markup."
+      },
+      {
+        "title": "Preview HTML",
+        "description": "See a live preview of your HTML output as you work."
+      },
+      {
+        "title": "Copy Results",
+        "description": "Copy your formatted, minified, or validated HTML with a single click for seamless workflow."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All processing happens locally in your browser. Your data never leaves your device."
+      },
+      {
+        "title": "Lightning Fast & Secure",
+        "description": "Built with Rust and React for instant startup and maximum performance. No internet required."
+      }
+    ]
+  },
+  {
+    "category": "Data Format & Conversion",
+    "name": "Markdown Editor",
+    "url": "https://selfdevkit.com/features/markdown-editor/",
+    "description": "Edit and preview Markdown content. Convert Markdown to HTML.",
+    "details": [
+      {
+        "title": "Live Preview",
+        "description": "Instantly see your Markdown rendered as you type, side-by-side with your code."
+      },
+      {
+        "title": "Syntax Highlighting",
+        "description": "Enjoy code highlighting for a better writing and reading experience."
+      },
+      {
+        "title": "GitHub Flavored Markdown",
+        "description": "Supports tables, task lists, strikethrough, and more. Just like on GitHub."
+      },
+      {
+        "title": "Export to HTML/PDF",
+        "description": "Export your Markdown to clean HTML or PDF for sharing and publishing."
+      },
+      {
+        "title": "Paste, Sample, Clear, Copy",
+        "description": "Quickly paste, sample, clear, or copy your Markdown for a seamless workflow."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All processing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Data Format & Conversion",
+    "name": "SQL Tools",
+    "url": "https://selfdevkit.com/features/sql-tools/",
+    "description": "Format and validate SQL queries. Beautify and optimize SQL code.",
+    "details": [
+      {
+        "title": "SQL Editor with Syntax Highlighting",
+        "description": "Write and edit SQL queries with full syntax highlighting for better readability and fewer mistakes."
+      },
+      {
+        "title": "Validate SQL",
+        "description": "Instantly check your SQL for errors and get clear feedback on validity."
+      },
+      {
+        "title": "Format SQL",
+        "description": "Beautify your SQL for clean, readable code with a single click."
+      },
+      {
+        "title": "Sample Queries",
+        "description": "Load sample queries to quickly test and learn SQL features."
+      },
+      {
+        "title": "Clear & Copy",
+        "description": "Clear your editor or copy your SQL with a single click for a seamless workflow."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All processing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Data Format & Conversion",
+    "name": "Compression Tools",
+    "url": "https://selfdevkit.com/features/compression-tools/",
+    "description": "Compress and decompress data using Brotli and Gzip algorithms. Convert between different compression formats and optimize file sizes.",
+    "details": [
+      {
+        "title": "Compress & Decompress",
+        "description": "Instantly compress or decompress text using GZIP or Brotli algorithms."
+      },
+      {
+        "title": "GZIP & Brotli Support",
+        "description": "Choose between GZIP and Brotli for flexible compression options."
+      },
+      {
+        "title": "Size & Compression Stats",
+        "description": "View original and compressed sizes, compression ratio, and bytes saved."
+      },
+      {
+        "title": "Input & Output Details",
+        "description": "See detailed stats for your input and output, including length, word count, and more."
+      },
+      {
+        "title": "Paste, Sample, Copy, Clear",
+        "description": "Quickly paste, sample, copy, or clear your text for a seamless workflow."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All processing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Data Format & Conversion",
+    "name": "JSON to Types",
+    "url": "https://selfdevkit.com/features/json-to-types/",
+    "description": "Convert JSON to strongly-typed models in various programming languages. Generate type-safe code from JSON schemas.",
+    "details": [
+      {
+        "title": "Convert JSON to Types",
+        "description": "Instantly generate types from your JSON data for TypeScript, Rust, Python, Go, or Ruby."
+      },
+      {
+        "title": "Multiple Language Support",
+        "description": "Switch between TypeScript, Rust, Python, Go, and Ruby output with a single click."
+      },
+      {
+        "title": "Customizable Settings",
+        "description": "Fine-tune your generated types with settings for each language."
+      },
+      {
+        "title": "Sample, Clear, Copy",
+        "description": "Quickly load sample JSON, clear your input, or copy your generated types for a seamless workflow."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All processing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Security & Authentication",
+    "name": "JWT Tools",
+    "url": "https://selfdevkit.com/features/jwt-tools/",
+    "description": "Decode, verify, and debug JSON Web Tokens. JWK signature verification with automatic key fetching from identity providers.",
+    "details": [
+      {
+        "title": "Decode JWT",
+        "description": "Instantly decode JWTs and inspect the header, payload, and signature."
+      },
+      {
+        "title": "Verify & Sign JWT",
+        "description": "Verify JWT signatures and sign new tokens with your choice of algorithm."
+      },
+      {
+        "title": "Multiple Algorithm Support",
+        "description": "Choose from HS256, RS256, ES256, and more for flexible JWT handling."
+      },
+      {
+        "title": "Sample, Copy, Clear",
+        "description": "Quickly load sample JWTs, copy decoded data, or clear your input for a seamless workflow."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All processing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Security & Authentication",
+    "name": "Password Generator",
+    "url": "https://selfdevkit.com/features/password-generator/",
+    "description": "Generate secure passwords with customizable options. Create strong, random passwords.",
+    "details": [
+      {
+        "title": "Generate Strong Passwords",
+        "description": "Instantly generate secure passwords with customizable length and character sets."
+      },
+      {
+        "title": "Customizable Options",
+        "description": "Choose password length, and include uppercase, lowercase, numbers, and symbols as needed."
+      },
+      {
+        "title": "Password Strength & Analysis",
+        "description": "Get instant feedback on password strength and a detailed analysis of your generated password."
+      },
+      {
+        "title": "Copy & Clear",
+        "description": "Copy your password or clear the generator with a single click for a seamless workflow."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All processing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Security & Authentication",
+    "name": "Secret Generator",
+    "url": "https://selfdevkit.com/features/secret-generator/",
+    "description": "Generate secure secrets and API keys. Create random strings for various purposes.",
+    "details": [
+      {
+        "title": "Generate a Wide Range of Secrets",
+        "description": "Instantly generate API keys, JWT secrets, webhook secrets, encryption keys, database passwords, OAuth secrets, WEP keys, Fort Knox passwords, CodeIgniter keys, and more."
+      },
+      {
+        "title": "Copy with One Click",
+        "description": "Copy any generated secret to your clipboard instantly for a seamless workflow."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All processing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Security & Authentication",
+    "name": "Key Pair Generator",
+    "url": "https://selfdevkit.com/features/key-pair-generator/",
+    "description": null,
+    "details": [
+      {
+        "title": "Generate RSA Key Pairs",
+        "description": "Instantly generate secure RSA key pairs for encryption, authentication, and digital signatures."
+      },
+      {
+        "title": "Customizable Key Size",
+        "description": "Choose from multiple key sizes (1024, 2048, 4096 bits) for your security needs."
+      },
+      {
+        "title": "View Private & Public Keys",
+        "description": "Easily view and copy your generated private and public keys."
+      },
+      {
+        "title": "Key Statistics & Security Info",
+        "description": "See key length, algorithm, encryption type, and recommended usage tips for best practices."
+      },
+      {
+        "title": "Usage Tips",
+        "description": "Learn how to keep your private key secure and best practices for using key pairs."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All processing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Security & Authentication",
+    "name": "Hash Generator",
+    "url": "https://selfdevkit.com/features/hash-generator/",
+    "description": null,
+    "details": [
+      {
+        "title": "Generate Hashes for Your Data",
+        "description": "Instantly generate hashes using a wide range of algorithms including MD5, SHA1, SHA256, SHA512, SHA3, RIPEMD, Whirlpool, CRC, BLAKE, Keccak, SM3, XXHash, Adler32, and more."
+      },
+      {
+        "title": "Copy & Clear",
+        "description": "Copy any generated hash or clear your input with a single click for a seamless workflow."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All processing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Development & Testing",
+    "name": "ID Analyzer",
+    "url": "https://selfdevkit.com/features/id-analyzer/",
+    "description": null,
+    "details": [
+      {
+        "title": "Analyze All Major ID Types",
+        "description": "Instantly analyze and decode UUIDs (v1, v4, v7), GUIDs, ULIDs, Nano IDs, KSUIds, Stripe IDs, MongoDB ObjectIDs, and more. Get detailed breakdowns, metadata, and alternative representations."
+      },
+      {
+        "title": "Inspect, Validate & Convert",
+        "description": "Paste or sample any ID to see its type, components, timestamp, and alternative formats (Base64, Hex, Integer). Instantly validate and convert between representations."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All analysis happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Development & Testing",
+    "name": "ID Generator",
+    "url": "https://selfdevkit.com/features/id-generator/",
+    "description": null,
+    "details": [
+      {
+        "title": "Generate Multiple Types of IDs",
+        "description": "Instantly generate UUIDs (v1, v4, v7), GUIDs, ULIDs, Nano IDs, and KSUIds. Choose the type and quantity you need for your workflow."
+      },
+      {
+        "title": "Batch Generation & Copy",
+        "description": "Generate one or many IDs at once, and copy them to your clipboard with a single click for maximum productivity."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All processing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Development & Testing",
+    "name": "Regex Validator",
+    "url": "https://selfdevkit.com/features/regex-validator/",
+    "description": null,
+    "details": [
+      {
+        "title": "Instant Regex Validation & Testing",
+        "description": "Instantly validate and test your regular expressions against sample or pasted text. See all matches, groups, and indices in real time."
+      },
+      {
+        "title": "Regex Flags & Cheat Sheet",
+        "description": "Toggle regex flags (global, multiline, insensitive, etc) and access a built-in regex cheat sheet for quick reference."
+      },
+      {
+        "title": "Match Highlighting & Debugging",
+        "description": "Visualize all matches and capture groups directly in your text. Debug complex patterns with ease."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All validation and testing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Development & Testing",
+    "name": "Text Inspector",
+    "url": "https://selfdevkit.com/features/text-inspector/",
+    "description": null,
+    "details": [
+      {
+        "title": "Instant Text Analysis & Statistics",
+        "description": "Instantly analyze your text for character, word, line, sentence, and paragraph counts. See non-empty lines, whitespace, numbers, and more."
+      },
+      {
+        "title": "Encoding & Formatting Insights",
+        "description": "Get detailed encoding information (UTF-8, UTF-16, UTF-32), byte size, and formatting breakdowns (case, numbers, special characters, etc)."
+      },
+      {
+        "title": "Developer-Focused Details",
+        "description": "See statistics like average word/line/sentence length, reading and speaking time, and more. Perfect for code, configs, and documentation."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All analysis happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Development & Testing",
+    "name": "Lorem Generator",
+    "url": "https://selfdevkit.com/features/lorem-generator/",
+    "description": null,
+    "details": [
+      {
+        "title": "Customizable Placeholder Text",
+        "description": "Instantly generate lorem ipsum or custom placeholder text for your designs, mockups, and development needs. Choose paragraphs, words, or sentences."
+      },
+      {
+        "title": "Flexible Controls & Options",
+        "description": "Select the amount of text, toggle starting phrase, set max size, and more. Perfect for UI/UX, prototyping, and content testing."
+      },
+      {
+        "title": "Real-Time Stats",
+        "description": "See live statistics for words, sentences, and paragraphs as you generate text."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All generation happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Development & Testing",
+    "name": "Diff Viewer",
+    "url": "https://selfdevkit.com/features/diff-viewer/",
+    "description": null,
+    "details": [
+      {
+        "title": "Side-by-Side Diff & Editing",
+        "description": "Instantly compare and edit both sides of your text or code. See all changes and differences highlighted in real time."
+      },
+      {
+        "title": "Powerful for Code & Text",
+        "description": "Works with any text or code. Perfect for reviewing changes, resolving merge conflicts, or comparing file versions."
+      },
+      {
+        "title": "Developer Productivity",
+        "description": "Edit both sides, copy, and sample content for fast iteration. Designed for developers and content creators."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All comparison and editing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Network & Web",
+    "name": "URL Parser",
+    "url": "https://selfdevkit.com/features/url-parser/",
+    "description": null,
+    "details": [
+      {
+        "title": "Parse & Inspect URLs Instantly",
+        "description": "Instantly parse any URL and view all its components: protocol, username, password, host, port, path, hash, and query string."
+      },
+      {
+        "title": "Edit Query Strings & Parameters",
+        "description": "Edit, add, or remove query string parameters and see the parsed result in real time. Great for debugging and testing APIs."
+      },
+      {
+        "title": "Developer Productivity",
+        "description": "Copy, sample, and paste URLs for fast iteration. Designed for developers, testers, and API consumers."
+      },
+      {
+        "title": "Offline & Private",
+        "description": "All parsing and editing happens locally in your browser. Your data never leaves your device."
+      }
+    ]
+  },
+  {
+    "category": "Network & Web",
+    "name": "DNS Lookup",
+    "url": "https://selfdevkit.com/features/dns-lookup/",
+    "description": null,
+    "details": []
+  },
+  {
+    "category": "File Tools",
+    "name": "File Generator",
+    "url": "https://selfdevkit.com/features/file-generator/",
+    "description": null,
+    "details": [
+      {
+        "title": "Generate Any File Type Instantly",
+        "description": "Create test files in all major formats: PDF, Word, CSV, JSON, PNG, JPG, SVG, Excel, and plain text. Perfect for testing uploads, APIs, file handling, and more."
+      },
+      {
+        "title": "Fully Customizable Content & Size",
+        "description": "Control file content, size, and structure. Generate files with random, sample, or custom data. Set file size limits for stress testing and QA."
+      },
+      {
+        "title": "Batch Generation & Automation",
+        "description": "Generate multiple files at once for bulk testing, automation, and CI/CD pipelines. Save time and streamline your workflow."
+      },
+      {
+        "title": "Developer & QA Focused",
+        "description": "Designed for developers, testers, and product teams. Use for UI/UX prototyping, backend testing, file validation, and more."
+      },
+      {
+        "title": "Offline & Privacy-First",
+        "description": "All file generation happens locally in your browser. No uploads, no tracking. Your data and files stay private and secure."
+      }
+    ]
+  },
+  {
+    "category": "File Tools",
+    "name": "Image Converter",
+    "url": "https://selfdevkit.com/features/image-converter/",
+    "description": null,
+    "details": [
+      {
+        "title": "Convert Between All Major Image Formats",
+        "description": "Instantly convert images between PNG, JPG, JPEG, WebP, GIF, TIFF, SVG, and more. Perfect for web, print, and app development, as well as design workflows."
+      },
+      {
+        "title": "Batch Conversion & Automation",
+        "description": "Convert multiple images at once for bulk processing, automation, and productivity. Save time on repetitive tasks and streamline your workflow."
+      },
+      {
+        "title": "Preview & Download Instantly",
+        "description": "Preview your images before and after conversion. Download converted images instantly in your chosen format."
+      },
+      {
+        "title": "Developer & Designer Focused",
+        "description": "Built for developers, designers, and content creators. Use for asset optimization, format conversion, and rapid prototyping."
+      },
+      {
+        "title": "Offline & Privacy-First",
+        "description": "All image conversion happens locally in your browser. No uploads, no tracking. Your images stay private and secure."
+      }
+    ]
+  },
+  {
+    "category": "File Tools",
+    "name": "Image Operations",
+    "url": "https://selfdevkit.com/features/image-operations/",
+    "description": null,
+    "details": [
+      {
+        "title": "Crop, Rotate, and Resize Instantly",
+        "description": "Effortlessly crop, rotate (90\u00b0, 180\u00b0, 270\u00b0), and resize images to any dimension. Maintain aspect ratio or customize freely for your needs."
+      },
+      {
+        "title": "Batch Image Editing",
+        "description": "Edit multiple images at once for bulk processing and automation. Perfect for preparing assets, optimizing images, and rapid prototyping."
+      },
+      {
+        "title": "Preview & Download Instantly",
+        "description": "Instantly preview your edits before applying. Download the final images in your preferred format with a single click."
+      },
+      {
+        "title": "Supports All Major Formats",
+        "description": "Work with PNG, JPG, JPEG, WebP, GIF, TIFF, SVG, and more. No need for external tools. Everything is handled locally."
+      },
+      {
+        "title": "Developer & Designer Productivity",
+        "description": "Designed for developers, designers, and content creators. Streamline your workflow for web, app, and print projects."
+      },
+      {
+        "title": "Offline & Privacy-First",
+        "description": "All image operations happen locally in your browser. No uploads, no tracking. Your images stay private and secure."
+      }
+    ]
+  },
+  {
+    "category": "Utility",
+    "name": "Timestamps",
+    "url": "https://selfdevkit.com/features/timestamps/",
+    "description": null,
+    "details": [
+      {
+        "title": "Convert & Inspect Timestamps Instantly",
+        "description": "Instantly convert between Unix timestamps (seconds, milliseconds), ISO 8601, UTC, and local time formats. Paste, sample, or generate timestamps for any use case."
+      },
+      {
+        "title": "Timezone Conversion & Calendar Info",
+        "description": "View and convert times across all major timezones. Instantly see calendar details like week, quarter, day of year, leap year, and more."
+      },
+      {
+        "title": "Flexible Date & Time Formatting",
+        "description": "See all common date and time formats: short, medium, long, and custom. Instantly copy any format for use in your code or documentation."
+      },
+      {
+        "title": "Developer Productivity",
+        "description": "Designed for developers, testers, and analysts. Perfect for debugging, data migration, and working with APIs or databases."
+      },
+      {
+        "title": "Offline & Privacy-First",
+        "description": "All timestamp conversion and inspection happens locally in your browser. No uploads, no tracking. Your data stays private and secure."
+      }
+    ]
+  },
+  {
+    "category": "Utility",
+    "name": "Color Tools",
+    "url": "https://selfdevkit.com/features/color-tools/",
+    "description": null,
+    "details": [
+      {
+        "title": "Convert Between All Major Color Formats",
+        "description": "Instantly convert colors between HEX, RGB, HSL, HSLA, CMYK, OKLCH, and more. Copy any format for use in your code, design, or documentation."
+      },
+      {
+        "title": "Generate Color Harmonies",
+        "description": "Instantly generate complementary, triadic, split complementary, analogous, and tetradic color harmonies for your palette and design needs."
+      },
+      {
+        "title": "Contrast Checker & Accessibility",
+        "description": "Check color contrast ratios and ensure your colors meet WCAG 2.0 AA/AAA accessibility standards for both large and normal text."
+      },
+      {
+        "title": "Developer & Designer Productivity",
+        "description": "Designed for developers, designers, and content creators. Perfect for UI/UX, branding, and accessibility testing."
+      },
+      {
+        "title": "Offline & Privacy-First",
+        "description": "All color conversion and inspection happens locally in your browser. No uploads, no tracking. Your data stays private and secure."
+      }
+    ]
+  },
+  {
+    "category": "Utility",
+    "name": "Cronjob Generator",
+    "url": "https://selfdevkit.com/features/cronjob-generator/",
+    "description": null,
+    "details": [
+      {
+        "title": "Generate & Inspect Cron Expressions",
+        "description": "Instantly generate and inspect cron expressions for any schedule. Understand each field and see a human-readable description of your cron job."
+      },
+      {
+        "title": "Preview Next Trigger Dates",
+        "description": "Instantly preview the next trigger dates and times for your cron schedule. Validate your expression and avoid scheduling mistakes."
+      },
+      {
+        "title": "Use Presets & Learn Syntax",
+        "description": "Choose from a library of common cron presets or learn the syntax with helpful examples. Perfect for beginners and experts alike."
+      },
+      {
+        "title": "Developer & DevOps Productivity",
+        "description": "Designed for developers, DevOps, and system administrators. Streamline your workflow for scheduling, automation, and server management."
+      },
+      {
+        "title": "Offline & Privacy-First",
+        "description": "All cron expression generation and inspection happens locally in your browser. No uploads, no tracking. Your data stays private and secure."
+      }
+    ]
+  }
+]

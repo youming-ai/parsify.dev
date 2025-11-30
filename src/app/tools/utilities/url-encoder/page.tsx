@@ -62,8 +62,9 @@ export default function URLEncoderPage() {
                 characters.
               </p>
               <div className="bg-gray-50 p-2 rounded font-mono text-sm">
-                https://example.com/search?q=hello world →
-                https%3A//example.com/search%3Fq%3Dhello%20world
+                {
+                  'https://example.com/search?q=hello world → https%3A//example.com/search%3Fq%3Dhello%20world'
+                }
               </div>
             </div>
             <div>

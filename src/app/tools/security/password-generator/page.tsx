@@ -1,6 +1,6 @@
 import PasswordGenerator from '@/components/tools/security/password-generator';
 import { ToolInfoSection } from '@/components/tools/tool-info-section';
-import { Hash, Key, Lock, Shield } from 'lucide-react';
+import { Hash, Key, Lock } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {

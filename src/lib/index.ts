@@ -27,9 +27,6 @@ export {
   type PerformanceAlert,
 } from './performance-monitor';
 
-// Analytics utilities
-export * from './analytics/google-analytics';
-
 // Cryptography utilities
 export {
   aesEncrypt,

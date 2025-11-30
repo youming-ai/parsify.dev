@@ -14,9 +14,6 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { JSDOM } from 'jsdom';
-
-// Mock tools and components
-import type { ToolWrapper } from '../../src/components/tools/tool-wrapper';
 import { PerformanceMonitor } from '../../src/lib/performance-monitor';
 import { ToolRegistry } from '../../src/lib/registry/tool-registry';
 import { ToolExecutionService } from '../../src/lib/tool-execution';

@@ -16,7 +16,7 @@
 import { ToolWrapper } from '@/components/tools/tool-wrapper';
 import PerformanceMonitor from '@/lib/performance-monitor';
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { ResizeOptions, useCanvasOperations } from '../../../lib/image/canvas-operations';
+import { useCanvasOperations } from '../../../lib/image/canvas-operations';
 import {
   type ConversionOptions,
   type ConversionResult,

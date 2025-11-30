@@ -33,7 +33,7 @@ interface CodeToolCompleteProps {
   className?: string;
 }
 
-export function CodeToolComplete({ className }: CodeToolCompleteProps) {
+export function CodeToolComplete({ className: _className }: CodeToolCompleteProps) {
   // Code Editor State
   const [code, setCode] = React.useState('');
   const [language, setLanguage] = React.useState<CodeLanguage>('javascript');
