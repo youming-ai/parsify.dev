@@ -1,62 +1,53 @@
 'use client';
 
 import { HashGenerator } from '@/components/tools/data/hash-generator';
-import { Badge } from '@/components/ui/badge';
+import { ToolInfoSection } from '@/components/tools/tool-info-section';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Hash } from 'lucide-react';
-import Link from 'next/link';
+import { FileText, Key, Lock, Shield } from 'lucide-react';
 
 export default function HashGeneratorPage() {
   return (
-    <div className="container mx-auto py-6">
-      {/* Breadcrumb Navigation */}
-
-      {/* Tool Header */}
-
+    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
       {/* Tool Component */}
       <div className="space-y-6">
         <HashGenerator />
 
-        {/* Features */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Features</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-gray-700 dark:text-gray-300">
-                  Multiple hash algorithms (MD5, SHA-1, SHA-256, SHA-384, SHA-512)
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-gray-700 dark:text-gray-300">
-                  Support for both text and file input
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-gray-700 dark:text-gray-300">
-                  Batch processing - hash multiple files at once
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-gray-700 dark:text-gray-300">
-                  One-click hash copying to clipboard
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-gray-700 dark:text-gray-300">
-                  Uppercase/lowercase output options
-                </span>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
+        {/* Tool Info Section */}
+        <ToolInfoSection
+          features={[
+            'Multiple hash algorithms (MD5, SHA-1, SHA-256, SHA-384, SHA-512)',
+            'Support for both text and file input',
+            'Batch processing - hash multiple files at once',
+            'One-click hash copying to clipboard',
+            'Uppercase/lowercase output options',
+          ]}
+          info={{
+            category: 'Security Tools',
+            processing: 'Client Side',
+            security: 'Local Only',
+            difficulty: 'Beginner',
+          }}
+          related={[
+            {
+              name: 'Password Generator',
+              description: 'Generate secure passwords with customizable options',
+              href: '/tools/security/password-generator',
+              icon: <Key className="h-5 w-5" />,
+            },
+            {
+              name: 'AES Encryption',
+              description: 'Encrypt and decrypt data using AES algorithm',
+              href: '/tools/security/aes-encryption',
+              icon: <Lock className="h-5 w-5" />,
+            },
+            {
+              name: 'Base64 Converter',
+              description: 'Encode and decode Base64 strings',
+              href: '/tools/utilities/base64-converter',
+              icon: <FileText className="h-5 w-5" />,
+            },
+          ]}
+        />
 
         {/* Use Cases */}
         <Card>

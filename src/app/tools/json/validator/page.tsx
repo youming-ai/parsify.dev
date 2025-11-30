@@ -4,10 +4,9 @@ import { JsonErrorDisplay } from '@/components/tools/json/json-error-display';
 import { JsonInputEditor } from '@/components/tools/json/json-input-editor';
 import type { JsonValidationResult } from '@/components/tools/json/json-types';
 import { JsonValidator } from '@/components/tools/json/json-validator';
-import { Badge } from '@/components/ui/badge';
+import { ToolInfoSection } from '@/components/tools/tool-info-section';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileJson } from 'lucide-react';
-import Link from 'next/link';
 import * as React from 'react';
 
 const sampleValidJson = `{
@@ -158,92 +157,42 @@ export default function JsonValidatorPage() {
           showLineNumbers={true}
         />
 
-        {/* Tool Features */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Features</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-2">
-                  <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                  <span className="text-gray-700 dark:text-gray-300">Syntax Validation</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                  <span className="text-gray-700 dark:text-gray-300">Schema Validation</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                  <span className="text-gray-700 dark:text-gray-300">Detailed Errors</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                  <span className="text-gray-700 dark:text-gray-300">Real-time Validation</span>
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <span className="font-medium text-gray-900 dark:text-white">Category:</span>{' '}
-                <span className="text-gray-600 dark:text-gray-400">JSON Processing</span>
-              </div>
-              <div>
-                <span className="font-medium text-gray-900 dark:text-white">Processing:</span>{' '}
-                <span className="text-gray-600 dark:text-gray-400">Client Side</span>
-              </div>
-              <div>
-                <span className="font-medium text-gray-900 dark:text-white">Security:</span>{' '}
-                <span className="text-gray-600 dark:text-gray-400">Local Only</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Related Tools</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <Link
-                  href="/tools/json/formatter"
-                  className="block rounded-lg border border-gray-200 p-3 transition-colors hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
-                >
-                  <div className="flex items-center gap-3">
-                    <FileJson className="h-5 w-5 text-blue-600" />
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900 dark:text-white">JSON Formatter</h4>
-                      <p className="text-gray-600 text-sm dark:text-gray-400">
-                        Format and beautify JSON data with customizable options
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-                <Link
-                  href="/tools/json/converter"
-                  className="block rounded-lg border border-gray-200 p-3 transition-colors hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
-                >
-                  <div className="flex items-center gap-3">
-                    <FileJson className="h-5 w-5 text-blue-600" />
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900 dark:text-white">JSON Converter</h4>
-                      <p className="text-gray-600 text-sm dark:text-gray-400">
-                        Convert JSON to various formats like XML, CSV, YAML
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Tool Info Section */}
+        <ToolInfoSection
+          features={[
+            'Real-time syntax validation as you type',
+            'JSON Schema validation support',
+            'Detailed error messages with line numbers',
+            'Visual error highlighting in editor',
+            'Support for comments detection',
+          ]}
+          info={{
+            category: 'JSON Processing',
+            processing: 'Client Side',
+            security: 'Local Only',
+            difficulty: 'Beginner',
+          }}
+          related={[
+            {
+              name: 'JSON Formatter',
+              description: 'Format and beautify JSON data with customizable options',
+              href: '/tools/json/formatter',
+              icon: <FileJson className="h-5 w-5" />,
+            },
+            {
+              name: 'JSON Converter',
+              description: 'Convert JSON to various formats like XML, CSV, YAML',
+              href: '/tools/json/converter',
+              icon: <FileJson className="h-5 w-5" />,
+            },
+            {
+              name: 'JSON Path Evaluator',
+              description: 'Extract data from JSON using JSONPath expressions',
+              href: '/tools/json/path-queries',
+              icon: <FileJson className="h-5 w-5" />,
+            },
+          ]}
+        />
       </div>
     </div>
   );

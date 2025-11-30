@@ -1,7 +1,6 @@
+import { ToolInfoSection } from '@/components/tools/tool-info-section';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield } from 'lucide-react';
+import { Clock, Hash, Shield } from 'lucide-react';
 import type { Metadata } from 'next';
 import TimestampConverterClient from './client';
 
@@ -21,52 +20,53 @@ export const metadata: Metadata = {
 
 export default function UnixConverterPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mx-auto max-w-4xl">
-        <Alert className="mb-6">
-          <Shield className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Privacy Notice:</strong> Timestamp conversion is performed entirely in your
-            browser. Your data never leaves your device.
-          </AlertDescription>
-        </Alert>
+    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
+      <Alert className="mb-6">
+        <Shield className="h-4 w-4" />
+        <AlertDescription>
+          <strong>Privacy Notice:</strong> Timestamp conversion is performed entirely in your
+          browser. Your data never leaves your device.
+        </AlertDescription>
+      </Alert>
 
-        <TimestampConverterClient />
+      <TimestampConverterClient />
 
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Supported Formats</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-muted-foreground text-sm">
-                <li>• Unix timestamps (seconds since epoch)</li>
-                <li>• Millisecond timestamps</li>
-                <li>• ISO 8601 date strings</li>
-                <li>• Human-readable dates</li>
-                <li>• Current time conversion</li>
-                <li>• Batch timestamp processing</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Features</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-muted-foreground text-sm">
-                <li>• Multiple timezone support</li>
-                <li>• Real-time current timestamp</li>
-                <li>• Date format customization</li>
-                <li>• Timestamp validation</li>
-                <li>• Relative time calculations</li>
-                <li>• Copy to clipboard functionality</li>
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <ToolInfoSection
+        features={[
+          'Unix timestamps (seconds since epoch) support',
+          'Millisecond timestamp conversion',
+          'Multiple timezone support with auto-detection',
+          'Real-time current timestamp display',
+          'ISO 8601 and human-readable date formats',
+          'Relative time calculations (e.g., "2 hours ago")',
+        ]}
+        info={{
+          category: 'Time Tools',
+          processing: 'Client Side',
+          security: 'Local Only',
+          difficulty: 'Beginner',
+        }}
+        related={[
+          {
+            name: 'Cron Expression Parser',
+            description: 'Parse and understand cron expressions with human-readable descriptions',
+            href: '/tools/utilities/cron-parser',
+            icon: <Clock className="h-5 w-5" />,
+          },
+          {
+            name: 'Number Base Converter',
+            description: 'Convert numbers between binary, octal, decimal, and hexadecimal',
+            href: '/tools/converters/number-base',
+            icon: <Hash className="h-5 w-5" />,
+          },
+          {
+            name: 'Hash Generator',
+            description: 'Generate cryptographic hashes (MD5, SHA-1, SHA-256)',
+            href: '/tools/data/hash-generator',
+            icon: <Shield className="h-5 w-5" />,
+          },
+        ]}
+      />
     </div>
   );
 }

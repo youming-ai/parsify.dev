@@ -1,62 +1,53 @@
 'use client';
 
+import { ToolInfoSection } from '@/components/tools/tool-info-section';
 import { Base64Converter } from '@/components/tools/utilities/base64-converter';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Zap } from 'lucide-react';
-import Link from 'next/link';
+import { FileText, Hash, Link2 } from 'lucide-react';
 
 export default function Base64ConverterPage() {
   return (
-    <div className="container mx-auto py-6">
-      {/* Breadcrumb Navigation */}
-
-      {/* Tool Header */}
-
+    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
       {/* Tool Component */}
       <div className="space-y-6">
         <Base64Converter />
 
-        {/* Features */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Features</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-gray-700 dark:text-gray-300">
-                  Text to Base64 encoding and decoding
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-gray-700 dark:text-gray-300">
-                  File to Base64 conversion for images and documents
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-gray-700 dark:text-gray-300">
-                  Batch processing for multiple files
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-gray-700 dark:text-gray-300">
-                  Preview mode with download options
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-gray-700 dark:text-gray-300">
-                  Unicode and special character support
-                </span>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
+        {/* Tool Info Section */}
+        <ToolInfoSection
+          features={[
+            'Text to Base64 encoding and decoding',
+            'File to Base64 conversion for images and documents',
+            'Batch processing for multiple files',
+            'Preview mode with download options',
+            'Unicode and special character support',
+          ]}
+          info={{
+            category: 'Encoding Tools',
+            processing: 'Client Side',
+            security: 'Local Only',
+            difficulty: 'Beginner',
+          }}
+          related={[
+            {
+              name: 'URL Encoder',
+              description: 'Encode and decode URLs and URI components',
+              href: '/tools/utilities/url-encoder',
+              icon: <Link2 className="h-5 w-5" />,
+            },
+            {
+              name: 'Hash Generator',
+              description: 'Generate cryptographic hashes for data verification',
+              href: '/tools/data/hash-generator',
+              icon: <Hash className="h-5 w-5" />,
+            },
+            {
+              name: 'Base64 Image Converter',
+              description: 'Convert images to Base64 strings and vice versa',
+              href: '/tools/image/base64',
+              icon: <FileText className="h-5 w-5" />,
+            },
+          ]}
+        />
 
         {/* How Base64 Works */}
         <Card>

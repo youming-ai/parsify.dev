@@ -1,7 +1,6 @@
+import { ToolInfoSection } from '@/components/tools/tool-info-section';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield } from 'lucide-react';
+import { AlignLeft, CaseSensitive, FileText, Shield } from 'lucide-react';
 import type { Metadata } from 'next';
 import TextCounterClient from './client';
 
@@ -21,56 +20,53 @@ export const metadata: Metadata = {
 
 export default function TextCounterPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mx-auto w-full">
-        <Alert className="mb-6">
-          <Shield className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Privacy Notice:</strong> Text analysis is performed entirely in your browser.
-            Your text never leaves your device.
-          </AlertDescription>
-        </Alert>
+    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
+      <Alert className="mb-6">
+        <Shield className="h-4 w-4" />
+        <AlertDescription>
+          <strong>Privacy Notice:</strong> Text analysis is performed entirely in your browser. Your
+          text never leaves your device.
+        </AlertDescription>
+      </Alert>
 
-        <TextCounterClient />
+      <TextCounterClient />
 
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Counting Features</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-muted-foreground text-sm">
-                <li>• Character count (with/without spaces)</li>
-                <li>• Word count with intelligent detection</li>
-                <li>• Line count and paragraph analysis</li>
-                <li>• Sentence counting</li>
-                <li>• Reading time estimation</li>
-                <li>• Character frequency analysis</li>
-                <li>• Word length distribution</li>
-                <li>• Unicode character support</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Additional Metrics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-muted-foreground text-sm">
-                <li>• Average word length</li>
-                <li>• Average sentence length</li>
-                <li>• Lexical density calculation</li>
-                <li>• Readability scores</li>
-                <li>• Most frequent words</li>
-                <li>• Character usage patterns</li>
-                <li>• Text complexity analysis</li>
-                <li>• Export detailed reports</li>
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <ToolInfoSection
+        features={[
+          'Character count (with/without spaces)',
+          'Word count with intelligent detection',
+          'Line count and paragraph analysis',
+          'Reading time estimation',
+          'Most frequent words analysis',
+          'Readability score calculation',
+        ]}
+        info={{
+          category: 'Text Tools',
+          processing: 'Client Side',
+          security: 'Local Only',
+          difficulty: 'Beginner',
+        }}
+        related={[
+          {
+            name: 'Case Converter',
+            description: 'Convert text between different cases',
+            href: '/tools/text/case-converter',
+            icon: <CaseSensitive className="h-5 w-5" />,
+          },
+          {
+            name: 'Text Analyzer',
+            description: 'Analyze text for readability and sentiment',
+            href: '/tools/text/analyzer',
+            icon: <FileText className="h-5 w-5" />,
+          },
+          {
+            name: 'Text Encoding Converter',
+            description: 'Convert text between different encodings',
+            href: '/tools/text/encoding-converter',
+            icon: <AlignLeft className="h-5 w-5" />,
+          },
+        ]}
+      />
     </div>
   );
 }

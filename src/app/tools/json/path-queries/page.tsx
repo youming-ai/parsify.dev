@@ -1,107 +1,51 @@
 'use client';
 
 import { JsonPathQueries } from '@/components/tools/json/jsonpath-queries';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ToolInfoSection } from '@/components/tools/tool-info-section';
 import { FileJson } from 'lucide-react';
-import Link from 'next/link';
 
 export default function JsonPathQueriesPage() {
   return (
-    <div className="container mx-auto py-6">
-      {/* Breadcrumb Navigation */}
-
-      {/* Tool Header */}
-
+    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
       {/* Tool Component */}
       <JsonPathQueries />
 
-      {/* Tool Features */}
-      <div className="mt-8 grid gap-6 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Features</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-gray-700 dark:text-gray-300">JSONPath Expressions</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-gray-700 dark:text-gray-300">Real-time Results</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-gray-700 dark:text-gray-300">Syntax Highlighting</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
-                <span className="text-gray-700 dark:text-gray-300">Query History</span>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <span className="font-medium text-gray-900 dark:text-white">Category:</span>{' '}
-              <span className="text-gray-600 dark:text-gray-400">JSON Processing</span>
-            </div>
-            <div>
-              <span className="font-medium text-gray-900 dark:text-white">Processing:</span>{' '}
-              <span className="text-gray-600 dark:text-gray-400">Client Side</span>
-            </div>
-            <div>
-              <span className="font-medium text-gray-900 dark:text-white">Security:</span>{' '}
-              <span className="text-gray-600 dark:text-gray-400">Local Only</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Related Tools</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <Link
-                href="/tools/json/formatter"
-                className="block rounded-lg border border-gray-200 p-3 transition-colors hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
-              >
-                <div className="flex items-center gap-3">
-                  <FileJson className="h-5 w-5 text-blue-600" />
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 dark:text-white">JSON Formatter</h4>
-                    <p className="text-gray-600 text-sm dark:text-gray-400">
-                      Format and beautify JSON data with customizable options
-                    </p>
-                  </div>
-                </div>
-              </Link>
-              <Link
-                href="/tools/json/validator"
-                className="block rounded-lg border border-gray-200 p-3 transition-colors hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
-              >
-                <div className="flex items-center gap-3">
-                  <FileJson className="h-5 w-5 text-blue-600" />
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 dark:text-white">JSON Validator</h4>
-                    <p className="text-gray-600 text-sm dark:text-gray-400">
-                      Comprehensive JSON validation with detailed error messages
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Tool Info Section */}
+      <ToolInfoSection
+        features={[
+          'Powerful JSONPath expressions for querying JSON data',
+          'Real-time results as you type your query',
+          'Syntax highlighting for better readability',
+          'Query history to quickly reuse previous queries',
+          'Support for complex nested path navigation',
+        ]}
+        info={{
+          category: 'JSON Processing',
+          processing: 'Client Side',
+          security: 'Local Only',
+          difficulty: 'Intermediate',
+        }}
+        related={[
+          {
+            name: 'JSON Formatter',
+            description: 'Format and beautify JSON data with customizable options',
+            href: '/tools/json/formatter',
+            icon: <FileJson className="h-5 w-5" />,
+          },
+          {
+            name: 'JSON Validator',
+            description: 'Comprehensive JSON validation with detailed error messages',
+            href: '/tools/json/validator',
+            icon: <FileJson className="h-5 w-5" />,
+          },
+          {
+            name: 'JSON Hero Viewer',
+            description: 'Explore JSON data with tree view and navigation',
+            href: '/tools/json/hero-viewer',
+            icon: <FileJson className="h-5 w-5" />,
+          },
+        ]}
+      />
     </div>
   );
 }
