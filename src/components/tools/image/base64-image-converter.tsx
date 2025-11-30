@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Download, Image, RefreshCw } from 'lucide-react';
+import { ArrowRight, Copy, Download, Image, RefreshCw } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 
 interface PreviewImageProps {
@@ -174,6 +174,7 @@ export const Base64ImageConverter = () => {
                     onClick={() => handleCopy(base64Output)}
                     disabled={!base64Output}
                   >
+                    <Copy className="mr-2 h-4 w-4" />
                     Copy
                   </Button>
                 </div>
@@ -200,6 +201,7 @@ export const Base64ImageConverter = () => {
                     onClick={handleDecode}
                     disabled={!base64Input.trim()}
                   >
+                    <ArrowRight className="mr-2 h-4 w-4" />
                     Decode
                   </Button>
                 </div>

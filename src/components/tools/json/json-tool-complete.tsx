@@ -11,6 +11,7 @@ import dynamic from 'next/dynamic';
 import type React from 'react';
 import { useState } from 'react';
 import { Badge } from '../../ui/badge';
+import { Button } from '../../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
 import { JsonHeroViewer } from './json-hero-viewer';
@@ -118,12 +119,15 @@ export const JsonToolComplete: React.FC<JsonToolCompleteProps> = ({
                   <p className="text-muted-foreground mb-4">
                     Cannot display tree view. Please fix the JSON errors first.
                   </p>
-                  <button
+                  <Button
                     onClick={() => setActiveTab('editor')}
-                    className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90"
+                    variant="default"
+                    size="sm"
+                    className="gap-2"
                   >
+                    <Edit className="h-4 w-4" />
                     Go to Editor
-                  </button>
+                  </Button>
                 </div>
               )}
             </TabsContent>

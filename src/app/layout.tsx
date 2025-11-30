@@ -2,6 +2,7 @@ import { AnalyticsInitializer } from '@/components/analytics-initializer';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { PerformanceMonitor } from '@/components/performance-monitor';
 import { ThemeProvider } from '@/components/theme-provider';
+import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 import type React from 'react';
 
@@ -87,6 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </PerformanceMonitor>
           </ErrorBoundary>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
