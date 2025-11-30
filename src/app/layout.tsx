@@ -1,6 +1,7 @@
 import { AnalyticsInitializer } from '@/components/analytics-initializer';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { PerformanceMonitor } from '@/components/performance-monitor';
+import { ThemeProvider } from '@/components/theme-provider';
 import type { Metadata } from 'next';
 import type React from 'react';
 
@@ -74,11 +75,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased" suppressHydrationWarning>
-        <ErrorBoundary maxRetries={3}>
-          <PerformanceMonitor>
-            <AnalyticsInitializer>{children}</AnalyticsInitializer>
-          </PerformanceMonitor>
-        </ErrorBoundary>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ErrorBoundary maxRetries={3}>
+            <PerformanceMonitor>
+              <AnalyticsInitializer>{children}</AnalyticsInitializer>
+            </PerformanceMonitor>
+          </ErrorBoundary>
+        </ThemeProvider>
       </body>
     </html>
   );
