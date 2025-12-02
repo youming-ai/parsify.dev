@@ -17,13 +17,13 @@ pnpm deploy                 # Deploy to Vercel production
 
 # Code Quality
 pnpm lint                   # Run Biome linting checks
-pnpm format                 # Format code with Biome
+pnpm format                 # Format code with Biome (auto-fixes issues)
 pnpm type-check             # Run TypeScript type checking
 
 # Testing
 pnpm test                   # Run Vitest unit tests
 pnpm test:coverage          # Run tests with coverage report
-# Note: test:e2e script referenced in README but not defined in package.json
+# Note: README mentions test:ui, test:e2e, test:integration, test:load, test:performance scripts but these are not defined in package.json
 
 # Maintenance
 pnpm clean                  # Remove node_modules, .next, dist
@@ -48,10 +48,10 @@ cp .env.local.example .env.local
 - **Analytics**: Vercel Analytics and Speed Insights
 
 ### Key Dependencies
-- **Code Execution**: Pyodide (Python), TeaVM (Java), WASM runtimes for Go/Rust/CPP
+- **Code Execution**: Pyodide (Python), TeaVM (Java), WASM runtimes for Go/Rust/CPP and 6 additional languages
 - **JSON Processing**: Custom JSON tools with validation and transformation
 - **Image Processing**: Canvas API, qr-scanner, browser-native image handling
-- **Code Quality**: Biome (linting + formatting), Vitest (testing), Playwright (E2E)
+- **Code Quality**: Biome (linting + formatting), Vitest (testing)
 - **Build Tools**: Turbopack (Next.js), webpack optimization for bundle splitting
 
 ### WASM Runtimes Architecture
@@ -61,7 +61,7 @@ The project supports multiple language execution through WebAssembly:
 - **Go**: TinyGo (0.30.0) - 3MB bundle
 - **Rust**: Rust WASM (1.75.0) - 2MB bundle
 - **TypeScript**: Deno Runtime (2.0.0) - 1MB bundle
-- **Additional Languages**: C++, C#, Lua, PHP, Ruby
+- **Additional Languages**: C++ (Emscripten 3.1.0), C# (Blazor 8.0.0), PHP (WebAssembly PHP 8.2.0), Ruby (ruby.wasm 3.2.0), Lua (Fengari 5.4.4)
 
 Managed by `WASMRuntimeManager` with lazy loading, memory cleanup, and performance optimization.
 
@@ -94,10 +94,10 @@ src/
 └── hooks/               # Custom React hooks
 ```
 
-**Key Changes from Current Structure:**
-- Tools have been reorganized into new categories: data-format, development, file, network, security, utility
+**Current Tool Organization:**
+- Tools are organized into 6 categories: data-format, development, file, network, security, utility
 - Tool registry system centralized in `src/data/tools-data.ts` with 28 tools across 6 categories
-- WASM runtimes expanded to support 10+ languages in `src/lib/runtimes/`
+- WASM runtimes support 10 languages in `src/lib/runtimes/`
 
 ### Tool System Architecture
 
@@ -215,22 +215,22 @@ export const ToolComponent: React.FC<ToolComponentProps> = ({
 ### Testing Strategy
 - **Unit Tests**: Vitest for individual components and utilities
 - **Integration Tests**: Tool workflows and component integration
-- **E2E Tests**: Playwright setup mentioned in README but scripts not defined in package.json
+- **E2E Tests**: Playwright mentioned in README but scripts not defined in package.json
 - **Coverage**: Configured with vitest coverage reporting
 - **Test Environment**: jsdom with mock APIs for WASM testing
 
 ### Performance Considerations
-- **Bundle Size**: Monitor with webpack-bundle-analyzer
-- **WASM Loading**: Implement lazy loading for heavy runtimes
-- **Memory Usage**: Clean up WASM runtimes when idle
+- **Bundle Size**: README mentions webpack-bundle-analyzer scripts (analyze, analyze:open, size-check) but these are not defined in package.json
+- **WASM Loading**: Lazy loading for heavy runtimes implemented
+- **Memory Usage**: Automatic cleanup of idle WASM runtimes (5-minute threshold)
 - **Core Web Vitals**: Target FCP < 1.8s, LCP < 2.5s, CLS < 0.1
 
 ## Configuration Files
 
 ### Build Configuration
 - **Next.js**: `next.config.ts` - Optimized with Turbopack, webpack code splitting, and image optimization
-- **TypeScript**: `tsconfig.json` - Strict mode with path aliases
-- **Biome**: `biome.json` - Code formatting and linting rules with custom configuration
+- **TypeScript**: `tsconfig.json` - Strict mode enabled, path aliases (@/*), ES2022 target
+- **Biome**: `biome.json` - 2-space indentation, 100 char line width, single quotes, custom rule overrides
 - **Tailwind**: `tailwind.config.ts` - Custom theme with shadcn/ui integration
 - **Vitest**: `vitest.config.ts` - Test configuration with coverage reporting
 - **Bundle Optimization**: Automatic vendor chunks, UI components splitting, and package optimization
