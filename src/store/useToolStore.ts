@@ -47,7 +47,7 @@ export const useToolStore = create<ToolStoreState>()(
         return get().tools[toolId] || null;
       },
 
-      setToolState: (toolId, data, config = {}, metadata) => {
+      setToolState: (toolId, data, config, metadata) => {
         set((state) => {
           const previousState = state.tools[toolId];
           const toolState: ToolState = {
@@ -55,7 +55,7 @@ export const useToolStore = create<ToolStoreState>()(
             version: '1.0.0',
             lastModified: Date.now(),
             data: structuredClone(data),
-            config: structuredClone(config),
+            config: structuredClone(config ?? {}),
             metadata: metadata
               ? { ...previousState?.metadata, ...metadata }
               : previousState?.metadata,

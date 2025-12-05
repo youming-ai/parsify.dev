@@ -2,7 +2,6 @@
 
 import { Base64Converter } from '@/components/tools/utilities/base64-converter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Hash, Link2 } from 'lucide-react';
 
 export default function Base64ConverterPage() {
   return (

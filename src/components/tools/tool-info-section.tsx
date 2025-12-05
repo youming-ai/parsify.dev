@@ -1,19 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  CheckCircle2,
-  Cpu,
-  Database,
-  ExternalLink,
-  Info,
-  Layers,
-  Shield,
-  Sparkles,
-  Zap,
-} from 'lucide-react';
-import Link from 'next/link';
-import type * as React from 'react';
+import { CheckCircle2, Cpu, Database, Info, Layers, Shield, Sparkles, Zap } from 'lucide-react';
 
 export interface ToolInfoSectionProps {
   features?: string[];

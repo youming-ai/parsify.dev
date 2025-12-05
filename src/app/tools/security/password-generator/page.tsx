@@ -1,5 +1,4 @@
 import PasswordGenerator from '@/components/tools/security/password-generator';
-import { Hash, Key, Lock } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {

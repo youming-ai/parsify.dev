@@ -2,7 +2,6 @@
 
 import { URLEncoder } from '@/components/tools/utilities/url-encoder';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Hash, Link2 } from 'lucide-react';
 
 export default function URLEncoderPage() {
   return (

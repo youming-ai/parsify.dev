@@ -17,8 +17,8 @@ export default function JWTDecoderPage() {
       <Alert className="mb-6">
         <Shield className="h-4 w-4" />
         <AlertDescription>
-          <strong>Privacy Notice:</strong> JWT decoding is performed entirely in your browser.
-          Your tokens never leave your device and are not sent to any server.
+          <strong>Privacy Notice:</strong> JWT decoding is performed entirely in your browser. Your
+          tokens never leave your device and are not sent to any server.
         </AlertDescription>
       </Alert>
 
@@ -40,9 +40,7 @@ export default function JWTDecoderPage() {
             </p>
             <div className="space-y-2">
               <h4 className="font-semibold text-sm">JWT Structure:</h4>
-              <div className="rounded bg-muted p-2 font-mono text-xs">
-                header.payload.signature
-              </div>
+              <div className="rounded bg-muted p-2 font-mono text-xs">header.payload.signature</div>
             </div>
           </CardContent>
         </Card>
@@ -63,6 +61,5 @@ export default function JWTDecoderPage() {
         </Card>
       </div>
     </div>
-
   );
 }

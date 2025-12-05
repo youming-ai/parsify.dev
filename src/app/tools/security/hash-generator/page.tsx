@@ -2,7 +2,6 @@
 
 import { HashGenerator } from '@/components/tools/data/hash-generator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Key, Lock } from 'lucide-react';
 
 export default function HashGeneratorPage() {
   return (

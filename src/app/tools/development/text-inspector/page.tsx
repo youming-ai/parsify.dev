@@ -1,5 +1,5 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlignLeft, CaseSensitive, FileText, Shield } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import type { Metadata } from 'next';
 import TextCounterClient from './client';
 

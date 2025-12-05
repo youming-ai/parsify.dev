@@ -4,7 +4,7 @@
  * This file demonstrates how to use the new Zustand stores for state management.
  */
 
-import { useToolStore, useSessionStore } from '@/store';
+import { useSessionStore, useToolStore } from '@/store';
 
 // ============================================================================
 // Tool Store Examples

@@ -1,5 +1,4 @@
 import { ColorConverter } from '@/components/tools/converters/color-converter';
-import { Binary, Code, Palette } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {

@@ -1,5 +1,5 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Clock, Hash, Shield } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import type { Metadata } from 'next';
 import TimestampConverterClient from './client';
 

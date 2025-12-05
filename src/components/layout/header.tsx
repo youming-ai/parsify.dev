@@ -1,6 +1,6 @@
 'use client';
-import Link from 'next/link';
 import { Github, Mail, Twitter } from 'lucide-react';
+import Link from 'next/link';
 import { ThemeToggle } from './theme-toggle';
 
 const socialLinks = [
