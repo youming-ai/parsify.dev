@@ -9,9 +9,9 @@ interface ToolsLayoutProps {
 
 export function ToolsLayout({ children, showSidebar = false }: ToolsLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
       <Header />
-      <div className="flex">
+      <div className="flex flex-1">
         {showSidebar && (
           <aside className="hidden w-64 border-gray-200 border-r md:block dark:border-gray-700">
             {/* Sidebar content would go here if needed */}

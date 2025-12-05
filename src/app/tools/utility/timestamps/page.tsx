@@ -4,17 +4,22 @@ import type { Metadata } from 'next';
 import TimestampConverterClient from './client';
 
 export const metadata: Metadata = {
-  title: 'Unix Timestamp Converter - Convert Timestamps Instantly',
+  title: 'Unix Timestamp Converter - Convert Epoch Time Online',
   description:
-    'Convert Unix timestamps to human-readable dates and vice versa. Support for milliseconds and multiple timezones.',
+    'Free online Unix timestamp converter. Convert Unix timestamps to human-readable dates and vice versa. Support for milliseconds and multiple timezones.',
   keywords: [
-    'Unix timestamp',
+    'unix timestamp',
     'epoch time',
-    'date converter',
-    'time converter',
-    'timezone',
+    'timestamp converter',
+    'date to timestamp',
+    'timestamp to date',
+    'timezone converter',
     'milliseconds',
   ],
+  openGraph: {
+    title: 'Unix Timestamp Converter - Parsify.dev',
+    description: 'Convert Unix timestamps to dates and vice versa with timezone support.',
+  },
 };
 
 export default function UnixConverterPage() {

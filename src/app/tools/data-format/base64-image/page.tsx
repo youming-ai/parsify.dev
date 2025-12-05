@@ -2,9 +2,22 @@ import Base64ImageConverter from '@/components/tools/image/base64-image-converte
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Base64 Image Converter | Parsify',
+  title: 'Base64 Image Converter - Encode & Decode Images Online',
   description:
-    'Convert images to Base64 strings and decode Base64 back to images with live preview.',
+    'Free online Base64 image converter. Encode images to Base64 data URIs and decode Base64 strings back to images with live preview. Supports PNG, JPG, GIF, WebP.',
+  keywords: [
+    'base64 image',
+    'image to base64',
+    'base64 to image',
+    'data uri',
+    'image encoder',
+    'base64 converter',
+    'embed images',
+  ],
+  openGraph: {
+    title: 'Base64 Image Converter - Parsify.dev',
+    description: 'Convert images to Base64 and vice versa with instant preview.',
+  },
 };
 
 export default function Base64ImagePage() {

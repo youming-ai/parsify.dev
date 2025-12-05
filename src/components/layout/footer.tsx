@@ -7,7 +7,7 @@ const pixelFont = Press_Start_2P({
 
 export function Footer() {
   return (
-    <footer className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+    <footer className="flex w-full justify-center py-6">
       <div
         className={`${pixelFont.className} group flex items-center text-xs tracking-widest text-muted-foreground/50 hover:text-primary transition-colors duration-300 cursor-default select-none`}
       >

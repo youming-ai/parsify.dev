@@ -28,7 +28,11 @@ const paperMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'Parsify.dev - Professional Developer Tools',
+  metadataBase: new URL('https://parsify.dev'),
+  title: {
+    default: 'Parsify.dev - Professional Developer Tools',
+    template: '%s | Parsify.dev',
+  },
   description:
     'Professional online developer tools for JSON processing, code execution, file transformation, and more. Run securely in your browser with no data sent to servers.',
   keywords: [

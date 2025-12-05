@@ -4,17 +4,22 @@ import type { Metadata } from 'next';
 import TextCounterClient from './client';
 
 export const metadata: Metadata = {
-  title: 'Text Character Counter - Count Words, Characters & Lines',
+  title: 'Text Inspector - Word Counter & Character Counter Online',
   description:
-    'Advanced text analyzer with character, word, line counting, reading time calculation and more.',
+    'Free online text analyzer. Count characters, words, lines, sentences with reading time calculation. Get encoding info and byte size analysis.',
   keywords: [
-    'text counter',
-    'character count',
-    'word count',
-    'line count',
-    'reading time',
-    'text analysis',
+    'word counter',
+    'character counter',
+    'text analyzer',
+    'line counter',
+    'reading time calculator',
+    'text statistics',
+    'letter counter',
   ],
+  openGraph: {
+    title: 'Text Inspector - Parsify.dev',
+    description: 'Analyze text with word count, character count, and reading time.',
+  },
 };
 
 export default function TextCounterPage() {

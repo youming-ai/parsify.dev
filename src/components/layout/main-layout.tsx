@@ -16,9 +16,9 @@ export function MainLayout({ children, showSidebar = false }: MainLayoutProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
       <Header />
-      <div className="flex">
+      <div className="flex flex-1">
         {showSidebar && (
           <Sidebar
             isCollapsed={isSidebarCollapsed}

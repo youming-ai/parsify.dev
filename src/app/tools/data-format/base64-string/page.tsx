@@ -1,7 +1,26 @@
-'use client';
-
 import { Base64Converter } from '@/components/tools/utilities/base64-converter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Base64 String Encoder/Decoder - Encode & Decode Text Online',
+  description:
+    'Free online Base64 encoder and decoder. Convert text to Base64 and decode Base64 to text instantly. Secure, client-side processing with no data sent to servers.',
+  keywords: [
+    'base64',
+    'encoder',
+    'decoder',
+    'text encoding',
+    'base64 converter',
+    'online tool',
+    'data encoding',
+  ],
+  openGraph: {
+    title: 'Base64 String Encoder/Decoder - Parsify.dev',
+    description:
+      'Encode and decode text to/from Base64 instantly. Free, secure, and runs entirely in your browser.',
+  },
+};
 
 export default function Base64ConverterPage() {
   return (
