@@ -128,34 +128,61 @@ export default function Home() {
     <MainLayout>
       <div className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="relative flex flex-col items-center overflow-hidden border-b bg-gradient-to-b from-primary/5 via-background to-background px-6 pt-32 pb-16 text-center lg:px-8 lg:pt-40 lg:pb-24">
-          <div className="-z-10 absolute inset-0 h-full w-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-white [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] dark:bg-black" />
+        {/* Hero Section */}
+        <section className="relative flex min-h-[60vh] flex-col items-center justify-center overflow-hidden border-b bg-background px-6 pt-32 pb-16 text-center lg:px-8 lg:pt-40 lg:pb-32">
+          {/* Background Effects */}
+          <div className="absolute inset-0 -z-10 h-full w-full bg-background">
+            <div className="absolute h-full w-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)]" />
+            <div className="absolute top-0 left-0 right-0 h-[500px] w-full bg-gradient-to-br from-primary/20 via-primary/5 to-transparent opacity-40 blur-3xl dark:opacity-20" />
+            <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-blue-500/10 blur-[100px]" />
+          </div>
 
-          <div className="fade-in slide-in-from-bottom-4 animate-in duration-700">
-            <Badge variant="outline" className="mb-4 border-primary/20 bg-primary/5 text-primary">
-              v1.0 is now live
-            </Badge>
-            <h1 className="mb-6 max-w-4xl font-extrabold text-4xl text-foreground tracking-tight sm:text-6xl">
+          <div className="fade-in slide-in-from-bottom-4 relative z-10 max-w-5xl animate-in duration-700">
+            <div className="mb-8 flex justify-center">
+              <Badge
+                variant="outline"
+                className="rounded-full border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary transition-colors hover:bg-primary/10"
+              >
+                <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-primary" />
+                v1.0 is now live
+              </Badge>
+            </div>
+
+            <h1 className="mb-8 font-extrabold text-5xl text-foreground tracking-tight sm:text-7xl">
               Developer Tools,{' '}
-              <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary via-blue-600 to-primary bg-clip-text text-transparent">
                 Simplified
               </span>
               .
             </h1>
-            <p className="mb-10 max-w-2xl text-muted-foreground text-xl leading-relaxed">
-              A collection of secure, client-side utilities for your daily development workflow. No
-              server-side processing—your data never leaves your browser.
-            </p>
+
+            <div className="mx-auto mb-12 max-w-2xl space-y-4">
+              <p className="text-lg text-muted-foreground sm:text-xl">
+                A collection of secure, client-side utilities for your daily development workflow.
+              </p>
+              <div className="flex justify-center">
+                <span className="inline-flex items-center rounded-full bg-muted/50 px-4 py-1.5 text-sm text-foreground/80 backdrop-blur-sm">
+                  <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
+                  No server-side processing—your data never leaves your browser.
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div className="fade-in slide-in-from-bottom-8 relative mx-auto w-full max-w-lg animate-in fill-mode-backwards delay-200 duration-1000">
-            <Input
-              type="text"
-              placeholder="Search for tools (e.g., JSON, Base64, Format)..."
-              className="h-14 rounded-full border-muted-foreground/20 bg-background/50 pl-11 text-lg shadow-lg backdrop-blur-sm transition-all hover:border-primary/30 hover:shadow-xl focus-visible:ring-primary/30"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <div className="fade-in slide-in-from-bottom-8 relative z-10 mx-auto w-full max-w-xl animate-in fill-mode-backwards delay-200 duration-1000">
+            <div className="group relative">
+              <div className="absolute -inset-0.5 animate-pulse rounded-full bg-gradient-to-r from-primary/50 to-blue-600/50 opacity-20 blur transition duration-500 group-hover:opacity-50" />
+              <div className="relative flex items-center">
+                <Search className="absolute left-4 h-5 w-5 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Input
+                  type="text"
+                  placeholder="Search for tools (e.g., JSON, Base64, Format)..."
+                  className="h-14 w-full rounded-full border-muted-foreground/20 bg-background/80 pl-12 pr-4 text-lg shadow-sm backdrop-blur-xl transition-all focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/50"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
           </div>
         </section>
 
