@@ -24,17 +24,12 @@ export interface ToolInfoSectionProps {
     difficulty?: string;
     status?: string;
   };
-  related?: Array<{
-    name: string;
-    description: string;
-    href: string;
-    icon?: React.ReactNode;
-  }>;
+
   tags?: string[];
 }
 
-export function ToolInfoSection({ features, info, related, tags }: ToolInfoSectionProps) {
-  if (!features && !info && !related) return null;
+export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) {
+  if (!features && !info) return null;
 
   return (
     <div className="space-y-8 mt-8">
@@ -45,9 +40,7 @@ export function ToolInfoSection({ features, info, related, tags }: ToolInfoSecti
         </div>
         <div>
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white">About this tool</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Features, specifications, and related tools
-          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Features and specifications</p>
         </div>
       </div>
 
@@ -165,47 +158,6 @@ export function ToolInfoSection({ features, info, related, tags }: ToolInfoSecti
                     </div>
                   </div>
                 )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Related Tools Card */}
-        {related && related.length > 0 && (
-          <Card className="group overflow-hidden rounded-2xl border-slate-200/80 bg-gradient-to-b from-white to-slate-50/50 shadow-sm transition-all hover:shadow-md dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/80">
-            <CardHeader className="pb-4">
-              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400">
-                <ExternalLink className="h-6 w-6" />
-              </div>
-              <CardTitle className="text-lg text-slate-900 dark:text-white">
-                Related Tools
-              </CardTitle>
-              <CardDescription className="text-slate-500 dark:text-slate-400">
-                Explore similar utilities
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {related.map((tool, index) => (
-                  <Link
-                    key={index}
-                    href={tool.href}
-                    className="group/item flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white p-3 transition-all hover:border-blue-500/50 hover:bg-blue-50/50 hover:shadow-sm dark:border-slate-700 dark:bg-slate-800/50 dark:hover:border-blue-500/50 dark:hover:bg-blue-950/30"
-                  >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/10 to-indigo-500/10 text-blue-600 transition-colors group-hover/item:from-blue-500 group-hover/item:to-indigo-500 group-hover/item:text-white dark:text-blue-400">
-                      {tool.icon || <Layers className="h-5 w-5" />}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="truncate font-medium text-slate-900 dark:text-white">
-                        {tool.name}
-                      </h4>
-                      <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                        {tool.description}
-                      </p>
-                    </div>
-                    <ExternalLink className="h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover/item:text-blue-500" />
-                  </Link>
-                ))}
               </div>
             </CardContent>
           </Card>

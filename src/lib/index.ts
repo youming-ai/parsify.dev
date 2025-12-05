@@ -163,7 +163,7 @@ export * from './json/codegen-utils';
 // Registry utilities
 export * from './tool-registry';
 export * from './tool-event-bus';
-export * from './tool-state-manager';
+// export * from './tool-state-manager'; // Removed - migrated to Zustand stores in src/store
 export * from './tool-execution';
 export type {
   BaseTool,

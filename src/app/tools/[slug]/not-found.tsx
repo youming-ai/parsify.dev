@@ -23,7 +23,7 @@ export default function ToolNotFound() {
   const popularTools = getPopularTools();
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
       {/* Breadcrumb Navigation */}
       <nav className="mb-6 flex items-center space-x-2 text-gray-600 text-sm">
         <Link href="/tools" className="hover:text-gray-900">

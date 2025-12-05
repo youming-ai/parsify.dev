@@ -1,7 +1,6 @@
 'use client';
 
 import { HashGenerator } from '@/components/tools/data/hash-generator';
-import { ToolInfoSection } from '@/components/tools/tool-info-section';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Key, Lock } from 'lucide-react';
 
@@ -11,43 +10,6 @@ export default function HashGeneratorPage() {
       {/* Tool Component */}
       <div className="space-y-6">
         <HashGenerator />
-
-        {/* Tool Info Section */}
-        <ToolInfoSection
-          features={[
-            'Multiple hash algorithms (MD5, SHA-1, SHA-256, SHA-384, SHA-512)',
-            'Support for both text and file input',
-            'Batch processing - hash multiple files at once',
-            'One-click hash copying to clipboard',
-            'Uppercase/lowercase output options',
-          ]}
-          info={{
-            category: 'Security Tools',
-            processing: 'Client Side',
-            security: 'Local Only',
-            difficulty: 'Beginner',
-          }}
-          related={[
-            {
-              name: 'Password Generator',
-              description: 'Generate secure passwords with customizable options',
-              href: '/tools/security/password-generator',
-              icon: <Key className="h-5 w-5" />,
-            },
-            {
-              name: 'AES Encryption',
-              description: 'Encrypt and decrypt data using AES algorithm',
-              href: '/tools/security/aes-encryption',
-              icon: <Lock className="h-5 w-5" />,
-            },
-            {
-              name: 'Base64 Converter',
-              description: 'Encode and decode Base64 strings',
-              href: '/tools/utilities/base64-converter',
-              icon: <FileText className="h-5 w-5" />,
-            },
-          ]}
-        />
 
         {/* Use Cases */}
         <Card>

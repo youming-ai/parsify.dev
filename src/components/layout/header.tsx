@@ -1,11 +1,22 @@
 'use client';
 import Link from 'next/link';
+import { Github, Mail, Twitter } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';
+
+const socialLinks = [
+  {
+    name: 'GitHub',
+    href: 'https://github.com/youming-ai/parsify.dev',
+    icon: Github,
+  },
+  { name: 'Twitter', href: 'https://x.com/um1ng_x', icon: Twitter },
+  { name: 'Email', href: 'mailto:ikashue@gmail.com', icon: Mail },
+];
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/70 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
+    <header className="fixed top-6 left-1/2 z-50 w-full max-w-[95%] -translate-x-1/2 rounded-full border bg-background/70 backdrop-blur-xl shadow-sm md:max-w-3xl supports-[backdrop-filter]:bg-background/60">
+      <div className="mx-auto flex h-14 items-center justify-between px-6">
         {/* Logo */}
         <Link
           href="/"
@@ -31,7 +42,21 @@ export function Header() {
         </Link>
 
         {/* Right Side Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 border-r pr-4">
+            {socialLinks.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="text-muted-foreground hover:text-foreground hover:scale-110 transition-all duration-200"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span className="sr-only">{item.name}</span>
+                <item.icon className="h-4 w-4" />
+              </Link>
+            ))}
+          </div>
           <ThemeToggle />
         </div>
       </div>

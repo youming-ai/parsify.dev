@@ -128,7 +128,7 @@ export default function Home() {
     <MainLayout>
       <div className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="relative flex flex-col items-center overflow-hidden border-b bg-gradient-to-b from-primary/5 via-background to-background px-6 py-16 text-center lg:px-8 lg:py-24">
+        <section className="relative flex flex-col items-center overflow-hidden border-b bg-gradient-to-b from-primary/5 via-background to-background px-6 pt-32 pb-16 text-center lg:px-8 lg:pt-40 lg:pb-24">
           <div className="-z-10 absolute inset-0 h-full w-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-white [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] dark:bg-black" />
 
           <div className="fade-in slide-in-from-bottom-4 animate-in duration-700">

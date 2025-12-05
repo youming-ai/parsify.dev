@@ -1,4 +1,3 @@
-import { ToolInfoSection } from '@/components/tools/tool-info-section';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Clock, Hash, Shield } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -30,43 +29,6 @@ export default function UnixConverterPage() {
       </Alert>
 
       <TimestampConverterClient />
-
-      <ToolInfoSection
-        features={[
-          'Unix timestamps (seconds since epoch) support',
-          'Millisecond timestamp conversion',
-          'Multiple timezone support with auto-detection',
-          'Real-time current timestamp display',
-          'ISO 8601 and human-readable date formats',
-          'Relative time calculations (e.g., "2 hours ago")',
-        ]}
-        info={{
-          category: 'Time Tools',
-          processing: 'Client Side',
-          security: 'Local Only',
-          difficulty: 'Beginner',
-        }}
-        related={[
-          {
-            name: 'Cron Expression Parser',
-            description: 'Parse and understand cron expressions with human-readable descriptions',
-            href: '/tools/utilities/cron-parser',
-            icon: <Clock className="h-5 w-5" />,
-          },
-          {
-            name: 'Number Base Converter',
-            description: 'Convert numbers between binary, octal, decimal, and hexadecimal',
-            href: '/tools/converters/number-base',
-            icon: <Hash className="h-5 w-5" />,
-          },
-          {
-            name: 'Hash Generator',
-            description: 'Generate cryptographic hashes (MD5, SHA-1, SHA-256)',
-            href: '/tools/data/hash-generator',
-            icon: <Shield className="h-5 w-5" />,
-          },
-        ]}
-      />
     </div>
   );
 }

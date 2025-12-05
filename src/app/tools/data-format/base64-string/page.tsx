@@ -1,6 +1,5 @@
 'use client';
 
-import { ToolInfoSection } from '@/components/tools/tool-info-section';
 import { Base64Converter } from '@/components/tools/utilities/base64-converter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Hash, Link2 } from 'lucide-react';
@@ -11,43 +10,6 @@ export default function Base64ConverterPage() {
       {/* Tool Component */}
       <div className="space-y-6">
         <Base64Converter />
-
-        {/* Tool Info Section */}
-        <ToolInfoSection
-          features={[
-            'Text to Base64 encoding and decoding',
-            'File to Base64 conversion for images and documents',
-            'Batch processing for multiple files',
-            'Preview mode with download options',
-            'Unicode and special character support',
-          ]}
-          info={{
-            category: 'Encoding Tools',
-            processing: 'Client Side',
-            security: 'Local Only',
-            difficulty: 'Beginner',
-          }}
-          related={[
-            {
-              name: 'URL Encoder',
-              description: 'Encode and decode URLs and URI components',
-              href: '/tools/utilities/url-encoder',
-              icon: <Link2 className="h-5 w-5" />,
-            },
-            {
-              name: 'Hash Generator',
-              description: 'Generate cryptographic hashes for data verification',
-              href: '/tools/data/hash-generator',
-              icon: <Hash className="h-5 w-5" />,
-            },
-            {
-              name: 'Base64 Image Converter',
-              description: 'Convert images to Base64 strings and vice versa',
-              href: '/tools/image/base64',
-              icon: <FileText className="h-5 w-5" />,
-            },
-          ]}
-        />
 
         {/* How Base64 Works */}
         <Card>

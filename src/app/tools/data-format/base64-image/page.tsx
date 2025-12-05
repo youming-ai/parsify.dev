@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function Base64ImagePage() {
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
       <Base64ImageConverter />
     </div>
   );

@@ -210,7 +210,7 @@ ${html}
   ];
 
   return (
-    <div className="container mx-auto max-w-7xl p-6">
+    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">

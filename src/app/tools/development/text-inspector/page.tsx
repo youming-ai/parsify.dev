@@ -1,4 +1,3 @@
-import { ToolInfoSection } from '@/components/tools/tool-info-section';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlignLeft, CaseSensitive, FileText, Shield } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -30,43 +29,6 @@ export default function TextCounterPage() {
       </Alert>
 
       <TextCounterClient />
-
-      <ToolInfoSection
-        features={[
-          'Character count (with/without spaces)',
-          'Word count with intelligent detection',
-          'Line count and paragraph analysis',
-          'Reading time estimation',
-          'Most frequent words analysis',
-          'Readability score calculation',
-        ]}
-        info={{
-          category: 'Text Tools',
-          processing: 'Client Side',
-          security: 'Local Only',
-          difficulty: 'Beginner',
-        }}
-        related={[
-          {
-            name: 'Case Converter',
-            description: 'Convert text between different cases',
-            href: '/tools/text/case-converter',
-            icon: <CaseSensitive className="h-5 w-5" />,
-          },
-          {
-            name: 'Text Analyzer',
-            description: 'Analyze text for readability and sentiment',
-            href: '/tools/text/analyzer',
-            icon: <FileText className="h-5 w-5" />,
-          },
-          {
-            name: 'Text Encoding Converter',
-            description: 'Convert text between different encodings',
-            href: '/tools/text/encoding-converter',
-            icon: <AlignLeft className="h-5 w-5" />,
-          },
-        ]}
-      />
     </div>
   );
 }
