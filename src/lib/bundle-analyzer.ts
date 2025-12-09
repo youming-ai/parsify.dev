@@ -91,7 +91,7 @@ export async function analyzeBundle(): Promise<BundleAnalysis> {
         name: 'vendors',
         size: 800000,
         gzippedSize: 200000,
-        modules: ['lucide-react', '@radix-ui', '@uiw/react-codemirror'],
+        modules: ['lucide-react', '@radix-ui', '@monaco-editor/react'],
         isLazy: false,
       },
       {
@@ -104,9 +104,9 @@ export async function analyzeBundle(): Promise<BundleAnalysis> {
     ],
     dependencies: [
       {
-        name: '@uiw/react-codemirror',
-        version: '4.25.3',
-        size: 350000,
+        name: '@monaco-editor/react',
+        version: '4.6.0',
+        size: 450000,
         gzippedSize: 120000,
         isUsed: true,
         importCount: 8,

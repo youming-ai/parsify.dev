@@ -1,12 +1,13 @@
 'use client';
 
-import { CheckCircle, Copy, FileText, XCircle, Zap } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { CheckCircle, Copy, FileText, Quote, XCircle, Zap } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { cn } from '../../../lib/utils';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { CodeEditor } from '../code/codemirror-editor';
+import { isSerializedJsonString, parseSerializedJson } from './json-utils';
 
 interface ValidationError {
   line: number;
@@ -44,6 +45,16 @@ export const JsonSimpleEditor: React.FC<JsonSimpleEditorProps> = ({
 }) => {
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [isValid, setIsValid] = useState(true);
+  const [isSerialized, setIsSerialized] = useState(false);
+
+  // Check if content looks like serialized JSON
+  useEffect(() => {
+    try {
+      setIsSerialized(isSerializedJsonString(value));
+    } catch {
+      setIsSerialized(false);
+    }
+  }, [value]);
 
   // Validate JSON
   const _validateJson = useCallback(
@@ -125,6 +136,16 @@ export const JsonSimpleEditor: React.FC<JsonSimpleEditorProps> = ({
     onCopy?.();
   }, [value, onCopy]);
 
+  // Unescape serialized JSON
+  const unescapeJson = useCallback(() => {
+    try {
+      const parsed = parseSerializedJson(value);
+      onChange(parsed);
+    } catch (error) {
+      console.error('Cannot unescape JSON:', error);
+    }
+  }, [value, onChange]);
+
   return (
     <div className={cn('w-full', className)}>
       <Card>
@@ -163,6 +184,19 @@ export const JsonSimpleEditor: React.FC<JsonSimpleEditorProps> = ({
                 <Zap className="mr-1 h-4 w-4" />
                 Minify
               </Button>
+
+              {isSerialized && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={unescapeJson}
+                  className="border-amber-500/50 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400"
+                  title="Detected serialized JSON string. Click to unescape and format."
+                >
+                  <Quote className="mr-1 h-4 w-4" />
+                  Unescape
+                </Button>
+              )}
 
               <Button variant="outline" size="sm" onClick={copyJson}>
                 <Copy className="mr-1 h-4 w-4" />

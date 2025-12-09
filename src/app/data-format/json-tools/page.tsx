@@ -1,6 +1,4 @@
-import { ToolPageLayout } from '@/components/layout/tool-page-layout';
 import { JsonToolComplete } from '@/components/tools/json/json-tool-complete';
-import { FileJson } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -26,12 +24,8 @@ export const metadata: Metadata = {
 
 export default function JsonFormatterPage() {
   return (
-    <ToolPageLayout
-      title="JSON Formatter"
-      description="Format, beautify, and validate JSON data with customizable indentation and sorting options"
-      icon={<FileJson className="h-8 w-8" />}
-    >
+    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
       <JsonToolComplete showHeader={false} />
-    </ToolPageLayout>
+    </div>
   );
 }

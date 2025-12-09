@@ -25,32 +25,32 @@ const toolCategories = [
     items: [
       {
         name: 'JSON Formatter',
-        href: '/tools/json/format',
+        href: '/json/format',
         description: 'Format and prettify JSON data',
       },
       {
         name: 'JSON Validator',
-        href: '/tools/json/validate',
+        href: '/json/validate',
         description: 'Validate JSON syntax',
       },
       {
         name: 'JSON Converter',
-        href: '/tools/json/convert',
+        href: '/json/convert',
         description: 'Convert JSON to other formats',
       },
       {
         name: 'JSON Minifier',
-        href: '/tools/json/minify',
+        href: '/json/minify',
         description: 'Compress JSON data',
       },
       {
         name: 'JSON to CSV',
-        href: '/tools/json/to-csv',
+        href: '/json/to-csv',
         description: 'Convert JSON to CSV',
       },
       {
         name: 'CSV to JSON',
-        href: '/tools/json/from-csv',
+        href: '/json/from-csv',
         description: 'Convert CSV to JSON',
       },
     ],
@@ -61,17 +61,17 @@ const toolCategories = [
     items: [
       {
         name: 'Code Formatter',
-        href: '/tools/code/format',
+        href: '/code/format',
         description: 'Format code in multiple languages',
       },
       {
         name: 'Code Executor',
-        href: '/tools/code/execute',
+        href: '/code/execute',
         description: 'Run JavaScript and Python code',
       },
       {
         name: 'Code Minifier',
-        href: '/tools/code/minify',
+        href: '/code/minify',
         description: 'Minify JavaScript/CSS code',
       },
     ],
@@ -82,27 +82,27 @@ const toolCategories = [
     items: [
       {
         name: 'Base64 Encoder',
-        href: '/tools/text/base64',
+        href: '/text/base64',
         description: 'Encode/decode Base64',
       },
       {
         name: 'URL Encoder',
-        href: '/tools/text/url',
+        href: '/text/url',
         description: 'Encode/decode URLs',
       },
       {
         name: 'Hash Generator',
-        href: '/tools/text/hash',
+        href: '/text/hash',
         description: 'Generate MD5, SHA hashes',
       },
       {
         name: 'UUID Generator',
-        href: '/tools/text/uuid',
+        href: '/text/uuid',
         description: 'Generate UUIDs',
       },
       {
         name: 'Timestamp Converter',
-        href: '/tools/text/timestamp',
+        href: '/text/timestamp',
         description: 'Convert Unix timestamps',
       },
     ],
@@ -110,8 +110,8 @@ const toolCategories = [
 ];
 
 const quickActions = [
-  { name: 'Recent Tools', href: '/tools/recent', icon: Clock },
-  { name: 'Favorites', href: '/tools/favorites', icon: Star },
+  { name: 'Recent Tools', href: '/recent', icon: Clock },
+  { name: 'Favorites', href: '/favorites', icon: Star },
 ];
 
 interface SidebarProps {

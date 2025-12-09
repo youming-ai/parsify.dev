@@ -31,9 +31,10 @@ A comprehensive online developer tools platform focused on JSON processing, code
 - **UUID Generator** - Generate various UUID versions
 
 ### 🎨 User Experience
-- **Dark/Light Mode** - Developer-friendly theme switching
+- **Dual Theme Support** - Warm cream light mode (Cursor-inspired) + Modern Zinc dark mode
 - **Responsive Design** - Works seamlessly on desktop and mobile devices
-- **Real-time Collaboration** - Share tools with team members
+- **Glassmorphism UI** - Floating headers with backdrop blur effects
+- **Micro-animations** - Smooth transitions and hover effects
 - **Search & Navigation** - Quick tool discovery with intelligent search
 
 ## 🏗️ Architecture Overview
@@ -43,8 +44,9 @@ A comprehensive online developer tools platform focused on JSON processing, code
 **Frontend (Web App)**
 - **Framework**: Next.js 16 with App Router & Turbopack
 - **UI Library**: shadcn/ui + Tailwind CSS
-- **Code Editor**: Monaco Editor (VS Code editor)
-- **State Management**: Zustand + React hooks
+- **Theme**: Cursor-inspired warm light mode + Zinc dark mode
+- **Code Editor**: CodeMirror 6 with syntax highlighting
+- **State Management**: React hooks + Context
 - **Language**: TypeScript 5.0+
 
 **Infrastructure**
@@ -196,10 +198,9 @@ pnpm clean:build
 
 ## 📚 Documentation
 
+- **[Design System](docs/DESIGN_SYSTEM.md)** - Theme colors, typography, and component guidelines
 - **[Deployment Guide](docs/DEPLOYMENT.md)** - Complete deployment instructions
 - **[Analytics Guide](docs/ANALYTICS.md)** - Analytics setup and usage
-- **[JSON Tools](src/components/tools/json/README.md)** - JSON tools documentation
-- **[Code Tools](src/components/tools/code/README.md)** - Code tools documentation
 
 ## 🌐 Deployment
 
@@ -455,7 +456,7 @@ describe('JSON Formatter', () => {
 import { test, expect } from '@playwright/test'
 
 test('JSON formatting tool', async ({ page }) => {
-  await page.goto('/tools/json')
+  await page.goto('/data-format/json-tools')
   
   // Enter JSON
   await page.fill('[data-testid="json-input"]', '{"name":"John","age":30}')

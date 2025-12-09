@@ -1,4 +1,11 @@
-import { formatJSON, isValidJSON, minifyJSON, parseJSON } from '@/components/tools/json/json-utils';
+import {
+  formatJSON,
+  isSerializedJsonString,
+  isValidJSON,
+  minifyJSON,
+  parseJSON,
+  parseSerializedJson,
+} from '@/components/tools/json/json-utils';
 import { describe, expect, it } from 'vitest';
 
 describe('JSON Utils', () => {
@@ -75,6 +82,63 @@ describe('JSON Utils', () => {
       const input = 'invalid json';
       const result = minifyJSON(input);
       expect(result).toBe(input);
+    });
+  });
+
+  describe('isSerializedJsonString', () => {
+    it('should detect JSON string wrapped in quotes with escaped characters', () => {
+      // This is: "[{\"key\":\"value\"}]"
+      const input = '"[{\\"key\\":\\"value\\"}]"';
+      expect(isSerializedJsonString(input)).toBe(true);
+    });
+
+    it('should detect object JSON string wrapped in quotes', () => {
+      // This is: "{\"name\":\"test\"}"
+      const input = '"{\\"name\\":\\"test\\"}"';
+      expect(isSerializedJsonString(input)).toBe(true);
+    });
+
+    it('should return false for regular valid JSON', () => {
+      expect(isSerializedJsonString('{"key": "value"}')).toBe(false);
+      expect(isSerializedJsonString('[1, 2, 3]')).toBe(false);
+    });
+
+    it('should return false for a simple quoted string', () => {
+      expect(isSerializedJsonString('"hello world"')).toBe(false);
+    });
+  });
+
+  describe('parseSerializedJson', () => {
+    it('should parse and format a quoted escaped JSON array', () => {
+      // This is: "[{\"key\":\"value\"}]"
+      const input = '"[{\\"key\\":\\"value\\"}]"';
+      const result = parseSerializedJson(input);
+      expect(result).toContain('"key"');
+      expect(result).toContain('"value"');
+      expect(result).toContain('\n'); // Should be formatted
+    });
+
+    it('should parse and format a quoted escaped JSON object', () => {
+      // This is: "{\"name\":\"test\",\"count\":123}"
+      const input = '"{\\"name\\":\\"test\\",\\"count\\":123}"';
+      const result = parseSerializedJson(input);
+      const parsed = JSON.parse(result);
+      expect(parsed).toEqual({ name: 'test', count: 123 });
+    });
+
+    it('should handle multiple levels of escaping', () => {
+      // Double escaped JSON (JSON inside JSON string, then escaped again)
+      // Original: {"nested": "[{\"key\":\"value\"}]"}
+      // Which becomes: "{\"nested\": \"[{\\\"key\\\":\\\"value\\\"}]\"}"
+      const input = '"{\\"nested\\": \\"[{\\\\\\"key\\\\\\":\\\\\\"value\\\\\\"}]\\"}"';
+      const result = parseSerializedJson(input);
+      expect(result).toContain('"nested"');
+    });
+
+    it('should throw error for unparseable content', () => {
+      expect(() => parseSerializedJson('this is not json')).toThrow(
+        'Failed to parse serialized JSON'
+      );
     });
   });
 });

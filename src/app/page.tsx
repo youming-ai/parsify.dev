@@ -129,7 +129,7 @@ export default function Home() {
       <div className="min-h-screen bg-background">
         {/* Hero Section */}
         {/* Hero Section */}
-        <section className="relative flex min-h-[60vh] flex-col items-center justify-center overflow-hidden border-b bg-background px-6 pt-32 pb-16 text-center lg:px-8 lg:pt-40 lg:pb-32">
+        <section className="relative flex min-h-[60vh] flex-col items-center justify-center overflow-hidden bg-background px-6 pt-32 pb-16 text-center lg:px-8 lg:pt-40 lg:pb-32">
           {/* Background Effects */}
           <div className="absolute inset-0 -z-10 h-full w-full bg-background">
             <div className="absolute h-full w-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)]" />
@@ -138,16 +138,6 @@ export default function Home() {
           </div>
 
           <div className="fade-in slide-in-from-bottom-4 relative z-10 max-w-5xl animate-in duration-700">
-            <div className="mb-8 flex justify-center">
-              <Badge
-                variant="outline"
-                className="rounded-full border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary transition-colors hover:bg-primary/10"
-              >
-                <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-primary" />
-                v1.0 is now live
-              </Badge>
-            </div>
-
             <h1 className="mb-8 font-extrabold text-5xl text-foreground tracking-tight sm:text-7xl">
               Developer Tools,{' '}
               <span className="bg-gradient-to-r from-primary via-blue-600 to-primary bg-clip-text text-transparent">
@@ -156,15 +146,16 @@ export default function Home() {
               .
             </h1>
 
-            <div className="mx-auto mb-12 max-w-2xl space-y-4">
-              <p className="text-lg text-muted-foreground sm:text-xl">
-                A collection of secure, client-side utilities for your daily development workflow.
-              </p>
+            <div className="mx-auto mb-12 max-w-2xl space-y-6">
               <div className="flex justify-center">
-                <span className="inline-flex items-center rounded-full bg-muted/50 px-4 py-1.5 text-sm text-foreground/80 backdrop-blur-sm">
+                <Badge
+                  variant="outline"
+                  className="rounded-full border-primary/20 bg-primary/5 px-3 py-1.5 text-sm text-primary transition-colors hover:bg-primary/10"
+                >
                   <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
+                  <Shield className="mr-2 h-4 w-4" />
                   No server-side processing—your data never leaves your browser.
-                </span>
+                </Badge>
               </div>
             </div>
           </div>

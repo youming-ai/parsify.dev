@@ -14,12 +14,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 1.0,
     },
-    {
-      url: `${BASE_URL}/tools`,
-      lastModified: now,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
   ];
 
   // Tool pages - dynamically generated from tools data
@@ -44,7 +38,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const categoryPages: MetadataRoute.Sitemap = categories
     .filter((cat) => categorySlugMap[cat])
     .map((category) => ({
-      url: `${BASE_URL}/tools/${categorySlugMap[category]}`,
+      url: `${BASE_URL}/${categorySlugMap[category]}`,
       lastModified: now,
       changeFrequency: 'weekly' as const,
       priority: 0.7,

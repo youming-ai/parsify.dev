@@ -110,7 +110,7 @@ All tools follow a standardized registration pattern through the `tools-data.ts`
   id: 'json-tools',
   name: 'JSON Tools',
   category: 'Data Format & Conversion',
-  href: '/tools/data-format/json-tools',
+  href: '/data-format/json-tools',
   processingType: 'client-side', // 'client-side' | 'hybrid' | 'server-side'
   security: 'local-only',        // 'local-only' | 'network-required' | 'secure-sandbox'
   features: ['Dual-pane JSON Viewer', 'Search & Filter', 'Validation'],
@@ -123,10 +123,10 @@ All tools follow a standardized registration pattern through the `tools-data.ts`
 
 #### Component Architecture
 Tools follow a consistent component structure:
-- **Page Component**: Route handler in `src/app/tools/[category]/[tool]/page.tsx`
+- **Page Component**: Route handler in `src/app/[category]/[tool]/page.tsx`
 - **Tool Component**: Main logic in `src/components/tools/[category]/[tool].tsx`
 - **Shared Components**: Reusable UI components in `src/components/ui/`
-- **Dynamic Routing**: Tools use dynamic routing via `src/app/tools/[slug]/page.tsx`
+- **Dynamic Routing**: Tools use dynamic routing via `src/app/[slug]/page.tsx`
 
 #### WASM Execution System
 Code execution is managed through a sophisticated WASM runtime system:
@@ -173,7 +173,7 @@ All tools implement consistent interfaces defined in `src/components/tools/tool-
 
 #### Creating New Tools
 1. **Add Tool Definition**: Update `src/data/tools-data.ts` with proper metadata
-2. **Create Page Route**: `src/app/tools/[category]/[tool]/page.tsx`
+2. **Create Page Route**: `src/app/[category]/[tool]/page.tsx`
 3. **Implement Tool Component**: `src/components/tools/[category]/[tool].tsx`
 4. **Follow Component Pattern**: Use standardized tool interfaces and error handling
 5. **Update Dynamic Routing**: Ensure tool is accessible via `[slug]/page.tsx`
@@ -245,7 +245,7 @@ Key environment variables (see `.env.local.example`):
 
 ### Adding a New Tool
 1. Add to `toolsData` in `src/data/tools-data.ts` with proper categorization
-2. Create `src/app/tools/[category]/[tool-name]/page.tsx`
+2. Create `src/app/[category]/[tool-name]/page.tsx`
 3. Create `src/components/tools/[category]/[tool-name].tsx`
 4. Follow existing patterns and use standardized interfaces
 5. Ensure tool is accessible through dynamic routing system

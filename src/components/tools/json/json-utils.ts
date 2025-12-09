@@ -5,6 +5,43 @@ import type {
   TreeNode,
 } from './json-types';
 
+// Simple utility functions for basic JSON operations
+export function isValidJSON(content: string): boolean {
+  if (!content || !content.trim()) return false;
+  try {
+    JSON.parse(content);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function parseJSON<T = unknown>(content: string): T | null {
+  try {
+    return JSON.parse(content) as T;
+  } catch {
+    return null;
+  }
+}
+
+export function formatJSON(content: string, indent = 2): string {
+  try {
+    const parsed = JSON.parse(content);
+    return JSON.stringify(parsed, null, indent);
+  } catch {
+    return content;
+  }
+}
+
+export function minifyJSON(content: string): string {
+  try {
+    const parsed = JSON.parse(content);
+    return JSON.stringify(parsed);
+  } catch {
+    return content;
+  }
+}
+
 export function validateJson(content: string): JsonValidationResult {
   const errors: JsonValidationError[] = [];
   let isValid = true;
@@ -305,4 +342,113 @@ export function downloadFile(content: string, filename: string, contentType = 't
   link.click();
   document.body.removeChild(link);
   window.URL.revokeObjectURL(url);
+}
+
+/**
+ * Check if a string is a serialized/escaped JSON string
+ * This detects patterns like: "[{\"key\":\"value\"}]" or "{\"key\":\"value\"}"
+ * where the JSON has been wrapped in quotes and escaped
+ */
+export function isSerializedJsonString(content: string): boolean {
+  const trimmed = content.trim();
+
+  // Check if the string starts and ends with quotes
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    // Check if it contains escaped characters typical of serialized JSON
+    if (trimmed.includes('\\"') || trimmed.includes("\\'")) {
+      // Try to parse as a JSON string value first
+      try {
+        const unescaped = JSON.parse(trimmed);
+        // If the parsed result is a string that looks like JSON, it's serialized
+        if (typeof unescaped === 'string') {
+          const innerTrimmed = unescaped.trim();
+          return (
+            (innerTrimmed.startsWith('{') && innerTrimmed.endsWith('}')) ||
+            (innerTrimmed.startsWith('[') && innerTrimmed.endsWith(']'))
+          );
+        }
+      } catch {
+        // Not valid JSON string, fall through
+      }
+    }
+  }
+
+  // Also check for common serialization patterns without outer quotes
+  // e.g., directly escaped strings like: [{\"key\":\"value\"}]
+  if (
+    (trimmed.includes('\\"') || trimmed.includes('\\{') || trimmed.includes('\\[')) &&
+    (trimmed.startsWith('[') ||
+      trimmed.startsWith('{') ||
+      trimmed.startsWith('\\[') ||
+      trimmed.startsWith('\\{'))
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Parse a serialized/escaped JSON string and return the formatted JSON
+ * Handles multiple levels of escaping if necessary
+ */
+export function parseSerializedJson(content: string): string {
+  let result = content.trim();
+  let maxIterations = 5; // Prevent infinite loops for malformed input
+
+  while (maxIterations > 0) {
+    maxIterations--;
+
+    // Case 1: String wrapped in quotes (e.g., "[{\"key\":\"value\"}]")
+    if (
+      (result.startsWith('"') && result.endsWith('"')) ||
+      (result.startsWith("'") && result.endsWith("'"))
+    ) {
+      try {
+        const parsed = JSON.parse(result);
+        if (typeof parsed === 'string') {
+          result = parsed;
+          continue; // Check if we need to unescape again
+        }
+        // If parsed is an object/array, we're done - format it
+        return JSON.stringify(parsed, null, 2);
+      } catch {
+        // Not a valid JSON string, try other methods
+      }
+    }
+
+    // Case 2: Contains escaped characters but no outer quotes
+    // This handles cases like: [{\"key\":\"value\"}]
+    if (result.includes('\\"') || result.includes('\\\\')) {
+      try {
+        // Try to unescape manually and parse
+        const unescaped = result
+          .replace(/\\"/g, '"')
+          .replace(/\\\\/g, '\\')
+          .replace(/\\n/g, '\n')
+          .replace(/\\r/g, '\r')
+          .replace(/\\t/g, '\t');
+
+        const parsed = JSON.parse(unescaped);
+        return JSON.stringify(parsed, null, 2);
+      } catch {
+        // Failed to parse, return what we have
+      }
+    }
+
+    // Case 3: Already valid JSON, just parse and format
+    try {
+      const parsed = JSON.parse(result);
+      return JSON.stringify(parsed, null, 2);
+    } catch {
+      // Not valid JSON
+    }
+
+    break;
+  }
+
+  throw new Error('Failed to parse serialized JSON. Please check the input format.');
 }

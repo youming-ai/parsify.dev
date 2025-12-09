@@ -24,6 +24,6 @@ export default async function ToolPage({ params }: ToolPageProps) {
   }
 
   // Redirect to the actual tool page
-  // All 28 tools now have their own dedicated pages in /tools/{category}/{tool-id}
+  // All 28 tools now have their own dedicated pages in /{category}/{tool-id}
   redirect(tool.href);
 }

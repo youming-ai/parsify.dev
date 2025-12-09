@@ -652,3 +652,16 @@ export const searchTemplates = (query: string, language?: string): CodeTemplate[
     return matchesQuery && matchesLanguage;
   });
 };
+
+// Helper functions for Monaco language selector
+export const supportedLanguages = Object.keys(LANGUAGE_CONFIGS);
+
+export const getLanguageDisplayName = (language: string): string => {
+  const config = LANGUAGE_CONFIGS[language];
+  return config ? config.name : language;
+};
+
+export const getLanguageExtensions = (language: string): string[] => {
+  const config = LANGUAGE_CONFIGS[language];
+  return config ? config.extensions : [];
+};
