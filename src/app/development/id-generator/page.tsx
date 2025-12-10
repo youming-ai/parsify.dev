@@ -12,7 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Check, ClipboardCopy, Fingerprint, RefreshCw, Trash2 } from 'lucide-react';
+import {
+  Check, ClipboardCopy, Fingerprint, RefreshCw, Trash2,
+} from 'lucide-react';
+import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
 import { useCallback, useState } from 'react';
 
 type IdType = 'uuid-v4' | 'uuid-v1' | 'uuid-v7' | 'ulid' | 'nanoid' | 'ksuid';
@@ -193,7 +196,13 @@ export default function IDGeneratorPage() {
 
   return (
     <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <Card>
+      <PixelToolHeader
+        title="ID GENERATOR"
+        description="Generate UUIDs, ULIDs, Nano IDs, and more unique identifiers."
+        category="Development"
+        icon={<Fingerprint className="h-8 w-8" />}
+      />
+      <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

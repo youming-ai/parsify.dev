@@ -49,5 +49,5 @@ export async function generateMetadata({ params }: ToolLayoutProps): Promise<Met
 }
 
 export default function ToolLayout({ children }: ToolLayoutProps) {
-  return <ToolsLayoutComponent showSidebar={false}>{children}</ToolsLayoutComponent>;
+  return <ToolsLayoutComponent>{children}</ToolsLayoutComponent>;
 }

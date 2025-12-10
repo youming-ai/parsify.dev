@@ -21,9 +21,18 @@ export const metadata: Metadata = {
   },
 };
 
+import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
+import { Palette } from 'lucide-react';
+
 export default function ColorConverterPage() {
   return (
     <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
+      <PixelToolHeader
+        title="COLOR CONVERTER"
+        description="Convert between HEX, RGB, HSL, CMYK, and OKLCH color formats. Generate color harmonies and check contrast."
+        category="Utility"
+        icon={<Palette className="h-8 w-8" />}
+      />
       <ColorConverter />
     </div>
   );

@@ -1,17 +1,26 @@
 'use client';
 
 import { URLEncoder } from '@/components/tools/utilities/url-encoder';
+import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Link } from 'lucide-react';
 
 export default function URLEncoderPage() {
   return (
     <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
+      <PixelToolHeader
+        title="URL ENCODER/DECODER"
+        description="Encode or decode URLs to handle special characters safely. Supports full URL, component, and path encoding modes."
+        category="Network & Web"
+        icon={<Link className="h-8 w-8" />}
+      />
+
       {/* Tool Component */}
       <div className="space-y-6">
         <URLEncoder />
 
         {/* Encoding Types */}
-        <Card>
+        <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
           <CardHeader>
             <CardTitle className="text-lg">Encoding Types</CardTitle>
           </CardHeader>
@@ -50,7 +59,7 @@ export default function URLEncoderPage() {
         </Card>
 
         {/* Use Cases */}
-        <Card>
+        <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
           <CardHeader>
             <CardTitle className="text-lg">Common Use Cases</CardTitle>
           </CardHeader>

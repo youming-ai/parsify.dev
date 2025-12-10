@@ -5,67 +5,76 @@
 @layer base {
   :root {
     /* Warm Light Theme - Cursor Inspired */
-    --background: 60 14% 96%;   /* #F7F7F4 */
-    --foreground: 52 11% 13%;   /* #26251E */
-    
+    --background: 60 14% 96%;
+    /* #F7F7F4 */
+    --foreground: 52 11% 13%;
+    /* #26251E */
+
     --card: 0 0% 100%;
     --card-foreground: 52 11% 13%;
-    
+
     --popover: 0 0% 100%;
     --popover-foreground: 52 11% 13%;
-    
+
     --primary: 52 11% 13%;
     --primary-foreground: 60 14% 96%;
-    
-    --secondary: 70 11% 93%;    /* #EEEEEA */
+
+    --secondary: 70 11% 93%;
+    /* #EEEEEA */
     --secondary-foreground: 52 11% 13%;
-    
+
     --muted: 70 11% 93%;
-    --muted-foreground: 50 3% 44%; /* #73736C */
-    
+    --muted-foreground: 50 3% 44%;
+    /* #73736C */
+
     --accent: 70 11% 93%;
     --accent-foreground: 52 11% 13%;
-    
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 60 14% 96%;
-    
-    --border: 70 6% 88%;        /* #E2E2DE */
+
+    --border: 70 6% 88%;
+    /* #E2E2DE */
     --input: 70 6% 88%;
-    
+
     --ring: 52 11% 13%;
-    
-    --radius: 0.75rem;
+
+    --radius: 0rem;
   }
 
   .dark {
     /* Modern Zinc Dark Theme */
-    --background: 240 10% 3.9%; /* #09090B */
-    --foreground: 0 0% 98%;     /* #FAFAFA */
-    
+    --background: 240 10% 3.9%;
+    /* #09090B */
+    --foreground: 0 0% 98%;
+    /* #FAFAFA */
+
     --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
-    
+
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    
+
     --primary: 0 0% 98%;
     --primary-foreground: 240 5.9% 10%;
-    
-    --secondary: 240 3.7% 15.9%; /* #27272A */
+
+    --secondary: 240 3.7% 15.9%;
+    /* #27272A */
     --secondary-foreground: 0 0% 98%;
-    
+
     --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%; /* #A1A1AA */
-    
+    --muted-foreground: 240 5% 64.9%;
+    /* #A1A1AA */
+
     --accent: 240 3.7% 15.9%;
     --accent-foreground: 0 0% 98%;
-    
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    
+
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    
+
     --ring: 240 4.9% 83.9%;
   }
 }
@@ -74,7 +83,39 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Pixel Scrollbar */
+  ::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+    background: var(--background);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--foreground);
+    border: 3px solid var(--background);
+    /* Creates a 'floating' block effect */
+    border-radius: 0;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+    border-color: var(--background);
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+    /* Optional: Add a subtle texture to track */
+    background-image: radial-gradient(var(--foreground) 1px, transparent 0);
+    background-size: 4px 4px;
+    opacity: 0.1;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: var(--background);
   }
 }

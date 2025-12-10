@@ -263,7 +263,7 @@ const PasswordGenerator: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
@@ -489,7 +489,7 @@ const PasswordGenerator: React.FC = () => {
 
       {/* Password History */}
       {passwordHistory.length > 0 && (
-        <Card>
+        <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />

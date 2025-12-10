@@ -1,5 +1,5 @@
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield } from 'lucide-react';
+import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
+import { FileText } from 'lucide-react';
 import type { Metadata } from 'next';
 import TextCounterClient from './client';
 
@@ -25,13 +25,18 @@ export const metadata: Metadata = {
 export default function TextCounterPage() {
   return (
     <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <Alert className="mb-6">
-        <Shield className="h-4 w-4" />
-        <AlertDescription>
-          <strong>Privacy Notice:</strong> Text analysis is performed entirely in your browser. Your
-          text never leaves your device.
-        </AlertDescription>
-      </Alert>
+      <PixelToolHeader
+        title="TEXT INSPECTOR"
+        description="Count characters, words, lines, sentences using detailed analysis. Includes reading time calculation."
+        category="Development"
+        icon={<FileText className="h-8 w-8" />}
+      />
+
+      <div className="mb-8 border-l-4 border-yellow-500 bg-yellow-100 p-4 font-mono text-sm text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200">
+        <strong className="uppercase">[ Privacy Notice ]</strong>
+        <br />
+        Text analysis is performed entirely in your browser. Your text never leaves your device.
+      </div>
 
       <TextCounterClient />
     </div>

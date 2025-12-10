@@ -26,6 +26,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
 
 const SAMPLE_MARKDOWN = `# Welcome to Markdown Editor
 
@@ -211,29 +212,17 @@ ${html}
 
   return (
     <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 text-white">
-                <FileText className="h-5 w-5" />
-              </div>
-              <div>
-                <CardTitle>Markdown Editor</CardTitle>
-                <CardDescription>
-                  Edit and preview Markdown with GitHub Flavored Markdown support
-                </CardDescription>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">GFM</Badge>
-              <Badge variant="outline">Offline</Badge>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <PixelToolHeader
+        title="MARKDOWN EDITOR"
+        description="Edit and preview Markdown with GitHub Flavored Markdown support. Offline-ready and secure."
+        category="Data Format"
+        icon={<FileText className="h-8 w-8" />}
+      />
+
+      <div className="border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-card dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
+        <div className="space-y-4 p-4">
           {/* Toolbar */}
-          <div className="flex flex-wrap items-center gap-1 rounded-lg border bg-slate-50 p-2 dark:bg-slate-800">
+          <div className="flex flex-wrap items-center gap-1 border-2 border-foreground/10 bg-muted/30 p-2">
             {toolbarButtons.map((btn, i) => (
               <Button
                 key={i}
@@ -241,21 +230,39 @@ ${html}
                 size="sm"
                 onClick={btn.action}
                 title={btn.title}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 hover:bg-primary/20 hover:text-primary rounded-none"
               >
                 <btn.icon className="h-4 w-4" />
               </Button>
             ))}
-            <div className="mx-2 h-6 w-px bg-slate-300 dark:bg-slate-600" />
-            <Button variant="ghost" size="sm" onClick={handlePaste} title="Paste">
+            <div className="mx-2 h-6 w-px bg-foreground/20" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handlePaste}
+              title="Paste"
+              className="rounded-none hover:bg-primary/20 hover:text-primary"
+            >
               <ClipboardCopy className="mr-1 h-4 w-4" />
               Paste
             </Button>
-            <Button variant="ghost" size="sm" onClick={handleSample} title="Sample">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSample}
+              title="Sample"
+              className="rounded-none hover:bg-primary/20 hover:text-primary"
+            >
               <FileText className="mr-1 h-4 w-4" />
               Sample
             </Button>
-            <Button variant="ghost" size="sm" onClick={handleCopy} title="Copy">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCopy}
+              title="Copy"
+              className="rounded-none hover:bg-primary/20 hover:text-primary"
+            >
               {copied ? (
                 <Check className="mr-1 h-4 w-4" />
               ) : (
@@ -263,16 +270,32 @@ ${html}
               )}
               {copied ? 'Copied!' : 'Copy'}
             </Button>
-            <Button variant="ghost" size="sm" onClick={handleClear} title="Clear">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClear}
+              title="Clear"
+              className="rounded-none hover:bg-primary/20 hover:text-primary"
+            >
               <Trash2 className="mr-1 h-4 w-4" />
               Clear
             </Button>
             <div className="flex-1" />
-            <Button variant="ghost" size="sm" onClick={() => setShowPreview(!showPreview)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowPreview(!showPreview)}
+              className="rounded-none hover:bg-primary/20 hover:text-primary"
+            >
               {showPreview ? <EyeOff className="mr-1 h-4 w-4" /> : <Eye className="mr-1 h-4 w-4" />}
               {showPreview ? 'Hide Preview' : 'Show Preview'}
             </Button>
-            <Button variant="outline" size="sm" onClick={handleExportHTML}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportHTML}
+              className="rounded-none border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+            >
               <Download className="mr-1 h-4 w-4" />
               Export HTML
             </Button>
@@ -282,25 +305,25 @@ ${html}
           <div className={`grid gap-4 ${showPreview ? 'lg:grid-cols-2' : 'grid-cols-1'}`}>
             {/* Editor */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Markdown
+              <label className="text-xs font-bold font-mono text-muted-foreground uppercase">
+                Input_Source.md
               </label>
               <Textarea
                 value={markdown}
                 onChange={(e) => setMarkdown(e.target.value)}
                 placeholder="Enter your Markdown here..."
-                className="min-h-[500px] font-mono text-sm"
+                className="min-h-[500px] font-mono text-sm border-2 border-foreground/20 rounded-none focus-visible:ring-0 focus-visible:border-primary bg-background"
               />
             </div>
 
             {/* Preview */}
             {showPreview && (
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Preview
+                <label className="text-xs font-bold font-mono text-muted-foreground uppercase">
+                  Preview_Output.html
                 </label>
                 <div
-                  className="prose prose-slate dark:prose-invert min-h-[500px] max-w-none overflow-auto rounded-lg border bg-white p-4 dark:bg-slate-900"
+                  className="prose prose-slate dark:prose-invert min-h-[500px] max-w-none overflow-auto border-2 border-foreground/20 bg-background p-4 rounded-none"
                   dangerouslySetInnerHTML={{ __html: convertToHTML(markdown) }}
                 />
               </div>
@@ -308,13 +331,13 @@ ${html}
           </div>
 
           {/* Stats */}
-          <div className="flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400">
-            <span>{markdown.length} characters</span>
-            <span>{markdown.split(/\s+/).filter(Boolean).length} words</span>
-            <span>{markdown.split('\n').length} lines</span>
+          <div className="flex flex-wrap gap-4 text-xs font-mono text-muted-foreground border-t-2 border-foreground/10 pt-4">
+            <span>[ CHARS: {markdown.length} ]</span>
+            <span>[ WORDS: {markdown.split(/\s+/).filter(Boolean).length} ]</span>
+            <span>[ LINES: {markdown.split('\n').length} ]</span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

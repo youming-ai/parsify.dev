@@ -3,44 +3,10 @@
  * Lazy-loaded exports for image processing tools
  */
 
-export { ImageConverter } from './image-converter';
-export { ImageResizer } from './image-resizer';
 export { QRCodeReader } from './qr-code-reader';
 
 // Tool metadata for registry
 export const imageToolsMetadata = [
-  {
-    id: 'image-converter',
-    name: 'Image Converter',
-    description: 'Convert images between PNG, JPEG, WebP, and BMP formats with quality control',
-    category: 'image' as const,
-    version: '1.0.0',
-    bundleSize: 45000,
-    loadTime: 0,
-    dependencies: ['@/lib/image/format-converters', '@/lib/image/canvas-operations'],
-    tags: ['image', 'converter', 'format', 'png', 'jpeg', 'webp', 'bmp'],
-    enabled: true,
-    priority: 2,
-    icon: 'image',
-    author: 'Parsify Team',
-    license: 'MIT',
-  },
-  {
-    id: 'image-resizer',
-    name: 'Image Resizer',
-    description: 'Resize images with quality preservation and intelligent scaling',
-    category: 'image' as const,
-    version: '1.0.0',
-    bundleSize: 48000,
-    loadTime: 0,
-    dependencies: ['@/lib/image/canvas-operations', '@/lib/image/format-converters'],
-    tags: ['image', 'resize', 'scale', 'quality', 'dimensions'],
-    enabled: true,
-    priority: 2,
-    icon: 'maximize',
-    author: 'Parsify Team',
-    license: 'MIT',
-  },
   {
     id: 'qr-code-reader',
     name: 'QR Code Reader',

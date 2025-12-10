@@ -24,10 +24,12 @@ yarn-error.log*
 
 # Testing
 coverage/
-test-results/
-playwright-report/
 .nyc_output/
 junit.xml
+
+# Bundle Analyzer
+.next/analyze/
+analyze/
 
 # Editor settings
 .vscode/*

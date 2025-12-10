@@ -1,3 +1,4 @@
+import { Shield } from 'lucide-react';
 import { Press_Start_2P } from 'next/font/google';
 
 const pixelFont = Press_Start_2P({
@@ -7,7 +8,7 @@ const pixelFont = Press_Start_2P({
 
 export function Footer() {
   return (
-    <footer className="flex w-full justify-center py-6">
+    <footer className="flex w-full flex-col items-center gap-4 py-6">
       <div
         className={`${pixelFont.className} group flex items-center text-xs tracking-widest text-muted-foreground/50 hover:text-primary transition-colors duration-300 cursor-default select-none`}
       >

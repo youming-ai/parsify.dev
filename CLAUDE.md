@@ -13,20 +13,21 @@ pnpm dev                    # Start development server at http://localhost:3000
 pnpm build                  # Build for production
 pnpm start                  # Start production server
 pnpm preview                # Build and preview production locally
-pnpm deploy                 # Deploy to Vercel production
 
 # Code Quality
 pnpm lint                   # Run Biome linting checks
+pnpm lint:fix               # Run Biome linting with auto-fix
 pnpm format                 # Format code with Biome (auto-fixes issues)
 pnpm type-check             # Run TypeScript type checking
 
 # Testing
 pnpm test                   # Run Vitest unit tests
+pnpm test:watch             # Run Vitest in watch mode
 pnpm test:coverage          # Run tests with coverage report
-# Note: README mentions test:ui, test:e2e, test:integration, test:load, test:performance scripts but these are not defined in package.json
 
-# Maintenance
-pnpm clean                  # Remove node_modules, .next, dist
+# Analysis & Maintenance
+pnpm analyze                # Build with bundle analyzer enabled
+pnpm clean                  # Remove node_modules, .next, dist, coverage
 ```
 
 ### Environment Setup
@@ -215,12 +216,11 @@ export const ToolComponent: React.FC<ToolComponentProps> = ({
 ### Testing Strategy
 - **Unit Tests**: Vitest for individual components and utilities
 - **Integration Tests**: Tool workflows and component integration
-- **E2E Tests**: Playwright mentioned in README but scripts not defined in package.json
 - **Coverage**: Configured with vitest coverage reporting
 - **Test Environment**: jsdom with mock APIs for WASM testing
 
 ### Performance Considerations
-- **Bundle Size**: README mentions webpack-bundle-analyzer scripts (analyze, analyze:open, size-check) but these are not defined in package.json
+- **Bundle Size**: Use `pnpm analyze` to run @next/bundle-analyzer for bundle analysis
 - **WASM Loading**: Lazy loading for heavy runtimes implemented
 - **Memory Usage**: Automatic cleanup of idle WASM runtimes (5-minute threshold)
 - **Core Web Vitals**: Target FCP < 1.8s, LCP < 2.5s, CLS < 0.1
@@ -292,12 +292,14 @@ Key environment variables (see `.env.local.example`):
 
 This architecture prioritizes performance, security, and maintainability while providing a comprehensive suite of developer tools that work entirely in the browser.
 
-## Key Differences from README
+## Notes on Implementation
 
-The README mentions several features and scripts that may not be fully implemented:
-- **E2E Testing**: References Playwright E2E tests but `test:e2e` script is not defined in package.json
-- **API Endpoints**: Documentation shows API structure but this appears to be a client-side only application
-- **Bundle Analysis Scripts**: References `pnpm analyze` and related scripts that are not defined
-- **Performance Monitoring**: Mentions scripts like `pnpm size-check` that are not available
+### Implemented Testing & Analysis
+- **Bundle Analysis**: Use `pnpm analyze` to generate bundle analysis reports with @next/bundle-analyzer
+- **Unit Testing**: Vitest is configured for unit tests (`pnpm test`)
 
-**Actual Implementation**: This is a client-side application with all tools running in the browser, no backend API, and Vercel deployment for static hosting.
+### Client-Side Architecture
+This is a client-side application with all tools running in the browser:
+- **No Backend API**: All processing happens client-side
+- **Privacy First**: User data never leaves the browser
+- **Vercel Deployment**: Static site hosting with edge network distribution

@@ -143,7 +143,7 @@ export default function JWTDecoderClient() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">JWT Token Input</CardTitle>
           <CardDescription>Paste your JWT token below to decode and verify it</CardDescription>
@@ -183,7 +183,7 @@ export default function JWTDecoderClient() {
             </Alert>
           )}
 
-          <Card>
+          <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Decoded JWT Structure</span>
@@ -234,7 +234,7 @@ export default function JWTDecoderClient() {
             </TabsList>
 
             <TabsContent value="payload" className="space-y-4">
-              <Card>
+              <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <User className="h-5 w-5" />
@@ -314,7 +314,7 @@ export default function JWTDecoderClient() {
             </TabsContent>
 
             <TabsContent value="header" className="space-y-4">
-              <Card>
+              <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Shield className="h-5 w-5" />

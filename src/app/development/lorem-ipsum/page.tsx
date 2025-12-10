@@ -19,9 +19,18 @@ export const metadata: Metadata = {
   },
 };
 
+import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
+import { Type } from 'lucide-react';
+
 export default function LoremIpsumPage() {
   return (
     <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
+      <PixelToolHeader
+        title="LOREM IPSUM GENERATOR"
+        description="Generate placeholder text by paragraphs, sentences, or words. Perfect for designers and developers creating mockups."
+        category="Development"
+        icon={<Type className="h-8 w-8" />}
+      />
       <LoremIpsumGenerator />
     </div>
   );

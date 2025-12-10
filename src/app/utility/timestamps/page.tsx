@@ -1,5 +1,5 @@
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield } from 'lucide-react';
+import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
+import { CalendarClock } from 'lucide-react';
 import type { Metadata } from 'next';
 import TimestampConverterClient from './client';
 
@@ -25,13 +25,18 @@ export const metadata: Metadata = {
 export default function UnixConverterPage() {
   return (
     <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <Alert className="mb-6">
-        <Shield className="h-4 w-4" />
-        <AlertDescription>
-          <strong>Privacy Notice:</strong> Timestamp conversion is performed entirely in your
-          browser. Your data never leaves your device.
-        </AlertDescription>
-      </Alert>
+      <PixelToolHeader
+        title="UNIX TIMESTAMP CONVERTER"
+        description="Convert Unix timestamps to human-readable dates and vice versa. Support for milliseconds and multiple timezones."
+        category="Utility"
+        icon={<CalendarClock className="h-8 w-8" />}
+      />
+
+      <div className="mb-8 border-l-4 border-yellow-500 bg-yellow-100 p-4 font-mono text-sm text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200">
+        <strong className="uppercase">[ Privacy Notice ]</strong>
+        <br />
+        Timestamp conversion is performed entirely in your browser. Your data never leaves your device.
+      </div>
 
       <TimestampConverterClient />
     </div>

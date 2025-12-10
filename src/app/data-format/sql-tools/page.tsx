@@ -1,11 +1,10 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Check, ClipboardCopy, Database, Play, Sparkles, Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
 
 const SAMPLE_QUERIES = {
   select: `SELECT 
@@ -292,55 +291,78 @@ export default function SQLToolsPage() {
 
   return (
     <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 text-white">
-                <Database className="h-5 w-5" />
-              </div>
-              <div>
-                <CardTitle>SQL Tools</CardTitle>
-                <CardDescription>
-                  Format and validate SQL queries with syntax highlighting
-                </CardDescription>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">SQL</Badge>
-              <Badge variant="outline">Offline</Badge>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <PixelToolHeader
+        title="SQL STUDIO"
+        description="Format and validate SQL queries with syntax highlighting. Offline-ready and secure."
+        category="Data Format"
+        icon={<Database className="h-8 w-8" />}
+      />
+
+      <div className="border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-card dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
+        <div className="space-y-4 p-4">
           {/* Toolbar */}
-          <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-slate-50 p-2 dark:bg-slate-800">
-            <Button variant="ghost" size="sm" onClick={handlePaste}>
+          <div className="flex flex-wrap items-center gap-2 border-2 border-foreground/10 bg-muted/30 p-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handlePaste}
+              className="rounded-none hover:bg-primary/20 hover:text-primary"
+            >
               <ClipboardCopy className="mr-1 h-4 w-4" />
               Paste
             </Button>
-            <div className="h-6 w-px bg-slate-300 dark:bg-slate-600" />
-            <span className="text-sm text-slate-500">Samples:</span>
-            <Button variant="ghost" size="sm" onClick={() => handleSample('select')}>
+            <div className="h-6 w-px bg-foreground/20" />
+            <span className="text-xs font-mono text-muted-foreground uppercase">Samples:</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleSample('select')}
+              className="rounded-none hover:bg-primary/20 hover:text-primary font-mono text-xs"
+            >
               SELECT
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => handleSample('insert')}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleSample('insert')}
+              className="rounded-none hover:bg-primary/20 hover:text-primary font-mono text-xs"
+            >
               INSERT
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => handleSample('create')}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleSample('create')}
+              className="rounded-none hover:bg-primary/20 hover:text-primary font-mono text-xs"
+            >
               CREATE
             </Button>
-            <div className="h-6 w-px bg-slate-300 dark:bg-slate-600" />
-            <Button variant="ghost" size="sm" onClick={handleClear}>
+            <div className="h-6 w-px bg-foreground/20" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClear}
+              className="rounded-none hover:bg-primary/20 hover:text-primary"
+            >
               <Trash2 className="mr-1 h-4 w-4" />
               Clear
             </Button>
             <div className="flex-1" />
-            <Button variant="outline" size="sm" onClick={handleValidate}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleValidate}
+              className="rounded-none border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+            >
               <Play className="mr-1 h-4 w-4" />
               Validate
             </Button>
-            <Button variant="default" size="sm" onClick={handleFormat}>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleFormat}
+              className="rounded-none bg-primary text-primary-foreground hover:bg-primary/90"
+            >
               <Sparkles className="mr-1 h-4 w-4" />
               Format
             </Button>
@@ -349,18 +371,18 @@ export default function SQLToolsPage() {
           {/* Validation Result */}
           {validationResult && (
             <div
-              className={`flex items-center gap-2 rounded-lg p-3 ${
+              className={`flex items-center gap-2 border-2 p-3 ${
                 validationResult.valid
-                  ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                  : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400'
+                  ? 'bg-green-500/10 border-green-500/50 text-green-700 dark:text-green-400'
+                  : 'bg-destructive/10 border-destructive/50 text-destructive dark:text-red-400'
               }`}
             >
               {validationResult.valid ? (
                 <Check className="h-4 w-4" />
               ) : (
-                <span className="text-red-500">✗</span>
+                <span className="font-bold">✗</span>
               )}
-              <span className="text-sm font-medium">{validationResult.message}</span>
+              <span className="text-xs font-mono uppercase">{validationResult.message}</span>
             </div>
           )}
 
@@ -368,14 +390,14 @@ export default function SQLToolsPage() {
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Input SQL
+                <label className="text-xs font-bold font-mono text-muted-foreground uppercase">
+                  Input_SQL_Query
                 </label>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleCopy(sql)}
-                  className="h-6 text-xs"
+                  className="h-6 text-xs rounded-none hover:bg-primary/10"
                 >
                   {copied ? 'Copied!' : 'Copy'}
                 </Button>
@@ -388,41 +410,41 @@ export default function SQLToolsPage() {
                   setValidationResult(null);
                 }}
                 placeholder="Enter your SQL query here..."
-                className="min-h-[400px] font-mono text-sm"
+                className="min-h-[400px] font-mono text-sm border-2 border-foreground/20 rounded-none focus-visible:ring-0 focus-visible:border-primary bg-background"
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Formatted SQL
+                <label className="text-xs font-bold font-mono text-muted-foreground uppercase">
+                  Formatted_SQL_Output
                 </label>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleCopy(formattedSQL || sql)}
-                  className="h-6 text-xs"
+                  className="h-6 text-xs rounded-none hover:bg-primary/10"
                   disabled={!formattedSQL && !sql}
                 >
                   Copy
                 </Button>
               </div>
-              <div className="min-h-[400px] overflow-auto rounded-lg border bg-slate-900 p-4 font-mono text-sm text-slate-100">
+              <div className="min-h-[400px] overflow-auto border-2 border-foreground/20 bg-slate-950 p-4 font-mono text-sm text-green-400 shadow-inner">
                 <pre className="whitespace-pre-wrap">
-                  {formattedSQL || sql || 'Formatted SQL will appear here...'}
+                  {formattedSQL || sql || '> WAITING FOR INPUT...'}
                 </pre>
               </div>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400">
-            <span>{sql.length} characters</span>
-            <span>{sql.split('\n').filter(Boolean).length} lines</span>
-            <span>{(sql.match(/;/g) || []).length} statements</span>
+          <div className="flex flex-wrap gap-4 text-xs font-mono text-muted-foreground border-t-2 border-foreground/10 pt-4">
+            <span>[ CHARS: {sql.length} ]</span>
+            <span>[ LINES: {sql.split('\n').filter(Boolean).length} ]</span>
+            <span>[ STATEMENTS: {(sql.match(/;/g) || []).length} ]</span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,17 +1,26 @@
 'use client';
 
 import { HashGenerator } from '@/components/tools/data/hash-generator';
+import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Fingerprint } from 'lucide-react';
 
 export default function HashGeneratorPage() {
   return (
     <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
+      <PixelToolHeader
+        title="HASH GENERATOR"
+        description="Calculate cryptographic hashes for text or files using various algorithms (MD5, SHA-1, SHA-256, etc.)."
+        category="Security & Authentication"
+        icon={<Fingerprint className="h-8 w-8" />}
+      />
+
       {/* Tool Component */}
       <div className="space-y-6">
         <HashGenerator />
 
         {/* Use Cases */}
-        <Card>
+        <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
           <CardHeader>
             <CardTitle className="text-lg">Common Use Cases</CardTitle>
           </CardHeader>
@@ -44,7 +53,7 @@ export default function HashGeneratorPage() {
         </Card>
 
         {/* Algorithm Comparison */}
-        <Card>
+        <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
           <CardHeader>
             <CardTitle className="text-lg">Algorithm Comparison</CardTitle>
           </CardHeader>

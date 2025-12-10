@@ -31,7 +31,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     'Security & Authentication': 'security',
     'Development & Testing': 'development',
     'Network & Web': 'network',
-    'File Tools': 'file',
     Utility: 'utility',
   };
 

@@ -20,9 +20,18 @@ export const metadata: Metadata = {
   },
 };
 
+import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
+import { Clock } from 'lucide-react';
+
 export default function CronParserPage() {
   return (
     <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
+      <PixelToolHeader
+        title="CRON EXPRESSION GENERATOR"
+        description="Build, validate, and preview cron schedules with human-readable descriptions and next run times."
+        category="Utility"
+        icon={<Clock className="h-8 w-8" />}
+      />
       <CronParser />
     </div>
   );

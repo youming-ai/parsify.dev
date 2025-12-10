@@ -23,6 +23,7 @@ import {
   Plus,
   Trash2,
 } from 'lucide-react';
+import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
 import { useCallback, useMemo, useState } from 'react';
 
 type DiffMode = 'inline' | 'side-by-side';
@@ -194,7 +195,13 @@ export default function DiffViewerPage() {
 
   return (
     <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <Card>
+      <PixelToolHeader
+        title="DIFF VIEWER"
+        description="Compare text and code differences side by side. Visualize changes, additions, and removals with syntax highlighting."
+        category="Development"
+        icon={<GitCompare className="h-8 w-8" />}
+      />
+      <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -312,9 +319,8 @@ export default function DiffViewerPage() {
                         {diffLines.map((line, idx) => (
                           <div
                             key={`left-${idx}`}
-                            className={`flex min-h-[24px] items-center border-b border-slate-200 dark:border-slate-700 ${
-                              line.type === 'removed' ? getLineClass('removed') : ''
-                            }`}
+                            className={`flex min-h-[24px] items-center border-b border-slate-200 dark:border-slate-700 ${line.type === 'removed' ? getLineClass('removed') : ''
+                              }`}
                           >
                             <span className="w-10 flex-shrink-0 px-2 text-right text-xs text-slate-400">
                               {line.lineNumber.left ?? ''}
@@ -341,9 +347,8 @@ export default function DiffViewerPage() {
                         {diffLines.map((line, idx) => (
                           <div
                             key={`right-${idx}`}
-                            className={`flex min-h-[24px] items-center border-b border-slate-200 dark:border-slate-700 ${
-                              line.type === 'added' ? getLineClass('added') : ''
-                            }`}
+                            className={`flex min-h-[24px] items-center border-b border-slate-200 dark:border-slate-700 ${line.type === 'added' ? getLineClass('added') : ''
+                              }`}
                           >
                             <span className="w-10 flex-shrink-0 px-2 text-right text-xs text-slate-400">
                               {line.lineNumber.right ?? ''}

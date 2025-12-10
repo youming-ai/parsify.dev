@@ -17,6 +17,7 @@ import {
   Regex,
   Trash2,
 } from 'lucide-react';
+import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
 import { useCallback, useMemo, useState } from 'react';
 
 interface MatchResult {
@@ -191,7 +192,13 @@ export default function RegexValidatorPage() {
 
   return (
     <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <Card>
+      <PixelToolHeader
+        title="REGEX VALIDATOR"
+        description="Test and validate regular expressions with live highlighting. Explains your regex pattern and groups."
+        category="Development"
+        icon={<Regex className="h-8 w-8" />}
+      />
+      <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

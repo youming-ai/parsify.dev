@@ -459,73 +459,6 @@ export const toolsData: Tool[] = [
   },
 
   // ============================================
-  // File Tools (3 tools)
-  // ============================================
-  {
-    id: 'file-generator',
-    name: 'File Generator',
-    description:
-      'Generate test files in PDF, Word, CSV, JSON, PNG, JPG, SVG, Excel, and text formats with customizable content and size.',
-    category: 'File Tools',
-    icon: 'File',
-    features: [
-      'Generate Any File Type Instantly',
-      'Fully Customizable Content & Size',
-      'Batch Generation & Automation',
-      'Developer & QA Focused',
-      'Offline & Privacy-First',
-    ],
-    tags: ['file', 'generator', 'test', 'pdf', 'csv', 'json'],
-    difficulty: 'beginner',
-    status: 'stable',
-    href: '/file/generator',
-    processingType: 'client-side',
-    security: 'local-only',
-  },
-  {
-    id: 'image-converter',
-    name: 'Image Converter',
-    description:
-      'Convert images between PNG, JPG, WebP, GIF, TIFF, SVG formats. Batch conversion with preview.',
-    category: 'File Tools',
-    icon: 'Image',
-    features: [
-      'Convert Between All Major Image Formats',
-      'Batch Conversion & Automation',
-      'Preview & Download Instantly',
-      'Offline & Privacy-First',
-    ],
-    tags: ['image', 'converter', 'png', 'jpg', 'webp', 'format'],
-    difficulty: 'beginner',
-    status: 'stable',
-    href: '/file/image-converter',
-    isPopular: true,
-    processingType: 'client-side',
-    security: 'local-only',
-  },
-  {
-    id: 'image-operations',
-    name: 'Image Operations',
-    description:
-      'Crop, rotate, and resize images to any dimension. Batch editing with aspect ratio control.',
-    category: 'File Tools',
-    icon: 'Crop',
-    features: [
-      'Crop, Rotate, and Resize Instantly',
-      'Batch Image Editing',
-      'Preview & Download Instantly',
-      'Supports All Major Formats',
-      'Offline & Privacy-First',
-    ],
-    tags: ['image', 'crop', 'rotate', 'resize', 'edit'],
-    difficulty: 'beginner',
-    status: 'stable',
-    href: '/file/image-operations',
-    processingType: 'client-side',
-    security: 'local-only',
-  },
-
-  // ============================================
   // Utility (3 tools)
   // ============================================
   {
@@ -599,7 +532,6 @@ export const toolCategories = [
   'Security & Authentication',
   'Development & Testing',
   'Network & Web',
-  'File Tools',
   'Utility',
 ];
 
