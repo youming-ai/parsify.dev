@@ -127,7 +127,10 @@ export default function Home() {
             {/* Pill Badge */}
             <div className="fade-in animate-in slide-in-from-bottom-4 duration-500">
               <span className="inline-flex items-center rounded-full border bg-background px-3 py-1 text-sm font-medium text-muted-foreground shadow-sm">
-                <span className="mr-2 h-2 w-2 rounded-full bg-primary/60" />
+                <span className="relative mr-2 flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+                </span>
                 v1.0.0 Now Available
               </span>
             </div>
