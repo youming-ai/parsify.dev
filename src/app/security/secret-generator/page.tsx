@@ -20,18 +20,9 @@ export const metadata: Metadata = {
   },
 };
 
-import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
-import { Key } from 'lucide-react';
-
 export default function SecretGeneratorPage() {
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <PixelToolHeader
-        title="SECRET & API KEY GENERATOR"
-        description="Create strong, random secrets for API keys, JWT secrets, encryption keys, and more. 100% client-side generation."
-        category="Security & Authentication"
-        icon={<Key className="h-8 w-8" />}
-      />
+    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
       <SecretGenerator />
     </div>
   );

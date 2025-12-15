@@ -1,6 +1,4 @@
 import PasswordGenerator from '@/components/tools/security/password-generator';
-import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
-import { Lock } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -25,13 +23,7 @@ export const metadata: Metadata = {
 
 export default function PasswordGeneratorPage() {
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <PixelToolHeader
-        title="PASSWORD GENERATOR"
-        description="Generate strong, secure passwords with comprehensive strength analysis, entropy calculation, and security recommendations."
-        category="Security & Authentication"
-        icon={<Lock className="h-8 w-8" />}
-      />
+    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
       <PasswordGenerator />
     </div>
   );

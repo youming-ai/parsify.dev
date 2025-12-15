@@ -17,7 +17,6 @@ import {
   Regex,
   Trash2,
 } from 'lucide-react';
-import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
 import { useCallback, useMemo, useState } from 'react';
 
 interface MatchResult {
@@ -191,18 +190,12 @@ export default function RegexValidatorPage() {
   }, []);
 
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <PixelToolHeader
-        title="REGEX VALIDATOR"
-        description="Test and validate regular expressions with live highlighting. Explains your regex pattern and groups."
-        category="Development"
-        icon={<Regex className="h-8 w-8" />}
-      />
-      <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
+    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+      <Card className="rounded-xl border shadow-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-teal-600 text-white">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-teal-600 text-white shadow-sm">
                 <Regex className="h-5 w-5" />
               </div>
               <div>
@@ -232,15 +225,15 @@ export default function RegexValidatorPage() {
                 {copied ? 'Copied!' : 'Copy'}
               </Button>
             </div>
-            <div className="flex items-center gap-2 rounded-lg border bg-slate-50 p-2 dark:bg-slate-800">
-              <span className="text-lg text-slate-400">/</span>
+            <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-2">
+              <span className="text-lg text-muted-foreground">/</span>
               <Input
                 placeholder="Enter regex pattern..."
                 value={pattern}
                 onChange={(e) => setPattern(e.target.value)}
                 className="border-0 bg-transparent font-mono focus-visible:ring-0"
               />
-              <span className="text-lg text-slate-400">/</span>
+              <span className="text-lg text-muted-foreground">/</span>
               <span className="font-mono text-sm text-blue-500">{flagsString}</span>
             </div>
             {error && (
@@ -295,7 +288,7 @@ export default function RegexValidatorPage() {
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'match' | 'replace')}>
-            <TabsList>
+            <TabsList className="mb-4">
               <TabsTrigger value="match">
                 <Play className="mr-2 h-4 w-4" />
                 Match
@@ -306,7 +299,7 @@ export default function RegexValidatorPage() {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="match" className="space-y-4">
+            <TabsContent value="match" className="mt-0 space-y-4">
               {/* Test String */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -335,7 +328,7 @@ export default function RegexValidatorPage() {
                   placeholder="Enter test string..."
                   value={testString}
                   onChange={(e) => setTestString(e.target.value)}
-                  className="min-h-[150px] font-mono text-sm"
+                  className="min-h-[150px] font-mono text-sm resize-none"
                 />
               </div>
 
@@ -344,7 +337,7 @@ export default function RegexValidatorPage() {
                 <div className="space-y-2">
                   <Label>Highlighted Matches</Label>
                   <div
-                    className="min-h-[150px] whitespace-pre-wrap rounded-lg border bg-white p-4 font-mono text-sm dark:bg-slate-900"
+                    className="min-h-[150px] whitespace-pre-wrap rounded-lg border bg-background p-4 font-mono text-sm"
                     dangerouslySetInnerHTML={{ __html: highlightedText }}
                   />
                 </div>
@@ -356,20 +349,20 @@ export default function RegexValidatorPage() {
                   <Label>Match Details ({matches.length})</Label>
                   <div className="max-h-[300px] overflow-auto rounded-lg border">
                     <table className="w-full text-sm">
-                      <thead className="bg-slate-50 dark:bg-slate-800">
+                      <thead className="bg-muted/40">
                         <tr>
-                          <th className="px-4 py-2 text-left">#</th>
-                          <th className="px-4 py-2 text-left">Match</th>
-                          <th className="px-4 py-2 text-left">Index</th>
-                          <th className="px-4 py-2 text-left">Groups</th>
+                          <th className="px-4 py-2 text-left font-medium">#</th>
+                          <th className="px-4 py-2 text-left font-medium">Match</th>
+                          <th className="px-4 py-2 text-left font-medium">Index</th>
+                          <th className="px-4 py-2 text-left font-medium">Groups</th>
                         </tr>
                       </thead>
                       <tbody>
                         {matches.map((m, idx) => (
-                          <tr key={idx} className="border-t">
-                            <td className="px-4 py-2 text-slate-500">{idx + 1}</td>
+                          <tr key={idx} className="border-t border-border/50">
+                            <td className="px-4 py-2 text-muted-foreground">{idx + 1}</td>
                             <td className="px-4 py-2 font-mono">
-                              <code className="rounded bg-yellow-100 px-1 dark:bg-yellow-900">
+                              <code className="rounded bg-yellow-100 px-1 dark:bg-yellow-900/30 dark:text-yellow-200">
                                 {m.fullMatch}
                               </code>
                             </td>
@@ -378,13 +371,15 @@ export default function RegexValidatorPage() {
                               {m.groups.length > 0 ? (
                                 <div className="flex flex-wrap gap-1">
                                   {m.groups.map((g, gi) => (
-                                    <Badge key={gi} variant="outline">
+                                    <Badge key={gi} variant="outline" className="font-mono text-xs">
                                       ${gi + 1}: {g}
                                     </Badge>
                                   ))}
                                 </div>
                               ) : (
-                                <span className="text-slate-400">No groups</span>
+                                <span className="text-muted-foreground italic text-xs">
+                                  No groups
+                                </span>
                               )}
                             </td>
                           </tr>
@@ -396,7 +391,7 @@ export default function RegexValidatorPage() {
               )}
             </TabsContent>
 
-            <TabsContent value="replace" className="space-y-4">
+            <TabsContent value="replace" className="mt-0 space-y-4">
               {/* Replacement */}
               <div className="space-y-2">
                 <Label>Replacement String</Label>
@@ -415,14 +410,14 @@ export default function RegexValidatorPage() {
                   placeholder="Enter test string..."
                   value={testString}
                   onChange={(e) => setTestString(e.target.value)}
-                  className="min-h-[100px] font-mono text-sm"
+                  className="min-h-[100px] font-mono text-sm resize-none"
                 />
               </div>
 
               {/* Result */}
               <div className="space-y-2">
                 <Label>Result</Label>
-                <div className="min-h-[100px] whitespace-pre-wrap rounded-lg border bg-slate-50 p-4 font-mono text-sm dark:bg-slate-800">
+                <div className="min-h-[100px] whitespace-pre-wrap rounded-lg border bg-muted/20 p-4 font-mono text-sm">
                   {replacedText}
                 </div>
               </div>
@@ -430,44 +425,68 @@ export default function RegexValidatorPage() {
           </Tabs>
 
           {/* Regex Reference */}
-          <div className="rounded-lg border p-4">
+          <div className="rounded-lg border p-4 bg-card">
             <h3 className="mb-3 text-sm font-medium">Quick Reference</h3>
             <div className="grid gap-2 text-xs sm:grid-cols-2 lg:grid-cols-4">
-              <div>
-                <code className="text-blue-500">.</code> - Any character
+              <div className="flex items-center gap-2">
+                <code className="text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-1 rounded">.</code>{' '}
+                <span>Any character</span>
               </div>
-              <div>
-                <code className="text-blue-500">\\d</code> - Digit [0-9]
+              <div className="flex items-center gap-2">
+                <code className="text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-1 rounded">
+                  \d
+                </code>{' '}
+                <span>Digit [0-9]</span>
               </div>
-              <div>
-                <code className="text-blue-500">\\w</code> - Word char
+              <div className="flex items-center gap-2">
+                <code className="text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-1 rounded">
+                  \w
+                </code>{' '}
+                <span>Word char</span>
               </div>
-              <div>
-                <code className="text-blue-500">\\s</code> - Whitespace
+              <div className="flex items-center gap-2">
+                <code className="text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-1 rounded">
+                  \s
+                </code>{' '}
+                <span>Whitespace</span>
               </div>
-              <div>
-                <code className="text-blue-500">^</code> - Start of line
+              <div className="flex items-center gap-2">
+                <code className="text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-1 rounded">^</code>{' '}
+                <span>Start of line</span>
               </div>
-              <div>
-                <code className="text-blue-500">$</code> - End of line
+              <div className="flex items-center gap-2">
+                <code className="text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-1 rounded">$</code>{' '}
+                <span>End of line</span>
               </div>
-              <div>
-                <code className="text-blue-500">*</code> - 0 or more
+              <div className="flex items-center gap-2">
+                <code className="text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-1 rounded">*</code>{' '}
+                <span>0 or more</span>
               </div>
-              <div>
-                <code className="text-blue-500">+</code> - 1 or more
+              <div className="flex items-center gap-2">
+                <code className="text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-1 rounded">+</code>{' '}
+                <span>1 or more</span>
               </div>
-              <div>
-                <code className="text-blue-500">?</code> - 0 or 1
+              <div className="flex items-center gap-2">
+                <code className="text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-1 rounded">?</code>{' '}
+                <span>0 or 1</span>
               </div>
-              <div>
-                <code className="text-blue-500">{'{n}'}</code> - Exactly n
+              <div className="flex items-center gap-2">
+                <code className="text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-1 rounded">
+                  {'{n}'}
+                </code>{' '}
+                <span>Exactly n</span>
               </div>
-              <div>
-                <code className="text-blue-500">[abc]</code> - Character class
+              <div className="flex items-center gap-2">
+                <code className="text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-1 rounded">
+                  [abc]
+                </code>{' '}
+                <span>Character class</span>
               </div>
-              <div>
-                <code className="text-blue-500">(group)</code> - Capture group
+              <div className="flex items-center gap-2">
+                <code className="text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-1 rounded">
+                  (group)
+                </code>{' '}
+                <span>Capture group</span>
               </div>
             </div>
           </div>

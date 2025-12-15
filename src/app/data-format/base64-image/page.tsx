@@ -19,22 +19,12 @@ export const metadata: Metadata = {
     description: 'Convert images to Base64 and vice versa with instant preview.',
   },
 };
-
-import { Image } from 'lucide-react';
-import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
 // ... existing imports
 
 export default function Base64ImagePage() {
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <PixelToolHeader
-        title="BASE64 IMAGE"
-        description="Convert images to Base64 and vice versa with instant preview. Support PNG, JPG, GIF, WebP. Privacy compliant."
-        category="Data Format"
-        icon={<Image className="h-8 w-8" />}
-      />
-
-      <div className="border-2 border-foreground/20 p-1 shadow-[4px_4px_0_0_rgba(0,0,0,0.1)] bg-card rounded-none">
+    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+      <div className="rounded-xl border shadow-sm">
         <Base64ImageConverter />
       </div>
     </div>

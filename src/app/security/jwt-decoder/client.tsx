@@ -143,7 +143,7 @@ export default function JWTDecoderClient() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
+      <Card className="rounded-xl border shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">JWT Token Input</CardTitle>
           <CardDescription>Paste your JWT token below to decode and verify it</CardDescription>
@@ -153,7 +153,7 @@ export default function JWTDecoderClient() {
             placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
             value={jwtInput}
             onChange={(e) => setJwtInput(e.target.value)}
-            className="min-h-32 font-mono text-sm"
+            className="min-h-32 font-mono text-sm rounded-md"
           />
           <div className="flex gap-2">
             <Button onClick={handleDecode} className="flex items-center gap-2">
@@ -183,7 +183,7 @@ export default function JWTDecoderClient() {
             </Alert>
           )}
 
-          <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
+          <Card className="rounded-xl border shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Decoded JWT Structure</span>
@@ -228,13 +228,13 @@ export default function JWTDecoderClient() {
           </Card>
 
           <Tabs defaultValue="payload" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="payload">Payload</TabsTrigger>
               <TabsTrigger value="header">Header</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="payload" className="space-y-4">
-              <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
+            <TabsContent value="payload" className="mt-0 space-y-4">
+              <Card className="rounded-xl border shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <User className="h-5 w-5" />
@@ -313,8 +313,8 @@ export default function JWTDecoderClient() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="header" className="space-y-4">
-              <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
+            <TabsContent value="header" className="mt-0 space-y-4">
+              <Card className="rounded-xl border shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Shield className="h-5 w-5" />

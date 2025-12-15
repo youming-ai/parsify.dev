@@ -12,10 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Check, ClipboardCopy, Fingerprint, RefreshCw, Trash2,
-} from 'lucide-react';
-import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
+import { Check, ClipboardCopy, Fingerprint, RefreshCw, Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 type IdType = 'uuid-v4' | 'uuid-v1' | 'uuid-v7' | 'ulid' | 'nanoid' | 'ksuid';
@@ -195,18 +192,12 @@ export default function IDGeneratorPage() {
   const selectedTypeInfo = ID_TYPES.find((t) => t.value === idType);
 
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <PixelToolHeader
-        title="ID GENERATOR"
-        description="Generate UUIDs, ULIDs, Nano IDs, and more unique identifiers."
-        category="Development"
-        icon={<Fingerprint className="h-8 w-8" />}
-      />
-      <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
+    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+      <Card className="rounded-xl border shadow-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-sm">
                 <Fingerprint className="h-5 w-5" />
               </div>
               <div>
@@ -224,7 +215,7 @@ export default function IDGeneratorPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Controls */}
-          <div className="flex flex-wrap items-end gap-4 rounded-lg border bg-slate-50 p-4 dark:bg-slate-800">
+          <div className="flex flex-wrap items-end gap-4 rounded-lg border bg-muted/30 p-4">
             <div className="space-y-2">
               <Label>ID Type</Label>
               <Select value={idType} onValueChange={(v) => setIdType(v as IdType)}>
@@ -280,7 +271,7 @@ export default function IDGeneratorPage() {
 
           {/* Type Description */}
           {selectedTypeInfo && (
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900/50 dark:bg-blue-950/20">
               <p className="text-sm text-blue-700 dark:text-blue-300">
                 <strong>{selectedTypeInfo.label}:</strong> {selectedTypeInfo.description}
               </p>
@@ -293,14 +284,14 @@ export default function IDGeneratorPage() {
               <div className="flex items-center justify-between">
                 <Label>Generated IDs ({generatedIds.length})</Label>
               </div>
-              <div className="max-h-[400px] overflow-auto rounded-lg border bg-slate-900 p-2">
+              <div className="max-h-[400px] overflow-auto rounded-lg border bg-muted/20 p-2">
                 {generatedIds.map((item, index) => (
                   <div
                     key={`${item.id}-${index}`}
-                    className="group flex items-center justify-between rounded px-3 py-2 hover:bg-slate-800"
+                    className="group flex items-center justify-between rounded px-3 py-2 hover:bg-muted/50"
                   >
                     <div className="flex items-center gap-3">
-                      <code className="font-mono text-sm text-slate-100">{item.id}</code>
+                      <code className="font-mono text-sm">{item.id}</code>
                       <Badge variant="outline" className="text-xs">
                         {item.type}
                       </Badge>
@@ -322,8 +313,8 @@ export default function IDGeneratorPage() {
               </div>
             </div>
           ) : (
-            <div className="flex h-[200px] items-center justify-center rounded-lg border-2 border-dashed">
-              <p className="text-sm text-slate-500">
+            <div className="flex h-[200px] items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/20">
+              <p className="text-sm text-muted-foreground">
                 Click "Generate" to create unique identifiers
               </p>
             </div>
@@ -334,9 +325,9 @@ export default function IDGeneratorPage() {
             <h3 className="mb-3 text-sm font-medium">ID Types Reference</h3>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {ID_TYPES.map((type) => (
-                <div key={type.value} className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
+                <div key={type.value} className="rounded-lg bg-muted/20 p-3">
                   <p className="font-medium text-sm">{type.label}</p>
-                  <p className="text-xs text-slate-500">{type.description}</p>
+                  <p className="text-xs text-muted-foreground">{type.description}</p>
                 </div>
               ))}
             </div>

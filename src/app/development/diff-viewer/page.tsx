@@ -23,7 +23,6 @@ import {
   Plus,
   Trash2,
 } from 'lucide-react';
-import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
 import { useCallback, useMemo, useState } from 'react';
 
 type DiffMode = 'inline' | 'side-by-side';
@@ -194,18 +193,12 @@ export default function DiffViewerPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <PixelToolHeader
-        title="DIFF VIEWER"
-        description="Compare text and code differences side by side. Visualize changes, additions, and removals with syntax highlighting."
-        category="Development"
-        icon={<GitCompare className="h-8 w-8" />}
-      />
-      <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
+    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+      <Card className="rounded-xl border shadow-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-red-600 text-white">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-sm">
                 <GitCompare className="h-5 w-5" />
               </div>
               <div>
@@ -221,7 +214,7 @@ export default function DiffViewerPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Controls */}
-          <div className="flex flex-wrap items-center gap-4 rounded-lg border bg-slate-50 p-4 dark:bg-slate-800">
+          <div className="flex flex-wrap items-center gap-4 rounded-lg border bg-muted/30 p-4">
             <div className="space-y-1">
               <Label>View Mode</Label>
               <Select value={diffMode} onValueChange={(v) => setDiffMode(v as DiffMode)}>
@@ -236,20 +229,20 @@ export default function DiffViewerPage() {
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleLoadSample}>
+              <Button variant="outline" onClick={handleLoadSample} size="sm">
                 <FileCode className="mr-2 h-4 w-4" />
                 Load Sample
               </Button>
-              <Button variant="outline" onClick={handleSwap}>
+              <Button variant="outline" onClick={handleSwap} size="sm">
                 <ArrowLeftRight className="mr-2 h-4 w-4" />
                 Swap
               </Button>
-              <Button variant="outline" onClick={handleClear}>
+              <Button variant="outline" onClick={handleClear} size="sm">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Clear
               </Button>
               {diffLines.length > 0 && (originalText || modifiedText) && (
-                <Button variant="outline" onClick={handleCopyDiff}>
+                <Button variant="outline" onClick={handleCopyDiff} size="sm">
                   {copied ? (
                     <Check className="mr-2 h-4 w-4" />
                   ) : (
@@ -269,7 +262,7 @@ export default function DiffViewerPage() {
                 placeholder="Paste original text here..."
                 value={originalText}
                 onChange={(e) => setOriginalText(e.target.value)}
-                className="min-h-[200px] font-mono text-sm"
+                className="min-h-[200px] font-mono text-sm resize-none"
               />
             </div>
             <div className="space-y-2">
@@ -278,7 +271,7 @@ export default function DiffViewerPage() {
                 placeholder="Paste modified text here..."
                 value={modifiedText}
                 onChange={(e) => setModifiedText(e.target.value)}
-                className="min-h-[200px] font-mono text-sm"
+                className="min-h-[200px] font-mono text-sm resize-none"
               />
             </div>
           </div>
@@ -286,15 +279,23 @@ export default function DiffViewerPage() {
           {/* Stats */}
           {(originalText || modifiedText) && (
             <div className="flex items-center gap-4">
-              <Badge variant="outline" className="text-green-600">
+              <Badge
+                variant="outline"
+                className="text-green-600 border-green-200 bg-green-50 dark:bg-green-900/10 dark:border-green-800"
+              >
                 <Plus className="mr-1 h-3 w-3" />
                 {stats.added} added
               </Badge>
-              <Badge variant="outline" className="text-red-600">
+              <Badge
+                variant="outline"
+                className="text-red-600 border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-800"
+              >
                 <Minus className="mr-1 h-3 w-3" />
                 {stats.removed} removed
               </Badge>
-              <Badge variant="outline">{stats.unchanged} unchanged</Badge>
+              <Badge variant="outline" className="bg-muted/50">
+                {stats.unchanged} unchanged
+              </Badge>
             </div>
           )}
 
@@ -303,33 +304,34 @@ export default function DiffViewerPage() {
             <div className="space-y-2">
               <Label>Diff Result</Label>
               <Tabs value={diffMode} onValueChange={(v) => setDiffMode(v as DiffMode)}>
-                <TabsList>
+                <TabsList className="mb-2">
                   <TabsTrigger value="side-by-side">Side by Side</TabsTrigger>
                   <TabsTrigger value="inline">Inline</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="side-by-side">
+                <TabsContent value="side-by-side" className="mt-0">
                   <div className="grid grid-cols-2 overflow-hidden rounded-lg border">
                     {/* Left (Original) */}
                     <div className="border-r">
-                      <div className="border-b bg-slate-100 px-4 py-2 text-sm font-medium dark:bg-slate-800">
+                      <div className="border-b bg-muted/40 px-4 py-2 text-sm font-medium">
                         Original
                       </div>
-                      <div className="max-h-[400px] overflow-auto bg-slate-50 dark:bg-slate-900">
+                      <div className="max-h-[500px] overflow-auto bg-background/50">
                         {diffLines.map((line, idx) => (
                           <div
                             key={`left-${idx}`}
-                            className={`flex min-h-[24px] items-center border-b border-slate-200 dark:border-slate-700 ${line.type === 'removed' ? getLineClass('removed') : ''
-                              }`}
+                            className={`flex min-h-[24px] items-center border-b border-border/40 ${
+                              line.type === 'removed' ? getLineClass('removed') : ''
+                            }`}
                           >
-                            <span className="w-10 flex-shrink-0 px-2 text-right text-xs text-slate-400">
+                            <span className="w-10 flex-shrink-0 px-2 text-right text-xs text-muted-foreground select-none">
                               {line.lineNumber.left ?? ''}
                             </span>
-                            <span className="w-6 flex-shrink-0">
+                            <span className="w-6 flex-shrink-0 flex items-center justify-center">
                               {line.type === 'removed' && getLineIcon('removed')}
                             </span>
                             {line.type !== 'added' && (
-                              <code className="flex-1 whitespace-pre px-2 text-sm">
+                              <code className="flex-1 whitespace-pre px-2 text-sm font-mono">
                                 {line.content}
                               </code>
                             )}
@@ -340,24 +342,25 @@ export default function DiffViewerPage() {
 
                     {/* Right (Modified) */}
                     <div>
-                      <div className="border-b bg-slate-100 px-4 py-2 text-sm font-medium dark:bg-slate-800">
+                      <div className="border-b bg-muted/40 px-4 py-2 text-sm font-medium">
                         Modified
                       </div>
-                      <div className="max-h-[400px] overflow-auto bg-slate-50 dark:bg-slate-900">
+                      <div className="max-h-[500px] overflow-auto bg-background/50">
                         {diffLines.map((line, idx) => (
                           <div
                             key={`right-${idx}`}
-                            className={`flex min-h-[24px] items-center border-b border-slate-200 dark:border-slate-700 ${line.type === 'added' ? getLineClass('added') : ''
-                              }`}
+                            className={`flex min-h-[24px] items-center border-b border-border/40 ${
+                              line.type === 'added' ? getLineClass('added') : ''
+                            }`}
                           >
-                            <span className="w-10 flex-shrink-0 px-2 text-right text-xs text-slate-400">
+                            <span className="w-10 flex-shrink-0 px-2 text-right text-xs text-muted-foreground select-none">
                               {line.lineNumber.right ?? ''}
                             </span>
-                            <span className="w-6 flex-shrink-0">
+                            <span className="w-6 flex-shrink-0 flex items-center justify-center">
                               {line.type === 'added' && getLineIcon('added')}
                             </span>
                             {line.type !== 'removed' && (
-                              <code className="flex-1 whitespace-pre px-2 text-sm">
+                              <code className="flex-1 whitespace-pre px-2 text-sm font-mono">
                                 {line.content}
                               </code>
                             )}
@@ -368,22 +371,26 @@ export default function DiffViewerPage() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="inline">
+                <TabsContent value="inline" className="mt-0">
                   <div className="overflow-hidden rounded-lg border">
-                    <div className="max-h-[500px] overflow-auto bg-slate-50 dark:bg-slate-900">
+                    <div className="max-h-[500px] overflow-auto bg-background/50">
                       {diffLines.map((line, idx) => (
                         <div
                           key={`inline-${idx}`}
-                          className={`flex items-center border-b border-slate-200 dark:border-slate-700 ${getLineClass(line.type)}`}
+                          className={`flex items-center border-b border-border/40 ${getLineClass(line.type)}`}
                         >
-                          <span className="w-10 flex-shrink-0 px-2 text-right text-xs text-slate-400">
+                          <span className="w-10 flex-shrink-0 px-2 text-right text-xs text-muted-foreground select-none">
                             {line.lineNumber.left ?? ''}
                           </span>
-                          <span className="w-10 flex-shrink-0 px-2 text-right text-xs text-slate-400">
+                          <span className="w-10 flex-shrink-0 px-2 text-right text-xs text-muted-foreground select-none">
                             {line.lineNumber.right ?? ''}
                           </span>
-                          <span className="w-6 flex-shrink-0">{getLineIcon(line.type)}</span>
-                          <code className="flex-1 whitespace-pre px-2 text-sm">{line.content}</code>
+                          <span className="w-6 flex-shrink-0 flex items-center justify-center">
+                            {getLineIcon(line.type)}
+                          </span>
+                          <code className="flex-1 whitespace-pre px-2 text-sm font-mono">
+                            {line.content}
+                          </code>
                         </div>
                       ))}
                     </div>
@@ -395,9 +402,11 @@ export default function DiffViewerPage() {
 
           {/* Empty State */}
           {!originalText && !modifiedText && (
-            <div className="flex h-[200px] flex-col items-center justify-center rounded-lg border-2 border-dashed">
-              <GitCompare className="mb-2 h-8 w-8 text-slate-400" />
-              <p className="text-sm text-slate-500">Paste text in both fields to see the diff</p>
+            <div className="flex h-[200px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/20">
+              <GitCompare className="mb-2 h-8 w-8 text-muted-foreground/50" />
+              <p className="text-sm text-muted-foreground">
+                Paste text in both fields to see the diff
+              </p>
               <Button variant="link" size="sm" onClick={handleLoadSample}>
                 Or load sample data
               </Button>

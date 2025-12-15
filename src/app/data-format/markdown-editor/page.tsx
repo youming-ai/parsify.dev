@@ -1,8 +1,5 @@
 'use client';
-
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Bold,
@@ -26,7 +23,6 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
 
 const SAMPLE_MARKDOWN = `# Welcome to Markdown Editor
 
@@ -211,130 +207,129 @@ ${html}
   ];
 
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <PixelToolHeader
-        title="MARKDOWN EDITOR"
-        description="Edit and preview Markdown with GitHub Flavored Markdown support. Offline-ready and secure."
-        category="Data Format"
-        icon={<FileText className="h-8 w-8" />}
-      />
-
-      <div className="border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-card dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
-        <div className="space-y-4 p-4">
-          {/* Toolbar */}
-          <div className="flex flex-wrap items-center gap-1 border-2 border-foreground/10 bg-muted/30 p-2">
-            {toolbarButtons.map((btn, i) => (
+    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+      <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+        <div className="bg-card rounded-xl border shadow-sm">
+          <div className="space-y-4 p-4">
+            {/* Toolbar */}
+            <div className="flex flex-wrap items-center gap-1 border rounded-lg bg-muted/30 p-2">
+              {toolbarButtons.map((btn, i) => (
+                <Button
+                  key={i}
+                  variant="ghost"
+                  size="sm"
+                  onClick={btn.action}
+                  title={btn.title}
+                  className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
+                >
+                  <btn.icon className="h-4 w-4" />
+                </Button>
+              ))}
+              <div className="mx-2 h-6 w-px bg-border" />
               <Button
-                key={i}
                 variant="ghost"
                 size="sm"
-                onClick={btn.action}
-                title={btn.title}
-                className="h-8 w-8 p-0 hover:bg-primary/20 hover:text-primary rounded-none"
+                onClick={handlePaste}
+                title="Paste"
+                className="hover:bg-primary/10 hover:text-primary"
               >
-                <btn.icon className="h-4 w-4" />
-              </Button>
-            ))}
-            <div className="mx-2 h-6 w-px bg-foreground/20" />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handlePaste}
-              title="Paste"
-              className="rounded-none hover:bg-primary/20 hover:text-primary"
-            >
-              <ClipboardCopy className="mr-1 h-4 w-4" />
-              Paste
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSample}
-              title="Sample"
-              className="rounded-none hover:bg-primary/20 hover:text-primary"
-            >
-              <FileText className="mr-1 h-4 w-4" />
-              Sample
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCopy}
-              title="Copy"
-              className="rounded-none hover:bg-primary/20 hover:text-primary"
-            >
-              {copied ? (
-                <Check className="mr-1 h-4 w-4" />
-              ) : (
                 <ClipboardCopy className="mr-1 h-4 w-4" />
-              )}
-              {copied ? 'Copied!' : 'Copy'}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClear}
-              title="Clear"
-              className="rounded-none hover:bg-primary/20 hover:text-primary"
-            >
-              <Trash2 className="mr-1 h-4 w-4" />
-              Clear
-            </Button>
-            <div className="flex-1" />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowPreview(!showPreview)}
-              className="rounded-none hover:bg-primary/20 hover:text-primary"
-            >
-              {showPreview ? <EyeOff className="mr-1 h-4 w-4" /> : <Eye className="mr-1 h-4 w-4" />}
-              {showPreview ? 'Hide Preview' : 'Show Preview'}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportHTML}
-              className="rounded-none border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-            >
-              <Download className="mr-1 h-4 w-4" />
-              Export HTML
-            </Button>
-          </div>
-
-          {/* Editor and Preview */}
-          <div className={`grid gap-4 ${showPreview ? 'lg:grid-cols-2' : 'grid-cols-1'}`}>
-            {/* Editor */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold font-mono text-muted-foreground uppercase">
-                Input_Source.md
-              </label>
-              <Textarea
-                value={markdown}
-                onChange={(e) => setMarkdown(e.target.value)}
-                placeholder="Enter your Markdown here..."
-                className="min-h-[500px] font-mono text-sm border-2 border-foreground/20 rounded-none focus-visible:ring-0 focus-visible:border-primary bg-background"
-              />
+                Paste
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSample}
+                title="Sample"
+                className="hover:bg-primary/10 hover:text-primary"
+              >
+                <FileText className="mr-1 h-4 w-4" />
+                Sample
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCopy}
+                title="Copy"
+                className="hover:bg-primary/10 hover:text-primary"
+              >
+                {copied ? (
+                  <Check className="mr-1 h-4 w-4" />
+                ) : (
+                  <ClipboardCopy className="mr-1 h-4 w-4" />
+                )}
+                {copied ? 'Copied!' : 'Copy'}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClear}
+                title="Clear"
+                className="hover:bg-primary/10 hover:text-primary"
+              >
+                <Trash2 className="mr-1 h-4 w-4" />
+                Clear
+              </Button>
+              <div className="flex-1" />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPreview(!showPreview)}
+                className="hover:bg-primary/10 hover:text-primary"
+              >
+                {showPreview ? (
+                  <EyeOff className="mr-1 h-4 w-4" />
+                ) : (
+                  <Eye className="mr-1 h-4 w-4" />
+                )}
+                {showPreview ? 'Hide Preview' : 'Show Preview'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportHTML}
+                className="text-primary hover:bg-primary/10"
+              >
+                <Download className="mr-1 h-4 w-4" />
+                Export HTML
+              </Button>
             </div>
 
-            {/* Preview */}
-            {showPreview && (
+            {/* Editor and Preview */}
+            <div className={`grid gap-4 ${showPreview ? 'lg:grid-cols-2' : 'grid-cols-1'}`}>
+              {/* Editor */}
               <div className="space-y-2">
-                <label className="text-xs font-bold font-mono text-muted-foreground uppercase">
-                  Preview_Output.html
-                </label>
-                <div
-                  className="prose prose-slate dark:prose-invert min-h-[500px] max-w-none overflow-auto border-2 border-foreground/20 bg-background p-4 rounded-none"
-                  dangerouslySetInnerHTML={{ __html: convertToHTML(markdown) }}
+                <label className="text-xs font-medium text-muted-foreground">Markdown Source</label>
+                <Textarea
+                  value={markdown}
+                  onChange={(e) => setMarkdown(e.target.value)}
+                  placeholder="Enter your Markdown here..."
+                  className="min-h-[500px] font-mono text-sm resize-none"
                 />
               </div>
-            )}
-          </div>
 
-          {/* Stats */}
-          <div className="flex flex-wrap gap-4 text-xs font-mono text-muted-foreground border-t-2 border-foreground/10 pt-4">
-            <span>[ CHARS: {markdown.length} ]</span>
-            <span>[ WORDS: {markdown.split(/\s+/).filter(Boolean).length} ]</span>
-            <span>[ LINES: {markdown.split('\n').length} ]</span>
+              {/* Preview */}
+              {showPreview && (
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">Preview</label>
+                  <div
+                    className="prose prose-slate dark:prose-invert min-h-[500px] max-w-none overflow-auto rounded-md border bg-background p-4"
+                    dangerouslySetInnerHTML={{ __html: convertToHTML(markdown) }}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Stats */}
+            <div className="flex flex-wrap gap-4 text-xs font-mono text-muted-foreground border-t pt-4">
+              <span className="bg-muted px-2 py-1 rounded">Chars: {markdown.length}</span>
+              <span className="bg-muted px-2 py-1 rounded">
+                Words: {markdown.split(/\s+/).filter(Boolean).length}
+              </span>
+              <span className="bg-muted px-2 py-1 rounded">
+                Lines: {markdown.split('\n').length}
+              </span>
+            </div>
           </div>
         </div>
       </div>

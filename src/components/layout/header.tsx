@@ -1,12 +1,6 @@
-import { Github, Mail, Twitter } from 'lucide-react';
+import { Command, Github, Mail, Twitter } from 'lucide-react';
 import Link from 'next/link';
-import { Press_Start_2P } from 'next/font/google';
 import { ThemeToggle } from './theme-toggle';
-
-const pixelFont = Press_Start_2P({
-  weight: '400',
-  subsets: ['latin'],
-});
 
 const socialLinks = [
   {
@@ -20,38 +14,27 @@ const socialLinks = [
 
 export function Header() {
   return (
-    <header className="fixed top-6 left-1/2 z-50 w-full max-w-[95%] -translate-x-1/2 border-2 border-foreground bg-background shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)] md:max-w-3xl">
-      <div className="mx-auto flex h-14 items-center justify-between px-6">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto flex h-14 items-center justify-between px-4 sm:px-8">
         {/* Logo */}
         <Link
           href="/"
-          className={`${pixelFont.className} flex items-center space-x-3 text-xs tracking-widest transition-opacity hover:opacity-80`}
+          className="flex items-center gap-2 font-bold tracking-tight transition-opacity hover:opacity-80"
         >
-          <div className="flex h-8 w-8 items-center justify-center border-2 border-foreground bg-primary/20 text-primary">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5" // Thicker stroke for pixel feel
-              strokeLinecap="square" // Square caps
-              strokeLinejoin="miter" // Sharp joints
-            >
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <Command className="h-3.5 w-3.5" />
           </div>
-          <span className="hidden text-foreground sm:inline-block">PARSIFY</span>
+          <span>Parsify</span>
         </Link>
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-4 border-r-2 border-foreground/20 pr-4">
+          <div className="flex items-center gap-1 sm:gap-2">
             {socialLinks.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-muted-foreground hover:text-foreground hover:-translate-y-0.5 transition-transform duration-200"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -60,6 +43,7 @@ export function Header() {
               </Link>
             ))}
           </div>
+          <div className="h-4 w-[1px] bg-border mx-2" />
           <ThemeToggle />
         </div>
       </div>

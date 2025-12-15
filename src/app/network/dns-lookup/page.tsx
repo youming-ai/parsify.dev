@@ -20,18 +20,9 @@ export const metadata: Metadata = {
   },
 };
 
-import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
-import { Globe } from 'lucide-react';
-
 export default function DNSLookupPage() {
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <PixelToolHeader
-        title="DNS LOOKUP"
-        description="Query DNS records including A, AAAA, MX, TXT, CNAME, NS, and SOA records for any domain with TTL information."
-        category="Network & Web"
-        icon={<Globe className="h-8 w-8" />}
-      />
+    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
       <DNSLookup />
     </div>
   );

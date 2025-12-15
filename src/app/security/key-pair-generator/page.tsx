@@ -1,6 +1,5 @@
 'use client';
 
-import { PixelToolHeader } from '@/components/tools/shared/pixel-tool-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -113,18 +112,12 @@ export default function KeyPairGeneratorPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <PixelToolHeader
-        title="KEY PAIR GENERATOR"
-        description="Generate secure RSA key pairs for encryption, digital signatures, and SSH authentication."
-        category="Security & Authentication"
-        icon={<Key className="h-8 w-8" />}
-      />
-      <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
+    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+      <Card className="rounded-xl border shadow-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-sm">
                 <Key className="h-5 w-5" />
               </div>
               <div>
@@ -142,7 +135,7 @@ export default function KeyPairGeneratorPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Controls */}
-          <div className="flex flex-wrap items-end gap-4 rounded-lg border bg-slate-50 p-4 dark:bg-slate-800">
+          <div className="flex flex-wrap items-end gap-4 rounded-lg border bg-muted/30 p-4">
             <div className="space-y-2">
               <Label>Key Size (bits)</Label>
               <Select value={keySize} onValueChange={(v) => setKeySize(v as KeySize)}>
@@ -183,7 +176,7 @@ export default function KeyPairGeneratorPage() {
           </div>
 
           {/* Security Info */}
-          <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+          <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/50 dark:bg-blue-950/20">
             <Shield className="mt-0.5 h-5 w-5 text-blue-600 dark:text-blue-400" />
             <div className="space-y-1">
               <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
@@ -222,9 +215,9 @@ export default function KeyPairGeneratorPage() {
                 <Textarea
                   value={keyPair.publicKey}
                   readOnly
-                  className="min-h-[250px] font-mono text-xs"
+                  className="min-h-[250px] font-mono text-xs resize-none"
                 />
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Share this key publicly. Used for encryption and signature verification.
                 </p>
               </div>
@@ -252,7 +245,7 @@ export default function KeyPairGeneratorPage() {
                 <Textarea
                   value={keyPair.privateKey}
                   readOnly
-                  className="min-h-[250px] font-mono text-xs"
+                  className="min-h-[250px] font-mono text-xs resize-none"
                 />
                 <p className="text-xs text-red-500 dark:text-red-400">
                   ⚠️ Keep this key secret! Used for decryption and signing.
@@ -263,23 +256,23 @@ export default function KeyPairGeneratorPage() {
 
           {/* Key Statistics */}
           {keyPair && (
-            <div className="rounded-lg border bg-slate-50 p-4 dark:bg-slate-800">
+            <div className="rounded-lg border bg-muted/10 p-4">
               <h3 className="mb-3 text-sm font-medium">Key Statistics</h3>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
-                  <p className="text-xs text-slate-500">Algorithm</p>
+                  <p className="text-xs text-muted-foreground">Algorithm</p>
                   <p className="font-medium">RSA-OAEP</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Key Size</p>
+                  <p className="text-xs text-muted-foreground">Key Size</p>
                   <p className="font-medium">{keyPair.keySize} bits</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Hash Algorithm</p>
+                  <p className="text-xs text-muted-foreground">Hash Algorithm</p>
                   <p className="font-medium">SHA-256</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Generated At</p>
+                  <p className="text-xs text-muted-foreground">Generated At</p>
                   <p className="font-medium">{keyPair.generatedAt.toLocaleTimeString()}</p>
                 </div>
               </div>
@@ -289,21 +282,21 @@ export default function KeyPairGeneratorPage() {
           {/* Usage Tips */}
           <div className="rounded-lg border p-4">
             <h3 className="mb-3 text-sm font-medium">Usage Tips</h3>
-            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+            <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-slate-400" />
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted-foreground" />
                 <span>Never share your private key with anyone</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-slate-400" />
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted-foreground" />
                 <span>Store private keys securely with encryption</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-slate-400" />
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted-foreground" />
                 <span>Use 2048-bit keys minimum for production applications</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-slate-400" />
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted-foreground" />
                 <span>Consider 4096-bit keys for highly sensitive data</span>
               </li>
             </ul>
