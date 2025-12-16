@@ -133,7 +133,7 @@ export function JsonConverter({
             <ArrowRight className="h-5 w-5" />
             Convert to {formatInfo.name}
           </CardTitle>
-          <p className="text-gray-600 text-sm">{formatInfo.description}</p>
+          <p className="text-muted-foreground text-sm">{formatInfo.description}</p>
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -167,7 +167,7 @@ export function JsonConverter({
                     type="text"
                     value={conversionOptions.rootElement || 'root'}
                     onChange={(e) => handleOptionChange('rootElement', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-md border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="root"
                   />
                 </div>
@@ -179,7 +179,7 @@ export function JsonConverter({
                     type="text"
                     value={conversionOptions.arrayItemName || 'item'}
                     onChange={(e) => handleOptionChange('arrayItemName', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-md border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="item"
                   />
                 </div>
@@ -187,7 +187,7 @@ export function JsonConverter({
             </TabsContent>
 
             <TabsContent value="yaml" className="space-y-4">
-              <p className="text-gray-600 text-sm">
+              <p className="text-muted-foreground text-sm">
                 YAML conversion uses standard YAML formatting with proper indentation.
               </p>
             </TabsContent>
@@ -201,7 +201,7 @@ export function JsonConverter({
                   <select
                     value={conversionOptions.csvDelimiter || ','}
                     onChange={(e) => handleOptionChange('csvDelimiter', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-md border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value=",">Comma (,)</option>
                     <option value=";">Semicolon (;)</option>
@@ -221,7 +221,7 @@ export function JsonConverter({
                       onChange={(e) => handleOptionChange('flatten', e.target.checked)}
                       className="mr-2"
                     />
-                    <label htmlFor="flatten-objects" className="text-gray-600 text-sm">
+                    <label htmlFor="flatten-objects" className="text-muted-foreground text-sm">
                       Flatten nested objects
                     </label>
                   </div>
@@ -273,10 +273,10 @@ export function JsonConverter({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-lg border bg-gray-50 p-4 font-mono text-gray-800 text-sm">
+            <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-lg border bg-muted p-4 font-mono text-foreground text-sm">
               {convertedOutput}
             </pre>
-            <div className="mt-2 text-gray-600 text-sm">
+            <div className="mt-2 text-muted-foreground text-sm">
               {convertedOutput.split('\n').length} lines, {convertedOutput.length} characters
             </div>
           </CardContent>

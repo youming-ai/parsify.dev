@@ -102,9 +102,9 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
       case 'error':
         return 'text-red-600 bg-red-50';
       case 'cancelled':
-        return 'text-gray-600 bg-gray-50';
+        return 'text-muted-foreground bg-muted';
       default:
-        return 'text-gray-600 bg-gray-50';
+        return 'text-muted-foreground bg-muted';
     }
   };
 
@@ -196,9 +196,9 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 
   if (files.length === 0) {
     return (
-      <div className={cn('py-8 text-center text-gray-500', className)}>
+      <div className={cn('py-8 text-center text-muted-foreground', className)}>
         <svg
-          className="mx-auto mb-4 h-12 w-12 text-gray-300"
+          className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -226,10 +226,12 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                   <div className="flex-shrink-0 text-2xl">{getFileIcon(file)}</div>
 
                   <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-medium text-gray-900 text-sm">{file.name}</h3>
+                    <h3 className="truncate font-medium text-foreground text-sm">{file.name}</h3>
                     <div className="mt-1 flex items-center space-x-2">
-                      <span className="text-gray-500 text-xs">{formatFileSize(file.size)}</span>
-                      <span className="text-gray-300">•</span>
+                      <span className="text-muted-foreground text-xs">
+                        {formatFileSize(file.size)}
+                      </span>
+                      <span className="text-muted-foreground/50">•</span>
                       <Badge
                         variant="secondary"
                         className={cn('text-xs', getStatusColor(file.status))}
@@ -378,12 +380,14 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
               {showProgress && file.status === 'uploading' && (
                 <div className="mt-3">
                   <div className="mb-1 flex items-center justify-between">
-                    <span className="text-gray-500 text-xs">Uploading...</span>
-                    <span className="text-gray-500 text-xs">{file.progress.toFixed(1)}%</span>
+                    <span className="text-muted-foreground text-xs">Uploading...</span>
+                    <span className="text-muted-foreground text-xs">
+                      {file.progress.toFixed(1)}%
+                    </span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-gray-200">
+                  <div className="h-2 w-full rounded-full bg-muted">
                     <div
-                      className="h-2 rounded-full bg-blue-500 transition-all duration-300"
+                      className="h-2 rounded-full bg-primary transition-all duration-300"
                       style={{ width: `${file.progress}%` }}
                     />
                   </div>
@@ -402,13 +406,13 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => toggleExpanded(file.id)}
-                    className="h-auto p-0 text-gray-500 text-xs hover:text-gray-700"
+                    className="h-auto p-0 text-muted-foreground text-xs hover:text-foreground"
                   >
                     {expandedFiles.has(file.id) ? 'Hide details' : 'Show details'}
                   </Button>
 
                   {expandedFiles.has(file.id) && (
-                    <div className="mt-2 space-y-1 rounded-lg bg-gray-50 p-3 text-gray-600 text-xs">
+                    <div className="mt-2 space-y-1 rounded-lg bg-muted p-3 text-muted-foreground text-xs">
                       <div>
                         <strong>Type:</strong> {file.type}
                       </div>
@@ -445,7 +449,9 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
 
       {hasMoreFiles && (
         <div className="text-center">
-          <p className="text-gray-500 text-sm">... and {files.length - maxFiles} more files</p>
+          <p className="text-muted-foreground text-sm">
+            ... and {files.length - maxFiles} more files
+          </p>
         </div>
       )}
     </div>

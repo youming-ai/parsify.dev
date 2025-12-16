@@ -414,7 +414,7 @@ export default function SQLToolsPage() {
                   Copy
                 </Button>
               </div>
-              <div className="min-h-[400px] overflow-auto rounded-md border bg-slate-950 p-4 font-mono text-sm text-green-400 shadow-inner">
+              <div className="min-h-[400px] overflow-auto rounded-md border bg-background p-4 font-mono text-sm text-green-400 shadow-inner">
                 <pre className="whitespace-pre-wrap">
                   {formattedSQL || sql || (
                     <span className="text-slate-500">{'> WAITING FOR INPUT...'}</span>

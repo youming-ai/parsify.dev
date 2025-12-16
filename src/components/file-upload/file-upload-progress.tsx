@@ -162,7 +162,7 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
   const _getProgressColor = () => {
     switch (status) {
       case 'pending':
-        return 'bg-gray-200';
+        return 'bg-muted';
       case 'uploading':
         return 'bg-blue-500';
       case 'success':
@@ -170,7 +170,7 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
       case 'error':
         return 'bg-red-500';
       case 'cancelled':
-        return 'bg-gray-400';
+        return 'bg-muted-foreground';
       default:
         return 'bg-blue-500';
     }

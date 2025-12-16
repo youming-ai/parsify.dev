@@ -70,7 +70,7 @@ export function ExecutionStatusComponent({
 
     switch (status) {
       case 'idle':
-        return <Play className={cn(iconSize, 'text-gray-500')} />;
+        return <Play className={cn(iconSize, 'text-muted-foreground')} />;
       case 'compiling':
         return <Terminal className={cn(iconSize, 'text-blue-500', animated && 'animate-pulse')} />;
       case 'running':
@@ -84,7 +84,7 @@ export function ExecutionStatusComponent({
       case 'cancelled':
         return <Square className={cn(iconSize, 'text-yellow-500')} />;
       default:
-        return <Clock className={cn(iconSize, 'text-gray-500')} />;
+        return <Clock className={cn(iconSize, 'text-muted-foreground')} />;
     }
   };
 
@@ -169,14 +169,14 @@ export function ExecutionStatusComponent({
         </div>
 
         {status === 'running' && (
-          <div className="flex items-center gap-2 text-gray-600 text-sm dark:text-gray-400">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm dark:text-muted-foreground">
             <Clock className="h-4 w-4" />
             {formatTime(currentTime)}
           </div>
         )}
 
         {status === 'completed' && (
-          <div className="flex items-center gap-4 text-gray-600 text-sm dark:text-gray-400">
+          <div className="flex items-center gap-4 text-muted-foreground text-sm dark:text-muted-foreground">
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4" />
               {formatTime(executionTime)}
@@ -215,7 +215,9 @@ export function ExecutionStatusComponent({
               {getStatusIcon()}
               <div>
                 <h3 className="font-medium">Execution Status</h3>
-                <p className="text-gray-600 text-sm dark:text-gray-400">{getStatusText()}</p>
+                <p className="text-muted-foreground text-sm dark:text-muted-foreground">
+                  {getStatusText()}
+                </p>
               </div>
             </div>
 
@@ -241,11 +243,11 @@ export function ExecutionStatusComponent({
                 status === 'completed' ||
                 status === 'error' ||
                 status === 'timeout') && (
-                <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+                <div className="flex items-center gap-3 rounded-lg bg-muted p-3 dark:bg-card">
                   <Clock className="h-5 w-5 text-blue-500" />
                   <div>
                     <div className="font-medium text-sm">Execution Time</div>
-                    <div className="text-gray-600 text-xs dark:text-gray-400">
+                    <div className="text-muted-foreground text-xs dark:text-muted-foreground">
                       {formatTime(status === 'running' ? currentTime : executionTime)}
                     </div>
                   </div>
@@ -255,11 +257,11 @@ export function ExecutionStatusComponent({
               {/* Memory Usage */}
               {(status === 'running' || status === 'completed' || status === 'error') &&
                 memoryUsage > 0 && (
-                  <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+                  <div className="flex items-center gap-3 rounded-lg bg-muted p-3 dark:bg-card">
                     <MemoryStick className="h-5 w-5 text-green-500" />
                     <div>
                       <div className="font-medium text-sm">Memory Usage</div>
-                      <div className="text-gray-600 text-xs dark:text-gray-400">
+                      <div className="text-muted-foreground text-xs dark:text-muted-foreground">
                         {formatMemory(memoryUsage)}
                       </div>
                     </div>
@@ -268,11 +270,13 @@ export function ExecutionStatusComponent({
 
               {/* Performance Metrics */}
               {status === 'completed' && (
-                <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+                <div className="flex items-center gap-3 rounded-lg bg-muted p-3 dark:bg-card">
                   <Zap className="h-5 w-5 text-yellow-500" />
                   <div>
                     <div className="font-medium text-sm">Performance</div>
-                    <div className="text-gray-600 text-xs dark:text-gray-400">Optimal</div>
+                    <div className="text-muted-foreground text-xs dark:text-muted-foreground">
+                      Optimal
+                    </div>
                   </div>
                 </div>
               )}
@@ -283,7 +287,7 @@ export function ExecutionStatusComponent({
                   <AlertTriangle className="h-5 w-5 text-orange-500" />
                   <div>
                     <div className="font-medium text-sm">Timeout</div>
-                    <div className="text-gray-600 text-xs dark:text-gray-400">
+                    <div className="text-muted-foreground text-xs dark:text-muted-foreground">
                       Execution exceeded time limit
                     </div>
                   </div>
@@ -381,7 +385,7 @@ export function QuickStatus({
   const getStatusColor = () => {
     switch (status) {
       case 'idle':
-        return 'text-gray-500';
+        return 'text-muted-foreground';
       case 'compiling':
         return 'text-blue-500';
       case 'running':
@@ -395,7 +399,7 @@ export function QuickStatus({
       case 'cancelled':
         return 'text-yellow-500';
       default:
-        return 'text-gray-500';
+        return 'text-muted-foreground';
     }
   };
 

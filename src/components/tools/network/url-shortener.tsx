@@ -456,8 +456,8 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
             </div>
 
             {shortenedUrls.length === 0 ? (
-              <div className="py-8 text-center text-gray-500">
-                <Link className="mx-auto mb-4 h-12 w-12 text-gray-300" />
+              <div className="py-8 text-center text-muted-foreground">
+                <Link className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                 <p>No shortened URLs yet. Create your first one!</p>
               </div>
             ) : (
@@ -475,16 +475,18 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
                               Expires: {url.expiresAt.toLocaleDateString()}
                             </Badge>
                           )}
-                          {url.password && <Shield className="h-3 w-3 text-gray-500" />}
+                          {url.password && <Shield className="h-3 w-3 text-muted-foreground" />}
                         </div>
 
-                        <p className="mb-1 truncate text-gray-600 text-sm">{url.originalUrl}</p>
+                        <p className="mb-1 truncate text-muted-foreground text-sm">
+                          {url.originalUrl}
+                        </p>
 
                         {url.description && (
-                          <p className="mb-2 text-gray-500 text-xs">{url.description}</p>
+                          <p className="mb-2 text-muted-foreground text-xs">{url.description}</p>
                         )}
 
-                        <div className="flex items-center gap-4 text-gray-500 text-xs">
+                        <div className="flex items-center gap-4 text-muted-foreground text-xs">
                           <span className="flex items-center gap-1">
                             <BarChart className="h-3 w-3" />
                             {url.clicks} clicks
@@ -528,25 +530,25 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               <Card className="p-4">
                 <div className="font-bold text-2xl">{stats.totalUrls}</div>
-                <div className="text-gray-500 text-sm">Total URLs</div>
+                <div className="text-muted-foreground text-sm">Total URLs</div>
               </Card>
               <Card className="p-4">
                 <div className="font-bold text-2xl">{stats.totalClicks}</div>
-                <div className="text-gray-500 text-sm">Total Clicks</div>
+                <div className="text-muted-foreground text-sm">Total Clicks</div>
               </Card>
               <Card className="p-4">
                 <div className="font-bold text-2xl">{stats.activeUrls}</div>
-                <div className="text-gray-500 text-sm">Active URLs</div>
+                <div className="text-muted-foreground text-sm">Active URLs</div>
               </Card>
               <Card className="p-4">
                 <div className="font-bold text-2xl">{stats.avgClicksPerUrl.toFixed(1)}</div>
-                <div className="text-gray-500 text-sm">Avg Clicks/URL</div>
+                <div className="text-muted-foreground text-sm">Avg Clicks/URL</div>
               </Card>
             </div>
 
             <Card className="p-4">
               <h3 className="mb-4 font-semibold text-lg">About URL Shortener</h3>
-              <div className="space-y-2 text-gray-600 text-sm">
+              <div className="space-y-2 text-muted-foreground text-sm">
                 <p>• Create short, memorable URLs with custom aliases</p>
                 <p>• Password protection for sensitive links</p>
                 <p>• Set expiration dates for temporary links</p>

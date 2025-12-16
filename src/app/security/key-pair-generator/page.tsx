@@ -105,7 +105,7 @@ export default function KeyPairGeneratorPage() {
         return {
           level: 'Unknown',
           color: 'text-slate-600',
-          badge: 'bg-slate-100 text-slate-700',
+          badge: 'bg-muted text-slate-700',
           description: '',
         };
     }

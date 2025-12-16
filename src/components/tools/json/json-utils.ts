@@ -348,6 +348,7 @@ export function downloadFile(content: string, filename: string, contentType = 't
  * Check if a string is a serialized/escaped JSON string
  * This detects patterns like: "[{\"key\":\"value\"}]" or "{\"key\":\"value\"}"
  * where the JSON has been wrapped in quotes and escaped
+ * Also detects simple string-wrapped JSON like: "{"name": "value"}" (typed as JSON string)
  */
 export function isSerializedJsonString(content: string): boolean {
   const trimmed = content.trim();
@@ -357,22 +358,28 @@ export function isSerializedJsonString(content: string): boolean {
     (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
     (trimmed.startsWith("'") && trimmed.endsWith("'"))
   ) {
-    // Check if it contains escaped characters typical of serialized JSON
-    if (trimmed.includes('\\"') || trimmed.includes("\\'")) {
-      // Try to parse as a JSON string value first
-      try {
-        const unescaped = JSON.parse(trimmed);
-        // If the parsed result is a string that looks like JSON, it's serialized
-        if (typeof unescaped === 'string') {
-          const innerTrimmed = unescaped.trim();
-          return (
-            (innerTrimmed.startsWith('{') && innerTrimmed.endsWith('}')) ||
-            (innerTrimmed.startsWith('[') && innerTrimmed.endsWith(']'))
-          );
+    // Try to parse as a JSON string value first
+    try {
+      const unescaped = JSON.parse(trimmed);
+      // If the parsed result is a string that looks like JSON, it's serialized
+      if (typeof unescaped === 'string') {
+        const innerTrimmed = unescaped.trim();
+        // Check if inner content looks like JSON object or array
+        if (
+          (innerTrimmed.startsWith('{') && innerTrimmed.endsWith('}')) ||
+          (innerTrimmed.startsWith('[') && innerTrimmed.endsWith(']'))
+        ) {
+          // Verify it's actually valid JSON inside
+          try {
+            JSON.parse(innerTrimmed);
+            return true;
+          } catch {
+            // Inner content is not valid JSON
+          }
         }
-      } catch {
-        // Not valid JSON string, fall through
       }
+    } catch {
+      // Not valid JSON string, fall through
     }
   }
 

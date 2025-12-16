@@ -624,7 +624,7 @@ export function JavaExecutor(): React.ReactElement {
           <Card>
             <CardContent className="p-4">
               <ScrollArea
-                className="h-80 rounded-md border bg-gray-50 p-3 font-mono text-sm dark:bg-gray-900"
+                className="h-80 rounded-md border bg-muted p-3 font-mono text-sm dark:bg-card"
                 ref={outputRef}
               >
                 {state.output || 'Output will appear here...'}
@@ -642,7 +642,7 @@ export function JavaExecutor(): React.ReactElement {
                   <Badge variant="default">Compiled</Badge>
                 </div>
                 {state.jarFiles.length > 0 && (
-                  <div className="text-gray-600 text-sm dark:text-gray-400">
+                  <div className="text-muted-foreground text-sm dark:text-muted-foreground">
                     Generated class files:
                     <ul className="mt-1 ml-4 list-disc">
                       {state.jarFiles.map((file, index) => (

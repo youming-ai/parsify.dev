@@ -133,7 +133,7 @@ export function ColorConverter() {
           <div className="space-y-2">
             <Label>Color Preview</Label>
             <div
-              className="h-32 w-full rounded-lg border-2 border-gray-300"
+              className="h-32 w-full rounded-lg border-2 border-border"
               style={{ backgroundColor: hex }}
             />
           </div>

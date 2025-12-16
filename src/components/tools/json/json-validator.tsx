@@ -122,8 +122,8 @@ export function JsonValidator({
           <div className="flex items-center gap-3">
             {getStatusIcon()}
             <div>
-              <h3 className="font-medium text-gray-900">{getStatusText()}</h3>
-              <p className="mt-1 text-gray-600 text-sm">
+              <h3 className="font-medium text-foreground">{getStatusText()}</h3>
+              <p className="mt-1 text-muted-foreground text-sm">
                 JSON validation {isValidating ? 'in progress' : 'complete'}
               </p>
             </div>
@@ -145,7 +145,7 @@ export function JsonValidator({
 
         {/* Statistics */}
         <div className="mt-4 border-gray-200 border-t pt-4">
-          <div className="flex items-center gap-4 text-gray-600 text-sm">
+          <div className="flex items-center gap-4 text-muted-foreground text-sm">
             <span>Lines: {stats.lines}</span>
             <span>Characters: {stats.chars}</span>
             <span>Words: {stats.words}</span>
@@ -170,8 +170,8 @@ export function JsonValidator({
 
       {/* Empty State */}
       {!input.trim() && (
-        <div className="py-8 text-center text-gray-500">
-          <AlertCircle className="mx-auto mb-2 h-8 w-8 text-gray-400" />
+        <div className="py-8 text-center text-muted-foreground">
+          <AlertCircle className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
           <p>Enter JSON content above to validate</p>
         </div>
       )}

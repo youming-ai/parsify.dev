@@ -555,7 +555,7 @@ export const JSONBatchConverter: React.FC = () => {
       case 'error':
         return 'text-red-600';
       default:
-        return 'text-gray-600';
+        return 'text-muted-foreground';
     }
   };
 
@@ -619,7 +619,7 @@ export const JSONBatchConverter: React.FC = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-gray-600 text-xs">
+              <p className="text-muted-foreground text-xs">
                 {conversionTypes.find((t) => t.id === selectedConversion)?.description}
               </p>
             </div>
@@ -698,27 +698,27 @@ export const JSONBatchConverter: React.FC = () => {
             {/* Quick Stats */}
             {tasks.length > 0 && (
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                <div className="rounded-lg bg-gray-50 p-3 text-center">
+                <div className="rounded-lg bg-muted p-3 text-center">
                   <div className="font-bold text-2xl text-blue-600">{tasks.length}</div>
-                  <div className="text-gray-600 text-sm">Total Files</div>
+                  <div className="text-muted-foreground text-sm">Total Files</div>
                 </div>
-                <div className="rounded-lg bg-gray-50 p-3 text-center">
+                <div className="rounded-lg bg-muted p-3 text-center">
                   <div className="font-bold text-2xl text-green-600">
                     {tasks.filter((t) => t.status === 'completed').length}
                   </div>
-                  <div className="text-gray-600 text-sm">Completed</div>
+                  <div className="text-muted-foreground text-sm">Completed</div>
                 </div>
-                <div className="rounded-lg bg-gray-50 p-3 text-center">
+                <div className="rounded-lg bg-muted p-3 text-center">
                   <div className="font-bold text-2xl text-yellow-600">
                     {tasks.filter((t) => t.status === 'processing').length}
                   </div>
-                  <div className="text-gray-600 text-sm">Processing</div>
+                  <div className="text-muted-foreground text-sm">Processing</div>
                 </div>
-                <div className="rounded-lg bg-gray-50 p-3 text-center">
+                <div className="rounded-lg bg-muted p-3 text-center">
                   <div className="font-bold text-2xl text-red-600">
                     {tasks.filter((t) => t.status === 'error').length}
                   </div>
-                  <div className="text-gray-600 text-sm">Errors</div>
+                  <div className="text-muted-foreground text-sm">Errors</div>
                 </div>
               </div>
             )}
@@ -758,7 +758,7 @@ export const JSONBatchConverter: React.FC = () => {
                 {filteredTasks.map((task) => (
                   <div
                     key={task.id}
-                    className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-gray-50"
+                    className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted"
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
@@ -771,7 +771,7 @@ export const JSONBatchConverter: React.FC = () => {
                         </Badge>
                         {getStatusBadge(task.status)}
                       </div>
-                      <div className="mt-1 text-gray-600 text-sm">
+                      <div className="mt-1 text-muted-foreground text-sm">
                         Size: {task.inputSize.toLocaleString()} bytes
                         {task.outputSize > 0 && ` → ${task.outputSize.toLocaleString()} bytes`}
                       </div>
@@ -814,29 +814,29 @@ export const JSONBatchConverter: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              <div className="rounded-lg bg-gray-50 p-3 text-center">
+              <div className="rounded-lg bg-muted p-3 text-center">
                 <div className="font-bold text-2xl text-blue-600">
                   {batchResult.completedTasks}/{batchResult.totalTasks}
                 </div>
-                <div className="text-gray-600 text-sm">Success Rate</div>
+                <div className="text-muted-foreground text-sm">Success Rate</div>
               </div>
-              <div className="rounded-lg bg-gray-50 p-3 text-center">
+              <div className="rounded-lg bg-muted p-3 text-center">
                 <div className="font-bold text-2xl text-green-600">
                   {batchResult.averageProcessingTime.toFixed(0)}ms
                 </div>
-                <div className="text-gray-600 text-sm">Avg Time</div>
+                <div className="text-muted-foreground text-sm">Avg Time</div>
               </div>
-              <div className="rounded-lg bg-gray-50 p-3 text-center">
+              <div className="rounded-lg bg-muted p-3 text-center">
                 <div className="font-bold text-2xl text-purple-600">
                   {(batchResult.totalInputSize / 1024).toFixed(1)}KB
                 </div>
-                <div className="text-gray-600 text-sm">Input Size</div>
+                <div className="text-muted-foreground text-sm">Input Size</div>
               </div>
-              <div className="rounded-lg bg-gray-50 p-3 text-center">
+              <div className="rounded-lg bg-muted p-3 text-center">
                 <div className="font-bold text-2xl text-orange-600">
                   {(batchResult.totalOutputSize / 1024).toFixed(1)}KB
                 </div>
-                <div className="text-gray-600 text-sm">Output Size</div>
+                <div className="text-muted-foreground text-sm">Output Size</div>
               </div>
             </div>
 
@@ -855,7 +855,7 @@ export const JSONBatchConverter: React.FC = () => {
               </Button>
             </div>
 
-            <div className="text-gray-600 text-sm">
+            <div className="text-muted-foreground text-sm">
               Processing completed at: {batchResult.endTime?.toLocaleString()}
               Duration:{' '}
               {batchResult.endTime &&

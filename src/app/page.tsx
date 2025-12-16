@@ -137,14 +137,13 @@ export default function Home() {
 
             {/* Main Headline */}
             <h1 className="fade-in animate-in slide-in-from-bottom-6 mx-auto max-w-3xl text-4xl font-bold tracking-tight duration-700 sm:text-5xl md:text-6xl lg:text-7xl">
-              Essential Tools for <br className="hidden sm:block" />
-              <span className="text-primary">Developers</span>
+              Essential Tools for Developers
             </h1>
 
             {/* Description */}
             <p className="fade-in animate-in slide-in-from-bottom-8 mx-auto max-w-2xl text-lg text-muted-foreground duration-900 sm:text-xl">
-              A privacy-first collection of utilities for your daily workflow. <br />
-              No server-side processing—your data never leaves your browser.
+              A privacy-first collection of utilities for your daily workflow. No server-side
+              processing—your data never leaves your browser.
             </p>
 
             {/* Modern Search Box */}

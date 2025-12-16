@@ -135,7 +135,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
       case 'success':
         return { color: 'text-green-600', icon: CheckCircle, text: 'Success' };
       default:
-        return { color: 'text-gray-600', icon: Clock, text: 'Idle' };
+        return { color: 'text-muted-foreground', icon: Clock, text: 'Idle' };
     }
   }, [status]);
 

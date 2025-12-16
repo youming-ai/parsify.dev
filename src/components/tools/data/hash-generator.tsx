@@ -223,9 +223,9 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
                 {hashAlgorithms
                   .filter((algo) => selectedAlgorithms.includes(algo.value))
                   .map((algo) => (
-                    <div key={algo.value} className="rounded bg-gray-50 p-3">
+                    <div key={algo.value} className="rounded bg-muted p-3">
                       <div className="font-medium">{algo.label}</div>
-                      <div className="text-gray-600 text-sm">{algo.description}</div>
+                      <div className="text-muted-foreground text-sm">{algo.description}</div>
                     </div>
                   ))}
               </div>
@@ -337,8 +337,10 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
                         <Badge variant="outline">{result.algorithm.toUpperCase()}</Badge>
                         {result.inputType === 'file' && (
                           <>
-                            <span className="text-gray-600 text-sm">{result.fileName}</span>
-                            <span className="text-gray-500 text-xs">({result.fileSize} bytes)</span>
+                            <span className="text-muted-foreground text-sm">{result.fileName}</span>
+                            <span className="text-muted-foreground text-xs">
+                              ({result.fileSize} bytes)
+                            </span>
                           </>
                         )}
                       </div>
@@ -350,10 +352,10 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
                         <Copy className="h-4 w-4" />
                       </Button>
                     </div>
-                    <div className="break-all rounded bg-gray-50 p-2 font-mono text-sm">
+                    <div className="break-all rounded bg-muted p-2 font-mono text-sm">
                       {result.hash}
                     </div>
-                    <div className="text-gray-500 text-xs">
+                    <div className="text-muted-foreground text-xs">
                       Input:{' '}
                       {result.inputType === 'file'
                         ? 'File content'
@@ -376,7 +378,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
               {hashAlgorithms.map((algo) => (
                 <div key={algo.value} className="grid gap-4 rounded border p-3 md:grid-cols-3">
                   <div className="font-medium">{algo.label}</div>
-                  <div className="text-gray-600 text-sm">{algo.description}</div>
+                  <div className="text-muted-foreground text-sm">{algo.description}</div>
                   <div className="text-sm">
                     <span className="font-medium">Output:</span>{' '}
                     {algo.value === 'md5'

@@ -550,7 +550,7 @@ website=https://johndoe.com`,
                           />
                         )}
                       </div>
-                      <div className="text-gray-600 text-sm">{rule.description}</div>
+                      <div className="text-muted-foreground text-sm">{rule.description}</div>
                     </div>
                   ))}
                 </div>
@@ -610,7 +610,7 @@ website=https://johndoe.com`,
                 </div>
               </div>
 
-              <div className="rounded bg-gray-50 p-3">
+              <div className="rounded bg-muted p-3">
                 <div className="text-sm">{results.summary}</div>
               </div>
 
@@ -625,7 +625,7 @@ website=https://johndoe.com`,
                           <XCircle className="h-4 w-4 text-red-600" />
                         )}
                         <span className="font-medium">{result.field}</span>
-                        <span className="text-gray-600 text-sm">
+                        <span className="text-muted-foreground text-sm">
                           ({typeof result.value === 'string' ? `"${result.value}"` : result.value})
                         </span>
                       </div>

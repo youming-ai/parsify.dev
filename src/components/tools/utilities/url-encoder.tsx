@@ -221,7 +221,7 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
                         onClick={() => setEncodingType('full')}
                       >
                         <div className="font-medium">Full URL Encoding</div>
-                        <div className="text-gray-600 text-sm">
+                        <div className="text-muted-foreground text-sm">
                           Encodes all special characters including /, :, ?, #
                         </div>
                       </div>
@@ -234,7 +234,7 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
                         onClick={() => setEncodingType('component')}
                       >
                         <div className="font-medium">Component Encoding</div>
-                        <div className="text-gray-600 text-sm">
+                        <div className="text-muted-foreground text-sm">
                           Encodes URL components separately
                         </div>
                       </div>
@@ -245,7 +245,7 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
                         onClick={() => setEncodingType('path')}
                       >
                         <div className="font-medium">Path Encoding</div>
-                        <div className="text-gray-600 text-sm">
+                        <div className="text-muted-foreground text-sm">
                           Preserves slashes, encodes other characters
                         </div>
                       </div>
@@ -303,7 +303,9 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
                 }
                 className="min-h-32 font-mono"
               />
-              <div className="mt-1 text-gray-500 text-sm">{inputText.length} characters</div>
+              <div className="mt-1 text-muted-foreground text-sm">
+                {inputText.length} characters
+              </div>
             </div>
 
             {outputText && (
@@ -317,10 +319,12 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
                     Copy
                   </Button>
                 </div>
-                <div className="rounded border bg-gray-50 p-3">
+                <div className="rounded border bg-muted p-3">
                   <div className="break-all font-mono text-sm">{outputText}</div>
                 </div>
-                <div className="mt-1 text-gray-500 text-sm">{outputText.length} characters</div>
+                <div className="mt-1 text-muted-foreground text-sm">
+                  {outputText.length} characters
+                </div>
               </div>
             )}
 
@@ -340,7 +344,7 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
               {urlExamples.map((example, index) => (
                 <div key={index} className="rounded border p-3">
                   <div className="mb-1 font-medium">{example.name}</div>
-                  <div className="mb-2 text-gray-600 text-sm">{example.description}</div>
+                  <div className="mb-2 text-muted-foreground text-sm">{example.description}</div>
                   <Button variant="outline" size="sm" onClick={() => loadExample(example)}>
                     Load Example
                   </Button>
@@ -360,46 +364,46 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
               <div className="space-y-1">
                 <div className="font-medium">Spaces & Special</div>
                 <div>
-                  <code className="bg-gray-100 px-1">Space:</code> <code>%20</code>
+                  <code className="bg-muted px-1">Space:</code> <code>%20</code>
                 </div>
                 <div>
-                  <code className="bg-gray-100 px-1">!:</code> <code>%21</code>
+                  <code className="bg-muted px-1">!:</code> <code>%21</code>
                 </div>
                 <div>
-                  <code className="bg-gray-100 px-1">?:</code> <code>%3F</code>
+                  <code className="bg-muted px-1">?:</code> <code>%3F</code>
                 </div>
                 <div>
-                  <code className="bg-gray-100 px-1">=:</code> <code>%3D</code>
+                  <code className="bg-muted px-1">=:</code> <code>%3D</code>
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="font-medium">Symbols</div>
                 <div>
-                  <code className="bg-gray-100 px-1">:</code> <code>%3A</code>
+                  <code className="bg-muted px-1">:</code> <code>%3A</code>
                 </div>
                 <div>
-                  <code className="bg-gray-100 px-1">/:</code> <code>%2F</code>
+                  <code className="bg-muted px-1">/:</code> <code>%2F</code>
                 </div>
                 <div>
-                  <code className="bg-gray-100 px-1">#:</code> <code>%23</code>
+                  <code className="bg-muted px-1">#:</code> <code>%23</code>
                 </div>
                 <div>
-                  <code className="bg-gray-100 px-1">[</code> <code>%5B</code>
+                  <code className="bg-muted px-1">[</code> <code>%5B</code>
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="font-medium">Unicode</div>
                 <div>
-                  <code className="bg-gray-100 px-1">©:</code> <code>%C2%A9</code>
+                  <code className="bg-muted px-1">©:</code> <code>%C2%A9</code>
                 </div>
                 <div>
-                  <code className="bg-gray-100 px-1">®:</code> <code>%C2%AE</code>
+                  <code className="bg-muted px-1">®:</code> <code>%C2%AE</code>
                 </div>
                 <div>
-                  <code className="bg-gray-100 px-1">€:</code> <code>%E2%82%AC</code>
+                  <code className="bg-muted px-1">€:</code> <code>%E2%82%AC</code>
                 </div>
                 <div>
-                  <code className="bg-gray-100 px-1">你:</code> <code>%E4%BD%A0</code>
+                  <code className="bg-muted px-1">你:</code> <code>%E4%BD%A0</code>
                 </div>
               </div>
             </div>
@@ -420,13 +424,13 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
                       <Badge variant="outline">
                         {result.operation === 'encode' ? 'Encoded' : 'Decoded'}
                       </Badge>
-                      <span className="text-gray-500 text-xs">
+                      <span className="text-muted-foreground text-xs">
                         {result.timestamp.toLocaleTimeString()}
                       </span>
                     </div>
                     <div className="text-sm">
                       <div className="truncate font-mono">{result.input}</div>
-                      <div className="text-gray-500">↓</div>
+                      <div className="text-muted-foreground">↓</div>
                       <div className="truncate font-mono">{result.output}</div>
                     </div>
                   </div>

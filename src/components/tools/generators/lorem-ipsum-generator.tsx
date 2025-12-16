@@ -104,11 +104,7 @@ export function LoremIpsumGenerator() {
 
           <div className="space-y-2">
             <Label>Output</Label>
-            <Textarea
-              value={output}
-              readOnly
-              className="h-64 resize-none bg-slate-50 dark:bg-slate-900"
-            />
+            <Textarea value={output} readOnly className="h-64 resize-none bg-muted dark:bg-card" />
             <div className="flex justify-end">
               <Button variant="outline" onClick={copyToClipboard}>
                 <Copy className="mr-2 h-4 w-4" />

@@ -53,7 +53,7 @@ export function HtmlEntityEncoder() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex justify-center">
-            <div className="flex items-center gap-4 rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+            <div className="flex items-center gap-4 rounded-lg bg-muted p-1 dark:bg-card">
               <Button
                 variant={mode === 'encode' ? 'default' : 'ghost'}
                 onClick={() => setMode('encode')}
@@ -100,7 +100,7 @@ export function HtmlEntityEncoder() {
                 value={output}
                 readOnly
                 placeholder="Result will appear here..."
-                className="h-64 resize-none bg-slate-50 font-mono dark:bg-slate-900"
+                className="h-64 resize-none bg-muted font-mono dark:bg-card"
               />
               <div className="flex justify-end">
                 <Button variant="outline" size="sm" onClick={() => copyToClipboard(output)}>

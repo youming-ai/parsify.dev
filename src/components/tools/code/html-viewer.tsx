@@ -85,7 +85,7 @@ export const HtmlViewer = () => {
           </TabsContent>
 
           <TabsContent value="preview" className="mt-3">
-            <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-card">
               <iframe
                 title="HTML Preview"
                 className="h-[360px] w-full rounded-lg"

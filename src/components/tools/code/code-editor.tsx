@@ -63,14 +63,14 @@ export function CodeEditor({
 
   return (
     <div className={cn('overflow-hidden rounded-lg border', className)}>
-      <div className="border-b bg-gray-50 px-3 py-2 dark:bg-gray-800">
+      <div className="border-b bg-muted px-3 py-2 dark:bg-card">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <span className="font-medium text-gray-700 text-sm dark:text-gray-300">
+            <span className="font-medium text-gray-700 text-sm dark:text-muted-foreground">
               {languageConfig.name}
             </span>
             {languageConfig.version && (
-              <span className="text-gray-500 text-xs dark:text-gray-400">
+              <span className="text-muted-foreground text-xs dark:text-muted-foreground">
                 v{languageConfig.version}
               </span>
             )}
@@ -79,7 +79,7 @@ export function CodeEditor({
             <select
               value={language}
               onChange={(e) => onLanguageChange(e.target.value as any)}
-              className="rounded border bg-white px-2 py-1 text-xs dark:bg-gray-700 dark:text-gray-200"
+              className="rounded border bg-white px-2 py-1 text-xs dark:bg-secondary dark:text-gray-200"
             >
               {Object.entries({
                 javascript: 'JavaScript',
@@ -113,7 +113,9 @@ export function CodeEditor({
           <div className="flex h-96 items-center justify-center">
             <div className="flex flex-col items-center space-y-4">
               <div className="h-8 w-8 animate-spin rounded-full border-blue-600 border-b-2" />
-              <p className="text-gray-600 text-sm dark:text-gray-400">Loading editor...</p>
+              <p className="text-muted-foreground text-sm dark:text-muted-foreground">
+                Loading editor...
+              </p>
             </div>
           </div>
         }

@@ -574,7 +574,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({ onComp
             Import Module
           </button>
 
-          <label className="flex cursor-pointer items-center gap-2 rounded bg-gray-600 px-3 py-2 text-white hover:bg-gray-700">
+          <label className="flex cursor-pointer items-center gap-2 rounded bg-secondary px-3 py-2 text-white hover:bg-secondary">
             <span className="h-4 w-4">📁</span>
             Import .ts
             <input type="file" accept=".ts" onChange={importFile} className="hidden" />
@@ -582,7 +582,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({ onComp
 
           <button
             onClick={exportFile}
-            className="flex items-center gap-2 rounded bg-gray-600 px-3 py-2 text-white hover:bg-gray-700"
+            className="flex items-center gap-2 rounded bg-secondary px-3 py-2 text-white hover:bg-secondary"
           >
             <span className="h-4 w-4">💾</span>
             Export .ts
@@ -604,7 +604,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({ onComp
                 target: e.target.value as any,
               }))
             }
-            className="rounded border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+            className="rounded border border-border bg-secondary px-3 py-2 text-white"
           >
             <option value="ES2015">ES2015</option>
             <option value="ES2016">ES2016</option>
@@ -651,7 +651,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({ onComp
                 setCode(preset.code);
                 setOutput(`✅ Loaded preset: ${preset.name}`);
               }}
-              className="rounded bg-gray-700 px-3 py-1 text-sm text-white hover:bg-gray-600"
+              className="rounded bg-secondary px-3 py-1 text-sm text-white hover:bg-secondary"
             >
               {preset.name}
             </button>
@@ -659,11 +659,14 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({ onComp
         </div>
 
         {/* Module Configuration */}
-        <div className="rounded bg-gray-800 p-3">
+        <div className="rounded bg-card p-3">
           <div className="mb-2 font-semibold text-sm text-white">Module Imports:</div>
           <div className="flex flex-wrap gap-2">
             {moduleImports.map((module, index) => (
-              <span key={index} className="rounded bg-gray-700 px-2 py-1 text-gray-300 text-xs">
+              <span
+                key={index}
+                className="rounded bg-secondary px-2 py-1 text-muted-foreground text-xs"
+              >
                 {module}
                 <button
                   onClick={() => {

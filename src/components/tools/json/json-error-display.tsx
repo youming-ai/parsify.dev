@@ -81,11 +81,11 @@ export function JsonErrorDisplay({ errors, content, className }: JsonErrorDispla
               {errorLine && (
                 <div className="rounded border bg-white p-3 font-mono text-sm">
                   <div className="mb-2 flex items-center gap-2">
-                    <span className="text-gray-500 text-xs">Line {errorLine.number}:</span>
+                    <span className="text-muted-foreground text-xs">Line {errorLine.number}:</span>
                   </div>
                   <div className="relative">
                     <div className="text-gray-700">
-                      <span className="text-gray-400">{errorLine.beforeError}</span>
+                      <span className="text-muted-foreground">{errorLine.beforeError}</span>
                       <span
                         className={cn(
                           'rounded bg-red-200 px-0.5',
@@ -94,7 +94,7 @@ export function JsonErrorDisplay({ errors, content, className }: JsonErrorDispla
                       >
                         {errorLine.errorChar}
                       </span>
-                      <span className="text-gray-400">{errorLine.afterError}</span>
+                      <span className="text-muted-foreground">{errorLine.afterError}</span>
                     </div>
                     {errorLine.errorChar && (
                       <div

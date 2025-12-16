@@ -292,7 +292,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
             <pre
               className={cn(
                 'rounded-lg p-4 text-sm',
-                theme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'
+                theme === 'dark' ? 'bg-card text-gray-100' : 'bg-muted text-gray-900'
               )}
             >
               {showLineNumbers ? (
@@ -302,7 +302,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                       'select-none border-r pr-4 text-right',
                       theme === 'dark'
                         ? 'border-gray-700 text-gray-500'
-                        : 'border-gray-300 text-gray-400'
+                        : 'border-border text-gray-400'
                     )}
                   >
                     {lines.map((_, index) => (

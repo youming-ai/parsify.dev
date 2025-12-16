@@ -150,7 +150,7 @@ export default function DashboardPage() {
                   {recentActivity.map((activity) => (
                     <div
                       key={activity.id}
-                      className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-gray-50"
+                      className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted"
                     >
                       <div className="flex items-center gap-3">
                         <div className="h-2 w-2 rounded-full bg-blue-500" />

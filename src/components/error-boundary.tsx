@@ -110,8 +110,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       // 默认错误界面
       return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <div className="w-full max-w-md rounded-lg bg-card p-6 shadow-lg border">
             <div className="mb-4 flex items-center">
               <div className="flex-shrink-0">
                 <svg
@@ -131,8 +131,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 </svg>
               </div>
               <div className="ml-3">
-                <h1 className="font-medium text-gray-900 text-lg">出现了一些问题</h1>
-                <p className="mt-1 text-gray-500 text-sm">
+                <h1 className="font-medium text-foreground text-lg">出现了一些问题</h1>
+                <p className="mt-1 text-muted-foreground text-sm">
                   应用程序遇到了意外错误。我们已经记录了这个问题。
                 </p>
               </div>
@@ -168,7 +168,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 onClick={() => {
                   window.location.href = '/';
                 }}
-                className="text-blue-600 text-sm hover:text-blue-500"
+                className="text-primary text-sm hover:text-primary/80"
               >
                 返回首页
               </button>

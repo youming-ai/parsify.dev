@@ -59,7 +59,7 @@ export function JsonInputEditor({
   return (
     <div className={cn('space-y-3', className)}>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-gray-600 text-sm">Templates:</span>
+        <span className="text-muted-foreground text-sm">Templates:</span>
         {templates.map((template) => (
           <Button
             key={template.name}
@@ -84,7 +84,7 @@ export function JsonInputEditor({
           className={cn(
             'resize-none font-mono text-sm',
             'focus:border-blue-500 focus:ring-2 focus:ring-blue-500',
-            'border-gray-300'
+            'border-border'
           )}
           style={{
             height: typeof height === 'number' ? `${height}px` : height,
@@ -92,14 +92,14 @@ export function JsonInputEditor({
           spellCheck={false}
         />
 
-        <div className="absolute top-2 right-2 flex items-center gap-1 text-gray-500 text-xs">
+        <div className="absolute top-2 right-2 flex items-center gap-1 text-muted-foreground text-xs">
           <span>{value.length} chars</span>
           <span>•</span>
           <span>{value.split('\n').length} lines</span>
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-gray-500 text-xs">
+      <div className="flex items-center justify-between text-muted-foreground text-xs">
         <div className="flex items-center gap-4">
           <span>Press Tab for indentation</span>
           <span>Ctrl/Cmd + Enter to format</span>

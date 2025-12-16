@@ -166,7 +166,7 @@ export function CodeExecutorSkeleton() {
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-8 w-16" />
         </div>
-        <Skeleton className="h-48 w-full rounded-lg bg-gray-900" />
+        <Skeleton className="h-48 w-full rounded-lg bg-card" />
       </div>
     </div>
   );

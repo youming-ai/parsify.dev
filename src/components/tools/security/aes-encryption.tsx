@@ -339,7 +339,7 @@ export const AESEncryption: React.FC = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="mt-1 text-gray-600 text-xs">{getModeDescription()}</p>
+              <p className="mt-1 text-muted-foreground text-xs">{getModeDescription()}</p>
             </div>
 
             <div>
@@ -360,7 +360,7 @@ export const AESEncryption: React.FC = () => {
                   Generate
                 </Button>
               </div>
-              <p className="mt-1 text-gray-600 text-xs">
+              <p className="mt-1 text-muted-foreground text-xs">
                 {key.length} characters ({key.length * 4} bits)
               </p>
             </div>

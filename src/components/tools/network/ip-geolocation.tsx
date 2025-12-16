@@ -577,9 +577,9 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                   />
                   {currentIP && (
                     <div className="mt-1">
-                      <Label className="text-gray-500 text-sm">Current IP:</Label>
+                      <Label className="text-muted-foreground text-sm">Current IP:</Label>
                       <div className="flex items-center gap-2">
-                        <span className="rounded bg-gray-100 px-2 py-1 font-mono text-sm">
+                        <span className="rounded bg-muted px-2 py-1 font-mono text-sm">
                           {currentIP}
                         </span>
                         <Button
@@ -613,7 +613,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                           <SelectItem key={key} value={key}>
                             <div className="flex flex-col">
                               <span>{source.name}</span>
-                              <div className="text-gray-500 text-xs">
+                              <div className="text-muted-foreground text-xs">
                                 {source.features.join(', ')} • {source.rateLimit}
                               </div>
                             </div>
@@ -670,7 +670,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                     </div>
                   </div>
 
-                  <div className="text-gray-500 text-xs">
+                  <div className="text-muted-foreground text-xs">
                     {cacheEnabled && (
                       <span>
                         Cache expires after 5 minutes • {cacheRef.current.size} items cached
@@ -684,17 +684,17 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                 <div className="mb-2 font-medium text-sm">Source Information</div>
                 <div className="space-y-2 rounded-lg border p-3">
                   <div className="flex items-center gap-2">
-                    <Server className="h-4 w-4 text-gray-500" />
+                    <Server className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <div className="font-medium text-sm">
                         {getProviderInfo(selectedSource).name}
                       </div>
-                      <div className="text-gray-500 text-xs">
+                      <div className="text-muted-foreground text-xs">
                         {getProviderInfo(selectedSource).rateLimit}
                       </div>
                     </div>
                   </div>
-                  <div className="text-gray-600 text-xs">
+                  <div className="text-muted-foreground text-xs">
                     Features: {getProviderInfo(selectedSource).features.join(', ')}
                   </div>
                   {getProviderInfo(selectedSource).requiresApiKey && (
@@ -728,11 +728,11 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                       <Label className="font-medium text-sm">Basic Information</Label>
                       <div className="space-y-1">
                         <div className="flex justify-between">
-                          <span className="text-gray-600 text-sm">IP Address:</span>
+                          <span className="text-muted-foreground text-sm">IP Address:</span>
                           <span className="font-medium font-mono text-sm">{result.ip}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600 text-sm">Country:</span>
+                          <span className="text-muted-foreground text-sm">Country:</span>
                           <span className="text-sm">
                             {result.countryCode
                               ? `${result.flag || ''} ${result.country}`
@@ -740,16 +740,16 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600 text-sm">City:</span>
+                          <span className="text-muted-foreground text-sm">City:</span>
                           <span className="text-sm">{result.city}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600 text-sm">Region:</span>
+                          <span className="text-muted-foreground text-sm">Region:</span>
                           <span className="text-sm">{result.regionName || result.region}</span>
                         </div>
                         {result.zip && (
                           <div className="flex justify-between">
-                            <span className="text-gray-600 text-sm">Postal:</span>
+                            <span className="text-muted-foreground text-sm">Postal:</span>
                             <span className="text-sm">{result.zip}</span>
                           </div>
                         )}
@@ -760,18 +760,18 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                       <Label className="font-medium text-sm">Network Information</Label>
                       <div className="space-y-1">
                         <div className="flex justify-between">
-                          <span className="text-gray-600 text-sm">ISP:</span>
+                          <span className="text-muted-foreground text-sm">ISP:</span>
                           <span className="max-w-32 truncate text-sm">{result.isp}</span>
                         </div>
                         {result.org && (
                           <div className="flex justify-between">
-                            <span className="text-gray-600 text-sm">Organization:</span>
+                            <span className="text-muted-foreground text-sm">Organization:</span>
                             <span className="max-w-32 truncate text-sm">{result.org}</span>
                           </div>
                         )}
                         {result.as && (
                           <div className="flex justify-between">
-                            <span className="text-gray-600 text-sm">ASN:</span>
+                            <span className="text-muted-foreground text-sm">ASN:</span>
                             <span className="text-sm">{result.as}</span>
                           </div>
                         )}
@@ -782,35 +782,35 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                       <Label className="font-medium text-sm">Technical Details</Label>
                       <div className="space-y-1">
                         <div className="flex justify-between">
-                          <span className="text-gray-600 text-sm">Latitude:</span>
+                          <span className="text-muted-foreground text-sm">Latitude:</span>
                           <span className="text-sm">{result.latitude.toFixed(4)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600 text-sm">Longitude:</span>
+                          <span className="text-muted-foreground text-sm">Longitude:</span>
                           <span className="text-sm">{result.longitude.toFixed(4)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600 text-sm">Timezone:</span>
+                          <span className="text-muted-foreground text-sm">Timezone:</span>
                           <span className="text-sm">{formatTimezone(result.timezone)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600 text-sm">Proxy:</span>
+                          <span className="text-muted-foreground text-sm">Proxy:</span>
                           <Badge variant={result.proxy ? 'destructive' : 'secondary'}>
                             {result.proxy ? 'Yes' : 'No'}
                           </Badge>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600 text-sm">Hosting:</span>
+                          <span className="text-muted-foreground text-sm">Hosting:</span>
                           <Badge variant={result.hosting ? 'secondary' : 'outline'}>
                             {result.hosting ? 'Yes' : 'No'}
                           </Badge>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600 text-sm">Source:</span>
+                          <span className="text-muted-foreground text-sm">Source:</span>
                           <span className="text-sm">{result.source}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600 text-sm">Response:</span>
+                          <span className="text-muted-foreground text-sm">Response:</span>
                           <span className="text-sm">{result.responseTime.toFixed(0)}ms</span>
                         </div>
                       </div>
@@ -840,7 +840,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                         title={`Location: ${result.city}, ${result.country}`}
                       />
                     </div>
-                    <div className="bg-gray-50 p-3">
+                    <div className="bg-muted p-3">
                       <div className="text-center text-sm">
                         <MapPin className="mr-2 inline-block h-4 w-4" />
                         View location on OpenStreetMap
@@ -875,7 +875,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                       <div className="overflow-hidden rounded-lg border">
                         <div className="overflow-x-auto">
                           <table className="w-full">
-                            <thead className="bg-gray-50">
+                            <thead className="bg-muted">
                               <tr>
                                 <th className="p-2 text-left font-medium text-sm">IP</th>
                                 <th className="p-2 text-left font-medium text-sm">Location</th>
@@ -887,7 +887,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                             </thead>
                             <tbody>
                               {searchHistory.map((item, index) => (
-                                <tr key={index} className="border-t hover:bg-gray-50">
+                                <tr key={index} className="border-t hover:bg-muted">
                                   <td className="p-2 font-mono text-sm">{item.ip}</td>
                                   <td className="p-2 text-sm">
                                     {item.city}, {item.country}
@@ -922,7 +922,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                       </div>
                     </>
                   ) : (
-                    <div className="py-8 text-center text-gray-500">
+                    <div className="py-8 text-center text-muted-foreground">
                       <Globe className="mx-auto mb-2 h-12 w-12 opacity-50" />
                       <p>
                         No search history yet. Start looking up IP addresses to see your results
@@ -980,7 +980,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                         <CardTitle className="text-base">IP Analysis</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-2 text-sm">
-                        <div className="rounded bg-gray-50 p-2">
+                        <div className="rounded bg-muted p-2">
                           <div className="mb-1 flex justify-between">
                             <span>IP Type:</span>
                             <Badge variant={result.proxy ? 'destructive' : 'secondary'}>
@@ -997,7 +997,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                           </div>
                         </div>
 
-                        <div className="text-gray-600 text-xs">
+                        <div className="text-muted-foreground text-xs">
                           <Clock className="mr-1 inline-block h-3 w-3" />
                           Data cached for 5 minutes • Total cache: {cacheRef.current.size} items
                         </div>
@@ -1021,19 +1021,19 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                 <div className="mt-2 grid grid-cols-2 gap-4 md:grid-cols-4">
                   <div className="text-center">
                     <div className="font-bold text-2xl">{searchHistory.length}</div>
-                    <div className="text-gray-500 text-xs">Total Lookups</div>
+                    <div className="text-muted-foreground text-xs">Total Lookups</div>
                   </div>
                   <div className="text-center">
                     <div className="font-bold text-2xl">
                       {searchHistory.filter((item) => item.proxy).length}
                     </div>
-                    <div className="text-gray-500 text-xs">Proxy IPs</div>
+                    <div className="text-muted-foreground text-xs">Proxy IPs</div>
                   </div>
                   <div className="text-center">
                     <div className="font-bold text-2xl">
                       {searchHistory.filter((item) => item.hosting).length}
                     </div>
-                    <div className="text-gray-500 text-xs">Hosting IPs</div>
+                    <div className="text-muted-foreground text-xs">Hosting IPs</div>
                   </div>
                   <div className="text-center">
                     <div className="font-bold text-2xl">
@@ -1042,7 +1042,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                         searchHistory.length
                       ).toFixed(0)}
                     </div>
-                    <div className="text-gray-500 text-xs">Avg Response</div>
+                    <div className="text-muted-foreground text-xs">Avg Response</div>
                   </div>
                 </div>
               </div>

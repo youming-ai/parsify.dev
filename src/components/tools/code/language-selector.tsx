@@ -123,7 +123,7 @@ export function LanguageSelector({
         </Button>
 
         {isOpen && (
-          <div className="absolute top-full left-0 z-50 mt-1 max-h-64 w-48 overflow-y-auto rounded-md border bg-white shadow-lg dark:bg-gray-800">
+          <div className="absolute top-full left-0 z-50 mt-1 max-h-64 w-48 overflow-y-auto rounded-md border bg-white shadow-lg dark:bg-card">
             {filteredLanguages.map((language) => {
               const config = getLanguageConfig(language);
               return (
@@ -131,7 +131,7 @@ export function LanguageSelector({
                   key={language}
                   onClick={() => handleLanguageSelect(language)}
                   className={cn(
-                    'flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-700',
+                    'flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-muted dark:hover:bg-secondary',
                     selectedLanguage === language &&
                       'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
                   )}
@@ -169,7 +169,7 @@ export function LanguageSelector({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-96 overflow-hidden rounded-lg border bg-white shadow-lg dark:bg-gray-800">
+        <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-96 overflow-hidden rounded-lg border bg-white shadow-lg dark:bg-card">
           {/* Search Bar */}
           <div className="border-b p-3">
             <input
@@ -190,7 +190,7 @@ export function LanguageSelector({
                 'whitespace-nowrap border-b-2 px-3 py-2 font-medium text-sm transition-colors',
                 selectedCategory === 'All'
                   ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
+                  : 'border-transparent text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-gray-200'
               )}
             >
               All Languages
@@ -203,7 +203,7 @@ export function LanguageSelector({
                   'whitespace-nowrap border-b-2 px-3 py-2 font-medium text-sm transition-colors',
                   selectedCategory === category
                     ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
+                    : 'border-transparent text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-gray-200'
                 )}
               >
                 {category}
@@ -214,7 +214,7 @@ export function LanguageSelector({
           {/* Language List */}
           <div className="max-h-64 overflow-y-auto">
             {filteredLanguages.length === 0 ? (
-              <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+              <div className="p-4 text-center text-muted-foreground dark:text-muted-foreground">
                 No languages found
               </div>
             ) : (
@@ -226,7 +226,7 @@ export function LanguageSelector({
                       key={language}
                       onClick={() => handleLanguageSelect(language)}
                       className={cn(
-                        'group flex w-full items-center justify-between rounded-md px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-700',
+                        'group flex w-full items-center justify-between rounded-md px-3 py-2 text-left transition-colors hover:bg-muted dark:hover:bg-secondary',
                         selectedLanguage === language &&
                           'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
                       )}
@@ -235,7 +235,7 @@ export function LanguageSelector({
                         {LANGUAGE_ICONS[language]}
                         <div>
                           <div className="font-medium">{config.name}</div>
-                          <div className="text-gray-500 text-xs dark:text-gray-400">
+                          <div className="text-muted-foreground text-xs dark:text-muted-foreground">
                             {config.extensions.join(', ')}
                           </div>
                         </div>

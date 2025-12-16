@@ -92,7 +92,7 @@ export function CronParser() {
                 <Badge
                   key={preset.name}
                   variant="secondary"
-                  className="cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700"
+                  className="cursor-pointer hover:bg-muted dark:hover:bg-muted"
                   onClick={() => setExpression(preset.value)}
                 >
                   {preset.name}
@@ -126,18 +126,18 @@ export function CronParser() {
             )}
 
             <div className="grid grid-cols-5 gap-2 text-center text-slate-500 text-sm">
-              <div className="rounded bg-slate-100 p-2 dark:bg-slate-800">minute</div>
-              <div className="rounded bg-slate-100 p-2 dark:bg-slate-800">hour</div>
-              <div className="rounded bg-slate-100 p-2 dark:bg-slate-800">day (month)</div>
-              <div className="rounded bg-slate-100 p-2 dark:bg-slate-800">month</div>
-              <div className="rounded bg-slate-100 p-2 dark:bg-slate-800">day (week)</div>
+              <div className="rounded bg-muted p-2 dark:bg-card">minute</div>
+              <div className="rounded bg-muted p-2 dark:bg-card">hour</div>
+              <div className="rounded bg-muted p-2 dark:bg-card">day (month)</div>
+              <div className="rounded bg-muted p-2 dark:bg-card">month</div>
+              <div className="rounded bg-muted p-2 dark:bg-card">day (week)</div>
             </div>
           </div>
 
           {!error && nextRuns.length > 0 && (
             <div className="space-y-2">
               <Label>Next Scheduled Runs</Label>
-              <div className="space-y-2 rounded-lg bg-slate-50 p-4 dark:bg-slate-900">
+              <div className="space-y-2 rounded-lg bg-muted p-4 dark:bg-card">
                 {nextRuns.map((run, index) => (
                   <div key={index} className="font-mono text-slate-600 text-sm dark:text-slate-300">
                     {run}

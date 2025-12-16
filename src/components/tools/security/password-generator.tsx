@@ -316,19 +316,19 @@ const PasswordGenerator: React.FC = () => {
                 <Progress value={strength.score} className="h-2 w-full" />
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-gray-500" />
+                    <Clock className="h-4 w-4 text-muted-foreground" />
                     <span>
                       Crack Time: <strong>{strength.estimatedCrackTime}</strong>
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Database className="h-4 w-4 text-gray-500" />
+                    <Database className="h-4 w-4 text-muted-foreground" />
                     <span>
                       Entropy: <strong>{strength.entropy} bits</strong>
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Lock className="h-4 w-4 text-gray-500" />
+                    <Lock className="h-4 w-4 text-muted-foreground" />
                     <span>
                       Score: <strong>{strength.score}/100</strong>
                     </span>
@@ -381,7 +381,7 @@ const PasswordGenerator: React.FC = () => {
                   step={1}
                   className="w-full"
                 />
-                <div className="flex justify-between text-gray-500 text-xs">
+                <div className="flex justify-between text-muted-foreground text-xs">
                   <span>4</span>
                   <span>16</span>
                   <span>32</span>
@@ -503,7 +503,7 @@ const PasswordGenerator: React.FC = () => {
                 {passwordHistory.map((pwd, index) => (
                   <div
                     key={index}
-                    className="flex cursor-pointer items-center justify-between rounded-lg bg-gray-50 p-2 transition-colors hover:bg-gray-100"
+                    className="flex cursor-pointer items-center justify-between rounded-lg bg-muted p-2 transition-colors hover:bg-muted"
                     onClick={() => copyPasswordToClipboard(pwd)}
                   >
                     <code className="flex-1 truncate font-mono text-sm">{pwd}</code>
@@ -513,7 +513,7 @@ const PasswordGenerator: React.FC = () => {
                       ) : (
                         <ShieldX className="h-4 w-4 text-red-600" />
                       )}
-                      <Copy className="h-4 w-4 text-gray-500" />
+                      <Copy className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </div>
                 ))}

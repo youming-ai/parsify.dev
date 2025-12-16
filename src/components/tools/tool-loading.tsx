@@ -14,7 +14,7 @@ export function ToolLoading({ message = 'Loading...', onRetry }: ToolLoadingProp
         <div className="h-8 w-8 animate-spin rounded-full border-blue-600 border-b-2" />
         <LoadingSkeleton className="h-4 w-32" />
       </div>
-      <p className="text-gray-600 text-sm dark:text-gray-400">{message}</p>
+      <p className="text-muted-foreground text-sm dark:text-muted-foreground">{message}</p>
       {onRetry && (
         <Button
           variant="outline"

@@ -22,7 +22,7 @@ export default function URLEncoderPage() {
                 Encodes all characters that need escaping in a complete URL, including reserved
                 characters.
               </p>
-              <div className="bg-gray-50 p-2 rounded font-mono text-sm">
+              <div className="bg-muted p-2 rounded font-mono text-sm">
                 {
                   'https://example.com/search?q=hello world → https%3A//example.com/search%3Fq%3Dhello%20world'
                 }
@@ -33,7 +33,7 @@ export default function URLEncoderPage() {
               <p className="text-gray-600 text-sm mb-2">
                 Encodes URL components separately, useful for query parameters and form data.
               </p>
-              <div className="bg-gray-50 p-2 rounded font-mono text-sm">
+              <div className="bg-muted p-2 rounded font-mono text-sm">
                 query=hello world → query%3Dhello%20world
               </div>
             </div>
@@ -42,7 +42,7 @@ export default function URLEncoderPage() {
               <p className="text-gray-600 text-sm mb-2">
                 Encodes path segments while preserving slashes between directories.
               </p>
-              <div className="bg-gray-50 p-2 rounded font-mono text-sm">
+              <div className="bg-muted p-2 rounded font-mono text-sm">
                 /path/to/file with spaces → /path/to/file%20with%20spaces
               </div>
             </div>
@@ -102,7 +102,7 @@ export default function URLEncoderPage() {
                   Characters are encoded as % followed by two hexadecimal digits representing the
                   UTF-8 bytes.
                 </p>
-                <div className="bg-gray-50 p-3 rounded">
+                <div className="bg-muted p-3 rounded">
                   <div className="text-sm font-mono">
                     <div>Space → %20</div>
                     <div>! → %21</div>

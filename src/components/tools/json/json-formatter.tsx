@@ -117,7 +117,7 @@ export function JsonFormatter({
                     }
                     className="flex-1"
                   />
-                  <span className="w-8 text-gray-500 text-sm">{formatOptions.indent}</span>
+                  <span className="w-8 text-muted-foreground text-sm">{formatOptions.indent}</span>
                 </div>
               </div>
 
@@ -132,7 +132,7 @@ export function JsonFormatter({
                     onChange={(e) => handleOptionChange('sortKeys', e.target.checked)}
                     className="mr-2"
                   />
-                  <label htmlFor="sort-keys" className="text-gray-600 text-sm">
+                  <label htmlFor="sort-keys" className="text-muted-foreground text-sm">
                     Alphabetically sort object keys
                   </label>
                 </div>
@@ -149,7 +149,7 @@ export function JsonFormatter({
                     onChange={(e) => handleOptionChange('compact', e.target.checked)}
                     className="mr-2"
                   />
-                  <label htmlFor="compact" className="text-gray-600 text-sm">
+                  <label htmlFor="compact" className="text-muted-foreground text-sm">
                     Remove all whitespace
                   </label>
                 </div>
@@ -167,7 +167,7 @@ export function JsonFormatter({
                     disabled={formatOptions.compact}
                     className="mr-2"
                   />
-                  <label htmlFor="trailing-commas" className="text-gray-600 text-sm">
+                  <label htmlFor="trailing-commas" className="text-muted-foreground text-sm">
                     Add trailing commas
                   </label>
                 </div>
@@ -210,10 +210,10 @@ export function JsonFormatter({
             <CardTitle className="text-lg">Formatted Output</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="max-h-96 overflow-auto rounded-lg border bg-gray-50 p-4 font-mono text-gray-800 text-sm">
+            <pre className="max-h-96 overflow-auto rounded-lg border bg-muted p-4 font-mono text-foreground text-sm">
               {formattedOutput}
             </pre>
-            <div className="mt-2 text-gray-600 text-sm">
+            <div className="mt-2 text-muted-foreground text-sm">
               {formattedOutput.split('\n').length} lines, {formattedOutput.length} characters
             </div>
           </CardContent>

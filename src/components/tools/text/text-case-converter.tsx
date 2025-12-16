@@ -406,7 +406,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
                       >
                         <div className="text-left">
                           <div className="font-medium">{conversion?.label}</div>
-                          <div className="text-gray-500 text-xs">{conversion?.example}</div>
+                          <div className="text-muted-foreground text-xs">{conversion?.example}</div>
                         </div>
                       </Button>
                     );
@@ -427,7 +427,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
                       >
                         <div className="text-left">
                           <div className="font-medium">{conversion?.label}</div>
-                          <div className="text-gray-500 text-xs">{conversion?.example}</div>
+                          <div className="text-muted-foreground text-xs">{conversion?.example}</div>
                         </div>
                       </Button>
                     );
@@ -448,7 +448,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
                       >
                         <div className="text-left">
                           <div className="font-medium">{conversion?.label}</div>
-                          <div className="text-gray-500 text-xs">{conversion?.example}</div>
+                          <div className="text-muted-foreground text-xs">{conversion?.example}</div>
                         </div>
                       </Button>
                     );
@@ -508,10 +508,10 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
                         </Button>
                       </div>
                     </div>
-                    <div className="rounded bg-gray-50 p-2 font-mono text-sm">
+                    <div className="rounded bg-muted p-2 font-mono text-sm">
                       {result.converted || '(empty)'}
                     </div>
-                    <div className="text-gray-500 text-xs">
+                    <div className="text-muted-foreground text-xs">
                       {result.stats.changesCount} changes • {result.stats.wordCount} words
                     </div>
                   </div>
@@ -574,7 +574,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
                 />
               </div>
 
-              <div className="text-gray-600 text-sm">
+              <div className="text-muted-foreground text-sm">
                 {selectedResult.stats.changesCount} characters changed from original
               </div>
             </CardContent>

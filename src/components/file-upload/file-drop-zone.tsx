@@ -164,8 +164,8 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
       className={cn(
         'relative cursor-pointer border-2 border-dashed transition-all duration-200',
         {
-          'border-blue-500 bg-blue-50 dark:bg-blue-950/20': isDragActive,
-          'border-gray-300 bg-gray-50 dark:bg-gray-800/20': !isDragActive,
+          'border-primary bg-primary/5': isDragActive,
+          'border-border bg-muted/50': !isDragActive,
           'cursor-not-allowed opacity-50': disabled,
         },
         className
@@ -196,9 +196,9 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
 
         {children || (
           <div className="space-y-4">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <svg
-                className="h-6 w-6 text-gray-400"
+                className="h-6 w-6 text-muted-foreground"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -215,10 +215,10 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
             </div>
 
             <div>
-              <p className="font-medium text-gray-900 text-lg dark:text-gray-100">
+              <p className="font-medium text-foreground text-lg">
                 {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
               </p>
-              <p className="mt-1 text-gray-500 text-sm dark:text-gray-400">or click to browse</p>
+              <p className="mt-1 text-muted-foreground text-sm">or click to browse</p>
             </div>
 
             <Button
@@ -234,13 +234,11 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
             </Button>
 
             {accept.length > 0 && (
-              <p className="text-gray-400 text-xs dark:text-gray-500">
-                Accepted formats: {accept.join(', ')}
-              </p>
+              <p className="text-muted-foreground text-xs">Accepted formats: {accept.join(', ')}</p>
             )}
 
             {maxSize && (
-              <p className="text-gray-400 text-xs dark:text-gray-500">
+              <p className="text-muted-foreground text-xs">
                 Max file size: {formatFileSize(maxSize)}
               </p>
             )}

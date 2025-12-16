@@ -110,8 +110,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           <ErrorBoundary maxRetries={3}>{children}</ErrorBoundary>
         </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
+        {process.env.NODE_ENV === 'production' && (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        )}
       </body>
     </html>
   );

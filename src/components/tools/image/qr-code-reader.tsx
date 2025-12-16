@@ -536,7 +536,7 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
             {/* Input Methods */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {/* File Upload */}
-              <div className="rounded-lg border-2 border-gray-300 border-dashed p-6 text-center">
+              <div className="rounded-lg border-2 border-border border-dashed p-6 text-center">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -553,11 +553,11 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
                   <Upload className="mr-2 h-4 w-4" />
                   Upload Images
                 </Button>
-                <p className="mt-2 text-gray-500 text-sm">Scan from files</p>
+                <p className="mt-2 text-muted-foreground text-sm">Scan from files</p>
               </div>
 
               {/* Camera */}
-              <div className="rounded-lg border-2 border-gray-300 border-dashed p-6 text-center">
+              <div className="rounded-lg border-2 border-border border-dashed p-6 text-center">
                 {isUsingCamera ? (
                   <Button onClick={stopCamera} variant="outline" disabled={isScanning}>
                     <CameraOff className="mr-2 h-4 w-4" />
@@ -569,11 +569,11 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
                     Start Camera
                   </Button>
                 )}
-                <p className="mt-2 text-gray-500 text-sm">Live scanning</p>
+                <p className="mt-2 text-muted-foreground text-sm">Live scanning</p>
               </div>
 
               {/* Batch Scan */}
-              <div className="rounded-lg border-2 border-gray-300 border-dashed p-6 text-center">
+              <div className="rounded-lg border-2 border-border border-dashed p-6 text-center">
                 <Button
                   onClick={scanImages}
                   disabled={imageFiles.length === 0 || isScanning}
@@ -591,7 +591,7 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
                     </>
                   )}
                 </Button>
-                <p className="mt-2 text-gray-500 text-sm">Batch process</p>
+                <p className="mt-2 text-muted-foreground text-sm">Batch process</p>
               </div>
             </div>
 
@@ -718,7 +718,7 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
                                   )}
 
                                   {result.confidence !== undefined && (
-                                    <div className="text-gray-500 text-xs">
+                                    <div className="text-muted-foreground text-xs">
                                       Confidence: {Math.round(result.confidence * 100)}%
                                     </div>
                                   )}
@@ -729,7 +729,7 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
                                 <p className="text-red-600 text-sm">{result.error}</p>
                               )}
 
-                              <div className="mt-2 text-gray-400 text-xs">
+                              <div className="mt-2 text-muted-foreground text-xs">
                                 {result.timestamp?.toLocaleString() || new Date().toLocaleString()}
                               </div>
                             </div>
@@ -748,7 +748,7 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
                         className={`cursor-pointer overflow-hidden rounded-lg border transition-colors ${
                           index === currentImageIndex
                             ? 'border-blue-500 bg-blue-50'
-                            : 'hover:bg-gray-50'
+                            : 'hover:bg-muted'
                         }`}
                         onClick={() => setCurrentImageIndex(index)}
                       >
@@ -758,10 +758,10 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
                           className="h-24 w-full object-cover"
                         />
                         <div className="p-2">
-                          <div className="truncate text-gray-600 text-xs">
+                          <div className="truncate text-muted-foreground text-xs">
                             {imageFiles[index]?.name || `Image ${index}`}
                           </div>
-                          <div className="text-gray-400 text-xs">
+                          <div className="text-muted-foreground text-xs">
                             {imageFiles[index]
                               ? `${(imageFiles[index].size / 1024).toFixed(1)}KB`
                               : ''}
@@ -786,7 +786,7 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
             {processingLog.length > 0 && (
               <div className="mt-4">
                 <div className="mb-1 font-medium text-sm">Processing Log</div>
-                <div className="max-h-20 overflow-y-auto rounded bg-gray-100 p-2 font-mono text-xs">
+                <div className="max-h-20 overflow-y-auto rounded bg-muted p-2 font-mono text-xs">
                   {processingLog.slice(-3).join('\n')}
                 </div>
               </div>

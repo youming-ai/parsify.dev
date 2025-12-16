@@ -336,11 +336,11 @@ export function CodeExecution({
         {showProgress && (status === 'compiling' || status === 'running') && (
           <CardContent className="pt-0">
             <div className="space-y-2">
-              <div className="flex justify-between text-gray-600 text-sm dark:text-gray-400">
+              <div className="flex justify-between text-muted-foreground text-sm dark:text-muted-foreground">
                 <span>{status === 'compiling' ? 'Compiling...' : 'Running...'}</span>
                 <span>{formatExecutionTime(elapsedTime)}</span>
               </div>
-              <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+              <div className="h-2 w-full rounded-full bg-muted dark:bg-secondary">
                 <div
                   className="h-2 rounded-full bg-blue-600 transition-all duration-300"
                   style={{ width: `${progress}%` }}
@@ -398,7 +398,7 @@ export function CodeExecution({
               <div>
                 <h4 className="mb-2 font-medium text-green-700 dark:text-green-400">Output</h4>
                 <div
-                  className="overflow-auto rounded-md border bg-gray-50 p-4 font-mono text-sm dark:bg-gray-900"
+                  className="overflow-auto rounded-md border bg-muted p-4 font-mono text-sm dark:bg-card"
                   style={{ maxHeight }}
                 >
                   <pre className="whitespace-pre-wrap">{result.output}</pre>

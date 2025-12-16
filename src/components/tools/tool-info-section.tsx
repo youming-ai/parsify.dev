@@ -27,8 +27,8 @@ export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) 
           <Info className="h-5 w-5" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">About this tool</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Features and specifications</p>
+          <h2 className="text-xl font-semibold text-foreground">About this tool</h2>
+          <p className="text-sm text-muted-foreground">Features and specifications</p>
         </div>
       </div>
 
@@ -36,13 +36,13 @@ export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Features Card */}
         {features && features.length > 0 && (
-          <Card className="group overflow-hidden rounded-2xl border-slate-200/80 bg-gradient-to-b from-white to-slate-50/50 shadow-sm transition-all hover:shadow-md dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/80">
+          <Card className="group overflow-hidden rounded-2xl border-border bg-gradient-to-b from-card to-muted/50 shadow-sm transition-all hover:shadow-md">
             <CardHeader className="pb-4">
               <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
                 <Sparkles className="h-6 w-6" />
               </div>
-              <CardTitle className="text-lg text-slate-900 dark:text-white">Key Features</CardTitle>
-              <CardDescription className="text-slate-500 dark:text-slate-400">
+              <CardTitle className="text-lg text-foreground">Key Features</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 What makes this tool powerful
               </CardDescription>
             </CardHeader>
@@ -51,14 +51,12 @@ export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) 
                 {features.map((feature, index) => (
                   <li
                     key={index}
-                    className="flex items-start gap-3 rounded-lg bg-slate-50/80 p-3 transition-colors dark:bg-slate-800/50"
+                    className="flex items-start gap-3 rounded-lg bg-muted/50 p-3 transition-colors"
                   >
                     <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                       <CheckCircle2 className="h-3.5 w-3.5" />
                     </div>
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                      {feature}
-                    </span>
+                    <span className="text-sm font-medium text-foreground/80">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -68,25 +66,23 @@ export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) 
 
         {/* Specifications Card */}
         {info && (
-          <Card className="group overflow-hidden rounded-2xl border-slate-200/80 bg-gradient-to-b from-white to-slate-50/50 shadow-sm transition-all hover:shadow-md dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/80">
+          <Card className="group overflow-hidden rounded-2xl border-border bg-gradient-to-b from-card to-muted/50 shadow-sm transition-all hover:shadow-md">
             <CardHeader className="pb-4">
               <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
                 <Layers className="h-6 w-6" />
               </div>
-              <CardTitle className="text-lg text-slate-900 dark:text-white">
-                Specifications
-              </CardTitle>
-              <CardDescription className="text-slate-500 dark:text-slate-400">
+              <CardTitle className="text-lg text-foreground">Specifications</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Technical details and settings
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {/* Category */}
-                <div className="flex items-center justify-between rounded-lg bg-slate-50/80 p-3 dark:bg-slate-800/50">
+                <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
                   <div className="flex items-center gap-2">
-                    <Database className="h-4 w-4 text-slate-400" />
-                    <span className="text-sm text-slate-600 dark:text-slate-400">Category</span>
+                    <Database className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Category</span>
                   </div>
                   <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
                     {info.category}
@@ -94,7 +90,7 @@ export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) 
                 </div>
 
                 {/* Processing */}
-                <div className="flex items-center justify-between rounded-lg bg-slate-50/80 p-3 dark:bg-slate-800/50">
+                <div className="flex items-center justify-between rounded-lg bg-muted/80 p-3 dark:bg-card/50">
                   <div className="flex items-center gap-2">
                     <Cpu className="h-4 w-4 text-slate-400" />
                     <span className="text-sm text-slate-600 dark:text-slate-400">Processing</span>
@@ -105,7 +101,7 @@ export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) 
                 </div>
 
                 {/* Security */}
-                <div className="flex items-center justify-between rounded-lg bg-slate-50/80 p-3 dark:bg-slate-800/50">
+                <div className="flex items-center justify-between rounded-lg bg-muted/80 p-3 dark:bg-card/50">
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4 text-slate-400" />
                     <span className="text-sm text-slate-600 dark:text-slate-400">Security</span>
@@ -117,7 +113,7 @@ export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) 
 
                 {/* Difficulty (optional) */}
                 {info.difficulty && (
-                  <div className="flex items-center justify-between rounded-lg bg-slate-50/80 p-3 dark:bg-slate-800/50">
+                  <div className="flex items-center justify-between rounded-lg bg-muted/80 p-3 dark:bg-card/50">
                     <div className="flex items-center gap-2">
                       <Zap className="h-4 w-4 text-slate-400" />
                       <span className="text-sm text-slate-600 dark:text-slate-400">Difficulty</span>
@@ -131,14 +127,12 @@ export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) 
                 {/* Tags (optional) */}
                 {tags && tags.length > 0 && (
                   <div className="pt-2">
-                    <span className="mb-2 block text-xs text-slate-500 dark:text-slate-400">
-                      Tags
-                    </span>
+                    <span className="mb-2 block text-xs text-muted-foreground">Tags</span>
                     <div className="flex flex-wrap gap-1.5">
                       {tags.slice(0, 5).map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                          className="rounded-full border border-border bg-muted px-2 py-0.5 text-xs text-muted-foreground"
                         >
                           {tag}
                         </span>

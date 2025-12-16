@@ -367,7 +367,9 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
                     }
                     className="min-h-32 font-mono"
                   />
-                  <div className="mt-1 text-gray-500 text-sm">{inputText.length} characters</div>
+                  <div className="mt-1 text-muted-foreground text-sm">
+                    {inputText.length} characters
+                  </div>
                 </div>
 
                 {outputText && (
@@ -396,12 +398,14 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
                         )}
                       </div>
                     </div>
-                    <div className="rounded border bg-gray-50 p-3">
+                    <div className="rounded border bg-muted p-3">
                       <div className="max-h-40 overflow-y-auto break-all font-mono text-sm">
                         {outputText}
                       </div>
                     </div>
-                    <div className="mt-1 text-gray-500 text-sm">{outputText.length} characters</div>
+                    <div className="mt-1 text-muted-foreground text-sm">
+                      {outputText.length} characters
+                    </div>
                   </div>
                 )}
 
@@ -448,13 +452,13 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
               {base64Examples.map((example, index) => (
                 <div key={index} className="rounded border p-3">
                   <div className="mb-1 font-medium">{example.name}</div>
-                  <div className="mb-2 text-gray-600 text-sm">{example.description}</div>
-                  <div className="rounded bg-gray-50 p-2">
-                    <div className="mb-1 text-gray-500 text-xs">Input:</div>
+                  <div className="mb-2 text-muted-foreground text-sm">{example.description}</div>
+                  <div className="rounded bg-muted p-2">
+                    <div className="mb-1 text-muted-foreground text-xs">Input:</div>
                     <div className="truncate font-mono text-xs">{example.input}</div>
                   </div>
-                  <div className="mt-2 rounded bg-gray-50 p-2">
-                    <div className="mb-1 text-gray-500 text-xs">Output:</div>
+                  <div className="mt-2 rounded bg-muted p-2">
+                    <div className="mb-1 text-muted-foreground text-xs">Output:</div>
                     <div className="truncate font-mono text-xs">{example.encoded}</div>
                   </div>
                   <Button
@@ -549,14 +553,14 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
                           </Badge>
                         )}
                       </div>
-                      <span className="text-gray-500 text-xs">
+                      <span className="text-muted-foreground text-xs">
                         {result.timestamp.toLocaleTimeString()}
                       </span>
                     </div>
                     <div className="text-sm">
                       <div className="truncate font-medium">{result.input}</div>
                       {result.fileSize && (
-                        <div className="text-gray-500 text-xs">{result.fileSize} bytes</div>
+                        <div className="text-muted-foreground text-xs">{result.fileSize} bytes</div>
                       )}
                     </div>
                   </div>

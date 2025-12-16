@@ -4,17 +4,21 @@
 
 @layer base {
   :root {
-    /* Modern Cursor-like Light Theme */
-    --background: 0 0% 100%;
+    /* Light Theme - Warm off-white inspired */
+    --background: 60 12% 96.5%;
+    /* #f7f7f4 */
     --foreground: 240 10% 3.9%;
+    /* Near Black */
 
     --card: 0 0% 100%;
+    /* Pure White */
     --card-foreground: 240 10% 3.9%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
     --primary: 240 5.9% 10%;
+    /* Dark/Black as primary */
     --primary-foreground: 0 0% 98%;
 
     --secondary: 240 4.8% 95.9%;
@@ -31,40 +35,43 @@
 
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
+    --ring: 240 5.9% 10%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
 
   .dark {
-    /* Modern Cursor-like Dark Theme */
-    --background: 240 10% 3.9%;
+    /* Dark Theme - Warm matte black */
+    --background: 40 30% 6%;
+    /* #14120b */
     --foreground: 0 0% 98%;
 
-    --card: 240 10% 3.9%;
+    --card: 40 25% 8%;
+    /* Slightly lighter, warm tone */
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 10% 3.9%;
+    --popover: 40 25% 8%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
+    /* White as primary */
+    --primary-foreground: 40 30% 6%;
 
-    --secondary: 240 3.7% 15.9%;
+    --secondary: 40 15% 14%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 40 15% 14%;
+    --muted-foreground: 40 5% 60%;
 
-    --accent: 240 3.7% 15.9%;
+    --accent: 40 15% 14%;
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --border: 40 15% 16%;
+    --input: 40 15% 16%;
+    --ring: 40 10% 80%;
   }
 }
 
@@ -74,6 +81,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
   }
 }

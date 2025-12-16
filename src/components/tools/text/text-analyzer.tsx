@@ -512,27 +512,27 @@ const TextAnalyzer: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              <div className="rounded-lg bg-gray-50 p-3 text-center">
+              <div className="rounded-lg bg-muted p-3 text-center">
                 <div className="font-bold text-2xl text-blue-600">
                   {statistics.averageWordLength.toFixed(1)}
                 </div>
-                <div className="text-gray-600 text-sm">Avg Word Length</div>
+                <div className="text-muted-foreground text-sm">Avg Word Length</div>
               </div>
-              <div className="rounded-lg bg-gray-50 p-3 text-center">
+              <div className="rounded-lg bg-muted p-3 text-center">
                 <div className="font-bold text-2xl text-green-600">
                   {statistics.averageSentenceLength.toFixed(1)}
                 </div>
-                <div className="text-gray-600 text-sm">Avg Sentence Length</div>
+                <div className="text-muted-foreground text-sm">Avg Sentence Length</div>
               </div>
-              <div className="rounded-lg bg-gray-50 p-3 text-center">
+              <div className="rounded-lg bg-muted p-3 text-center">
                 <div className="font-bold text-2xl text-purple-600">
                   {(statistics.lexicalDiversity * 100).toFixed(1)}%
                 </div>
-                <div className="text-gray-600 text-sm">Lexical Diversity</div>
+                <div className="text-muted-foreground text-sm">Lexical Diversity</div>
               </div>
-              <div className="rounded-lg bg-gray-50 p-3 text-center">
+              <div className="rounded-lg bg-muted p-3 text-center">
                 <div className="font-bold text-2xl text-orange-600">{statistics.uniqueWords}</div>
-                <div className="text-gray-600 text-sm">Unique Words</div>
+                <div className="text-muted-foreground text-sm">Unique Words</div>
               </div>
             </div>
 
@@ -635,7 +635,7 @@ const TextAnalyzer: React.FC = () => {
                           {metric.score.toFixed(1)}
                         </span>
                       </div>
-                      <p className="text-gray-600 text-xs">{metric.desc}</p>
+                      <p className="text-muted-foreground text-xs">{metric.desc}</p>
                     </div>
                   ))}
                 </div>
@@ -664,7 +664,7 @@ const TextAnalyzer: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                  <div className="rounded-lg bg-gray-50 p-6 text-center">
+                  <div className="rounded-lg bg-muted p-6 text-center">
                     <div
                       className={`mb-2 font-bold text-3xl ${
                         sentiment.polarity > 0.1
@@ -676,22 +676,22 @@ const TextAnalyzer: React.FC = () => {
                     >
                       {sentiment.label}
                     </div>
-                    <div className="text-gray-600 text-sm">Overall Sentiment</div>
+                    <div className="text-muted-foreground text-sm">Overall Sentiment</div>
                   </div>
 
-                  <div className="rounded-lg bg-gray-50 p-6 text-center">
+                  <div className="rounded-lg bg-muted p-6 text-center">
                     <div className="mb-2 font-bold text-3xl text-blue-600">
                       {sentiment.polarity > 0 ? '+' : ''}
                       {sentiment.polarity}
                     </div>
-                    <div className="text-gray-600 text-sm">Polarity (-1 to +1)</div>
+                    <div className="text-muted-foreground text-sm">Polarity (-1 to +1)</div>
                   </div>
 
-                  <div className="rounded-lg bg-gray-50 p-6 text-center">
+                  <div className="rounded-lg bg-muted p-6 text-center">
                     <div className="mb-2 font-bold text-3xl text-purple-600">
                       {(sentiment.subjectivity * 100).toFixed(0)}%
                     </div>
-                    <div className="text-gray-600 text-sm">Subjectivity</div>
+                    <div className="text-muted-foreground text-sm">Subjectivity</div>
                   </div>
                 </div>
 
@@ -723,22 +723,24 @@ const TextAnalyzer: React.FC = () => {
                     {wordFrequency.map((item, index) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between rounded-lg p-3 hover:bg-gray-50"
+                        className="flex items-center justify-between rounded-lg p-3 hover:bg-muted"
                       >
                         <div className="flex items-center gap-3">
-                          <span className="w-6 font-medium text-gray-500 text-sm">{index + 1}</span>
+                          <span className="w-6 font-medium text-muted-foreground text-sm">
+                            {index + 1}
+                          </span>
                           <span className="font-medium capitalize">{item.word}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-gray-600 text-sm">{item.count} times</span>
+                          <span className="text-muted-foreground text-sm">{item.count} times</span>
                           <div className="flex items-center gap-2">
-                            <div className="h-2 w-20 rounded-full bg-gray-200">
+                            <div className="h-2 w-20 rounded-full bg-muted">
                               <div
                                 className="h-2 rounded-full bg-blue-600"
                                 style={{ width: `${item.percentage}%` }}
                               />
                             </div>
-                            <span className="w-12 text-right text-gray-500 text-xs">
+                            <span className="w-12 text-right text-muted-foreground text-xs">
                               {item.percentage.toFixed(1)}%
                             </span>
                           </div>

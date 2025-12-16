@@ -40,11 +40,7 @@ export default defineConfig({
     maxConcurrency: 4,
 
     // Reporting
-    reporters: ['verbose', 'json', 'html'],
-    outputFile: {
-      json: './test-results/results.json',
-      html: './test-results/results.html',
-    },
+    reporters: ['default'],
 
     // Watch mode
     watch: false,

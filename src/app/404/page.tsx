@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+    <div className="flex min-h-screen items-center justify-center bg-muted dark:bg-card">
       <Card className="mx-4 w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="font-bold text-2xl text-gray-900 dark:text-white">

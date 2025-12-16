@@ -147,13 +147,13 @@ export function Terminal({
       case 'input':
         return 'text-blue-600 dark:text-blue-400';
       case 'output':
-        return 'text-gray-900 dark:text-gray-100';
+        return 'text-foreground dark:text-foreground';
       case 'error':
         return 'text-red-600 dark:text-red-400';
       case 'info':
         return 'text-green-600 dark:text-green-400';
       default:
-        return 'text-gray-900 dark:text-gray-100';
+        return 'text-foreground dark:text-foreground';
     }
   };
 
@@ -197,7 +197,7 @@ export function Terminal({
   return (
     <Card className={cn('border', className)}>
       {/* Terminal Header */}
-      <div className="border-b bg-gray-50 px-4 py-2 dark:bg-gray-800">
+      <div className="border-b bg-muted px-4 py-2 dark:bg-card">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TerminalIcon className="h-4 w-4" />
@@ -275,10 +275,10 @@ export function Terminal({
         className={cn(
           'overflow-auto font-mono text-sm',
           theme === 'dark'
-            ? 'bg-gray-900 text-gray-100'
+            ? 'bg-card text-gray-100'
             : theme === 'high-contrast'
               ? 'bg-black text-white'
-              : 'bg-white text-gray-900'
+              : 'bg-white text-foreground'
         )}
         style={{ height }}
         onClick={handleTerminalClick}
@@ -290,13 +290,13 @@ export function Terminal({
             {limitedLines.map((line, index) => (
               <div key={line.id} className="flex items-start gap-2">
                 {lineNumbers && (
-                  <span className="w-8 select-none text-right text-gray-500 text-xs dark:text-gray-400">
+                  <span className="w-8 select-none text-right text-muted-foreground text-xs dark:text-muted-foreground">
                     {index + 1}
                   </span>
                 )}
 
                 {timestamps && (
-                  <span className="flex w-20 select-none items-center gap-1 text-gray-500 text-xs dark:text-gray-400">
+                  <span className="flex w-20 select-none items-center gap-1 text-muted-foreground text-xs dark:text-muted-foreground">
                     <Clock className="h-3 w-3" />
                     {formatTimestamp(line.timestamp)}
                   </span>
@@ -330,7 +330,7 @@ export function Terminal({
                   'flex-1 border-0 bg-transparent focus:outline-none focus:ring-0',
                   theme === 'dark'
                     ? 'text-gray-100 placeholder-gray-500'
-                    : 'text-gray-900 placeholder-gray-400'
+                    : 'text-foreground placeholder-gray-400'
                 )}
               />
               <Button type="submit" size="sm" variant="ghost">

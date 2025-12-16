@@ -113,13 +113,13 @@ const getSyntaxHighlightClass = (type: JsonNode['type']): string => {
     case 'boolean':
       return 'text-purple-600 dark:text-purple-400';
     case 'null':
-      return 'text-gray-500 dark:text-gray-400';
+      return 'text-muted-foreground dark:text-muted-foreground';
     case 'object':
       return 'text-orange-600 dark:text-orange-400';
     case 'array':
       return 'text-cyan-600 dark:text-cyan-400';
     default:
-      return 'text-gray-700 dark:text-gray-300';
+      return 'text-gray-700 dark:text-muted-foreground';
   }
 };
 

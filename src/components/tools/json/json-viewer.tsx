@@ -47,7 +47,7 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
         break;
       case 'null':
         displayValue = 'null';
-        valueClass = 'text-gray-500';
+        valueClass = 'text-muted-foreground';
         break;
       default:
         displayValue = String(node.value);
@@ -84,9 +84,9 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
 
   return (
     <div className={cn('font-mono text-sm', 'select-text')}>
-      <div className={cn('flex items-start gap-1', 'rounded px-1 hover:bg-gray-50')}>
+      <div className={cn('flex items-start gap-1', 'rounded px-1 hover:bg-muted')}>
         {showLineNumbers && (
-          <span className="mr-2 w-8 select-none text-right text-gray-400 text-xs">
+          <span className="mr-2 w-8 select-none text-right text-muted-foreground text-xs">
             {lineNumber.current++}
           </span>
         )}
@@ -101,8 +101,8 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
               onClick={toggleExpand}
               className={cn(
                 'mr-1 inline-flex h-4 w-4 items-center justify-center',
-                'text-gray-400 hover:text-gray-600',
-                'focus:text-gray-600 focus:outline-none'
+                'text-muted-foreground hover:text-muted-foreground',
+                'focus:text-muted-foreground focus:outline-none'
               )}
             >
               {isExpanded ? (
@@ -124,13 +124,15 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
           {/* Container brackets */}
           {hasChildren && (
             <>
-              <span className="text-gray-600">{node.type === 'object' ? '{' : '['}</span>
+              <span className="text-muted-foreground">{node.type === 'object' ? '{' : '['}</span>
               {!isExpanded && (
                 <>
-                  <span className="mx-1 text-gray-400">
+                  <span className="mx-1 text-muted-foreground">
                     {node.children?.length} {node.type === 'object' ? 'properties' : 'items'}
                   </span>
-                  <span className="text-gray-600">{node.type === 'object' ? '}' : ']'}</span>
+                  <span className="text-muted-foreground">
+                    {node.type === 'object' ? '}' : ']'}
+                  </span>
                 </>
               )}
             </>
@@ -153,15 +155,15 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
           ))}
 
           {/* Closing bracket */}
-          <div className={cn('flex items-start gap-1', 'rounded px-1 hover:bg-gray-50')}>
+          <div className={cn('flex items-start gap-1', 'rounded px-1 hover:bg-muted')}>
             {showLineNumbers && (
-              <span className="mr-2 w-8 select-none text-right text-gray-400 text-xs">
+              <span className="mr-2 w-8 select-none text-right text-muted-foreground text-xs">
                 {lineNumber.current++}
               </span>
             )}
             <div className="flex-1">
               <span className="inline-block" style={{ width: `${(level + 1) * 20}px` }} />
-              <span className="text-gray-600">{node.type === 'object' ? '}' : ']'}</span>
+              <span className="text-muted-foreground">{node.type === 'object' ? '}' : ']'}</span>
             </div>
           </div>
         </div>
@@ -223,8 +225,8 @@ export function JsonViewer({
       {/* Toolbar */}
       <div className="flex items-center justify-between border-b pb-3">
         <div className="flex items-center gap-2">
-          <h3 className="font-medium text-gray-900 text-lg">JSON Viewer</h3>
-          <span className="text-gray-500 text-sm">
+          <h3 className="font-medium text-foreground text-lg">JSON Viewer</h3>
+          <span className="text-muted-foreground text-sm">
             ({treeData.length} {treeData.length === 1 ? 'item' : 'items'})
           </span>
         </div>
@@ -254,7 +256,7 @@ export function JsonViewer({
       </div>
 
       {/* JSON Tree */}
-      <div className="max-h-96 overflow-auto rounded-lg border bg-gray-50 p-4">
+      <div className="max-h-96 overflow-auto rounded-lg border bg-muted p-4">
         {treeData.map((node) => (
           <JsonTreeItem
             key={node.path}
@@ -267,7 +269,7 @@ export function JsonViewer({
         ))}
 
         {treeData.length === 0 && (
-          <div className="py-8 text-center text-gray-500">No data to display</div>
+          <div className="py-8 text-center text-muted-foreground">No data to display</div>
         )}
       </div>
 

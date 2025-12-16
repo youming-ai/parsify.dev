@@ -739,7 +739,7 @@ const ImageBatchProcessor = () => {
       case 'error':
         return 'text-red-600';
       default:
-        return 'text-gray-600';
+        return 'text-muted-foreground';
     }
   };
 
@@ -826,7 +826,7 @@ const ImageBatchProcessor = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-gray-600 text-sm">{selectedOperation.description}</p>
+                  <p className="text-muted-foreground text-sm">{selectedOperation.description}</p>
                 </div>
 
                 <div className="space-y-2">
@@ -848,15 +848,15 @@ const ImageBatchProcessor = () => {
                 <div className="space-y-2">
                   <Label>Quick Stats</Label>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div className="rounded bg-gray-50 p-2 text-center">
+                    <div className="rounded bg-muted p-2 text-center">
                       <div className="font-bold text-lg">{tasks.length}</div>
-                      <div className="text-gray-600">Total Files</div>
+                      <div className="text-muted-foreground">Total Files</div>
                     </div>
-                    <div className="rounded bg-gray-50 p-2 text-center">
+                    <div className="rounded bg-muted p-2 text-center">
                       <div className="font-bold text-lg">
                         {tasks.filter((t) => t.status === 'completed').length}
                       </div>
-                      <div className="text-gray-600">Completed</div>
+                      <div className="text-muted-foreground">Completed</div>
                     </div>
                   </div>
                 </div>
@@ -1023,7 +1023,7 @@ const ImageBatchProcessor = () => {
                             max={100}
                             className="w-full"
                           />
-                          <div className="text-gray-600 text-sm">
+                          <div className="text-muted-foreground text-sm">
                             Quality: {processingOptions.convert.quality}%
                           </div>
                         </div>
@@ -1050,7 +1050,7 @@ const ImageBatchProcessor = () => {
                               max={100}
                               className="w-full"
                             />
-                            <div className="text-gray-600 text-sm">
+                            <div className="text-muted-foreground text-sm">
                               Quality: {processingOptions.compress.quality}%
                             </div>
                           </div>
@@ -1118,7 +1118,7 @@ const ImageBatchProcessor = () => {
                               max={100}
                               className="w-full"
                             />
-                            <div className="text-gray-600 text-sm">
+                            <div className="text-muted-foreground text-sm">
                               Intensity: {processingOptions.filter.intensity}%
                             </div>
                           </div>
@@ -1138,29 +1138,29 @@ const ImageBatchProcessor = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                      <div className="rounded-lg bg-gray-50 p-3 text-center">
+                      <div className="rounded-lg bg-muted p-3 text-center">
                         <div className="font-bold text-2xl text-blue-600">
                           {batchResult.completedTasks}/{batchResult.totalTasks}
                         </div>
-                        <div className="text-gray-600 text-sm">Success Rate</div>
+                        <div className="text-muted-foreground text-sm">Success Rate</div>
                       </div>
-                      <div className="rounded-lg bg-gray-50 p-3 text-center">
+                      <div className="rounded-lg bg-muted p-3 text-center">
                         <div className="font-bold text-2xl text-green-600">
                           {batchResult.averageProcessingTime.toFixed(0)}ms
                         </div>
-                        <div className="text-gray-600 text-sm">Avg Time</div>
+                        <div className="text-muted-foreground text-sm">Avg Time</div>
                       </div>
-                      <div className="rounded-lg bg-gray-50 p-3 text-center">
+                      <div className="rounded-lg bg-muted p-3 text-center">
                         <div className="font-bold text-2xl text-purple-600">
                           {(batchResult.totalInputSize / 1024).toFixed(1)}KB
                         </div>
-                        <div className="text-gray-600 text-sm">Input Size</div>
+                        <div className="text-muted-foreground text-sm">Input Size</div>
                       </div>
-                      <div className="rounded-lg bg-gray-50 p-3 text-center">
+                      <div className="rounded-lg bg-muted p-3 text-center">
                         <div className="font-bold text-2xl text-orange-600">
                           {(batchResult.totalOutputSize / 1024).toFixed(1)}KB
                         </div>
-                        <div className="text-gray-600 text-sm">Output Size</div>
+                        <div className="text-muted-foreground text-sm">Output Size</div>
                       </div>
                     </div>
 
@@ -1171,7 +1171,7 @@ const ImageBatchProcessor = () => {
                           ([operation, summary]) => (
                             <div
                               key={operation}
-                              className="flex items-center justify-between rounded bg-gray-50 p-2"
+                              className="flex items-center justify-between rounded bg-muted p-2"
                             >
                               <span className="font-medium">{operation}</span>
                               <div className="flex gap-4 text-sm">
@@ -1230,7 +1230,7 @@ const ImageBatchProcessor = () => {
                 {filteredTasks.map((task) => (
                   <div
                     key={task.id}
-                    className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-gray-50"
+                    className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted"
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
@@ -1250,7 +1250,7 @@ const ImageBatchProcessor = () => {
                         </div>
                       )}
 
-                      <div className="mt-1 text-gray-600 text-sm">
+                      <div className="mt-1 text-muted-foreground text-sm">
                         Size: {(task.originalSize / 1024).toFixed(1)}KB
                         {task.outputSize && ` → ${(task.outputSize / 1024).toFixed(1)}KB`}
                       </div>

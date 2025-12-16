@@ -335,7 +335,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
     if (status >= 300 && status < 400) return 'text-yellow-600';
     if (status >= 400 && status < 500) return 'text-orange-600';
     if (status >= 500) return 'text-red-600';
-    return 'text-gray-600';
+    return 'text-muted-foreground';
   }, []);
 
   const clearHistory = useCallback(() => {
@@ -542,7 +542,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                       {requestHistory.map((req, index) => (
                         <div
                           key={index}
-                          className="flex cursor-pointer items-center justify-between rounded border p-2 hover:bg-gray-50"
+                          className="flex cursor-pointer items-center justify-between rounded border p-2 hover:bg-muted"
                           onClick={() => setResult(req)}
                         >
                           <div className="flex items-center gap-2">
@@ -554,11 +554,13 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                             <span className={`text-sm ${getColorForStatus(req.status)}`}>
                               {req.status}
                             </span>
-                            <span className="text-gray-500 text-xs">
+                            <span className="text-muted-foreground text-xs">
                               {new URL(req.url).hostname}
                             </span>
                           </div>
-                          <div className="text-gray-400 text-xs">{req.duration.toFixed(0)}ms</div>
+                          <div className="text-muted-foreground text-xs">
+                            {req.duration.toFixed(0)}ms
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -593,7 +595,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                         >
                           {result.status} {result.statusText}
                         </Badge>
-                        <span className="text-gray-500 text-sm">
+                        <span className="text-muted-foreground text-sm">
                           {result.duration.toFixed(0)}ms
                         </span>
                       </div>
@@ -611,7 +613,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                   </div>
 
                   <div className="overflow-hidden rounded-lg border">
-                    <pre className="overflow-x-auto whitespace-pre-wrap bg-gray-50 p-4 font-mono text-sm">
+                    <pre className="overflow-x-auto whitespace-pre-wrap bg-muted p-4 font-mono text-sm">
                       {result.responseText || '[Empty Response]'}
                     </pre>
                   </div>
@@ -621,7 +623,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                   <div className="overflow-hidden rounded-lg border">
                     <div className="max-h-96 overflow-y-auto">
                       <table className="w-full">
-                        <thead className="sticky top-0 bg-gray-50">
+                        <thead className="sticky top-0 bg-muted">
                           <tr>
                             <th className="p-2 text-left font-medium text-sm">Header</th>
                             <th className="p-2 text-left font-medium text-sm">Value</th>
@@ -631,7 +633,9 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                           {Object.entries(result.headers).map(([key, value]) => (
                             <tr key={key} className="border-t">
                               <td className="p-2 font-medium text-sm">{key}</td>
-                              <td className="break-all p-2 text-gray-600 text-sm">{value}</td>
+                              <td className="break-all p-2 text-muted-foreground text-sm">
+                                {value}
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -651,7 +655,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                         <div className="font-bold text-2xl">
                           {result.timing.dnsLookup.toFixed(0)}
                         </div>
-                        <div className="text-gray-500 text-xs">ms</div>
+                        <div className="text-muted-foreground text-xs">ms</div>
                       </div>
                     )}
 
@@ -664,7 +668,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                         <div className="font-bold text-2xl">
                           {result.timing.tcpConnection.toFixed(0)}
                         </div>
-                        <div className="text-gray-500 text-xs">ms</div>
+                        <div className="text-muted-foreground text-xs">ms</div>
                       </div>
                     )}
 
@@ -677,7 +681,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                         <div className="font-bold text-2xl">
                           {result.timing.tlsHandshake.toFixed(0)}
                         </div>
-                        <div className="text-gray-500 text-xs">ms</div>
+                        <div className="text-muted-foreground text-xs">ms</div>
                       </div>
                     )}
 
@@ -690,7 +694,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                         <div className="font-bold text-2xl">
                           {result.timing.firstByte.toFixed(0)}
                         </div>
-                        <div className="text-gray-500 text-xs">ms</div>
+                        <div className="text-muted-foreground text-xs">ms</div>
                       </div>
                     )}
                   </div>
@@ -698,10 +702,10 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                   {result.timing.total && (
                     <div className="mt-4">
                       <div className="mb-2 flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-500" />
+                        <Clock className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium text-sm">Total Request Time</span>
                       </div>
-                      <div className="h-2 w-full rounded-full bg-gray-200">
+                      <div className="h-2 w-full rounded-full bg-muted">
                         <div
                           className="h-2 rounded-full bg-blue-600"
                           style={{
@@ -709,7 +713,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                           }}
                         />
                       </div>
-                      <div className="text-center text-gray-600 text-sm">
+                      <div className="text-center text-muted-foreground text-sm">
                         {result.timing.total.toFixed(0)}ms
                       </div>
                     </div>
@@ -720,13 +724,13 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="font-medium text-sm">Request URL</Label>
-                      <div className="mt-1 break-all rounded bg-gray-50 p-2 font-mono text-sm">
+                      <div className="mt-1 break-all rounded bg-muted p-2 font-mono text-sm">
                         {result.url}
                       </div>
                     </div>
                     <div>
                       <Label className="font-medium text-sm">Method</Label>
-                      <div className="mt-1 rounded bg-gray-50 p-2 text-sm">{result.method}</div>
+                      <div className="mt-1 rounded bg-muted p-2 text-sm">{result.method}</div>
                     </div>
                   </div>
 
