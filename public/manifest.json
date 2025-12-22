@@ -1,0 +1,22 @@
+{
+    "name": "Parsify.dev - Online Developer Tools",
+    "short_name": "Parsify",
+    "description": "Essential Tools for Developers - A privacy-first collection of utilities running entirely in your browser.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f7f7f4",
+    "theme_color": "#18181b",
+    "icons": [
+        {
+            "src": "/icon",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": "/apple-icon",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

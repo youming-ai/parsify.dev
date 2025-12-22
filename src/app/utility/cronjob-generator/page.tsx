@@ -1,29 +1,25 @@
-import { CronParser } from '@/components/tools/utilities/cron-parser';
+import { JsonLd } from '@/components/seo/json-ld';
+import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: 'Cron Expression Generator & Parser - Build Cron Jobs Online',
-  description:
-    'Free online cron expression generator and parser. Build, validate, and preview cron schedules with human-readable descriptions and next run times.',
-  keywords: [
-    'cron generator',
-    'cron parser',
-    'cron expression',
-    'crontab',
-    'cron schedule',
-    'cron builder',
-    'job scheduler',
-  ],
-  openGraph: {
-    title: 'Cron Expression Generator - Parsify.dev',
-    description: 'Build and validate cron expressions with next run time preview.',
-  },
-};
+export const metadata: Metadata = generateToolSEOMetadata({
+  toolId: 'cronjob-generator',
+});
 
-export default function CronParserPage() {
+export default function UcronjobUgeneratorPage() {
+  const structuredData = generateToolStructuredData('cronjob-generator');
+
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
-      <CronParser />
-    </div>
+    <>
+      {structuredData.map((data, index) => (
+        <JsonLd key={`json-ld-${index}`} data={data} />
+      ))}
+      <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Cronjob Generator</h1>
+          <p className="text-muted-foreground">Tool component coming soon...</p>
+        </div>
+      </div>
+    </>
   );
 }

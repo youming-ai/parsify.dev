@@ -1,29 +1,25 @@
-import IDAnalyzer from '@/components/tools/security/id-analyzer';
+import { JsonLd } from '@/components/seo/json-ld';
+import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: 'ID Analyzer - Decode UUID, ULID, ObjectId Online',
-  description:
-    'Free online ID analyzer. Inspect and decode UUID, ULID, GUID, Nano ID, MongoDB ObjectId, and Snowflake identifiers with detailed breakdowns.',
-  keywords: [
-    'uuid analyzer',
-    'ulid decoder',
-    'objectid decoder',
-    'snowflake id',
-    'guid parser',
-    'id inspector',
-    'nanoid analyzer',
-  ],
-  openGraph: {
-    title: 'ID Analyzer - Parsify.dev',
-    description: 'Decode and analyze UUID, ULID, ObjectId, and other ID formats.',
-  },
-};
+export const metadata: Metadata = generateToolSEOMetadata({
+  toolId: 'id-analyzer',
+});
 
-export default function IDAnalyzerPage() {
+export default function UidUanalyzerPage() {
+  const structuredData = generateToolStructuredData('id-analyzer');
+
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
-      <IDAnalyzer />
-    </div>
+    <>
+      {structuredData.map((data, index) => (
+        <JsonLd key={`json-ld-${index}`} data={data} />
+      ))}
+      <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Tool: id-analyzer</h1>
+          <p className="text-muted-foreground">Tool component implementation pending...</p>
+        </div>
+      </div>
+    </>
   );
 }

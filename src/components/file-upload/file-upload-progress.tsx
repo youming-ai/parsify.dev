@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { AlertCircle, CheckCircle2, Clock, Loader2, X, XCircle } from 'lucide-react';
 import type React from 'react';
 import type { FileUploadProgress, FileUploadStatus } from './file-upload-types';
 
@@ -58,85 +59,15 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
   const getStatusIcon = () => {
     switch (status) {
       case 'pending':
-        return (
-          <svg
-            className="h-5 w-5 animate-pulse text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        );
+        return <Clock className="h-5 w-5 animate-pulse text-gray-400" aria-hidden="true" />;
       case 'uploading':
-        return (
-          <svg
-            className="h-5 w-5 animate-spin text-blue-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-        );
+        return <Loader2 className="h-5 w-5 animate-spin text-blue-500" aria-hidden="true" />;
       case 'success':
-        return (
-          <svg
-            className="h-5 w-5 text-green-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        );
+        return <CheckCircle2 className="h-5 w-5 text-green-500" aria-hidden="true" />;
       case 'error':
-        return (
-          <svg
-            className="h-5 w-5 text-red-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        );
+        return <AlertCircle className="h-5 w-5 text-red-500" aria-hidden="true" />;
       case 'cancelled':
-        return (
-          <svg
-            className="h-5 w-5 text-gray-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        );
+        return <XCircle className="h-5 w-5 text-gray-500" aria-hidden="true" />;
       default:
         return null;
     }
@@ -201,14 +132,7 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
               onClick={onCancel}
               className="h-auto p-1 text-gray-500 hover:text-red-500"
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <X className="h-4 w-4" aria-hidden="true" />
             </Button>
           )}
 
@@ -219,14 +143,7 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
               onClick={onRetry}
               className="h-auto p-1 text-gray-500 hover:text-blue-500"
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
+              <Loader2 className="h-4 w-4" aria-hidden="true" />
             </Button>
           )}
         </div>

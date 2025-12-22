@@ -3,6 +3,19 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Download,
+  Eye,
+  FolderPlus,
+  Loader2,
+  RefreshCw,
+  Trash2,
+  X,
+  XCircle,
+} from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import {
@@ -111,74 +124,15 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
   const getStatusIcon = (status: FileUploadStatus): React.ReactNode => {
     switch (status) {
       case 'pending':
-        return (
-          <svg
-            className="h-4 w-4 animate-pulse"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-label="Loading icon"
-          >
-            <title>Loading</title>
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        );
+        return <Clock className="h-4 w-4 animate-pulse" aria-hidden="true" />;
       case 'uploading':
-        return (
-          <svg
-            className="h-4 w-4 animate-spin"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-label="Uploading icon"
-          >
-            <title>Uploading</title>
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-        );
+        return <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />;
       case 'success':
-        return (
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        );
+        return <CheckCircle2 className="h-4 w-4" aria-hidden="true" />;
       case 'error':
-        return (
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        );
+        return <AlertCircle className="h-4 w-4" aria-hidden="true" />;
       case 'cancelled':
-        return (
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        );
+        return <XCircle className="h-4 w-4" aria-hidden="true" />;
       default:
         return null;
     }
@@ -197,19 +151,10 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
   if (files.length === 0) {
     return (
       <div className={cn('py-8 text-center text-muted-foreground', className)}>
-        <svg
+        <FolderPlus
           className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
-          />
-        </svg>
+          aria-hidden="true"
+        />
         <p className="text-sm">No files uploaded yet</p>
       </div>
     );
@@ -255,26 +200,9 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                             size="sm"
                             onClick={() => onFilePreview(file)}
                             className="h-auto p-1"
+                            aria-label="Preview file"
                           >
-                            <svg
-                              className="h-4 w-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                              />
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                              />
-                            </svg>
+                            <Eye className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         )}
                         {onFileDownload && (
@@ -283,20 +211,9 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                             size="sm"
                             onClick={() => onFileDownload(file)}
                             className="h-auto p-1"
+                            aria-label="Download file"
                           >
-                            <svg
-                              className="h-4 w-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                              />
-                            </svg>
+                            <Download className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         )}
                       </>
@@ -308,20 +225,9 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                         size="sm"
                         onClick={() => onFileRetry(file.id)}
                         className="h-auto p-1 text-blue-600 hover:text-blue-700"
+                        aria-label="Retry upload"
                       >
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                          />
-                        </svg>
+                        <RefreshCw className="h-4 w-4" aria-hidden="true" />
                       </Button>
                     )}
 
@@ -331,20 +237,9 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                         size="sm"
                         onClick={() => onFileCancel(file.id)}
                         className="h-auto p-1 text-red-600 hover:text-red-700"
+                        aria-label="Cancel upload"
                       >
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
+                        <X className="h-4 w-4" aria-hidden="true" />
                       </Button>
                     )}
 
@@ -357,20 +252,9 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                           size="sm"
                           onClick={() => onFileRemove(file.id)}
                           className="h-auto p-1 text-red-600 hover:text-red-700"
+                          aria-label="Remove file"
                         >
-                          <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       )}
                   </div>

@@ -1,30 +1,23 @@
-import { ColorConverter } from '@/components/tools/converters/color-converter';
+import { JsonLd } from '@/components/seo/json-ld';
+import ColorConverter from '@/components/tools/converters/color-converter';
+import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: 'Color Converter - HEX, RGB, HSL, CMYK Color Tool Online',
-  description:
-    'Free online color converter. Convert between HEX, RGB, HSL, CMYK, and OKLCH color formats. Generate color harmonies and check contrast for accessibility.',
-  keywords: [
-    'color converter',
-    'hex to rgb',
-    'rgb to hex',
-    'hsl converter',
-    'cmyk converter',
-    'color picker',
-    'color palette',
-    'contrast checker',
-  ],
-  openGraph: {
-    title: 'Color Converter - Parsify.dev',
-    description: 'Convert colors between HEX, RGB, HSL, CMYK formats with live preview.',
-  },
-};
+export const metadata: Metadata = generateToolSEOMetadata({
+  toolId: 'color-tools',
+});
 
-export default function ColorConverterPage() {
+export default function UcolorUtoolsPage() {
+  const structuredData = generateToolStructuredData('color-tools');
+
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
-      <ColorConverter />
-    </div>
+    <>
+      {structuredData.map((data, index) => (
+        <JsonLd key={`json-ld-${index}`} data={data} />
+      ))}
+      <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+        <ColorConverter />
+      </div>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 import { toolsData } from '@/data/tools-data';
+import { CATEGORY_SLUG_MAP, SEO_CONFIG } from '@/lib/seo-config';
 import type { MetadataRoute } from 'next';
-
-const BASE_URL = 'https://parsify.dev';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -9,7 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
     {
-      url: BASE_URL,
+      url: SEO_CONFIG.BASE_URL,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 1.0,
@@ -18,7 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Tool pages - dynamically generated from tools data
   const toolPages: MetadataRoute.Sitemap = toolsData.map((tool) => ({
-    url: `${BASE_URL}${tool.href}`,
+    url: `${SEO_CONFIG.BASE_URL}${tool.href}`,
     lastModified: now,
     changeFrequency: 'monthly' as const,
     priority: tool.isPopular ? 0.9 : 0.8,
@@ -26,21 +25,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Category pages
   const categories = Array.from(new Set(toolsData.map((tool) => tool.category)));
-  const categorySlugMap: Record<string, string> = {
-    'Data Format & Conversion': 'data-format',
-    'Security & Authentication': 'security',
-    'Development & Testing': 'development',
-    'Network & Web': 'network',
-    Utility: 'utility',
-  };
 
   const categoryPages: MetadataRoute.Sitemap = categories
-    .filter((cat) => categorySlugMap[cat])
+    .filter((cat) => CATEGORY_SLUG_MAP[cat])
     .map((category) => ({
-      url: `${BASE_URL}/${categorySlugMap[category]}`,
+      url: `${SEO_CONFIG.BASE_URL}/${CATEGORY_SLUG_MAP[category]}`,
       lastModified: now,
       changeFrequency: 'weekly' as const,
-      priority: 0.7,
+      priority: 0.8,
     }));
 
   return [...staticPages, ...toolPages, ...categoryPages];

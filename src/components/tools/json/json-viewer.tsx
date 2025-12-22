@@ -98,6 +98,7 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
           {/* Expand/Collapse button */}
           {hasChildren && (
             <button
+              type="button"
               onClick={toggleExpand}
               className={cn(
                 'mr-1 inline-flex h-4 w-4 items-center justify-center',

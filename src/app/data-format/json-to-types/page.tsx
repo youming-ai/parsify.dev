@@ -1,32 +1,25 @@
-import { JsonToTypes } from '@/components/tools/json/json-to-types';
+import { JsonLd } from '@/components/seo/json-ld';
+import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: 'JSON to Types - Convert JSON to TypeScript, Python, Go',
-  description:
-    'Free online JSON to type converter. Generate TypeScript interfaces, Python dataclasses, Go structs, Rust structs, and Ruby classes from JSON data.',
-  keywords: [
-    'json to typescript',
-    'json to python',
-    'json to go',
-    'json to rust',
-    'json to types',
-    'json schema',
-    'type generator',
-  ],
-  openGraph: {
-    title: 'JSON to Types - Parsify.dev',
-    description: 'Convert JSON to TypeScript, Python, Go, Rust, and Ruby types.',
-  },
-};
-// ... existing imports
+export const metadata: Metadata = generateToolSEOMetadata({
+  toolId: 'json-to-types',
+});
 
-export default function JsonToTypesPage() {
+export default function UjsonUtoUtypesPage() {
+  const structuredData = generateToolStructuredData('json-to-types');
+
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
-      <div className="rounded-xl border shadow-sm">
-        <JsonToTypes />
+    <>
+      {structuredData.map((data, index) => (
+        <JsonLd key={`json-ld-${index}`} data={data} />
+      ))}
+      <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Tool: json-to-types</h1>
+          <p className="text-muted-foreground">Tool component implementation pending...</p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

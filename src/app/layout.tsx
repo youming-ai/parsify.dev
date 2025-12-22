@@ -2,7 +2,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import localFont from 'next/font/local';
 import type React from 'react';
@@ -93,9 +93,32 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  manifest: '/manifest.json',
+  alternates: {
+    canonical: 'https://parsify.dev/',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Parsify.dev',
+  },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f7f7f4' },
+    { media: '(prefers-color-scheme: dark)', color: '#14120b' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body

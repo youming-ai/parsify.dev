@@ -45,7 +45,15 @@
         "noDangerouslySetInnerHtml": "off"
       },
       "a11y": {
-        "recommended": false
+        "recommended": true,
+        "noSvgWithoutTitle": "off",
+        "noLabelWithoutControl": "off",
+        "useButtonType": "warn",
+        "useSemanticElements": "off",
+        "useKeyWithClickEvents": "off",
+        "noRedundantRoles": "off",
+        "useValidAriaRole": "off",
+        "noInteractiveElementToNoninteractiveRole": "off"
       }
     }
   },

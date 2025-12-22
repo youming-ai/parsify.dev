@@ -497,6 +497,7 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
               {breadcrumbPath.map((part, index) => (
                 <React.Fragment key={index}>
                   <button
+                    type="button"
                     className="transition-colors hover:text-foreground"
                     onClick={() => navigateToBreadcrumb(index)}
                   >
@@ -541,6 +542,7 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
 
                   {!node.isLeaf && (
                     <button
+                      type="button"
                       className="mr-1 rounded p-0.5 hover:bg-muted-foreground/10"
                       onClick={(e) => {
                         e.stopPropagation();

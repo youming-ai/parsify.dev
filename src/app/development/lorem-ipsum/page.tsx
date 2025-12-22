@@ -1,28 +1,23 @@
-import { LoremIpsumGenerator } from '@/components/tools/generators/lorem-ipsum-generator';
+import { JsonLd } from '@/components/seo/json-ld';
+import LoremIpsumGenerator from '@/components/tools/generators/lorem-ipsum-generator';
+import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: 'Lorem Ipsum Generator - Generate Placeholder Text Online',
-  description:
-    'Free online Lorem Ipsum generator. Generate placeholder text by paragraphs, sentences, or words. Perfect for designers and developers creating mockups.',
-  keywords: [
-    'lorem ipsum generator',
-    'placeholder text',
-    'dummy text',
-    'filler text',
-    'mockup text',
-    'design placeholder',
-  ],
-  openGraph: {
-    title: 'Lorem Ipsum Generator - Parsify.dev',
-    description: 'Generate placeholder text for your designs and mockups instantly.',
-  },
-};
+export const metadata: Metadata = generateToolSEOMetadata({
+  toolId: 'lorem-ipsum',
+});
 
-export default function LoremIpsumPage() {
+export default function UloremUipsumPage() {
+  const structuredData = generateToolStructuredData('lorem-ipsum');
+
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
-      <LoremIpsumGenerator />
-    </div>
+    <>
+      {structuredData.map((data, index) => (
+        <JsonLd key={`json-ld-${index}`} data={data} />
+      ))}
+      <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+        <LoremIpsumGenerator />
+      </div>
+    </>
   );
 }

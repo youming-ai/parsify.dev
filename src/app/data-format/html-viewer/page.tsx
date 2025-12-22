@@ -1,31 +1,23 @@
-import { HtmlViewer } from '@/components/tools/code/html-viewer';
+import { JsonLd } from '@/components/seo/json-ld';
+import HTMLViewer from '@/components/tools/code/html-viewer';
+import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: 'HTML Viewer - Preview & Render HTML Online',
-  description:
-    'Free online HTML viewer and preview tool. Render HTML snippets securely in your browser with instant preview. Perfect for testing HTML code.',
-  keywords: [
-    'html viewer',
-    'html preview',
-    'render html',
-    'html sandbox',
-    'html tester',
-    'live html preview',
-  ],
-  openGraph: {
-    title: 'HTML Viewer - Parsify.dev',
-    description: 'Preview and render HTML code securely in your browser.',
-  },
-};
-// ... existing imports
+export const metadata: Metadata = generateToolSEOMetadata({
+  toolId: 'html-viewer',
+});
 
-export default function HtmlViewerPage() {
+export default function UhtmlUviewerPage() {
+  const structuredData = generateToolStructuredData('html-viewer');
+
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
-      <div className="rounded-xl border shadow-sm">
-        <HtmlViewer />
+    <>
+      {structuredData.map((data, index) => (
+        <JsonLd key={`json-ld-${index}`} data={data} />
+      ))}
+      <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+        <HTMLViewer />
       </div>
-    </div>
+    </>
   );
 }

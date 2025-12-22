@@ -1,31 +1,23 @@
-import { HtmlTools } from '@/components/tools/code/html-tools';
+import { JsonLd } from '@/components/seo/json-ld';
+import HTMLTools from '@/components/tools/code/html-tools';
+import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: 'HTML Formatter & Minifier - Format, Validate HTML Online',
-  description:
-    'Free online HTML formatter and minifier. Format, beautify, minify, and validate HTML code. Encode and decode HTML entities quickly.',
-  keywords: [
-    'html formatter',
-    'html minifier',
-    'html beautifier',
-    'html validator',
-    'html entities',
-    'format html online',
-  ],
-  openGraph: {
-    title: 'HTML Formatter & Minifier - Parsify.dev',
-    description: 'Format, minify, and validate HTML code with entity encoding.',
-  },
-};
-// ... existing imports
+export const metadata: Metadata = generateToolSEOMetadata({
+  toolId: 'html-tools',
+});
 
-export default function HtmlToolsPage() {
+export default function UhtmlUtoolsPage() {
+  const structuredData = generateToolStructuredData('html-tools');
+
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
-      <div className="rounded-xl border shadow-sm">
-        <HtmlTools />
+    <>
+      {structuredData.map((data, index) => (
+        <JsonLd key={`json-ld-${index}`} data={data} />
+      ))}
+      <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+        <HTMLTools />
       </div>
-    </div>
+    </>
   );
 }

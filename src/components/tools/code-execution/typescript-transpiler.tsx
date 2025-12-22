@@ -549,6 +549,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({ onComp
         {/* Controls */}
         <div className="flex flex-wrap gap-2">
           <button
+            type="button"
             onClick={executeTypeScript}
             disabled={isRunning}
             className="flex items-center gap-2 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
@@ -567,6 +568,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({ onComp
           </button>
 
           <button
+            type="button"
             onClick={insertModuleImport}
             className="flex items-center gap-2 rounded bg-green-600 px-3 py-2 text-white hover:bg-green-700"
           >
@@ -581,6 +583,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({ onComp
           </label>
 
           <button
+            type="button"
             onClick={exportFile}
             className="flex items-center gap-2 rounded bg-secondary px-3 py-2 text-white hover:bg-secondary"
           >
@@ -589,6 +592,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({ onComp
           </button>
 
           <button
+            type="button"
             onClick={() => setShowCompiledJS(!showCompiledJS)}
             className="flex items-center gap-2 rounded bg-purple-600 px-3 py-2 text-white hover:bg-purple-700"
           >
@@ -646,6 +650,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({ onComp
         <div className="flex flex-wrap gap-2">
           {typescriptPresets.map((preset, index) => (
             <button
+              type="button"
               key={index}
               onClick={() => {
                 setCode(preset.code);
@@ -669,6 +674,7 @@ export const TypeScriptTranspiler: React.FC<TypeScriptExecutorProps> = ({ onComp
               >
                 {module}
                 <button
+                  type="button"
                   onClick={() => {
                     setModuleImports((prev) => prev.filter((_, i) => i !== index));
                   }}
