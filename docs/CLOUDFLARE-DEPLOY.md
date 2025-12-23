@@ -51,7 +51,7 @@ bun run deploy:cf
 
 | 文件 | 说明 |
 |------|-----|
-| `wrangler.jsonc` | Cloudflare Workers 配置 |
+| `wrangler.toml` | Cloudflare Workers 配置 |
 | `open-next.config.ts` | OpenNext 适配器配置 |
 
 ## Analytics
