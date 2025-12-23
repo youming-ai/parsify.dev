@@ -7,7 +7,6 @@ build/
 out/
 .next/
 .open-next/
-.vercel/
 .wrangler/
 next-env.d.ts
 

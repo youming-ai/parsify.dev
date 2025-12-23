@@ -22,7 +22,7 @@ bun run dev
 ### 1. 登录 Cloudflare
 
 ```bash
-npx wrangler login
+bunx wrangler login
 ```
 
 ### 2. 构建

@@ -1,7 +1,7 @@
 # Parsify.dev
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 [![Cloudflare](https://img.shields.io/badge/Cloudflare-Pages-orange.svg)](https://pages.cloudflare.com/)
 
 **Essential Tools for Developers** - Privacy-first utilities running entirely in your browser.
@@ -74,12 +74,12 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## 🏗️ Tech Stack
 
-- **Framework**: Next.js 16 (App Router + Turbopack)
+- **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript 5
 - **Styling**: Tailwind CSS + shadcn/ui
 - **Editor**: Monaco Editor
 - **State**: Zustand
-- **Deployment**: Cloudflare Pages
+- **Deployment**: Cloudflare Workers / Pages (via OpenNext)
 
 ## 📁 Project Structure
 
@@ -101,7 +101,7 @@ src/
 
 ```bash
 # Login to Cloudflare
-npx wrangler login
+bunx wrangler login
 
 # Build and deploy
 bun run build:cf
@@ -114,6 +114,7 @@ See [docs/CLOUDFLARE-DEPLOY.md](docs/CLOUDFLARE-DEPLOY.md) for detailed instruct
 
 - [Cloudflare Deployment](docs/CLOUDFLARE-DEPLOY.md)
 - [Design System](docs/DESIGN_SYSTEM.md)
+- [SEO Implementation](docs/SEO-IMPLEMENTATION.md)
 
 ## 🔒 Privacy
 
