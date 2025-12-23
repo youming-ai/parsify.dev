@@ -38,8 +38,7 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Turbopack configuration (Next.js 16 default)
-  turbopack: {},
+  // Turbopack enabled via `next dev --turbo`
 
   // Bundle analyzer and code splitting (webpack fallback when not using Turbopack)
   webpack: (config, { dev, isServer }) => {

@@ -45,7 +45,7 @@ cp .env.local.example .env.local
 ## Technology Stack
 
 ### Core Technologies
-- **Framework**: Next.js 16 with App Router and Turbopack
+- **Framework**: Next.js 15 with App Router
 - **Language**: TypeScript 5.7+ (strict mode enabled)
 - **UI**: shadcn/ui components with Tailwind CSS
 - **Code Editor**: CodeMirror 6 for syntax highlighting and editing
