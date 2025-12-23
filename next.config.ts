@@ -1,17 +1,21 @@
 import bundleAnalyzer from '@next/bundle-analyzer';
 import type { NextConfig } from 'next';
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });
 
 const nextConfig: NextConfig = {
+  // Removed output: 'export' - OpenNext handles the build for Cloudflare Workers
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
 
-  // Image optimization
+  // Image optimization - using Cloudflare Images
   images: {
+    // Disable Next.js image optimization, use Cloudflare Images instead
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -19,7 +23,6 @@ const nextConfig: NextConfig = {
       },
     ],
     formats: ['image/webp', 'image/avif'],
-    minimumCacheTTL: 60 * 60 * 24 * 7, // 1 week
   },
 
   // Experimental performance optimizations
@@ -114,5 +117,10 @@ const nextConfig: NextConfig = {
     ];
   },
 };
+
+// Initialize OpenNext for development mode
+if (process.env.NODE_ENV === "development") {
+  initOpenNextCloudflareForDev();
+}
 
 export default withBundleAnalyzer(nextConfig);

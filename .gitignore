@@ -1,13 +1,14 @@
 # Dependencies
 node_modules/
-.pnpm-store/
 
 # Build outputs
 dist/
 build/
 out/
 .next/
+.open-next/
 .vercel/
+.wrangler/
 next-env.d.ts
 
 # Environment variables

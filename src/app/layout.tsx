@@ -1,7 +1,5 @@
 import { ErrorBoundary } from '@/components/error-boundary';
 import { ThemeProvider } from '@/components/theme-provider';
-import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import localFont from 'next/font/local';
@@ -133,12 +131,7 @@ export default function RootLayout({
         >
           <ErrorBoundary maxRetries={3}>{children}</ErrorBoundary>
         </ThemeProvider>
-        {process.env.NODE_ENV === 'production' && (
-          <>
-            <Analytics />
-            <SpeedInsights />
-          </>
-        )}
+        {/* Cloudflare Web Analytics - add script in Cloudflare Dashboard */}
       </body>
     </html>
   );

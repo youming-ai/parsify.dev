@@ -5,29 +5,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ### Package Manager & Scripts
-This project uses **pnpm** as the package manager (required version >= 9).
+This project uses **bun** as the package manager.
 
 ```bash
 # Development
-pnpm dev                    # Start development server at http://localhost:3000
-pnpm build                  # Build for production
-pnpm start                  # Start production server
-pnpm preview                # Build and preview production locally
+bun dev                     # Start development server at http://localhost:3000
+bun run build               # Build for production (Next.js)
+bun start                   # Start production server
+
+# Cloudflare Development & Deployment
+bun run build:cf            # Build for Cloudflare Workers
+bun run dev:cf              # Build and run locally with Wrangler
+bun run dev:remote          # Build and run with remote Cloudflare services
+bun run deploy              # Deploy to Cloudflare Workers
+bun run deploy:cf           # Deploy to Cloudflare Workers (alias)
+bun run preview:cf          # Preview deployment
 
 # Code Quality
-pnpm lint                   # Run Biome linting checks
-pnpm lint:fix               # Run Biome linting with auto-fix
-pnpm format                 # Format code with Biome (auto-fixes issues)
-pnpm type-check             # Run TypeScript type checking
+bun run lint                # Run Biome linting checks
+bun run lint:fix            # Run Biome linting with auto-fix
+bun run format              # Format code with Biome (auto-fixes issues)
+bun run type-check          # Run TypeScript type checking
 
 # Testing
-pnpm test                   # Run Vitest unit tests
-pnpm test:watch             # Run Vitest in watch mode
-pnpm test:coverage          # Run tests with coverage report
+bun test                    # Run Vitest unit tests
+bun run test:watch          # Run Vitest in watch mode
 
-# Analysis & Maintenance
-pnpm analyze                # Build with bundle analyzer enabled
-pnpm clean                  # Remove node_modules, .next, dist, coverage
+# Maintenance
+bun run clean               # Remove node_modules, .next, .open-next, dist
 ```
 
 ### Environment Setup
@@ -45,8 +50,8 @@ cp .env.local.example .env.local
 - **UI**: shadcn/ui components with Tailwind CSS
 - **Code Editor**: CodeMirror 6 for syntax highlighting and editing
 - **State Management**: Zustand for client-side state
-- **Package Manager**: pnpm (required, version >= 9)
-- **Analytics**: Vercel Analytics and Speed Insights
+- **Package Manager**: bun (version 1.3.5+)
+- **Deployment**: Cloudflare Workers via @opennextjs/cloudflare
 
 ### Key Dependencies
 - **Code Execution**: Pyodide (Python), TeaVM (Java), WASM runtimes for Go/Rust/CPP and 6 additional languages
@@ -265,16 +270,18 @@ Key environment variables (see `.env.local.example`):
 ## Deployment Architecture
 
 ### Build Process
-- **Static Export**: Next.js static site generation
+- **OpenNext**: Uses `@opennextjs/cloudflare` to build Next.js for Cloudflare Workers
 - **Bundle Optimization**: Automatic code splitting and minification
 - **Asset Optimization**: Image compression and format conversion
-- **Caching Strategy**: Long-term caching for static assets
+- **Caching Strategy**: Long-term caching for static assets via Cloudflare CDN
 
-### Hosting Requirements
-- **Static Hosting**: Works with any static host (Vercel, Netlify, Cloudflare Pages)
-- **CDN**: Global CDN distribution recommended
-- **HTTPS**: Required for WASM execution and security
-- **No Backend**: Core functionality is entirely client-side
+### Cloudflare Workers Deployment
+- **Runtime**: Cloudflare Workers with Node.js compatibility mode
+- **Configuration**: `wrangler.jsonc` for Workers configuration
+- **Build Output**: `.open-next/` directory contains the built Worker
+- **CDN**: Cloudflare's global CDN for static assets
+- **HTTPS**: Automatic HTTPS via Cloudflare
+- **Core Functionality**: Primarily client-side with edge-optimized delivery
 
 ## Security Considerations
 
