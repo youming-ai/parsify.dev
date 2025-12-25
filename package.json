@@ -39,6 +39,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "critters": "^0.0.25",
     "crypto-js": "^4.2.0",
     "monaco-editor": "^0.55.1",
     "next": "^15.5.9",

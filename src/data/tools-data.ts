@@ -192,6 +192,7 @@ export const toolsData: Tool[] = [
     difficulty: 'beginner',
     status: 'stable',
     href: '/data-format/json-to-toml',
+    isNew: true,
     processingType: 'client-side',
     security: 'local-only',
   },

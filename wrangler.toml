@@ -1,25 +1,13 @@
-# Parsify Cloudflare Workers Configuration
-# https://developers.cloudflare.com/workers/wrangler/configuration/
-
 name = "parsify"
 main = ".open-next/worker.js"
 compatibility_date = "2025-03-01"
-compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+compatibility_flags = ["nodejs_compat"]
 
 [assets]
 binding = "ASSETS"
 directory = ".open-next/assets"
 
-[observability]
-enabled = true
+[[kv_namespaces]]
+binding = "PARSIFY_KV"
+id = "6e3ca7737342485f952352e527a1c46e"
 
-# CPU limits for cost control (default: 10ms)
-[limits]
-cpu_ms = 50
-
-# Production environment
-[env.production]
-name = "parsify"
-
-# Note: Use secrets to store sensitive data.
-# https://developers.cloudflare.com/workers/configuration/secrets/
