@@ -1,6 +1,6 @@
 'use client';
 
-import { CodeEditor } from '@/components/tools/code/code-editor';
+import { CodeEditor } from '@/components/tools/code';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -448,8 +448,7 @@ export function JsonPathQueries({
                 <CodeEditor
                   value={jsonInput}
                   onChange={setJsonInput}
-                  language="javascript"
-                  onLanguageChange={() => {}}
+                  height={250}
                   className="h-64"
                 />
               </div>
@@ -499,8 +498,7 @@ export function JsonPathQueries({
                         <CodeEditor
                           value={JSON.stringify(selectedResult.matches, null, 2)}
                           onChange={() => {}}
-                          language="javascript"
-                          onLanguageChange={() => {}}
+                          height={250}
                           className="h-64"
                           readOnly
                         />

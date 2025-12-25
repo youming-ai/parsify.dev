@@ -8,25 +8,6 @@ export { cn } from './utils';
 export * from './utils/validation';
 export { useTool, useFileHandler } from './hooks/useTool';
 
-// Performance utilities
-export {
-  BundleAnalyzer,
-  type BundleMetrics,
-  type PerformanceMetrics as BundlePerformanceMetrics,
-  type ToolPerformanceMetrics as BundleToolPerformanceMetrics,
-} from './performance/bundle-analyzer';
-export * from './performance/lazy-loader';
-export {
-  PerformanceMonitor,
-  type PerformanceReport,
-  type ToolPerformanceMetrics as MonitorToolPerformanceMetrics,
-  type SystemMetrics,
-  type WebVitalsMetrics,
-  type PerformanceThreshold,
-  type PerformanceRecommendation,
-  type PerformanceAlert,
-} from './performance-monitor';
-
 // Cryptography utilities
 export {
   aesEncrypt,

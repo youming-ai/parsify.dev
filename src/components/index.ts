@@ -10,13 +10,9 @@ export * from './ui';
 export { MainLayout } from './layout/main-layout';
 export { Footer } from './layout/footer';
 export { Header } from './layout/header';
-export { Sidebar } from './layout/sidebar';
 
-// Shared Components
-export { ToolWrapper, ToolErrorBoundary } from './shared/ToolWrapper';
-
-// Tool Components - File Upload
-export { default as FileUpload } from './file-upload/file-upload-component';
+// File Upload
+export { FileUpload } from './file-upload/file-upload';
 
 // Export component types
 export type * from '../types/components';

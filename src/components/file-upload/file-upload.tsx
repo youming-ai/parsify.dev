@@ -1,153 +1,133 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { cn } from '@/lib/utils';
-import { File, X } from '@phosphor-icons/react';
-import * as React from 'react';
-import { FileDropZone } from './file-drop-zone';
+import { UploadSimple, X } from '@phosphor-icons/react';
+import { useCallback, useRef } from 'react';
 
-export interface FileUploadProps {
-  files: File[];
-  onFilesChange: (files: File[]) => void;
-  maxFiles?: number;
-  maxFileSize?: number;
-  acceptedFormats?: string[];
-  className?: string;
+interface FileUploadProps {
+  accept?: string;
   multiple?: boolean;
-  disabled?: boolean;
+  maxSize?: number;
+  maxFiles?: number;
+  files?: File[];
+  acceptedFormats?: string[];
+  onFilesSelected?: (files: File[]) => void;
+  onFilesChange?: (files: File[]) => void;
+  onError?: (error: string) => void;
+  className?: string;
 }
 
 export function FileUpload({
-  files,
-  onFilesChange,
-  maxFiles = 5,
-  maxFileSize = 10 * 1024 * 1024, // 10MB
-  acceptedFormats = [],
-  className,
+  accept,
   multiple = true,
-  disabled = false,
+  maxSize = 10 * 1024 * 1024,
+  maxFiles = 10,
+  files: controlledFiles,
+  acceptedFormats,
+  onFilesSelected,
+  onFilesChange,
+  onError,
+  className,
 }: FileUploadProps) {
-  const [_isDragOver, _setIsDragOver] = React.useState(false);
-  const [uploadProgress, setUploadProgress] = React.useState<Record<string, number>>({});
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const files = controlledFiles || [];
 
-  const handleFilesDrop = (newFiles: File[]) => {
-    // Filter files based on size and format
-    const validFiles = newFiles.filter((file) => {
-      const isValidSize = file.size <= maxFileSize;
-      const isValidFormat =
-        acceptedFormats.length === 0 ||
-        acceptedFormats.some((format) =>
-          file.name.toLowerCase().endsWith(`.${format.toLowerCase()}`)
-        );
+  const acceptString =
+    accept || (acceptedFormats ? acceptedFormats.map((f) => `.${f}`).join(',') : '*/*');
 
-      return isValidSize && isValidFormat;
-    });
+  const handleFileChange = useCallback(
+    (fileList: FileList | null) => {
+      if (!fileList) return;
 
-    // Check max files limit
-    const remainingSlots = maxFiles - files.length;
-    const filesToAdd = validFiles.slice(0, remainingSlots);
-
-    // Update files list
-    const updatedFiles = [...files, ...filesToAdd];
-    onFilesChange(updatedFiles);
-
-    // Simulate upload progress
-    for (const file of filesToAdd) {
-      const fileName = file.name;
-      setUploadProgress((prev) => ({ ...prev, [fileName]: 0 }));
-
-      // Simulate progress
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += Math.random() * 30;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(interval);
-          // Remove from progress tracking when complete
-          setTimeout(() => {
-            setUploadProgress((prev) => {
-              const newProgress = { ...prev };
-              delete newProgress[fileName];
-              return newProgress;
-            });
-          }, 500);
+      const selectedFiles: File[] = [];
+      for (let i = 0; i < Math.min(fileList.length, maxFiles); i++) {
+        const file = fileList[i];
+        if (file.size > maxSize) {
+          onError?.(
+            `File "${file.name}" exceeds maximum size of ${Math.round(maxSize / 1024 / 1024)}MB`
+          );
+          continue;
         }
-        setUploadProgress((prev) => ({ ...prev, [fileName]: progress }));
-      }, 200);
-    }
-  };
+        selectedFiles.push(file);
+      }
 
-  const removeFile = (index: number) => {
-    const updatedFiles = files.filter((_, i) => i !== index);
-    onFilesChange(updatedFiles);
-  };
+      if (selectedFiles.length > 0) {
+        onFilesSelected?.(selectedFiles);
+        onFilesChange?.(selectedFiles);
+      }
+    },
+    [maxSize, maxFiles, onError, onFilesSelected, onFilesChange]
+  );
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
-  };
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      handleFileChange(e.dataTransfer.files);
+    },
+    [handleFileChange]
+  );
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+  }, []);
+
+  const removeFile = useCallback(
+    (index: number) => {
+      const newFiles = files.filter((_, i) => i !== index);
+      onFilesChange?.(newFiles);
+    },
+    [files, onFilesChange]
+  );
 
   return (
-    <div className={cn('space-y-4', className)}>
-      <FileDropZone
-        onDrop={handleFilesDrop}
-        maxSize={maxFileSize}
-        accept={acceptedFormats.map((format) => `.${format}`)}
-        multiple={multiple}
-        disabled={disabled}
-      />
-
-      {Object.keys(uploadProgress).length > 0 && (
-        <Card>
-          <CardContent className="p-4">
-            {Object.entries(uploadProgress).map(([fileName, progress]) => (
-              <div key={fileName} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="truncate font-medium text-sm">{fileName}</span>
-                  <span className="text-gray-500 text-sm">{Math.round(progress)}%</span>
-                </div>
-                <Progress value={progress} className="h-2" />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
+    <div className={className}>
+      <div
+        className="flex min-h-[150px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 p-6 transition-colors hover:border-primary/50"
+        onClick={() => fileInputRef.current?.click()}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+      >
+        <UploadSimple className="mb-3 h-8 w-8 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">Click to upload or drag and drop</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Max {maxFiles} files, {Math.round(maxSize / 1024 / 1024)}MB each
+        </p>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={acceptString}
+          multiple={multiple}
+          className="hidden"
+          onChange={(e) => handleFileChange(e.target.files)}
+        />
+      </div>
 
       {files.length > 0 && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="space-y-2">
-              {files.map((file, index) => (
-                <div
-                  key={`${file.name}-${index}`}
-                  className="flex items-center justify-between rounded-lg border p-3"
-                >
-                  <div className="flex min-w-0 flex-1 items-center space-x-3">
-                    <File className="h-5 w-5 flex-shrink-0 text-gray-400" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-sm">{file.name}</p>
-                      <p className="text-gray-500 text-xs">{formatFileSize(file.size)}</p>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={() => removeFile(index)}
-                    variant="ghost"
-                    size="sm"
-                    disabled={disabled}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+        <div className="mt-3 space-y-2">
+          {files.map((file, index) => (
+            <div
+              key={`${file.name}-${index}`}
+              className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm"
+            >
+              <span className="truncate">{file.name}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeFile(index);
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-          </CardContent>
-        </Card>
+          ))}
+        </div>
       )}
     </div>
   );
 }
+
+export default FileUpload;

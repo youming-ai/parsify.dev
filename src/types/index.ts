@@ -9,14 +9,5 @@ export * from './tools';
 // Component types
 export * from './components';
 
-// Analytics types
-export * from './analytics';
-
-// Registry types
-export * from './registry';
-
-// Runtime types
-export * from './runtimes';
-
-// Security types
-export * from './security';
+// SEO types
+export * from './seo';
