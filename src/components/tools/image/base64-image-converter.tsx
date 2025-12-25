@@ -2,228 +2,165 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowRight, ArrowsClockwise, Copy, DownloadSimple, Image } from '@phosphor-icons/react';
+import { Copy, DownloadSimple, Image, Trash, UploadSimple } from '@phosphor-icons/react';
 import { useCallback, useRef, useState } from 'react';
 
-interface PreviewImageProps {
-  src?: string;
-  alt: string;
-}
-
-const PreviewImage = ({ src, alt }: PreviewImageProps) => {
-  if (!src)
-    return (
-      <div className="flex h-48 items-center justify-center rounded-lg border border-dashed text-muted-foreground text-sm">
-        No preview yet
-      </div>
-    );
-
-  return (
-    <div className="overflow-hidden rounded-lg border bg-muted/30">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} className="h-48 w-full bg-white object-contain" />
-    </div>
-  );
-};
-
-export const Base64ImageConverter = () => {
-  const [base64Output, setBase64Output] = useState('');
-  const [decodedPreview, setDecodedPreview] = useState('');
-  const [encodePreview, setEncodePreview] = useState('');
-  const [base64Input, setBase64Input] = useState('');
+export function Base64ImageConverter() {
+  const [imageBase64, setImageBase64] = useState('');
+  const [imageSrc, setImageSrc] = useState('');
+  const [fileName, setFileName] = useState('');
+  const [fileSize, setFileSize] = useState(0);
+  const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const toBase64 = useCallback(async (file: File) => {
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result;
-        if (typeof result === 'string') {
-          resolve(result);
-        } else {
-          reject(new Error('Failed to read file'));
-        }
-      };
-      reader.onerror = () => reject(reader.error ?? new Error('File read error'));
-      reader.readAsDataURL(file);
-    });
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setFileName(file.name);
+    setFileSize(file.size);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      setImageBase64(base64);
+      setImageSrc(base64);
+    };
+    reader.readAsDataURL(file);
   }, []);
 
-  const handleFileChange = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      try {
-        const encoded = await toBase64(file);
-        setBase64Output(encoded);
-        setEncodePreview(encoded);
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [toBase64]
-  );
-
-  const normalizeBase64 = (value: string) => {
-    if (!value.trim()) return '';
-    if (value.startsWith('data:')) return value.trim();
-    return `data:image/png;base64,${value.trim()}`;
-  };
-
-  const handleDecode = useCallback(() => {
-    const normalized = normalizeBase64(base64Input);
-    setDecodedPreview(normalized);
-  }, [base64Input]);
-
-  const handleCopy = async (value: string) => {
-    if (!value) return;
-    try {
-      await navigator.clipboard.writeText(value);
-    } catch (error) {
-      console.error('Clipboard copy failed', error);
+  const handleBase64Input = useCallback((value: string) => {
+    setImageBase64(value);
+    if (value.startsWith('data:image')) {
+      setImageSrc(value);
+    } else if (value.trim()) {
+      // Try to add data URL prefix
+      setImageSrc(`data:image/png;base64,${value}`);
+    } else {
+      setImageSrc('');
     }
+  }, []);
+
+  const handleCopy = async () => {
+    if (!imageBase64) return;
+    await navigator.clipboard.writeText(imageBase64);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDownload = async () => {
-    if (!decodedPreview && !encodePreview) return;
-    const target = decodedPreview || encodePreview;
-    try {
-      const response = await fetch(target);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = 'image.png';
-      anchor.click();
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('DownloadSimple failed', error);
-    }
+  const handleDownload = () => {
+    if (!imageSrc) return;
+    const link = document.createElement('a');
+    link.href = imageSrc;
+    link.download = fileName || 'image.png';
+    link.click();
   };
 
-  const handleReset = () => {
-    setBase64Output('');
-    setEncodePreview('');
-    setBase64Input('');
-    setDecodedPreview('');
+  const handleClear = () => {
+    setImageBase64('');
+    setImageSrc('');
+    setFileName('');
+    setFileSize(0);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
+  };
+
   return (
-    <Card className="border-slate-200/80 shadow-sm dark:border-slate-800">
+    <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <Image className="h-5 w-5" />
-              Base64 Image Tools
-            </CardTitle>
-            <CardDescription>
-              Convert images to Base64 strings and decode Base64 back to images with live preview.
-            </CardDescription>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleReset}>
-              <ArrowsClockwise className="mr-2 h-4 w-4" /> Reset
-            </Button>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleDownload}
-              disabled={!decodedPreview && !encodePreview}
+        <CardTitle className="flex items-center gap-2">
+          <Image className="h-5 w-5" /> Base64 Image Converter
+        </CardTitle>
+        <CardDescription>
+          Convert images to Base64 strings and vice versa. Upload an image or paste Base64 data.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Upload Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-semibold">Upload Image</Label>
+              <Button size="sm" variant="ghost" className="text-destructive" onClick={handleClear}>
+                <Trash className="mr-2 h-4 w-4" /> Clear
+              </Button>
+            </div>
+            <div
+              className="flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/30 p-6 transition-colors hover:border-primary/50"
+              onClick={() => fileInputRef.current?.click()}
+              onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
             >
-              <DownloadSimple className="mr-2 h-4 w-4" /> DownloadSimple
-            </Button>
+              <UploadSimple className="mb-4 h-10 w-10 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">Click to upload or drag and drop</p>
+              <p className="mt-1 text-xs text-muted-foreground">PNG, JPG, GIF, WebP, SVG</p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+            </div>
+            {fileName && (
+              <div className="rounded-lg bg-muted/50 p-3 text-sm">
+                <p className="font-medium">{fileName}</p>
+                <p className="text-muted-foreground">{formatFileSize(fileSize)}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Preview Section */}
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">Preview</Label>
+            <div className="flex min-h-[200px] items-center justify-center rounded-lg border bg-muted/30 p-4">
+              {imageSrc ? (
+                <img
+                  src={imageSrc}
+                  alt="Preview"
+                  className="max-h-[300px] max-w-full rounded object-contain"
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">No image to preview</p>
+              )}
+            </div>
           </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="encode" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="encode">Encode (Image → Base64)</TabsTrigger>
-            <TabsTrigger value="decode">Decode (Base64 → Image)</TabsTrigger>
-          </TabsList>
 
-          <TabsContent value="encode" className="mt-4 space-y-4">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="image-file">Upload image</Label>
-                <Input
-                  ref={fileInputRef}
-                  id="image-file"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                />
-                <PreviewImage src={encodePreview} alt="Encoded preview" />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Base64 output</Label>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleCopy(base64Output)}
-                    disabled={!base64Output}
-                  >
-                    <Copy className="mr-2 h-4 w-4" />
-                    Copy
-                  </Button>
-                </div>
-                <ScrollArea className="h-64">
-                  <Textarea
-                    value={base64Output}
-                    onChange={(e) => setBase64Output(e.target.value)}
-                    placeholder="Base64 string will appear here"
-                    className="h-64 font-mono"
-                  />
-                </ScrollArea>
-              </div>
+        {/* Base64 Output */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Label className="text-base font-semibold">Base64 String</Label>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={handleCopy} disabled={!imageBase64}>
+                <Copy className="mr-2 h-4 w-4" />
+                {copied ? 'Copied!' : 'Copy'}
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleDownload} disabled={!imageSrc}>
+                <DownloadSimple className="mr-2 h-4 w-4" /> Download
+              </Button>
             </div>
-          </TabsContent>
-
-          <TabsContent value="decode" className="mt-4 space-y-4">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="base64-input">Base64 input</Label>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDecode}
-                    disabled={!base64Input.trim()}
-                  >
-                    <ArrowRight className="mr-2 h-4 w-4" />
-                    Decode
-                  </Button>
-                </div>
-                <Textarea
-                  id="base64-input"
-                  value={base64Input}
-                  onChange={(e) => setBase64Input(e.target.value)}
-                  placeholder="Paste Base64 string (with or without data URL prefix)"
-                  className="h-64 font-mono"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Image preview</Label>
-                <PreviewImage src={decodedPreview} alt="Decoded preview" />
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+          <Textarea
+            value={imageBase64}
+            onChange={(e) => handleBase64Input(e.target.value)}
+            placeholder="Paste Base64 string here or upload an image..."
+            className="min-h-[150px] font-mono text-xs"
+          />
+        </div>
       </CardContent>
     </Card>
   );
-};
+}
 
 export default Base64ImageConverter;

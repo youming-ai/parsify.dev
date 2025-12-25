@@ -1,7 +1,7 @@
-# Parsify.dev Cloudflare Workers Configuration
+# Parsify Cloudflare Workers Configuration
 # https://developers.cloudflare.com/workers/wrangler/configuration/
 
-name = "parsify-dev"
+name = "parsify"
 main = ".open-next/worker.js"
 compatibility_date = "2025-03-01"
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
@@ -14,34 +14,12 @@ directory = ".open-next/assets"
 enabled = true
 
 # CPU limits for cost control (default: 10ms)
-# Adjust based on your needs
 [limits]
 cpu_ms = 50
 
-# Smart Placement (optional)
-# https://developers.cloudflare.com/workers/configuration/smart-placement/
-# [placement]
-# mode = "smart"
-
-# R2 Bucket for incremental static regeneration cache (optional)
-# Uncomment to enable R2 caching
-# [[r2_buckets]]
-# binding = "R2_CACHE"
-# bucket_name = "parsify-dev-cache"
-
-# Environment Variables
-# https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
-# [vars]
-# ENVIRONMENT = "production"
-
-# Production environment overrides
+# Production environment
 [env.production]
-name = "parsify-dev"
-
-# Staging environment (optional)
-# [env.staging]
-# name = "parsify-dev-staging"
+name = "parsify"
 
 # Note: Use secrets to store sensitive data.
 # https://developers.cloudflare.com/workers/configuration/secrets/
-# Example: bunx wrangler secret put API_KEY
