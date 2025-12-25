@@ -7,7 +7,8 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
-  // Removed output: 'export' - OpenNext handles the build for Cloudflare Workers
+  // OpenNext requires standalone output mode for Cloudflare Workers
+  output: 'standalone',
   reactStrictMode: true,
   transpilePackages: ['@phosphor-icons/react'],
   poweredByHeader: false,

@@ -50,7 +50,7 @@ bunx wrangler login
 #### 2. 构建
 
 ```bash
-bun run build:cf
+bun run build
 ```
 
 #### 3. 部署
@@ -65,8 +65,8 @@ bun run deploy
 
 | 设置 | 值 |
 |------|-----|
-| 构建命令 | `bun run build:cf` |
-| 输出目录 | `.open-next` |
+| 构建命令 | `bun run build` |
+| 部署命令 | `npx wrangler deploy` |
 | Node.js 版本 | `20` |
 
 ## 配置文件
@@ -92,7 +92,7 @@ bun run deploy
 # 清理并重新构建
 bun run clean
 bun install
-bun run build:cf
+bun run build
 ```
 
 ### 部署超时
@@ -108,3 +108,4 @@ bun run build:cf
 - [OpenNext Cloudflare 文档](https://opennext.js.org/cloudflare)
 - [Cloudflare Pages 文档](https://developers.cloudflare.com/pages/)
 - [Wrangler 配置参考](https://developers.cloudflare.com/workers/wrangler/configuration/)
+
