@@ -1,4 +1,4 @@
-name = "parsify"
+name = "parsify-dev"
 main = ".open-next/worker.js"
 compatibility_date = "2025-03-01"
 compatibility_flags = ["nodejs_compat"]
