@@ -65,12 +65,11 @@ Open [http://localhost:3000](http://localhost:3000)
 | Command | Description |
 |---------|-------------|
 | `bun run dev` | Start development server |
-| `bun run build` | Build for production |
-| `bun run build:cf` | Build for Cloudflare |
-| `bun run deploy:cf` | Deploy to Cloudflare Pages |
-| `bun run lint` | Run linter |
-| `bun run type-check` | TypeScript type check |
-| `bun run test` | Run tests |
+| `bun run build` | Build for production + Cloudflare |
+| `bun run start` | Start production server |
+| `bun run deploy` | Deploy to Cloudflare Workers |
+| `bun run deploy:cf` | Build and deploy to Cloudflare |
+| `bun run clean` | Clean build artifacts |
 
 ## 🏗️ Tech Stack
 

@@ -11,3 +11,10 @@ directory = ".open-next/assets"
 binding = "PARSIFY_KV"
 id = "6e3ca7737342485f952352e527a1c46e"
 
+[observability]
+[observability.logs]
+enabled = false
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
+

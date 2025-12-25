@@ -93,12 +93,12 @@ export default function HomeClient() {
                     aria-hidden="true"
                   />
                   <label htmlFor="tool-search" className="sr-only">
-                    MagnifyingGlass tools
+                    Search tools
                   </label>
                   <Input
                     id="tool-search"
                     type="text"
-                    placeholder="MagnifyingGlass tools (e.g., JSON, Base64, Formatting)..."
+                    placeholder="Search tools (e.g., JSON, Base64, Formatting)..."
                     className="h-12 border-0 bg-transparent py-3 pl-3 pr-4 placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -158,7 +158,7 @@ export default function HomeClient() {
                 onClick={() => setSearchQuery('')}
                 className="mt-6 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
-                Clear MagnifyingGlass
+                Clear Search
               </button>
             </div>
           )}
