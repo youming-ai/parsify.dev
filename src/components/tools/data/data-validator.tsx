@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle, Settings, Shield, XCircle } from 'lucide-react';
+import { CheckCircle, Gear, Shield, WarningCircle, XCircle } from '@phosphor-icons/react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -479,7 +479,7 @@ website=https://johndoe.com`,
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
+                <Gear className="h-5 w-5" />
                 Validation Rules
               </span>
               <Button onClick={addCustomRule} size="sm">
@@ -491,7 +491,7 @@ website=https://johndoe.com`,
             <div className="space-y-4">
               {validationRules.length === 0 ? (
                 <Alert>
-                  <AlertCircle className="h-4 w-4" />
+                  <WarningCircle className="h-4 w-4" />
                   <AlertDescription>
                     Add validation rules to check your data. You can use predefined templates or
                     create custom rules.
@@ -651,7 +651,7 @@ website=https://johndoe.com`,
                               key={warningIndex}
                               className="flex items-center gap-1 text-sm text-yellow-600"
                             >
-                              <AlertCircle className="h-3 w-3" />
+                              <WarningCircle className="h-3 w-3" />
                               {warning}
                             </div>
                           ))}

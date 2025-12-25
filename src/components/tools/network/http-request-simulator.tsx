@@ -18,17 +18,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import PerformanceMonitor from '@/lib/performance-monitor';
 import {
-  Activity,
+  ArrowsClockwise,
   Clock,
   Code,
-  Download,
+  DownloadSimple,
   Globe,
-  RefreshCw,
-  Send,
-  Server,
+  HardDrives,
+  Lightning,
+  PaperPlaneRight,
+  Pulse,
   Shield,
-  Zap,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -462,12 +462,12 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                   <Button onClick={sendRequest} disabled={isRequesting} className="flex-1">
                     {isRequesting ? (
                       <>
-                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" />
                         Sending...
                       </>
                     ) : (
                       <>
-                        <Send className="mr-2 h-4 w-4" />
+                        <PaperPlaneRight className="mr-2 h-4 w-4" />
                         Send Request
                       </>
                     )}
@@ -606,7 +606,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                         cURL
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => downloadAsPostman(result)}>
-                        <Download className="mr-2 h-4 w-4" />
+                        <DownloadSimple className="mr-2 h-4 w-4" />
                         Postman
                       </Button>
                     </div>
@@ -649,7 +649,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                     {result.timing.dnsLookup !== undefined && (
                       <div className="rounded-lg border p-3">
                         <div className="mb-1 flex items-center gap-2">
-                          <Activity className="h-4 w-4 text-blue-500" />
+                          <Pulse className="h-4 w-4 text-blue-500" />
                           <span className="font-medium text-sm">DNS Lookup</span>
                         </div>
                         <div className="font-bold text-2xl">
@@ -662,7 +662,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                     {result.timing.tcpConnection !== undefined && (
                       <div className="rounded-lg border p-3">
                         <div className="mb-1 flex items-center gap-2">
-                          <Server className="h-4 w-4 text-green-500" />
+                          <HardDrives className="h-4 w-4 text-green-500" />
                           <span className="font-medium text-sm">TCP Connection</span>
                         </div>
                         <div className="font-bold text-2xl">
@@ -688,7 +688,7 @@ export const HTTPRequestSimulator: React.FC<HTTPRequestSimulatorProps> = ({
                     {result.timing.firstByte !== undefined && (
                       <div className="rounded-lg border p-3">
                         <div className="mb-1 flex items-center gap-2">
-                          <Zap className="h-4 w-4 text-purple-500" />
+                          <Lightning className="h-4 w-4 text-purple-500" />
                           <span className="font-medium text-sm">First Byte</span>
                         </div>
                         <div className="font-bold text-2xl">

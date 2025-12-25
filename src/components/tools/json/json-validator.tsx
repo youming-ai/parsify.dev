@@ -1,7 +1,9 @@
+'use client';
+
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
+import { ArrowsClockwise, CheckCircle, WarningCircle } from '@phosphor-icons/react';
 import * as React from 'react';
 import { JsonErrorDisplay } from './json-error-display';
 import type { JsonValidationResult, JsonValidatorProps } from './json-types';
@@ -81,12 +83,12 @@ export function JsonValidator({
 
   const getStatusIcon = () => {
     if (isValidating) {
-      return <RefreshCw className="h-4 w-4 animate-spin text-blue-600" />;
+      return <ArrowsClockwise className="h-4 w-4 animate-spin text-blue-600" />;
     }
     if (validationResult.isValid) {
       return <CheckCircle className="h-4 w-4 text-green-600" />;
     }
-    return <AlertCircle className="h-4 w-4 text-red-600" />;
+    return <WarningCircle className="h-4 w-4 text-red-600" />;
   };
 
   const getStatusColor = () => {
@@ -137,7 +139,7 @@ export function JsonValidator({
               disabled={isValidating}
               className="flex items-center gap-1"
             >
-              <RefreshCw className={cn('h-3 w-3', isValidating && 'animate-spin')} />
+              <ArrowsClockwise className={cn('h-3 w-3', isValidating && 'animate-spin')} />
               Revalidate
             </Button>
           </div>
@@ -171,7 +173,7 @@ export function JsonValidator({
       {/* Empty State */}
       {!input.trim() && (
         <div className="py-8 text-center text-muted-foreground">
-          <AlertCircle className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+          <WarningCircle className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
           <p>Enter JSON content above to validate</p>
         </div>
       )}

@@ -1,6 +1,6 @@
 import bundleAnalyzer from '@next/bundle-analyzer';
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 import type { NextConfig } from 'next';
-import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
@@ -9,6 +9,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 const nextConfig: NextConfig = {
   // Removed output: 'export' - OpenNext handles the build for Cloudflare Workers
   reactStrictMode: true,
+  transpilePackages: ['@phosphor-icons/react'],
   poweredByHeader: false,
   compress: true,
 
@@ -29,7 +30,7 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizeCss: true,
     optimizePackageImports: [
-      'lucide-react',
+      '@phosphor-icons/react',
       '@radix-ui/react-dialog',
       '@radix-ui/react-dropdown-menu',
       '@radix-ui/react-select',
@@ -118,7 +119,7 @@ const nextConfig: NextConfig = {
 };
 
 // Initialize OpenNext for development mode
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV === 'development') {
   initOpenNextCloudflareForDev();
 }
 

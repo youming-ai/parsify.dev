@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, Copy, Key, Lock, Shield, Unlock } from 'lucide-react';
+import { Copy, Key, Lock, LockOpen, Shield, WarningCircle } from '@phosphor-icons/react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 
@@ -380,7 +380,7 @@ export const AESEncryption: React.FC = () => {
 
       {error && (
         <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
+          <WarningCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -488,7 +488,7 @@ export const AESEncryption: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Unlock className="h-5 w-5" />
+                <LockOpen className="h-5 w-5" />
                 Decrypt Data
               </CardTitle>
             </CardHeader>
@@ -520,7 +520,7 @@ export const AESEncryption: React.FC = () => {
                 disabled={isProcessing || !ciphertext.trim() || !key || !iv.trim()}
                 className="w-full"
               >
-                <Unlock className="mr-2 h-4 w-4" />
+                <LockOpen className="mr-2 h-4 w-4" />
                 {isProcessing ? 'Decrypting...' : 'Decrypt'}
               </Button>
 
@@ -556,7 +556,7 @@ export const AESEncryption: React.FC = () => {
                     </>
                   ) : (
                     <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
+                      <WarningCircle className="h-4 w-4" />
                       <AlertDescription>
                         Decryption failed: {decryptionResult.error}
                       </AlertDescription>

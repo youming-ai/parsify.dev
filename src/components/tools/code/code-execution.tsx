@@ -1,21 +1,23 @@
+'use client';
+
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import {
-  AlertTriangle,
+  ArrowCounterClockwise,
   CheckCircle,
   Clock,
   Copy,
-  Download,
-  MemoryStick,
+  Cpu,
+  DownloadSimple,
   Play,
-  RotateCcw,
   Square,
-  Terminal,
+  TerminalWindow,
+  Warning,
   XCircle,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import * as React from 'react';
 import type { CodeExecutionProps, CodeExecutionResult, ExecutionStatus } from './code-types';
 import { getLanguageConfig } from './language-configs';
@@ -237,7 +239,7 @@ export function CodeExecution({
       case 'idle':
         return <Play className="h-4 w-4" />;
       case 'compiling':
-        return <Terminal className="h-4 w-4 animate-pulse" />;
+        return <TerminalWindow className="h-4 w-4 animate-pulse" />;
       case 'running':
         return <Play className="h-4 w-4 animate-pulse" />;
       case 'completed':
@@ -247,7 +249,7 @@ export function CodeExecution({
       case 'cancelled':
         return <Square className="h-4 w-4 text-yellow-500" />;
       case 'timeout':
-        return <AlertTriangle className="h-4 w-4 text-orange-500" />;
+        return <Warning className="h-4 w-4 text-orange-500" />;
       default:
         return <Play className="h-4 w-4" />;
     }
@@ -309,7 +311,7 @@ export function CodeExecution({
                 status === 'timeout') && (
                 <>
                   <Button onClick={resetExecution} variant="outline" size="sm">
-                    <RotateCcw className="mr-2 h-4 w-4" />
+                    <ArrowCounterClockwise className="mr-2 h-4 w-4" />
                     Reset
                   </Button>
 
@@ -322,8 +324,8 @@ export function CodeExecution({
 
                   {result && allowDownload && (
                     <Button onClick={handleDownloadResult} variant="outline" size="sm">
-                      <Download className="mr-2 h-4 w-4" />
-                      Download
+                      <DownloadSimple className="mr-2 h-4 w-4" />
+                      DownloadSimple
                     </Button>
                   )}
                 </>
@@ -378,13 +380,13 @@ export function CodeExecution({
                 </div>
 
                 <div className="flex items-center gap-1">
-                  <MemoryStick className="h-4 w-4" />
+                  <Cpu className="h-4 w-4" />
                   <span>Memory: {formatMemoryUsage(result.memoryUsage)}</span>
                 </div>
 
                 {result.compileTime && (
                   <div className="flex items-center gap-1">
-                    <Terminal className="h-4 w-4" />
+                    <TerminalWindow className="h-4 w-4" />
                     <span>Compile: {formatExecutionTime(result.compileTime)}</span>
                   </div>
                 )}

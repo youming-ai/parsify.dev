@@ -1,36 +1,32 @@
+'use client';
+
 import { toolsData } from '@/data/tools-data';
-import { Command, Github, Mail, Twitter } from 'lucide-react';
+import { Command, EnvelopeSimple, GithubLogo, TwitterLogo } from '@phosphor-icons/react';
 import Link from 'next/link';
 
 const footerSections = [
   {
-    title: 'Data & Format',
+    title: 'Data Format',
     items: toolsData
       .filter((t) => t.category === 'Data Format & Conversion')
-      .slice(0, 6)
       .map((t) => ({ name: t.name, href: t.href })),
   },
   {
     title: 'Security',
     items: toolsData
       .filter((t) => t.category === 'Security & Authentication')
-      .slice(0, 6)
       .map((t) => ({ name: t.name, href: t.href })),
   },
   {
     title: 'Development',
     items: toolsData
       .filter((t) => t.category === 'Development & Testing')
-      .slice(0, 6)
       .map((t) => ({ name: t.name, href: t.href })),
   },
   {
-    title: 'Utilities',
-    items: [
-      ...toolsData.filter((t) => t.category === 'Utility'),
-      ...toolsData.filter((t) => t.category === 'Network & Web'),
-    ]
-      .slice(0, 6)
+    title: 'Network & Utility',
+    items: toolsData
+      .filter((t) => t.category === 'Network & Utility')
       .map((t) => ({ name: t.name, href: t.href })),
   },
 ];
@@ -39,10 +35,10 @@ const socialLinks = [
   {
     name: 'GitHub',
     href: 'https://github.com/youming-ai/parsify.dev',
-    icon: Github,
+    icon: GithubLogo,
   },
-  { name: 'Twitter', href: 'https://x.com/um1ng_x', icon: Twitter },
-  { name: 'Email', href: 'mailto:ikashue@gmail.com', icon: Mail },
+  { name: 'Twitter', href: 'https://x.com/um1ng_x', icon: TwitterLogo },
+  { name: 'Email', href: 'mailto:ikashue@gmail.com', icon: EnvelopeSimple },
 ];
 
 export function Footer() {

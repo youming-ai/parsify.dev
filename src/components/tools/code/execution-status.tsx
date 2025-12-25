@@ -1,22 +1,24 @@
+'use client';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import {
-  AlertTriangle,
+  ArrowCounterClockwise,
   CheckCircle,
+  CircleNotch,
   Clock,
-  Loader2,
-  MemoryStick,
+  Cpu,
+  Lightning,
   Play,
-  RotateCcw,
   Square,
-  Terminal,
+  TerminalWindow,
   Timer,
+  Warning,
   XCircle,
-  Zap,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import * as React from 'react';
 import type { ExecutionStatus, ExecutionStatusProps } from './code-types';
 
@@ -72,9 +74,13 @@ export function ExecutionStatusComponent({
       case 'idle':
         return <Play className={cn(iconSize, 'text-muted-foreground')} />;
       case 'compiling':
-        return <Terminal className={cn(iconSize, 'text-blue-500', animated && 'animate-pulse')} />;
+        return (
+          <TerminalWindow className={cn(iconSize, 'text-blue-500', animated && 'animate-pulse')} />
+        );
       case 'running':
-        return <Loader2 className={cn(iconSize, 'text-green-500', animated && 'animate-spin')} />;
+        return (
+          <CircleNotch className={cn(iconSize, 'text-green-500', animated && 'animate-spin')} />
+        );
       case 'completed':
         return <CheckCircle className={cn(iconSize, 'text-green-500')} />;
       case 'error':
@@ -182,7 +188,7 @@ export function ExecutionStatusComponent({
               {formatTime(executionTime)}
             </div>
             <div className="flex items-center gap-1">
-              <MemoryStick className="h-4 w-4" />
+              <Cpu className="h-4 w-4" />
               {formatMemory(memoryUsage)}
             </div>
           </div>
@@ -197,7 +203,7 @@ export function ExecutionStatusComponent({
 
         {status === 'error' && onRetry && (
           <Button variant="outline" size="sm" onClick={onRetry}>
-            <RotateCcw className="mr-2 h-4 w-4" />
+            <ArrowCounterClockwise className="mr-2 h-4 w-4" />
             Retry
           </Button>
         )}
@@ -258,7 +264,7 @@ export function ExecutionStatusComponent({
               {(status === 'running' || status === 'completed' || status === 'error') &&
                 memoryUsage > 0 && (
                   <div className="flex items-center gap-3 rounded-lg bg-muted p-3 dark:bg-card">
-                    <MemoryStick className="h-5 w-5 text-green-500" />
+                    <Cpu className="h-5 w-5 text-green-500" />
                     <div>
                       <div className="font-medium text-sm">Memory Usage</div>
                       <div className="text-muted-foreground text-xs dark:text-muted-foreground">
@@ -271,7 +277,7 @@ export function ExecutionStatusComponent({
               {/* Performance Metrics */}
               {status === 'completed' && (
                 <div className="flex items-center gap-3 rounded-lg bg-muted p-3 dark:bg-card">
-                  <Zap className="h-5 w-5 text-yellow-500" />
+                  <Lightning className="h-5 w-5 text-yellow-500" />
                   <div>
                     <div className="font-medium text-sm">Performance</div>
                     <div className="text-muted-foreground text-xs dark:text-muted-foreground">
@@ -284,7 +290,7 @@ export function ExecutionStatusComponent({
               {/* Status Specific Info */}
               {status === 'timeout' && (
                 <div className="flex items-center gap-3 rounded-lg bg-orange-50 p-3 dark:bg-orange-900/20">
-                  <AlertTriangle className="h-5 w-5 text-orange-500" />
+                  <Warning className="h-5 w-5 text-orange-500" />
                   <div>
                     <div className="font-medium text-sm">Timeout</div>
                     <div className="text-muted-foreground text-xs dark:text-muted-foreground">
@@ -320,7 +326,7 @@ export function ExecutionStatusComponent({
 
             {(status === 'error' || status === 'timeout') && onRetry && (
               <Button onClick={onRetry}>
-                <RotateCcw className="mr-2 h-4 w-4" />
+                <ArrowCounterClockwise className="mr-2 h-4 w-4" />
                 Retry
               </Button>
             )}
@@ -408,9 +414,9 @@ export function QuickStatus({
       case 'idle':
         return <Play className={cn(iconSize, getStatusColor())} />;
       case 'compiling':
-        return <Terminal className={cn(iconSize, getStatusColor(), 'animate-pulse')} />;
+        return <TerminalWindow className={cn(iconSize, getStatusColor(), 'animate-pulse')} />;
       case 'running':
-        return <Loader2 className={cn(iconSize, getStatusColor(), 'animate-spin')} />;
+        return <CircleNotch className={cn(iconSize, getStatusColor(), 'animate-spin')} />;
       case 'completed':
         return <CheckCircle className={cn(iconSize, getStatusColor())} />;
       case 'error':

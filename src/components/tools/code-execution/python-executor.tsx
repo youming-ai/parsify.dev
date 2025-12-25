@@ -1,3 +1,5 @@
+'use client';
+
 import { type ToolConfig, ToolWrapper } from '@/components/tools/tool-wrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { MemoryManager } from '@/lib/memory-manager';
 import { PerformanceMonitor } from '@/lib/performance-monitor';
 import { type PythonExecutionResult, pythonRuntime } from '@/lib/runtimes/python-wasm';
-import { FileCode, Plus, Trash2, X } from 'lucide-react';
+import { FileCode, Plus, Trash, X } from '@phosphor-icons/react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -374,7 +376,7 @@ export const PythonExecutor: React.FC = () => {
                         <FileCode className="h-3 w-3" />
                         {file.name}
                       </span>
-                      <Trash2
+                      <Trash
                         className="h-3 w-3 cursor-pointer hover:text-destructive"
                         onClick={() => removeInputFile(file.name)}
                       />

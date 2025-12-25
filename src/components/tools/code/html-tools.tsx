@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Braces, CheckCircle2, ScanLine, Sparkles, XCircle } from 'lucide-react';
+import { BracketsCurly, CheckCircle, Scan, Sparkle, XCircle } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 
 type HtmlAction = 'format' | 'minify' | 'validate' | 'encode' | 'decode';
@@ -118,7 +118,7 @@ export const HtmlTools = () => {
     <Card className="border-slate-200/80 shadow-sm dark:border-slate-800">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
-          <Braces className="h-5 w-5" /> HTML Tools
+          <BracketsCurly className="h-5 w-5" /> HTML Tools
         </CardTitle>
         <CardDescription>Format, minify, validate, and encode HTML in one place.</CardDescription>
       </CardHeader>
@@ -145,7 +145,7 @@ export const HtmlTools = () => {
             />
             <div className="flex gap-2">
               <Button variant="default" size="sm" onClick={handleRun}>
-                <Sparkles className="mr-2 h-4 w-4" /> Run
+                <Sparkle className="mr-2 h-4 w-4" /> Run
               </Button>
               <Button variant="ghost" size="sm" onClick={() => setInput(sampleHtml)}>
                 Sample
@@ -168,7 +168,7 @@ export const HtmlTools = () => {
             {validationState && (
               <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
                 {validationState === 'pass' ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle className="h-4 w-4 text-green-500" />
                 ) : (
                   <XCircle className="h-4 w-4 text-red-500" />
                 )}
@@ -182,7 +182,7 @@ export const HtmlTools = () => {
             {validationMessages.length > 0 && (
               <div className="rounded-lg border bg-muted/50 p-3 text-sm">
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-                  <ScanLine className="h-4 w-4" /> Details
+                  <Scan className="h-4 w-4" /> Details
                 </div>
                 <ul className="list-disc space-y-1 pl-4 text-red-500">
                   {validationMessages.map((msg) => (

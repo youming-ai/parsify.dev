@@ -7,16 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  AlertCircle,
-  Check,
-  CheckCircle2,
-  ClipboardCopy,
-  Code2,
-  Play,
-  Regex,
-  Trash2,
-} from 'lucide-react';
+import { Check, CheckCircle, Code, Copy, Play, Trash, WarningCircle } from '@phosphor-icons/react';
 import { useCallback, useMemo, useState } from 'react';
 
 interface MatchResult {
@@ -196,7 +187,7 @@ export default function RegexValidatorPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-teal-600 text-white shadow-sm">
-                <Regex className="h-5 w-5" />
+                <Code className="h-5 w-5" />
               </div>
               <div>
                 <CardTitle>Regex Validator</CardTitle>
@@ -217,11 +208,7 @@ export default function RegexValidatorPage() {
             <div className="flex items-center justify-between">
               <Label>Regular Expression</Label>
               <Button variant="ghost" size="sm" onClick={handleCopyPattern} disabled={!pattern}>
-                {copied ? (
-                  <Check className="mr-2 h-4 w-4" />
-                ) : (
-                  <ClipboardCopy className="mr-2 h-4 w-4" />
-                )}
+                {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
                 {copied ? 'Copied!' : 'Copy'}
               </Button>
             </div>
@@ -238,13 +225,13 @@ export default function RegexValidatorPage() {
             </div>
             {error && (
               <div className="flex items-center gap-2 text-sm text-red-500">
-                <AlertCircle className="h-4 w-4" />
+                <WarningCircle className="h-4 w-4" />
                 {error}
               </div>
             )}
             {!error && pattern && (
               <div className="flex items-center gap-2 text-sm text-green-500">
-                <CheckCircle2 className="h-4 w-4" />
+                <CheckCircle className="h-4 w-4" />
                 Valid regex - {matches.length} match{matches.length !== 1 ? 'es' : ''} found
               </div>
             )}
@@ -294,7 +281,7 @@ export default function RegexValidatorPage() {
                 Match
               </TabsTrigger>
               <TabsTrigger value="replace">
-                <Code2 className="mr-2 h-4 w-4" />
+                <Code className="mr-2 h-4 w-4" />
                 Replace
               </TabsTrigger>
             </TabsList>
@@ -320,7 +307,7 @@ export default function RegexValidatorPage() {
                       Sample: Code
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => setTestString('')}>
-                      <Trash2 className="h-4 w-4" />
+                      <Trash className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>

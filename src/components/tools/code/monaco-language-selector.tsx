@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, ChevronDown } from 'lucide-react';
+import { CaretDown, Check } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
@@ -76,7 +76,7 @@ export function MonacoLanguageSelector({
             className="w-full justify-between"
           >
             {selectedLanguage ? selectedLanguageName : placeholder}
-            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <CaretDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56 max-h-96 overflow-y-auto">
@@ -198,7 +198,7 @@ export function MonacoLanguageSelectorDropdown({
             className="w-full justify-between"
           >
             {selectedLanguage ? getLanguageDisplayName(selectedLanguage) : placeholder}
-            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <CaretDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-64 max-h-96 overflow-y-auto p-0">

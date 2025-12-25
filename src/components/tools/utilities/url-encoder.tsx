@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Copy, Globe, Link, Link2 } from 'lucide-react';
+import { Copy, Globe, Link } from '@phosphor-icons/react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -196,7 +196,7 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
               Encode
             </TabsTrigger>
             <TabsTrigger value="decode" className="flex items-center gap-2">
-              <Link2 className="h-4 w-4" />
+              <Link className="h-4 w-4" />
               Decode
             </TabsTrigger>
           </TabsList>

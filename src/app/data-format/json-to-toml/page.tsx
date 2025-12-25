@@ -1,13 +1,14 @@
 import { JsonLd } from '@/components/seo/json-ld';
+import JsonToTomlClient from '@/components/tools/json/json-to-toml';
 import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = generateToolSEOMetadata({
-  toolId: 'cronjob-generator',
+  toolId: 'json-to-toml',
 });
 
-export default function UcronjobUgeneratorPage() {
-  const structuredData = generateToolStructuredData('cronjob-generator');
+export default function JsonToTomlPage() {
+  const structuredData = generateToolStructuredData('json-to-toml');
 
   return (
     <>
@@ -15,10 +16,7 @@ export default function UcronjobUgeneratorPage() {
         <JsonLd key={`json-ld-${index}`} data={data} />
       ))}
       <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">Cronjob Generator</h1>
-          <p className="text-muted-foreground">Tool component coming soon...</p>
-        </div>
+        <JsonToTomlClient />
       </div>
     </>
   );

@@ -4,16 +4,16 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Activity,
-  BarChart3,
-  ChevronRight,
+  CaretRight,
+  ChartBar,
   Clock,
-  Download,
+  DownloadSimple,
   FileText,
-  Settings,
-  TrendingUp,
-  Zap,
-} from 'lucide-react';
+  Gear,
+  Lightning,
+  Pulse,
+  TrendUp,
+} from '@phosphor-icons/react';
 import { useState } from 'react';
 
 export default function DashboardPage() {
@@ -77,7 +77,7 @@ export default function DashboardPage() {
                   window.location.href = '/tools';
                 }}
               >
-                <Settings className="mr-2 h-4 w-4" />
+                <Gear className="mr-2 h-4 w-4" />
                 Tools
               </Button>
             </div>
@@ -89,12 +89,12 @@ export default function DashboardPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="font-medium text-sm">Total Operations</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              <ChartBar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="font-bold text-2xl">{stats.totalOperations}</div>
               <p className="text-muted-foreground text-xs">
-                <TrendingUp className="mr-1 inline h-3 w-3" />
+                <TrendUp className="mr-1 inline h-3 w-3" />
                 +12% from last month
               </p>
             </CardContent>
@@ -103,7 +103,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="font-medium text-sm">Tools Used</CardTitle>
-              <Zap className="h-4 w-4 text-muted-foreground" />
+              <Lightning className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="font-bold text-2xl">{stats.toolsUsed}</div>
@@ -140,7 +140,7 @@ export default function DashboardPage() {
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
+                  <Pulse className="h-5 w-5" />
                   <CardTitle>Recent Activity</CardTitle>
                 </div>
                 <CardDescription>Your latest tool usage and actions</CardDescription>
@@ -161,7 +161,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-gray-500 text-xs">{activity.time}</span>
-                        <ChevronRight className="h-4 w-4 text-gray-400" />
+                        <CaretRight className="h-4 w-4 text-gray-400" />
                       </div>
                     </div>
                   ))}
@@ -209,7 +209,7 @@ export default function DashboardPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100">
-                        <Zap className="h-4 w-4 text-green-600" />
+                        <Lightning className="h-4 w-4 text-green-600" />
                       </div>
                       <div className="text-left">
                         <p className="font-medium">Code Runner</p>
@@ -227,7 +227,7 @@ export default function DashboardPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
-                        <Download className="h-4 w-4 text-purple-600" />
+                        <DownloadSimple className="h-4 w-4 text-purple-600" />
                       </div>
                       <div className="text-left">
                         <p className="font-medium">File Converter</p>
@@ -245,7 +245,7 @@ export default function DashboardPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100">
-                        <Settings className="h-4 w-4 text-orange-600" />
+                        <Gear className="h-4 w-4 text-orange-600" />
                       </div>
                       <div className="text-left">
                         <p className="font-medium">All Tools</p>

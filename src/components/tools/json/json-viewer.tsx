@@ -1,6 +1,8 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ChevronDown, ChevronRight, Copy, Download } from 'lucide-react';
+import { CaretDown, CaretRight, Copy, DownloadSimple } from '@phosphor-icons/react';
 import * as React from 'react';
 import type { JsonViewerProps, TreeNode } from './json-types';
 import { copyToClipboard, downloadFile, parseJsonToTree } from './json-utils';
@@ -106,11 +108,7 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
                 'focus:text-muted-foreground focus:outline-none'
               )}
             >
-              {isExpanded ? (
-                <ChevronDown className="h-3 w-3" />
-              ) : (
-                <ChevronRight className="h-3 w-3" />
-              )}
+              {isExpanded ? <CaretDown className="h-3 w-3" /> : <CaretRight className="h-3 w-3" />}
             </button>
           )}
 
@@ -249,8 +247,8 @@ export function JsonViewer({
               onClick={handleDownload}
               className="flex items-center gap-1"
             >
-              <Download className="h-3 w-3" />
-              Download
+              <DownloadSimple className="h-3 w-3" />
+              DownloadSimple
             </Button>
           </div>
         )}

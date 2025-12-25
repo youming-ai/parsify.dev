@@ -17,19 +17,19 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  ArrowRightLeft,
+  ArrowsClockwise,
+  ArrowsLeftRight,
   Calendar,
   CheckCircle,
   Clock,
   Copy,
-  Download,
+  DownloadSimple,
   Globe,
-  RefreshCw,
-  TrendingUp,
-  Upload,
+  Lightning,
+  TrendUp,
+  UploadSimple,
   XCircle,
-  Zap,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 
 interface ConversionResult {
@@ -375,7 +375,7 @@ export default function TimestampConverterClient() {
           </div>
           <div className="mt-4 flex gap-2">
             <Button variant="outline" onClick={useCurrentTime} className="flex items-center gap-2">
-              <Zap className="h-4 w-4" />
+              <Lightning className="h-4 w-4" />
               Use Current Time
             </Button>
             <Button
@@ -424,7 +424,7 @@ export default function TimestampConverterClient() {
                   disabled={!timestamp.trim()}
                   className="w-full"
                 >
-                  <ArrowRightLeft className="mr-2 h-4 w-4" />
+                  <ArrowsLeftRight className="mr-2 h-4 w-4" />
                   Convert to Date
                 </Button>
               </CardContent>
@@ -452,7 +452,7 @@ export default function TimestampConverterClient() {
                   </p>
                 </div>
                 <Button onClick={convertDateToTimestamp} disabled={!date.trim()} className="w-full">
-                  <ArrowRightLeft className="mr-2 h-4 w-4" />
+                  <ArrowsLeftRight className="mr-2 h-4 w-4" />
                   Convert to Timestamp
                 </Button>
               </CardContent>
@@ -555,7 +555,7 @@ export default function TimestampConverterClient() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                      <TrendUp className="h-4 w-4 text-muted-foreground" />
                       <span className="text-muted-foreground text-sm">
                         {getRelativeTime(result.timestamp * (useMilliseconds ? 1 : 1000))}
                       </span>
@@ -597,7 +597,7 @@ export default function TimestampConverterClient() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Upload className="h-5 w-5" />
+                <UploadSimple className="h-5 w-5" />
                 Batch Conversion
               </CardTitle>
               <CardDescription>
@@ -615,7 +615,7 @@ export default function TimestampConverterClient() {
                 />
               </div>
               <Button onClick={processBatch} disabled={!batchInput.trim()} className="w-full">
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <ArrowsClockwise className="mr-2 h-4 w-4" />
                 Process Batch
               </Button>
             </CardContent>
@@ -677,7 +677,7 @@ export default function TimestampConverterClient() {
                     }
                     className="flex items-center gap-2"
                   >
-                    <Download className="h-4 w-4" />
+                    <DownloadSimple className="h-4 w-4" />
                     Copy All Results
                   </Button>
                 </div>

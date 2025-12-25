@@ -13,17 +13,17 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import {
-  AlertTriangle,
+  ArrowsClockwise,
   CheckCircle,
   Clock,
   Copy,
-  Download,
-  HelpCircle,
-  RefreshCw,
-  Settings,
-  Upload,
-  Zap,
-} from 'lucide-react';
+  DownloadSimple,
+  Gear,
+  Lightning,
+  Question,
+  UploadSimple,
+  Warning,
+} from '@phosphor-icons/react';
 import React, { useCallback, useRef, useState } from 'react';
 
 // Types
@@ -127,11 +127,11 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
       case 'processing':
         return {
           color: 'text-yellow-600',
-          icon: RefreshCw,
+          icon: ArrowsClockwise,
           text: 'Processing...',
         };
       case 'error':
-        return { color: 'text-red-600', icon: AlertTriangle, text: 'Error' };
+        return { color: 'text-red-600', icon: Warning, text: 'Error' };
       case 'success':
         return { color: 'text-green-600', icon: CheckCircle, text: 'Success' };
       default:
@@ -175,7 +175,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
             {/* Standard Actions */}
             {config.canExport && onExport && (
               <Button variant="outline" size="sm" onClick={onExport}>
-                <Download className="mr-1 h-4 w-4" />
+                <DownloadSimple className="mr-1 h-4 w-4" />
                 Export
               </Button>
             )}
@@ -183,7 +183,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
             {config.canImport && (
               <>
                 <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                  <Upload className="mr-1 h-4 w-4" />
+                  <UploadSimple className="mr-1 h-4 w-4" />
                   Import
                 </Button>
                 <input
@@ -205,7 +205,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
 
             {config.canReset && onReset && (
               <Button variant="outline" size="sm" onClick={onReset}>
-                <RefreshCw className="mr-1 h-4 w-4" />
+                <ArrowsClockwise className="mr-1 h-4 w-4" />
                 Reset
               </Button>
             )}
@@ -215,16 +215,16 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
               <React.Fragment key={index}>{action}</React.Fragment>
             ))}
 
-            {/* Settings and Help */}
+            {/* Gear and Help */}
             <div className="flex items-center gap-1">
               {config.hasSettings && onSettingsToggle && (
                 <Button variant="ghost" size="sm" onClick={onSettingsToggle}>
-                  <Settings className="h-4 w-4" />
+                  <Gear className="h-4 w-4" />
                 </Button>
               )}
               {config.hasHelp && onHelpToggle && (
                 <Button variant="ghost" size="sm" onClick={onHelpToggle}>
-                  <HelpCircle className="h-4 w-4" />
+                  <Question className="h-4 w-4" />
                 </Button>
               )}
             </div>
@@ -270,7 +270,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
       {isLoading && (
         <div className="px-6 pb-4">
           <div className="flex items-center space-x-3">
-            <RefreshCw className="h-4 w-4 animate-spin" />
+            <ArrowsClockwise className="h-4 w-4 animate-spin" />
             <span className="text-sm">Loading tool...</span>
             {loadingProgress > 0 && (
               <Progress value={loadingProgress} className="max-w-xs flex-1" />
@@ -283,7 +283,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
       {error && !isLoading && (
         <div className="px-6 pb-4">
           <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
+            <Warning className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         </div>
@@ -299,7 +299,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
               onClick={() => setShowPerformance(!showPerformance)}
               className="h-6 px-2 text-xs"
             >
-              <Zap className="mr-1 h-3 w-3" />
+              <Lightning className="mr-1 h-3 w-3" />
               Performance
             </Button>
             {showPerformance && (

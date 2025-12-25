@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Globe2, Loader2, Server } from 'lucide-react';
+import { CircleNotch, Globe, HardDrives } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 type RecordType = 'A' | 'AAAA' | 'MX' | 'TXT' | 'CNAME';
@@ -56,7 +56,7 @@ export const DNSLookup = () => {
     <Card className="border-slate-200/80 shadow-sm dark:border-slate-800">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
-          <Server className="h-5 w-5" /> DNS Lookup
+          <HardDrives className="h-5 w-5" /> DNS Lookup
         </CardTitle>
         <CardDescription>
           Resolve DNS records (A, AAAA, MX, TXT, CNAME) with one click.
@@ -95,9 +95,9 @@ export const DNSLookup = () => {
 
         <Button onClick={queryDns} disabled={loading}>
           {loading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <CircleNotch className="mr-2 h-4 w-4 animate-spin" />
           ) : (
-            <Globe2 className="mr-2 h-4 w-4" />
+            <Globe className="mr-2 h-4 w-4" />
           )}
           Lookup
         </Button>

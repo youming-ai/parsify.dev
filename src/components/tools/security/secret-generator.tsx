@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { KeyRound, RefreshCw } from 'lucide-react';
+import { ArrowsClockwise, Key } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 
 const charset = {
@@ -79,7 +79,7 @@ export const SecretGenerator = () => {
     <Card className="border-slate-200/80 shadow-sm dark:border-slate-800">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
-          <KeyRound className="h-5 w-5" /> Secret Generator
+          <Key className="h-5 w-5" /> Secret Generator
         </CardTitle>
         <CardDescription>Generate API keys, secrets, and tokens with one click.</CardDescription>
       </CardHeader>
@@ -125,7 +125,7 @@ export const SecretGenerator = () => {
             </div>
             <div className="flex gap-2">
               <Button onClick={handleGenerate}>
-                <RefreshCw className="mr-2 h-4 w-4" /> Generate
+                <ArrowsClockwise className="mr-2 h-4 w-4" /> Generate
               </Button>
               <Button variant="outline" onClick={handleCopy} disabled={!secret}>
                 Copy

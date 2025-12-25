@@ -5,15 +5,15 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  ChevronDown,
-  ChevronRight,
+  CaretDown,
+  CaretRight,
   Clock,
   Code,
-  FileJson,
+  FileCode,
   FileText,
   Hash,
   Star,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -21,7 +21,7 @@ import { useState } from 'react';
 const toolCategories = [
   {
     title: 'JSON Tools',
-    icon: FileJson,
+    icon: FileCode,
     items: [
       {
         name: 'JSON Formatter',
@@ -157,9 +157,9 @@ export function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
             onClick={toggleCollapse}
           >
             {isCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
+              <CaretRight className="h-4 w-4" />
             ) : (
-              <ChevronRight className="h-4 w-4 rotate-180" />
+              <CaretRight className="h-4 w-4 rotate-180" />
             )}
           </Button>
         </div>
@@ -207,9 +207,9 @@ export function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
                   </div>
                   {!isCollapsed &&
                     (expandedCategories.includes(category.title) ? (
-                      <ChevronDown className="h-4 w-4" />
+                      <CaretDown className="h-4 w-4" />
                     ) : (
-                      <ChevronRight className="h-4 w-4" />
+                      <CaretRight className="h-4 w-4" />
                     ))}
                 </Button>
 

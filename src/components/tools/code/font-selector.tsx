@@ -1,7 +1,7 @@
 'use client';
 
 import { fontConfig, getAvailableFonts } from '@/lib/monaco-config';
-import { Check, ChevronDown, Type } from 'lucide-react';
+import { CaretDown, Check, TextT } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
@@ -74,10 +74,10 @@ export function FontSelector({
             className="w-full justify-between"
           >
             <div className="flex items-center gap-2">
-              <Type className="h-4 w-4" />
+              <TextT className="h-4 w-4" />
               <span className="truncate">{getFontDisplayName(selectedFont)}</span>
             </div>
-            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <CaretDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-72">

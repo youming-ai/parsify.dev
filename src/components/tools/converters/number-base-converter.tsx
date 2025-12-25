@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Copy, RefreshCw } from 'lucide-react';
+import { ArrowsClockwise, Copy } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 export function NumberBaseConverter() {
@@ -143,7 +143,7 @@ export function NumberBaseConverter() {
 
           <div className="flex justify-end">
             <Button variant="outline" onClick={reset}>
-              <RefreshCw className="mr-2 h-4 w-4" />
+              <ArrowsClockwise className="mr-2 h-4 w-4" />
               Reset
             </Button>
           </div>

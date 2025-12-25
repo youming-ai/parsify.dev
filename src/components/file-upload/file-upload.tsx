@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { File as FileIcon, X } from 'lucide-react';
+import { File, X } from '@phosphor-icons/react';
 import * as React from 'react';
 import { FileDropZone } from './file-drop-zone';
 
@@ -128,7 +128,7 @@ export function FileUpload({
                   className="flex items-center justify-between rounded-lg border p-3"
                 >
                   <div className="flex min-w-0 flex-1 items-center space-x-3">
-                    <FileIcon className="h-5 w-5 flex-shrink-0 text-gray-400" />
+                    <File className="h-5 w-5 flex-shrink-0 text-gray-400" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium text-sm">{file.name}</p>
                       <p className="text-gray-500 text-xs">{formatFileSize(file.size)}</p>

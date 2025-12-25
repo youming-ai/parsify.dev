@@ -1,7 +1,9 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Copy, Download, Play, Settings2 } from 'lucide-react';
+import { Copy, DownloadSimple, Faders, Play } from '@phosphor-icons/react';
 import * as React from 'react';
 import type { JsonFormatOptions, JsonFormatterProps } from './json-types';
 import { copyToClipboard, downloadFile, formatJson } from './json-utils';
@@ -89,7 +91,7 @@ export function JsonFormatter({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Settings2 className="h-5 w-5" />
+              <Faders className="h-5 w-5" />
               Format Options
             </CardTitle>
             <Button variant="ghost" size="sm" onClick={() => setShowSettings(!showSettings)}>
@@ -196,8 +198,8 @@ export function JsonFormatter({
             </Button>
 
             <Button variant="outline" onClick={handleDownload} className="flex items-center gap-2">
-              <Download className="h-4 w-4" />
-              Download
+              <DownloadSimple className="h-4 w-4" />
+              DownloadSimple
             </Button>
           </>
         )}

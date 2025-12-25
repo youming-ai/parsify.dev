@@ -6,7 +6,7 @@
 
 'use client';
 
-import { Edit, Eye, FileJson } from 'lucide-react';
+import { Eye, FileCode, PencilSimple } from '@phosphor-icons/react';
 import dynamic from 'next/dynamic';
 import type React from 'react';
 import { useState } from 'react';
@@ -66,7 +66,7 @@ export const JsonToolComplete: React.FC<JsonToolCompleteProps> = ({
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 font-bold text-2xl">
-                <FileJson className="h-6 w-6" />
+                <FileCode className="h-6 w-6" />
                 Complete JSON Tools Suite
               </CardTitle>
               <Badge variant="secondary" className="text-sm">
@@ -85,7 +85,7 @@ export const JsonToolComplete: React.FC<JsonToolCompleteProps> = ({
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="editor" className="flex items-center gap-2">
-                <Edit className="h-4 w-4" />
+                <PencilSimple className="h-4 w-4" />
                 Editor
               </TabsTrigger>
               <TabsTrigger value="viewer" className="flex items-center gap-2">
@@ -125,7 +125,7 @@ export const JsonToolComplete: React.FC<JsonToolCompleteProps> = ({
                     size="sm"
                     className="gap-2"
                   >
-                    <Edit className="h-4 w-4" />
+                    <PencilSimple className="h-4 w-4" />
                     Go to Editor
                   </Button>
                 </div>

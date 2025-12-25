@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Code2, Eye, RefreshCw } from 'lucide-react';
+import { ArrowsClockwise, Code, Eye } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 
 const sampleHtml = `<!DOCTYPE html>
@@ -57,14 +57,14 @@ export const HtmlViewer = () => {
             Dark
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setHtml(sampleHtml)}>
-            <RefreshCw className="mr-2 h-4 w-4" /> Sample
+            <ArrowsClockwise className="mr-2 h-4 w-4" /> Sample
           </Button>
         </div>
 
         <Tabs defaultValue="edit">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="edit" className="flex items-center gap-2">
-              <Code2 className="h-4 w-4" /> Editor
+              <Code className="h-4 w-4" /> Editor
             </TabsTrigger>
             <TabsTrigger value="preview" className="flex items-center gap-2">
               <Eye className="h-4 w-4" /> Preview

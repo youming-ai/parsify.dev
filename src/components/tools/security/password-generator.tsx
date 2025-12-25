@@ -13,19 +13,19 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
+  ArrowsClockwise,
   CheckCircle,
   Clock,
   Copy,
   Database,
   Eye,
-  EyeOff,
+  EyeSlash,
   Info,
   Lock,
-  RefreshCw,
   Shield,
   ShieldCheck,
-  ShieldX,
-} from 'lucide-react';
+  ShieldSlash,
+} from '@phosphor-icons/react';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -293,14 +293,14 @@ const PasswordGenerator: React.FC = () => {
                   className="-translate-y-1/2 absolute top-1/2 right-1"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
               <Button onClick={copyToClipboard} className="px-4">
                 {copied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </Button>
               <Button onClick={generatePassword} className="px-4">
-                <RefreshCw className="h-4 w-4" />
+                <ArrowsClockwise className="h-4 w-4" />
               </Button>
             </div>
 
@@ -511,7 +511,7 @@ const PasswordGenerator: React.FC = () => {
                       {analyzeStrength(pwd).score >= 60 ? (
                         <ShieldCheck className="h-4 w-4 text-green-600" />
                       ) : (
-                        <ShieldX className="h-4 w-4 text-red-600" />
+                        <ShieldSlash className="h-4 w-4 text-red-600" />
                       )}
                       <Copy className="h-4 w-4 text-muted-foreground" />
                     </div>

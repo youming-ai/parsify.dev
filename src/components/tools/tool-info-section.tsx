@@ -1,7 +1,16 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle2, Cpu, Database, Info, Layers, Shield, Sparkles, Zap } from 'lucide-react';
+import {
+  CheckCircle,
+  Cpu,
+  Database,
+  Info,
+  Lightning,
+  Shield,
+  Sparkle,
+  Stack,
+} from '@phosphor-icons/react';
 
 export interface ToolInfoSectionProps {
   features?: string[];
@@ -39,7 +48,7 @@ export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) 
           <Card className="group overflow-hidden rounded-2xl border-border bg-gradient-to-b from-card to-muted/50 shadow-sm transition-all hover:shadow-md">
             <CardHeader className="pb-4">
               <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-                <Sparkles className="h-6 w-6" />
+                <Sparkle className="h-6 w-6" />
               </div>
               <CardTitle className="text-lg text-foreground">Key Features</CardTitle>
               <CardDescription className="text-muted-foreground">
@@ -54,7 +63,7 @@ export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) 
                     className="flex items-start gap-3 rounded-lg bg-muted/50 p-3 transition-colors"
                   >
                     <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      <CheckCircle className="h-3.5 w-3.5" />
                     </div>
                     <span className="text-sm font-medium text-foreground/80">{feature}</span>
                   </li>
@@ -69,7 +78,7 @@ export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) 
           <Card className="group overflow-hidden rounded-2xl border-border bg-gradient-to-b from-card to-muted/50 shadow-sm transition-all hover:shadow-md">
             <CardHeader className="pb-4">
               <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
-                <Layers className="h-6 w-6" />
+                <Stack className="h-6 w-6" />
               </div>
               <CardTitle className="text-lg text-foreground">Specifications</CardTitle>
               <CardDescription className="text-muted-foreground">
@@ -115,7 +124,7 @@ export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) 
                 {info.difficulty && (
                   <div className="flex items-center justify-between rounded-lg bg-muted/80 p-3 dark:bg-card/50">
                     <div className="flex items-center gap-2">
-                      <Zap className="h-4 w-4 text-slate-400" />
+                      <Lightning className="h-4 w-4 text-slate-400" />
                       <span className="text-sm text-slate-600 dark:text-slate-400">Difficulty</span>
                     </div>
                     <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium capitalize text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">

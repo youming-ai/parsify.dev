@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowRightLeft, Copy, Trash2 } from 'lucide-react';
+import { ArrowsLeftRight, Copy, Trash } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 export function HtmlEntityEncoder() {
@@ -84,7 +84,7 @@ export function HtmlEntityEncoder() {
               />
               <div className="flex justify-between">
                 <Button variant="outline" size="sm" onClick={() => setInput('')}>
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash className="mr-2 h-4 w-4" />
                   Clear
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => copyToClipboard(input)}>
@@ -116,7 +116,7 @@ export function HtmlEntityEncoder() {
               {mode === 'encode' ? 'Encode' : 'Decode'}
             </Button>
             <Button variant="outline" size="lg" onClick={toggleMode}>
-              <ArrowRightLeft className="mr-2 h-4 w-4" />
+              <ArrowsLeftRight className="mr-2 h-4 w-4" />
               Swap
             </Button>
           </div>

@@ -12,7 +12,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import type { ProcessingStatus, ToolComponentProps } from '@/types/components';
-import { AlertCircle, CheckCircle, Copy, Download, Loader2, RefreshCw } from 'lucide-react';
+import {
+  ArrowsClockwise,
+  CheckCircle,
+  CircleNotch,
+  Copy,
+  DownloadSimple,
+  WarningCircle,
+} from '@phosphor-icons/react';
 import React, { Suspense } from 'react';
 
 interface ToolWrapperProps extends ToolComponentProps {
@@ -94,10 +101,10 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
   // Get status icon
   const getStatusIcon = () => {
     if (isLoading) {
-      return <Loader2 className="h-4 w-4 animate-spin" />;
+      return <CircleNotch className="h-4 w-4 animate-spin" />;
     }
     if (hasError) {
-      return <AlertCircle className="h-4 w-4 text-destructive" />;
+      return <WarningCircle className="h-4 w-4 text-destructive" />;
     }
     if (isSuccess) {
       return <CheckCircle className="h-4 w-4 text-green-600" />;
@@ -167,7 +174,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
           variant="outline"
           size="sm"
           onClick={() => {
-            // Download functionality
+            // DownloadSimple functionality
             const blob = new Blob(
               [typeof result === 'object' ? JSON.stringify(result, null, 2) : String(result)],
               { type: 'application/json' }
@@ -182,8 +189,8 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
             URL.revokeObjectURL(url);
           }}
         >
-          <Download className="mr-2 h-4 w-4" />
-          Download
+          <DownloadSimple className="mr-2 h-4 w-4" />
+          DownloadSimple
         </Button>
       </div>
     ) : null;
@@ -206,9 +213,11 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
               <div className="space-y-2">
                 <CardTitle className="flex items-center gap-2">
                   {title}
-                  {isLoading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
+                  {isLoading && (
+                    <CircleNotch className="h-5 w-5 animate-spin text-muted-foreground" />
+                  )}
                   {isSuccess && <CheckCircle className="h-5 w-5 text-green-600" />}
-                  {hasError && <AlertCircle className="h-5 w-5 text-destructive" />}
+                  {hasError && <WarningCircle className="h-5 w-5 text-destructive" />}
                 </CardTitle>
                 {description && <p className="text-muted-foreground text-sm">{description}</p>}
                 <div className="flex items-center gap-2">
@@ -230,7 +239,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
                   }}
                   disabled={isLoading}
                 >
-                  <RefreshCw className="h-4 w-4" />
+                  <ArrowsClockwise className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -256,7 +265,7 @@ export const ToolWrapper: React.FC<ToolWrapperProps> = ({
             <Suspense
               fallback={
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin" />
+                  <CircleNotch className="h-8 w-8 animate-spin" />
                   <span className="ml-2 text-muted-foreground">Loading tool...</span>
                 </div>
               }
@@ -331,13 +340,13 @@ const DefaultErrorFallback: React.FC<{ error: Error; reset: () => void }> = ({ e
     <Card className="w-full">
       <CardContent className="py-8">
         <div className="space-y-4 text-center">
-          <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
+          <WarningCircle className="mx-auto h-12 w-12 text-destructive" />
           <div>
             <h3 className="font-semibold text-lg">Something went wrong</h3>
             <p className="text-muted-foreground">{error.message}</p>
           </div>
           <Button onClick={reset} variant="outline">
-            <RefreshCw className="mr-2 h-4 w-4" />
+            <ArrowsClockwise className="mr-2 h-4 w-4" />
             Try Again
           </Button>
         </div>

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Copy, FileText, Hash, Upload } from 'lucide-react';
+import { Copy, FileText, Hash, UploadSimple } from '@phosphor-icons/react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -241,7 +241,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
               Text Input
             </TabsTrigger>
             <TabsTrigger value="file" className="flex items-center gap-2">
-              <Upload className="h-4 w-4" />
+              <UploadSimple className="h-4 w-4" />
               File Input
             </TabsTrigger>
           </TabsList>

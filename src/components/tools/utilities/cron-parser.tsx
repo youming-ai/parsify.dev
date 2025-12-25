@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { CheckCircle, Clock, WarningCircle } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 
 export function CronParser() {
@@ -115,12 +115,12 @@ export function CronParser() {
 
             {error ? (
               <div className="flex items-center gap-2 rounded-lg bg-red-50 p-4 text-red-500 dark:bg-red-900/20">
-                <AlertCircle className="h-5 w-5" />
+                <WarningCircle className="h-5 w-5" />
                 <span>{error}</span>
               </div>
             ) : (
               <div className="flex items-center gap-2 rounded-lg bg-green-50 p-4 text-green-600 dark:bg-green-900/20">
-                <CheckCircle2 className="h-5 w-5" />
+                <CheckCircle className="h-5 w-5" />
                 <span className="font-medium">{description}</span>
               </div>
             )}

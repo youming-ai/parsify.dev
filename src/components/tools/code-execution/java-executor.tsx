@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Java Executor Component
  * Executes Java code in browser using TeaVM WASM compilation
@@ -11,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MemoryManager } from '@/lib/memory-manager';
 import { PerformanceMonitor } from '@/lib/performance-monitor';
 import type { JavaExecutionResult } from '@/lib/runtimes/java-wasm';
-import { Package, Play, Square } from 'lucide-react';
+import { Package, Play, Square } from '@phosphor-icons/react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 

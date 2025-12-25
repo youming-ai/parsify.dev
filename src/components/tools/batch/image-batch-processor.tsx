@@ -17,25 +17,24 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  AlertCircle,
+  ArrowsClockwise,
+  ArrowsInSimple,
   CheckCircle,
   Clock,
+  CornersOut,
   Crop,
-  Download,
+  DownloadSimple,
   Eye,
-  FileDown,
+  FileArrowDown,
   Image as ImageIcon,
-  Maximize2,
-  Minimize2,
   Pause,
   Play,
-  RefreshCw,
-  RotateCw,
   Sliders,
   Tag,
-  Trash2,
-  Upload,
-} from 'lucide-react';
+  Trash,
+  UploadSimple,
+  WarningCircle,
+} from '@phosphor-icons/react';
 import type React from 'react';
 import { useCallback, useRef, useState } from 'react';
 
@@ -748,9 +747,9 @@ const ImageBatchProcessor = () => {
       case 'completed':
         return <CheckCircle className="h-4 w-4" />;
       case 'processing':
-        return <RefreshCw className="h-4 w-4 animate-spin" />;
+        return <ArrowsClockwise className="h-4 w-4 animate-spin" />;
       case 'error':
-        return <AlertCircle className="h-4 w-4" />;
+        return <WarningCircle className="h-4 w-4" />;
       default:
         return <Clock className="h-4 w-4" />;
     }
@@ -813,13 +812,13 @@ const ImageBatchProcessor = () => {
                       {batchOperations.map((operation) => (
                         <SelectItem key={operation.id} value={operation.id}>
                           <div className="flex items-center gap-2">
-                            {operation.id === 'resize' && <Maximize2 className="h-4 w-4" />}
-                            {operation.id === 'convert' && <RefreshCw className="h-4 w-4" />}
-                            {operation.id === 'compress' && <Minimize2 className="h-4 w-4" />}
+                            {operation.id === 'resize' && <CornersOut className="h-4 w-4" />}
+                            {operation.id === 'convert' && <ArrowsClockwise className="h-4 w-4" />}
+                            {operation.id === 'compress' && <ArrowsInSimple className="h-4 w-4" />}
                             {operation.id === 'filter' && <Sliders className="h-4 w-4" />}
                             {operation.id === 'watermark' && <Tag className="h-4 w-4" />}
                             {operation.id === 'crop' && <Crop className="h-4 w-4" />}
-                            {operation.id === 'rotate' && <RotateCw className="h-4 w-4" />}
+                            {operation.id === 'rotate' && <ArrowsClockwise className="h-4 w-4" />}
                             {operation.name}
                           </div>
                         </SelectItem>
@@ -830,7 +829,7 @@ const ImageBatchProcessor = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>File Upload</Label>
+                  <Label>File UploadSimple</Label>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -840,8 +839,8 @@ const ImageBatchProcessor = () => {
                     className="hidden"
                   />
                   <Button onClick={() => fileInputRef.current?.click()} className="w-full">
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload Images
+                    <UploadSimple className="mr-2 h-4 w-4" />
+                    UploadSimple Images
                   </Button>
                 </div>
 
@@ -893,7 +892,7 @@ const ImageBatchProcessor = () => {
                   )}
                 </Button>
                 <Button onClick={clearAll} variant="outline">
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash className="mr-2 h-4 w-4" />
                   Clear All
                 </Button>
               </div>
@@ -1190,8 +1189,8 @@ const ImageBatchProcessor = () => {
 
                     <div className="flex gap-2">
                       <Button onClick={downloadResults}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Download Results
+                        <DownloadSimple className="mr-2 h-4 w-4" />
+                        DownloadSimple Results
                       </Button>
                     </div>
                   </CardContent>
@@ -1291,19 +1290,19 @@ const ImageBatchProcessor = () => {
                             variant="outline"
                             size="sm"
                           >
-                            <FileDown className="h-4 w-4" />
+                            <FileArrowDown className="h-4 w-4" />
                           </Button>
                         </div>
                       )}
 
                       {task.status === 'error' && (
                         <Button onClick={() => retryTask(task.id)} variant="outline" size="sm">
-                          <RefreshCw className="h-4 w-4" />
+                          <ArrowsClockwise className="h-4 w-4" />
                         </Button>
                       )}
 
                       <Button onClick={() => removeTask(task.id)} variant="outline" size="sm">
-                        <Trash2 className="h-4 w-4" />
+                        <Trash className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>

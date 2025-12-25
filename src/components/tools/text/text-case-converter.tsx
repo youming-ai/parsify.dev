@@ -1,6 +1,6 @@
 'use client';
 
-import { Copy, Download, RefreshCw, Settings } from 'lucide-react';
+import { ArrowsClockwise, Copy, DownloadSimple, Gear } from '@phosphor-icons/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -342,7 +342,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
+              <Gear className="h-5 w-5" />
               Text Case Converter
             </CardTitle>
           </CardHeader>
@@ -372,7 +372,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
               )}
               {selectedResult && (
                 <Button onClick={swapInputOutput} variant="outline">
-                  <RefreshCw className="mr-2 h-4 w-4" />
+                  <ArrowsClockwise className="mr-2 h-4 w-4" />
                   Swap Input/Output
                 </Button>
               )}
@@ -504,7 +504,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
                           variant="outline"
                           onClick={() => downloadText(result.converted, `${result.caseType}.txt`)}
                         >
-                          <Download className="h-3 w-3" />
+                          <DownloadSimple className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
@@ -542,8 +542,8 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
                       downloadText(selectedResult.converted, `${selectedResult.caseType}.txt`)
                     }
                   >
-                    <Download className="mr-2 h-4 w-4" />
-                    Download
+                    <DownloadSimple className="mr-2 h-4 w-4" />
+                    DownloadSimple
                   </Button>
                 </div>
               </CardTitle>

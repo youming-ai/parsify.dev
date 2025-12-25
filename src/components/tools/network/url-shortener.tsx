@@ -9,17 +9,17 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PerformanceMonitor from '@/lib/performance-monitor';
 import {
-  BarChart,
+  ArrowSquareOut,
+  ArrowsClockwise,
+  ChartBar,
   Clock,
   Copy,
-  Download,
-  ExternalLink,
+  DownloadSimple,
+  Lightning,
   Link,
-  RefreshCw,
   Shield,
-  Trash2,
-  Zap,
-} from 'lucide-react';
+  Trash,
+} from '@phosphor-icons/react';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -427,12 +427,12 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
               <Button onClick={createShortenedUrl} disabled={isLoading} className="w-full">
                 {isLoading ? (
                   <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" />
                     Creating...
                   </>
                 ) : (
                   <>
-                    <Zap className="mr-2 h-4 w-4" />
+                    <Lightning className="mr-2 h-4 w-4" />
                     Create Short URL
                   </>
                 )}
@@ -445,11 +445,11 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
               <h3 className="font-semibold text-lg">Your Shortened URLs</h3>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={exportUrls}>
-                  <Download className="mr-2 h-4 w-4" />
+                  <DownloadSimple className="mr-2 h-4 w-4" />
                   Export
                 </Button>
                 <Button variant="outline" size="sm" onClick={clearAllUrls}>
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash className="mr-2 h-4 w-4" />
                   Clear All
                 </Button>
               </div>
@@ -488,7 +488,7 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
 
                         <div className="flex items-center gap-4 text-muted-foreground text-xs">
                           <span className="flex items-center gap-1">
-                            <BarChart className="h-3 w-3" />
+                            <ChartBar className="h-3 w-3" />
                             {url.clicks} clicks
                           </span>
                           <span className="flex items-center gap-1">
@@ -510,13 +510,13 @@ export const URLShortener: React.FC<URLShortenerProps> = ({ onShortenComplete })
                           {copiedId === url.id ? 'Copied!' : <Copy className="h-4 w-4" />}
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => simulateClick(url)}>
-                          <ExternalLink className="h-4 w-4" />
+                          <ArrowSquareOut className="h-4 w-4" />
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => toggleUrlStatus(url.id)}>
                           {url.isActive ? 'Disable' : 'Enable'}
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => deleteUrl(url.id)}>
-                          <Trash2 className="h-4 w-4" />
+                          <Trash className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>

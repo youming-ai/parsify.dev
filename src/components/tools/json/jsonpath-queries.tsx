@@ -8,7 +8,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { Code, Copy, FileJson, History, Loader2, Play, Save, Search, Zap } from 'lucide-react';
+import {
+  CircleNotch,
+  ClockCounterClockwise,
+  Code,
+  Copy,
+  FileCode,
+  FloppyDisk,
+  Lightning,
+  MagnifyingGlass,
+  Play,
+} from '@phosphor-icons/react';
 import { useState } from 'react';
 
 interface JSONPathResult {
@@ -363,7 +373,7 @@ export function JsonPathQueries({
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Search className="h-5 w-5 text-blue-600" />
+                <MagnifyingGlass className="h-5 w-5 text-blue-600" />
                 JSONPath Queries
               </CardTitle>
               <CardDescription>
@@ -372,7 +382,7 @@ export function JsonPathQueries({
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={loadSampleData}>
-                <FileJson className="mr-2 h-4 w-4" />
+                <FileCode className="mr-2 h-4 w-4" />
                 Load Sample
               </Button>
               <Button
@@ -381,7 +391,7 @@ export function JsonPathQueries({
                 onClick={exportResults}
                 disabled={results.length === 0}
               >
-                <Save className="mr-2 h-4 w-4" />
+                <FloppyDisk className="mr-2 h-4 w-4" />
                 Export
               </Button>
               <Button
@@ -390,7 +400,7 @@ export function JsonPathQueries({
               >
                 {isExecuting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <CircleNotch className="mr-2 h-4 w-4 animate-spin" />
                     Executing...
                   </>
                 ) : (
@@ -473,7 +483,7 @@ export function JsonPathQueries({
                       </h3>
                       <div className="mt-2 flex items-center gap-4 text-muted-foreground text-sm">
                         <span className="flex items-center gap-1">
-                          <Zap className="h-3 w-3" />
+                          <Lightning className="h-3 w-3" />
                           {selectedResult.executionTime}ms
                         </span>
                         <span>{selectedResult.count} matches</span>
@@ -500,7 +510,7 @@ export function JsonPathQueries({
                 </div>
               ) : (
                 <div className="py-8 text-center text-muted-foreground">
-                  <Search className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                  <MagnifyingGlass className="mx-auto mb-2 h-8 w-8 opacity-50" />
                   <p>Execute a query to see results</p>
                 </div>
               )}
@@ -511,7 +521,7 @@ export function JsonPathQueries({
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <History className="h-5 w-5" />
+                  <ClockCounterClockwise className="h-5 w-5" />
                   Recent Results
                 </CardTitle>
               </CardHeader>
@@ -570,7 +580,7 @@ export function JsonPathQueries({
           {queryHistory.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Query History</CardTitle>
+                <CardTitle>Query ClockCounterClockwise</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="max-h-64 space-y-2 overflow-y-auto">

@@ -1,6 +1,8 @@
+'use client';
+
 import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@/components/ui/button';
-import { FileQuestion } from 'lucide-react';
+import { FileX } from '@phosphor-icons/react';
 import Link from 'next/link';
 
 export default function NotFound() {
@@ -8,7 +10,7 @@ export default function NotFound() {
     <MainLayout>
       <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 py-24 text-center">
         <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-muted/50">
-          <FileQuestion className="h-12 w-12 text-muted-foreground" />
+          <FileX className="h-12 w-12 text-muted-foreground" />
         </div>
         <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">404 - Page Not Found</h1>
         <p className="mb-10 max-w-md text-lg text-muted-foreground">

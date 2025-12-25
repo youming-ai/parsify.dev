@@ -1,21 +1,23 @@
+'use client';
+
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import {
-  AlertCircle,
-  CheckCircle2,
+  ArrowsClockwise,
+  CheckCircle,
+  CircleNotch,
   Clock,
-  Download,
+  DownloadSimple,
   Eye,
   FolderPlus,
-  Loader2,
-  RefreshCw,
-  Trash2,
+  Trash,
+  WarningCircle,
   X,
   XCircle,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import type React from 'react';
 import { useState } from 'react';
 import {
@@ -126,11 +128,11 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
       case 'pending':
         return <Clock className="h-4 w-4 animate-pulse" aria-hidden="true" />;
       case 'uploading':
-        return <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />;
+        return <CircleNotch className="h-4 w-4 animate-spin" aria-hidden="true" />;
       case 'success':
-        return <CheckCircle2 className="h-4 w-4" aria-hidden="true" />;
+        return <CheckCircle className="h-4 w-4" aria-hidden="true" />;
       case 'error':
-        return <AlertCircle className="h-4 w-4" aria-hidden="true" />;
+        return <WarningCircle className="h-4 w-4" aria-hidden="true" />;
       case 'cancelled':
         return <XCircle className="h-4 w-4" aria-hidden="true" />;
       default:
@@ -211,9 +213,9 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                             size="sm"
                             onClick={() => onFileDownload(file)}
                             className="h-auto p-1"
-                            aria-label="Download file"
+                            aria-label="DownloadSimple file"
                           >
-                            <Download className="h-4 w-4" aria-hidden="true" />
+                            <DownloadSimple className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         )}
                       </>
@@ -227,7 +229,7 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                         className="h-auto p-1 text-blue-600 hover:text-blue-700"
                         aria-label="Retry upload"
                       >
-                        <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                        <ArrowsClockwise className="h-4 w-4" aria-hidden="true" />
                       </Button>
                     )}
 
@@ -254,7 +256,7 @@ export const FileListManager: React.FC<FileListManagerProps> = ({
                           className="h-auto p-1 text-red-600 hover:text-red-700"
                           aria-label="Remove file"
                         >
-                          <Trash2 className="h-4 w-4" aria-hidden="true" />
+                          <Trash className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       )}
                   </div>

@@ -3,13 +3,13 @@ import { generatePageMetadata } from '@/lib/metadata';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = generatePageMetadata({
-  title: 'Network & Web Tools',
+  title: 'Network & Utility Tools',
   description:
-    'Professional network utilities for URL parsing, DNS lookup, and web development. All tools run locally in your browser for maximum privacy.',
+    'Professional network and utility tools for URL parsing, DNS lookup, color conversion, and timestamps. All tools run locally in your browser for maximum privacy.',
   path: '/network',
-  keywords: ['url parser', 'dns lookup', 'network tools', 'web utilities', 'ip lookup'],
+  keywords: ['url parser', 'dns lookup', 'color converter', 'timestamp converter', 'network tools'],
 });
 
 export default function NetworkPage() {
-  return <CategoryView categoryName="Network & Web" categorySlug="network" />;
+  return <CategoryView categoryName="Network & Utility" categorySlug="network" />;
 }

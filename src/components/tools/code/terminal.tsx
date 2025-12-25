@@ -1,18 +1,20 @@
+'use client';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import {
-  ChevronDown,
-  ChevronRight,
+  CaretDown,
+  CaretRight,
   Clock,
   Copy,
-  Download,
-  Send,
-  Terminal as TerminalIcon,
-  Trash2,
-} from 'lucide-react';
+  DownloadSimple,
+  PaperPlaneRight,
+  TerminalWindow,
+  Trash,
+} from '@phosphor-icons/react';
 import * as React from 'react';
 import type { TerminalLine, TerminalProps } from './code-types';
 
@@ -181,12 +183,12 @@ export function Terminal({
         <CardContent className="p-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <TerminalIcon className="h-4 w-4" />
+              <TerminalWindow className="h-4 w-4" />
               <span className="font-medium">Terminal</span>
               <Badge variant="secondary">{limitedLines.length} lines</Badge>
             </div>
             <Button variant="ghost" size="sm" onClick={() => setIsMinimized(false)}>
-              <ChevronRight className="h-4 w-4" />
+              <CaretRight className="h-4 w-4" />
             </Button>
           </div>
         </CardContent>
@@ -200,7 +202,7 @@ export function Terminal({
       <div className="border-b bg-muted px-4 py-2 dark:bg-card">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <TerminalIcon className="h-4 w-4" />
+            <TerminalWindow className="h-4 w-4" />
             <span className="font-medium">Terminal</span>
             <Badge variant="secondary">{limitedLines.length} lines</Badge>
           </div>
@@ -208,13 +210,13 @@ export function Terminal({
           <div className="flex items-center gap-2">
             {/* View Options */}
             <Button variant="ghost" size="sm" onClick={() => setShowControls(!showControls)}>
-              <ChevronDown
+              <CaretDown
                 className={cn('h-4 w-4 transition-transform', showControls && 'rotate-180')}
               />
             </Button>
 
             <Button variant="ghost" size="sm" onClick={() => setIsMinimized(true)}>
-              <ChevronDown className="h-4 w-4 rotate-180" />
+              <CaretDown className="h-4 w-4 rotate-180" />
             </Button>
           </div>
         </div>
@@ -254,14 +256,14 @@ export function Terminal({
 
               {allowDownload && (
                 <Button variant="outline" size="sm" onClick={downloadTerminalContent}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Download
+                  <DownloadSimple className="mr-2 h-4 w-4" />
+                  DownloadSimple
                 </Button>
               )}
 
               {allowClear && (
                 <Button variant="outline" size="sm" onClick={clearTerminal}>
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash className="mr-2 h-4 w-4" />
                   Clear
                 </Button>
               )}
@@ -334,7 +336,7 @@ export function Terminal({
                 )}
               />
               <Button type="submit" size="sm" variant="ghost">
-                <Send className="h-4 w-4" />
+                <PaperPlaneRight className="h-4 w-4" />
               </Button>
             </form>
           )}

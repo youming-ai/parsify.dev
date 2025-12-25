@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { RefreshCw } from 'lucide-react';
+import { ArrowsClockwise } from '@phosphor-icons/react';
 
 interface ToolLoadingProps {
   message?: string;
@@ -22,7 +22,7 @@ export function ToolLoading({ message = 'Loading...', onRetry }: ToolLoadingProp
           onClick={onRetry}
           className="flex items-center space-x-2"
         >
-          <RefreshCw className="h-4 w-4" />
+          <ArrowsClockwise className="h-4 w-4" />
           <span>Retry</span>
         </Button>
       )}

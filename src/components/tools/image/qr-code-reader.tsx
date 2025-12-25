@@ -8,18 +8,18 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQRScanner } from '@/lib/image/qr-scanner';
 import {
-  AlertTriangle,
+  ArrowSquareOut,
+  ArrowsClockwise,
   Camera,
-  CameraOff,
+  CameraSlash,
   CheckCircle,
   Copy,
-  Download,
-  ExternalLink,
+  DownloadSimple,
   QrCode,
-  RefreshCw,
-  Upload,
+  UploadSimple,
+  Warning,
   XCircle,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 // import type { QRScanResult } from "@/types/image";
@@ -96,7 +96,7 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
           {
             label: 'Open URL',
             action: () => window.open(content, '_blank'),
-            icon: <ExternalLink className="h-4 w-4" />,
+            icon: <ArrowSquareOut className="h-4 w-4" />,
           },
           {
             label: 'Copy URL',
@@ -118,7 +118,7 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
           {
             label: 'Send Email',
             action: () => window.open(content, '_blank'),
-            icon: <ExternalLink className="h-4 w-4" />,
+            icon: <ArrowSquareOut className="h-4 w-4" />,
           },
         ],
       };
@@ -135,7 +135,7 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
           {
             label: 'Call',
             action: () => window.open(content, '_blank'),
-            icon: <ExternalLink className="h-4 w-4" />,
+            icon: <ArrowSquareOut className="h-4 w-4" />,
           },
         ],
       };
@@ -190,7 +190,7 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
             label: 'View on Map',
             action: () =>
               window.open(`https://maps.google.com/?q=${geoMatch[1]},${geoMatch[2]}`, '_blank'),
-            icon: <ExternalLink className="h-4 w-4" />,
+            icon: <ArrowSquareOut className="h-4 w-4" />,
           },
         ],
       };
@@ -491,7 +491,7 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
     }
 
     if (!result.parsed) {
-      return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
+      return <Warning className="h-5 w-5 text-yellow-500" />;
     }
 
     switch (result.parsed.type) {
@@ -535,7 +535,7 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
           <div className="space-y-4">
             {/* Input Methods */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {/* File Upload */}
+              {/* File UploadSimple */}
               <div className="rounded-lg border-2 border-border border-dashed p-6 text-center">
                 <input
                   ref={fileInputRef}
@@ -550,8 +550,8 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
                   variant="outline"
                   disabled={isScanning}
                 >
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Images
+                  <UploadSimple className="mr-2 h-4 w-4" />
+                  UploadSimple Images
                 </Button>
                 <p className="mt-2 text-muted-foreground text-sm">Scan from files</p>
               </div>
@@ -560,7 +560,7 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
               <div className="rounded-lg border-2 border-border border-dashed p-6 text-center">
                 {isUsingCamera ? (
                   <Button onClick={stopCamera} variant="outline" disabled={isScanning}>
-                    <CameraOff className="mr-2 h-4 w-4" />
+                    <CameraSlash className="mr-2 h-4 w-4" />
                     Stop Camera
                   </Button>
                 ) : (
@@ -581,7 +581,7 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
                 >
                   {isScanning ? (
                     <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" />
                       Scanning...
                     </>
                   ) : (
@@ -677,7 +677,7 @@ export const QRCodeReader: React.FC<QRCodeReaderProps> = ({
                                       variant="ghost"
                                       onClick={() => downloadResult(result, index)}
                                     >
-                                      <Download className="h-4 w-4" />
+                                      <DownloadSimple className="h-4 w-4" />
                                     </Button>
                                   )}
                                 </div>

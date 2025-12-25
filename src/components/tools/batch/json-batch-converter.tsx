@@ -13,20 +13,20 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import {
-  AlertCircle,
+  ArrowsClockwise,
   CheckCircle,
   Clock,
   Copy,
   Database,
-  FileDown,
+  FileArrowDown,
   FileText,
   FolderOpen,
   Pause,
   Play,
-  RefreshCw,
-  Trash2,
-  Upload,
-} from 'lucide-react';
+  Trash,
+  UploadSimple,
+  WarningCircle,
+} from '@phosphor-icons/react';
 import type React from 'react';
 import { useRef, useState } from 'react';
 
@@ -564,9 +564,9 @@ export const JSONBatchConverter: React.FC = () => {
       case 'completed':
         return <CheckCircle className="h-4 w-4" />;
       case 'processing':
-        return <RefreshCw className="h-4 w-4 animate-spin" />;
+        return <ArrowsClockwise className="h-4 w-4 animate-spin" />;
       case 'error':
-        return <AlertCircle className="h-4 w-4" />;
+        return <WarningCircle className="h-4 w-4" />;
       default:
         return <Clock className="h-4 w-4" />;
     }
@@ -657,10 +657,10 @@ export const JSONBatchConverter: React.FC = () => {
             </div>
           </div>
 
-          {/* File Upload */}
+          {/* File UploadSimple */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label className="font-medium text-lg">Upload Files</Label>
+              <Label className="font-medium text-lg">UploadSimple Files</Label>
               <div className="flex gap-2">
                 <input
                   ref={fileInputRef}
@@ -671,8 +671,8 @@ export const JSONBatchConverter: React.FC = () => {
                   className="hidden"
                 />
                 <Button onClick={() => fileInputRef.current?.click()} variant="outline">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Files
+                  <UploadSimple className="mr-2 h-4 w-4" />
+                  UploadSimple Files
                 </Button>
                 <Button
                   onClick={processBatch}
@@ -746,7 +746,7 @@ export const JSONBatchConverter: React.FC = () => {
                   </SelectContent>
                 </Select>
                 <Button onClick={clearAll} variant="outline" size="sm">
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash className="mr-2 h-4 w-4" />
                   Clear All
                 </Button>
               </div>
@@ -791,11 +791,11 @@ export const JSONBatchConverter: React.FC = () => {
                       )}
                       {task.status === 'error' && (
                         <Button onClick={() => retryTask(task.id)} variant="ghost" size="sm">
-                          <RefreshCw className="h-4 w-4" />
+                          <ArrowsClockwise className="h-4 w-4" />
                         </Button>
                       )}
                       <Button onClick={() => removeTask(task.id)} variant="ghost" size="sm">
-                        <Trash2 className="h-4 w-4" />
+                        <Trash className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -842,7 +842,7 @@ export const JSONBatchConverter: React.FC = () => {
 
             <div className="flex gap-2">
               <Button onClick={downloadResults} variant="outline">
-                <FileDown className="mr-2 h-4 w-4" />
+                <FileArrowDown className="mr-2 h-4 w-4" />
                 Download Report
               </Button>
               <Button

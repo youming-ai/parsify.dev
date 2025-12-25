@@ -1,4 +1,6 @@
-import { Command } from 'lucide-react';
+'use client';
+
+import { Command } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { ThemeToggle } from './theme-toggle';
 

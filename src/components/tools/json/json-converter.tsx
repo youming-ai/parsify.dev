@@ -1,8 +1,10 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { ArrowRight, Copy, Download, Play } from 'lucide-react';
+import { ArrowRight, Copy, DownloadSimple, Play } from '@phosphor-icons/react';
 import * as React from 'react';
 import type { JsonConversionOptions, JsonConverterProps } from './json-types';
 import { convertJson, copyToClipboard, downloadFile } from './json-utils';
@@ -257,8 +259,8 @@ export function JsonConverter({
             </Button>
 
             <Button variant="outline" onClick={handleDownload} className="flex items-center gap-2">
-              <Download className="h-4 w-4" />
-              Download
+              <DownloadSimple className="h-4 w-4" />
+              DownloadSimple
             </Button>
           </>
         )}

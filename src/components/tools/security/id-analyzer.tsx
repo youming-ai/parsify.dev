@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { BadgeHelp, Info } from 'lucide-react';
+import { IdentificationBadge, Info } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 
 interface DetectionResult {
@@ -95,7 +95,7 @@ export const IDAnalyzer = () => {
     <Card className="border-slate-200/80 shadow-sm dark:border-slate-800">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
-          <BadgeHelp className="h-5 w-5" /> ID Analyzer
+          <IdentificationBadge className="h-5 w-5" /> ID Analyzer
         </CardTitle>
         <CardDescription>Detect and decode common identifier formats.</CardDescription>
       </CardHeader>
@@ -140,7 +140,7 @@ export const IDAnalyzer = () => {
                       Confidence: {result.confidence}
                     </div>
                   </div>
-                  <BadgeHelp className="h-5 w-5 text-muted-foreground" />
+                  <IdentificationBadge className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <Textarea
                   readOnly

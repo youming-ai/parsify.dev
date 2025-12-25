@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { AlertCircle, CheckCircle2, Clock, Loader2, X, XCircle } from 'lucide-react';
+import { CheckCircle, CircleNotch, Clock, WarningCircle, X, XCircle } from '@phosphor-icons/react';
 import type React from 'react';
 import type { FileUploadProgress, FileUploadStatus } from './file-upload-types';
 
@@ -61,11 +61,11 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
       case 'pending':
         return <Clock className="h-5 w-5 animate-pulse text-gray-400" aria-hidden="true" />;
       case 'uploading':
-        return <Loader2 className="h-5 w-5 animate-spin text-blue-500" aria-hidden="true" />;
+        return <CircleNotch className="h-5 w-5 animate-spin text-blue-500" aria-hidden="true" />;
       case 'success':
-        return <CheckCircle2 className="h-5 w-5 text-green-500" aria-hidden="true" />;
+        return <CheckCircle className="h-5 w-5 text-green-500" aria-hidden="true" />;
       case 'error':
-        return <AlertCircle className="h-5 w-5 text-red-500" aria-hidden="true" />;
+        return <WarningCircle className="h-5 w-5 text-red-500" aria-hidden="true" />;
       case 'cancelled':
         return <XCircle className="h-5 w-5 text-gray-500" aria-hidden="true" />;
       default:
@@ -143,7 +143,7 @@ export const FileUploadProgressIndicator: React.FC<FileUploadProgressProps> = ({
               onClick={onRetry}
               className="h-auto p-1 text-gray-500 hover:text-blue-500"
             >
-              <Loader2 className="h-4 w-4" aria-hidden="true" />
+              <CircleNotch className="h-4 w-4" aria-hidden="true" />
             </Button>
           )}
         </div>

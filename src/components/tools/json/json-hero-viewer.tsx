@@ -5,7 +5,7 @@
  * Features:
  * - Collapsible tree structure with proper indentation
  * - Syntax highlighting for different data types
- * - Search and filter functionality
+ * - MagnifyingGlass and filter functionality
  * - Copy to clipboard for any node
  * - Path display and navigation
  * - Performance optimized for large JSON structures
@@ -17,18 +17,18 @@
 'use client';
 
 import {
-  ChevronDown,
-  ChevronRight,
+  CaretDown,
+  CaretRight,
   Copy,
   File,
   Folder,
   Hash,
   Key,
-  Search,
+  MagnifyingGlass,
+  TextT,
   ToggleLeft,
-  Type,
   X,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { cn } from '../../../lib/utils';
 import { Alert, AlertDescription } from '../../ui/alert';
@@ -126,7 +126,7 @@ const getSyntaxHighlightClass = (type: JsonNode['type']): string => {
 const _getTypeIcon = (type: JsonNode['type']) => {
   switch (type) {
     case 'string':
-      return <Type className="h-4 w-4" />;
+      return <TextT className="h-4 w-4" />;
     case 'number':
       return <Hash className="h-4 w-4" />;
     case 'boolean':
@@ -480,9 +480,9 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
 
         {showSearch && (
           <div className="relative">
-            <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
+            <MagnifyingGlass className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
             <Input
-              placeholder="Search JSON..."
+              placeholder="MagnifyingGlass JSON..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -503,7 +503,7 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
                   >
                     {part}
                   </button>
-                  {index < breadcrumbPath.length - 1 && <ChevronRight className="h-3 w-3" />}
+                  {index < breadcrumbPath.length - 1 && <CaretRight className="h-3 w-3" />}
                 </React.Fragment>
               ))}
             </div>
@@ -550,9 +550,9 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
                       }}
                     >
                       {isExpanded ? (
-                        <ChevronDown className="h-4 w-4" />
+                        <CaretDown className="h-4 w-4" />
                       ) : (
-                        <ChevronRight className="h-4 w-4" />
+                        <CaretRight className="h-4 w-4" />
                       )}
                     </button>
                   )}

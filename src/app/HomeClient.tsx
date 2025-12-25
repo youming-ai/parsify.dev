@@ -3,59 +3,11 @@
 import { MainLayout } from '@/components/layout/main-layout';
 import { Input } from '@/components/ui/input';
 import { toolsData } from '@/data/tools-data';
+import { iconMap } from '@/lib/icon-map';
 import type { Tool } from '@/types/tools';
-import {
-  Binary,
-  Clock,
-  Code,
-  Database,
-  File,
-  FileJson,
-  FileText,
-  Globe,
-  Hash,
-  Image,
-  KeyRound,
-  Link as LinkIcon,
-  Lock,
-  MapPin,
-  Network,
-  Palette,
-  QrCode,
-  ScanLine,
-  Search,
-  Shield,
-  Terminal,
-  Type,
-} from 'lucide-react';
+import { Database, MagnifyingGlass } from '@phosphor-icons/react';
 import Link from 'next/link';
-import type React from 'react';
 import { useState } from 'react';
-
-// Icon mapping
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  FileJson,
-  Database,
-  Code,
-  Terminal,
-  Image,
-  Palette,
-  Hash,
-  FileText,
-  Shield,
-  Globe,
-  Network,
-  MapPin,
-  Link: LinkIcon,
-  Type,
-  Lock,
-  KeyRound,
-  ScanLine,
-  Binary,
-  QrCode,
-  Clock,
-  File,
-};
 
 export default function HomeClient() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -104,11 +56,11 @@ export default function HomeClient() {
     <MainLayout>
       <div className="min-h-screen bg-background text-foreground selection:bg-primary/10 selection:text-primary">
         {/* Modern Hero Section */}
-        <section className="relative flex min-h-[60vh] flex-col items-center justify-center overflow-hidden border-b px-6 py-24 text-center">
+        <section className="relative flex min-h-[60vh] flex-col items-center justify-center overflow-hidden border-b px-6 py-24">
           {/* Subtle Background Gradient */}
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background to-background" />
 
-          <div className="relative z-10 mx-auto max-w-4xl space-y-8">
+          <div className="relative z-10 mx-auto flex flex-col items-center justify-center space-y-8 text-center">
             {/* Pill Badge */}
             <div className="fade-in animate-in slide-in-from-bottom-4 duration-500">
               <span className="inline-flex items-center rounded-full border bg-background px-3 py-1 text-sm font-medium text-muted-foreground shadow-sm">
@@ -121,8 +73,8 @@ export default function HomeClient() {
             </div>
 
             {/* Main Headline */}
-            <h1 className="fade-in animate-in slide-in-from-bottom-6 mx-auto max-w-3xl text-4xl font-bold tracking-tight duration-700 sm:text-5xl md:text-6xl lg:text-7xl">
-              Essential Tools for Developers
+            <h1 className="fade-in animate-in slide-in-from-bottom-6 mx-auto text-4xl font-bold tracking-tight duration-700 sm:text-5xl md:text-6xl lg:text-7xl whitespace-nowrap">
+              Essential Tools for <span style={{ color: '#f54e00' }}>Developers</span>
             </h1>
 
             {/* Description */}
@@ -131,19 +83,22 @@ export default function HomeClient() {
               processing—your data never leaves your browser.
             </p>
 
-            {/* Modern Search Box */}
+            {/* Modern MagnifyingGlass Box */}
             <div className="fade-in animate-in slide-in-from-bottom-10 mx-auto w-full max-w-lg duration-1000">
               <div className="relative group">
                 <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-primary/20 to-primary/10 opacity-50 blur transition duration-1000 group-hover:opacity-100 group-hover:duration-200" />
                 <div className="relative flex items-center rounded-lg bg-background shadow-sm ring-1 ring-border transition-shadow focus-within:ring-2 focus-within:ring-primary/20">
-                  <Search className="ml-3 h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                  <MagnifyingGlass
+                    className="ml-3 h-5 w-5 text-muted-foreground"
+                    aria-hidden="true"
+                  />
                   <label htmlFor="tool-search" className="sr-only">
-                    Search tools
+                    MagnifyingGlass tools
                   </label>
                   <Input
                     id="tool-search"
                     type="text"
-                    placeholder="Search tools (e.g., JSON, Base64, Formatting)..."
+                    placeholder="MagnifyingGlass tools (e.g., JSON, Base64, Formatting)..."
                     className="h-12 border-0 bg-transparent py-3 pl-3 pr-4 placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -191,7 +146,7 @@ export default function HomeClient() {
           ) : (
             <div className="fade-in zoom-in animate-in py-20 text-center duration-500">
               <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted">
-                <Search className="h-8 w-8 text-muted-foreground" />
+                <MagnifyingGlass className="h-8 w-8 text-muted-foreground" />
               </div>
               <h3 className="mb-2 text-xl font-semibold">No tools found</h3>
               <p className="mx-auto max-w-sm text-muted-foreground">
@@ -203,7 +158,7 @@ export default function HomeClient() {
                 onClick={() => setSearchQuery('')}
                 className="mt-6 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
-                Clear Search
+                Clear MagnifyingGlass
               </button>
             </div>
           )}

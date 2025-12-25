@@ -5,7 +5,7 @@
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { ArrowsClockwise, WarningCircle } from '@phosphor-icons/react';
 
 interface ErrorDisplayProps {
   error: Error | string;
@@ -42,7 +42,7 @@ export function ErrorDisplay({
   const content = (
     <div className={cn(baseClasses, variantClasses[variant], className)}>
       <div className="flex-shrink-0">
-        <AlertCircle className="h-5 w-5 text-destructive" />
+        <WarningCircle className="h-5 w-5 text-destructive" />
       </div>
 
       <div className="min-w-0 flex-1 space-y-2">
@@ -64,7 +64,7 @@ export function ErrorDisplay({
         <div className="mt-3 flex items-center gap-2">
           {onRetry && (
             <Button variant="outline" size="sm" onClick={onRetry} className="h-8">
-              <RefreshCw className="mr-1 h-3 w-3" />
+              <ArrowsClockwise className="mr-1 h-3 w-3" />
               Retry
             </Button>
           )}
@@ -155,7 +155,7 @@ export function FieldError({ error }: { error: string | undefined }) {
 
   return (
     <div className="mt-1 flex items-center gap-2 text-destructive text-xs">
-      <AlertCircle className="h-3 w-3 flex-shrink-0" />
+      <WarningCircle className="h-3 w-3 flex-shrink-0" />
       <span>{error}</span>
     </div>
   );

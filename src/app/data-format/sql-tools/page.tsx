@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Check, ClipboardCopy, Play, Sparkles, Trash2 } from 'lucide-react';
+import { Check, Copy, Play, Sparkle, Trash } from '@phosphor-icons/react';
 import { useCallback, useState } from 'react';
 
 const SAMPLE_QUERIES = {
@@ -300,7 +300,7 @@ export default function SQLToolsPage() {
               onClick={handlePaste}
               className="hover:bg-primary/10 hover:text-primary"
             >
-              <ClipboardCopy className="mr-1 h-4 w-4" />
+              <Copy className="mr-1 h-4 w-4" />
               Paste
             </Button>
             <div className="h-6 w-px bg-border" />
@@ -336,7 +336,7 @@ export default function SQLToolsPage() {
               onClick={handleClear}
               className="hover:bg-primary/10 hover:text-primary"
             >
-              <Trash2 className="mr-1 h-4 w-4" />
+              <Trash className="mr-1 h-4 w-4" />
               Clear
             </Button>
             <div className="flex-1" />
@@ -350,7 +350,7 @@ export default function SQLToolsPage() {
               Validate
             </Button>
             <Button variant="default" size="sm" onClick={handleFormat} className="">
-              <Sparkles className="mr-1 h-4 w-4" />
+              <Sparkle className="mr-1 h-4 w-4" />
               Format
             </Button>
           </div>

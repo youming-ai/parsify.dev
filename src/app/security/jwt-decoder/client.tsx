@@ -7,16 +7,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  ArrowsClockwise,
   CheckCircle,
   Clock,
   Copy,
   Eye,
-  EyeOff,
-  RefreshCw,
+  EyeSlash,
   Shield,
   User,
   XCircle,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import { useState } from 'react';
 
 interface JWTPayload {
@@ -157,7 +157,7 @@ export default function JWTDecoderClient() {
           />
           <div className="flex gap-2">
             <Button onClick={handleDecode} className="flex items-center gap-2">
-              <RefreshCw className="h-4 w-4" />
+              <ArrowsClockwise className="h-4 w-4" />
               Decode JWT
             </Button>
             {jwtInput && (
@@ -206,7 +206,7 @@ export default function JWTDecoderClient() {
                     size="sm"
                     onClick={() => setShowSignature(!showSignature)}
                   >
-                    {showSignature ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showSignature ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
                 </div>
               </CardTitle>

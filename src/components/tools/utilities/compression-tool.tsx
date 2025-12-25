@@ -5,7 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Download, Minimize2, RefreshCw, Upload } from 'lucide-react';
+import {
+  ArrowsClockwise,
+  ArrowsInSimple,
+  DownloadSimple,
+  UploadSimple,
+} from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 
 const CompressionCtor = (globalThis as any).CompressionStream as
@@ -108,16 +113,16 @@ export const CompressionTool = () => {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2 text-xl">
-              <Minimize2 className="h-5 w-5" /> Compression Tools
+              <ArrowsInSimple className="h-5 w-5" /> Compression Tools
             </CardTitle>
             <CardDescription>Gzip/Deflate compress & decompress with size stats.</CardDescription>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => setRawInput('')}>
-              <RefreshCw className="mr-2 h-4 w-4" /> Clear
+              <ArrowsClockwise className="mr-2 h-4 w-4" /> Clear
             </Button>
             <Button variant="secondary" size="sm" onClick={handleDownload} disabled={!compressed}>
-              <Download className="mr-2 h-4 w-4" /> Download
+              <DownloadSimple className="mr-2 h-4 w-4" /> DownloadSimple
             </Button>
           </div>
         </div>
@@ -163,7 +168,7 @@ export const CompressionTool = () => {
               placeholder="Text to compress"
             />
             <Button onClick={handleCompress} disabled={disabled}>
-              <Upload className="mr-2 h-4 w-4" /> Compress
+              <UploadSimple className="mr-2 h-4 w-4" /> Compress
             </Button>
             {stats && (
               <div className="rounded-lg border bg-muted/50 p-3 text-sm">

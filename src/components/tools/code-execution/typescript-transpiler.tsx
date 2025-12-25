@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * TypeScript Code Executor Component
  *

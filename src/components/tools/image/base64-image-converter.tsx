@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowRight, Copy, Download, Image, RefreshCw } from 'lucide-react';
+import { ArrowRight, ArrowsClockwise, Copy, DownloadSimple, Image } from '@phosphor-icons/react';
 import { useCallback, useRef, useState } from 'react';
 
 interface PreviewImageProps {
@@ -102,7 +102,7 @@ export const Base64ImageConverter = () => {
       anchor.click();
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Download failed', error);
+      console.error('DownloadSimple failed', error);
     }
   };
 
@@ -131,7 +131,7 @@ export const Base64ImageConverter = () => {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={handleReset}>
-              <RefreshCw className="mr-2 h-4 w-4" /> Reset
+              <ArrowsClockwise className="mr-2 h-4 w-4" /> Reset
             </Button>
             <Button
               variant="default"
@@ -139,7 +139,7 @@ export const Base64ImageConverter = () => {
               onClick={handleDownload}
               disabled={!decodedPreview && !encodePreview}
             >
-              <Download className="mr-2 h-4 w-4" /> Download
+              <DownloadSimple className="mr-2 h-4 w-4" /> DownloadSimple
             </Button>
           </div>
         </div>

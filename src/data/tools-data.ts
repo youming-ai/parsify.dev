@@ -176,22 +176,22 @@ export const toolsData: Tool[] = [
     security: 'local-only',
   },
   {
-    id: 'json-to-types',
-    name: 'JSON to Types',
+    id: 'json-to-toml',
+    name: 'JSON to TOML',
     description:
-      'Convert JSON to strongly-typed models in TypeScript, Rust, Python, Go, or Ruby. Generate type-safe code from JSON.',
+      'Convert JSON data to TOML format. High-performance conversion with browser-based privacy.',
     category: 'Data Format & Conversion',
-    icon: 'FileJson',
+    icon: 'FileCode',
     features: [
-      'Convert JSON to Types',
-      'Multiple Language Support',
-      'Customizable Settings',
+      'JSON to TOML Conversion',
+      'Real-time Preview',
+      'One-click Copy',
       'Offline & Private',
     ],
-    tags: ['json', 'types', 'typescript', 'python', 'rust', 'go', 'ruby'],
-    difficulty: 'intermediate',
+    tags: ['json', 'toml', 'format', 'convert', 'config'],
+    difficulty: 'beginner',
     status: 'stable',
-    href: '/data-format/json-to-types',
+    href: '/data-format/json-to-toml',
     processingType: 'client-side',
     security: 'local-only',
   },
@@ -419,14 +419,14 @@ export const toolsData: Tool[] = [
   },
 
   // ============================================
-  // Network & Web (2 tools)
+  // Network & Utility (4 tools)
   // ============================================
   {
     id: 'url-parser',
     name: 'URL Parser',
     description:
       'Parse and inspect URLs. View all components: protocol, host, port, path, hash, and query string parameters.',
-    category: 'Network & Web',
+    category: 'Network & Utility',
     icon: 'Link',
     features: [
       'Parse & Inspect URLs Instantly',
@@ -447,7 +447,7 @@ export const toolsData: Tool[] = [
     name: 'DNS Lookup',
     description:
       'Query DNS records including A, AAAA, MX, TXT, CNAME, NS, and SOA types for any domain.',
-    category: 'Network & Web',
+    category: 'Network & Utility',
     icon: 'Globe',
     features: ['Query DNS Records', 'Multiple Record Types', 'TTL Display'],
     tags: ['dns', 'lookup', 'domain', 'records', 'network'],
@@ -458,15 +458,12 @@ export const toolsData: Tool[] = [
     security: 'network-required',
   },
 
-  // ============================================
-  // Utility (3 tools)
-  // ============================================
   {
     id: 'timestamps',
     name: 'Timestamps',
     description:
       'Convert between Unix timestamps, ISO 8601, UTC, and local time. Timezone conversion and calendar info.',
-    category: 'Utility',
+    category: 'Network & Utility',
     icon: 'Clock',
     features: [
       'Convert & Inspect Timestamps Instantly',
@@ -478,7 +475,7 @@ export const toolsData: Tool[] = [
     tags: ['timestamp', 'unix', 'date', 'time', 'timezone', 'epoch'],
     difficulty: 'beginner',
     status: 'stable',
-    href: '/utility/timestamps',
+    href: '/network/timestamps',
     isPopular: true,
     processingType: 'client-side',
     security: 'local-only',
@@ -488,7 +485,7 @@ export const toolsData: Tool[] = [
     name: 'Color Tools',
     description:
       'Convert colors between HEX, RGB, HSL, CMYK, OKLCH formats. Generate harmonies and check contrast for accessibility.',
-    category: 'Utility',
+    category: 'Network & Utility',
     icon: 'Palette',
     features: [
       'Convert Between All Major Color Formats',
@@ -499,28 +496,8 @@ export const toolsData: Tool[] = [
     tags: ['color', 'hex', 'rgb', 'hsl', 'converter', 'palette', 'accessibility'],
     difficulty: 'beginner',
     status: 'stable',
-    href: '/utility/color-tools',
+    href: '/network/color-tools',
     isPopular: true,
-    processingType: 'client-side',
-    security: 'local-only',
-  },
-  {
-    id: 'cronjob-generator',
-    name: 'Cronjob Generator',
-    description:
-      'Generate and inspect cron expressions for any schedule. Preview next trigger dates with human-readable descriptions.',
-    category: 'Utility',
-    icon: 'Calendar',
-    features: [
-      'Generate & Inspect Cron Expressions',
-      'Preview Next Trigger Dates',
-      'Use Presets & Learn Syntax',
-      'Offline & Privacy-First',
-    ],
-    tags: ['cron', 'cronjob', 'scheduler', 'time', 'automation'],
-    difficulty: 'intermediate',
-    status: 'stable',
-    href: '/utility/cronjob-generator',
     processingType: 'client-side',
     security: 'local-only',
   },
@@ -531,8 +508,7 @@ export const toolCategories = [
   'Data Format & Conversion',
   'Security & Authentication',
   'Development & Testing',
-  'Network & Web',
-  'Utility',
+  'Network & Utility',
 ];
 
 // Legacy export for compatibility

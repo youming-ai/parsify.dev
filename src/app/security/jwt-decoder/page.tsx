@@ -1,7 +1,6 @@
 import { JsonLd } from '@/components/seo/json-ld';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
-import { AlertCircle } from 'lucide-react';
 import type { Metadata } from 'next';
 import JWTDecoderClient from './client';
 
@@ -34,7 +33,6 @@ export default function JWTDecoderPage() {
           <Card className="rounded-xl border shadow-sm">
             <CardHeader className="border-b bg-muted/40 pb-2">
               <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                <AlertCircle className="h-5 w-5" />
                 What is JWT?
               </CardTitle>
             </CardHeader>

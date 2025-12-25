@@ -9,21 +9,20 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  BarChart3,
+  ArrowsClockwise,
+  ChartBar,
+  Chat,
   Clock,
   Copy,
-  Download,
-  Download as DownloadIcon,
+  DownloadSimple,
   Eye,
-  EyeOff,
+  EyeSlash,
   FileText,
+  Gear,
   Hash,
-  MessageSquare,
-  RefreshCw,
-  Settings,
-  Type,
-  Upload,
-} from 'lucide-react';
+  TextT,
+  UploadSimple,
+} from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 import type React from 'react';
 
@@ -322,15 +321,15 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
               onClick={() => document.getElementById('file-upload')?.click()}
               className="flex items-center gap-2"
             >
-              <Upload className="h-4 w-4" />
-              Upload File
+              <UploadSimple className="h-4 w-4" />
+              UploadSimple File
             </Button>
             <Button
               variant="outline"
               onClick={() => setText('')}
               className="flex items-center gap-2"
             >
-              <RefreshCw className="h-4 w-4" />
+              <ArrowsClockwise className="h-4 w-4" />
               Clear
             </Button>
             <Button
@@ -356,7 +355,7 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <Type className="mx-auto mb-2 h-8 w-8 text-blue-500" />
+              <TextT className="mx-auto mb-2 h-8 w-8 text-blue-500" />
               <p className="font-bold text-2xl">{stats.characters}</p>
               <p className="text-muted-foreground text-sm">Characters</p>
             </div>
@@ -374,7 +373,7 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <MessageSquare className="mx-auto mb-2 h-8 w-8 text-purple-500" />
+              <Chat className="mx-auto mb-2 h-8 w-8 text-purple-500" />
               <p className="font-bold text-2xl">{stats.sentences}</p>
               <p className="text-muted-foreground text-sm">Sentences</p>
             </div>
@@ -396,11 +395,11 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
+              <ChartBar className="h-5 w-5" />
               Detailed Analysis
             </span>
             <Button variant="ghost" size="sm" onClick={() => setShowDetails(!showDetails)}>
-              {showDetails ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showDetails ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
           </CardTitle>
         </CardHeader>
@@ -523,7 +522,7 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Type className="h-5 w-5" />
+                  <TextT className="h-5 w-5" />
                   Most Frequent Characters
                 </CardTitle>
               </CardHeader>
@@ -551,12 +550,12 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
         </Tabs>
       )}
 
-      {/* Settings */}
+      {/* Gear */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Analysis Settings
+            <Gear className="h-5 w-5" />
+            Analysis Gear
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -593,7 +592,7 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <DownloadIcon className="h-5 w-5" />
+            <DownloadSimple className="h-5 w-5" />
             Export Analysis
           </CardTitle>
         </CardHeader>
@@ -608,8 +607,8 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
               Copy Report
             </Button>
             <Button onClick={downloadReport} className="flex items-center gap-2">
-              <Download className="h-4 w-4" />
-              Download Report
+              <DownloadSimple className="h-4 w-4" />
+              DownloadSimple Report
             </Button>
           </div>
         </CardContent>

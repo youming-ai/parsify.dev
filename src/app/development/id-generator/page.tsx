@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Check, ClipboardCopy, Fingerprint, RefreshCw, Trash2 } from 'lucide-react';
+import { ArrowsClockwise, Check, Copy, Fingerprint, Trash } from '@phosphor-icons/react';
 import { useCallback, useState } from 'react';
 
 type IdType = 'uuid-v4' | 'uuid-v1' | 'uuid-v7' | 'ulid' | 'nanoid' | 'ksuid';
@@ -247,7 +247,7 @@ export default function IDGeneratorPage() {
             </div>
 
             <Button onClick={handleGenerate}>
-              <RefreshCw className="mr-2 h-4 w-4" />
+              <ArrowsClockwise className="mr-2 h-4 w-4" />
               Generate
             </Button>
 
@@ -257,12 +257,12 @@ export default function IDGeneratorPage() {
                   {copiedId === 'all' ? (
                     <Check className="mr-2 h-4 w-4" />
                   ) : (
-                    <ClipboardCopy className="mr-2 h-4 w-4" />
+                    <Copy className="mr-2 h-4 w-4" />
                   )}
                   {copiedId === 'all' ? 'Copied!' : 'Copy All'}
                 </Button>
                 <Button variant="ghost" onClick={handleClear}>
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash className="mr-2 h-4 w-4" />
                   Clear
                 </Button>
               </>
@@ -305,7 +305,7 @@ export default function IDGeneratorPage() {
                       {copiedId === item.id ? (
                         <Check className="h-4 w-4 text-green-500" />
                       ) : (
-                        <ClipboardCopy className="h-4 w-4" />
+                        <Copy className="h-4 w-4" />
                       )}
                     </Button>
                   </div>

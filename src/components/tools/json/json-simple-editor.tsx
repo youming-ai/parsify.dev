@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle, Copy, FileText, Quote, XCircle, Zap } from 'lucide-react';
+import { CheckCircle, Copy, FileText, Lightning, Quotes, XCircle } from '@phosphor-icons/react';
 import { useCallback, useEffect, useState } from 'react';
 import { cn } from '../../../lib/utils';
 import { Badge } from '../../ui/badge';
@@ -181,7 +181,7 @@ export const JsonSimpleEditor: React.FC<JsonSimpleEditorProps> = ({
               </Button>
 
               <Button variant="outline" size="sm" onClick={minifyJson} disabled={!isValid}>
-                <Zap className="mr-1 h-4 w-4" />
+                <Lightning className="mr-1 h-4 w-4" />
                 Minify
               </Button>
 
@@ -193,7 +193,7 @@ export const JsonSimpleEditor: React.FC<JsonSimpleEditorProps> = ({
                   className="border-amber-500/50 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400"
                   title="Detected serialized JSON string. Click to unescape and format."
                 >
-                  <Quote className="mr-1 h-4 w-4" />
+                  <Quotes className="mr-1 h-4 w-4" />
                   Unescape
                 </Button>
               )}

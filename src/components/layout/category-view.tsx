@@ -1,57 +1,11 @@
-import type React from 'react';
+'use client';
 import { MainLayout } from '@/components/layout/main-layout';
 import { toolsData } from '@/data/tools-data';
+import { iconMap } from '@/lib/icon-map';
 import type { Tool } from '@/types/tools';
-import {
-  Binary,
-  Clock,
-  Code,
-  Database,
-  File,
-  FileJson,
-  FileText,
-  Globe,
-  Hash,
-  Image,
-  KeyRound,
-  Link as LinkIcon,
-  Lock,
-  MapPin,
-  Network,
-  Palette,
-  QrCode,
-  ScanLine,
-  Shield,
-  Terminal,
-  Type,
-} from 'lucide-react';
+import { Database } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-
-// Icon mapping
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  FileJson,
-  Database,
-  Code,
-  Terminal,
-  Image,
-  Palette,
-  Hash,
-  FileText,
-  Shield,
-  Globe,
-  Network,
-  MapPin,
-  Link: LinkIcon,
-  Type,
-  Lock,
-  KeyRound,
-  ScanLine,
-  Binary,
-  QrCode,
-  Clock,
-  File,
-};
 
 interface CategoryViewProps {
   categoryName: string;

@@ -17,19 +17,19 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PerformanceMonitor from '@/lib/performance-monitor';
 import {
-  Activity,
+  ArrowsClockwise,
   Clock,
-  Download,
+  DownloadSimple,
   Eye,
   Globe,
+  HardDrives,
+  MagnifyingGlass,
   MapPin,
   Network,
-  RefreshCw,
-  Search,
-  Server,
+  Pulse,
   Shield,
-  Wifi,
-} from 'lucide-react';
+  WifiHigh,
+} from '@phosphor-icons/react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -631,12 +631,12 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                     >
                       {isSearching ? (
                         <>
-                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                          <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" />
                           Looking up...
                         </>
                       ) : (
                         <>
-                          <Search className="mr-2 h-4 w-4" />
+                          <MagnifyingGlass className="mr-2 h-4 w-4" />
                           Lookup IP
                         </>
                       )}
@@ -647,7 +647,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                       onClick={getCurrentIP}
                       disabled={isSearching || !autoDetect}
                     >
-                      <Wifi className="h-4 w-4" />
+                      <WifiHigh className="h-4 w-4" />
                     </Button>
                   </div>
 
@@ -684,7 +684,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                 <div className="mb-2 font-medium text-sm">Source Information</div>
                 <div className="space-y-2 rounded-lg border p-3">
                   <div className="flex items-center gap-2">
-                    <Server className="h-4 w-4 text-muted-foreground" />
+                    <HardDrives className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <div className="font-medium text-sm">
                         {getProviderInfo(selectedSource).name}
@@ -819,11 +819,11 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
 
                   <div className="flex gap-2">
                     <Button onClick={() => downloadResult(result)}>
-                      <Download className="mr-2 h-4 w-4" />
-                      Download JSON
+                      <DownloadSimple className="mr-2 h-4 w-4" />
+                      DownloadSimple JSON
                     </Button>
                     <Button variant="outline" onClick={clearCache}>
-                      <RefreshCw className="mr-2 h-4 w-4" />
+                      <ArrowsClockwise className="mr-2 h-4 w-4" />
                       Clear Cache
                     </Button>
                   </div>
@@ -854,7 +854,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                     <>
                       <div className="mb-4 flex items-center justify-between">
                         <Label className="font-medium text-sm">
-                          Search History ({searchHistory.length})
+                          MagnifyingGlass History ({searchHistory.length})
                         </Label>
                         <div className="flex gap-2">
                           <Button
@@ -863,7 +863,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                             onClick={downloadAsCSV}
                             disabled={searchHistory.length === 0}
                           >
-                            <Download className="mr-2 h-4 w-4" />
+                            <DownloadSimple className="mr-2 h-4 w-4" />
                             Export CSV
                           </Button>
                           <Button variant="outline" size="sm" onClick={clearHistory}>
@@ -946,7 +946,7 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
                             window.open(`https://www.shodan.io/host/${result.ip}`, '_blank');
                           }}
                         >
-                          <Activity className="mr-2 h-4 w-4" />
+                          <Pulse className="mr-2 h-4 w-4" />
                           Shodan.io
                         </Button>
                         <Button
@@ -1008,13 +1008,13 @@ export const IPGeolocationTool: React.FC<IPGeolocationToolProps> = ({ onLookupCo
               </Tabs>
             )}
 
-            {/* Search History Summary */}
+            {/* MagnifyingGlass History Summary */}
             {searchHistory.length > 0 && (
               <div className="border-t pt-4">
                 <div className="flex items-center justify-between">
                   <Label className="font-medium text-sm">Summary</Label>
                   <Button variant="outline" size="sm" onClick={downloadAsCSV}>
-                    <Download className="mr-2 h-4 w-4" />
+                    <DownloadSimple className="mr-2 h-4 w-4" />
                     Export All
                   </Button>
                 </div>

@@ -1,7 +1,16 @@
+'use client';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Braces, ChevronDown, Code, Database, FileCode, Terminal } from 'lucide-react';
+import {
+  BracketsCurly,
+  CaretDown,
+  Code,
+  Database,
+  FileCode,
+  TerminalWindow,
+} from '@phosphor-icons/react';
 import * as React from 'react';
 import type { CodeLanguage, LanguageSelectorProps } from './code-types';
 import { LANGUAGE_CONFIGS, getLanguageConfig } from './language-configs';
@@ -19,9 +28,9 @@ const LANGUAGE_CATEGORIES = {
 };
 
 const LANGUAGE_ICONS: Record<string, React.ReactNode> = {
-  javascript: <Braces className="h-4 w-4" />,
+  javascript: <BracketsCurly className="h-4 w-4" />,
   typescript: <Code className="h-4 w-4" />,
-  python: <Terminal className="h-4 w-4" />,
+  python: <TerminalWindow className="h-4 w-4" />,
   java: <FileCode className="h-4 w-4" />,
   cpp: <Code className="h-4 w-4" />,
   c: <Code className="h-4 w-4" />,
@@ -29,11 +38,11 @@ const LANGUAGE_ICONS: Record<string, React.ReactNode> = {
   go: <Code className="h-4 w-4" />,
   rust: <Code className="h-4 w-4" />,
   php: <FileCode className="h-4 w-4" />,
-  ruby: <Terminal className="h-4 w-4" />,
+  ruby: <TerminalWindow className="h-4 w-4" />,
   swift: <Code className="h-4 w-4" />,
   kotlin: <Code className="h-4 w-4" />,
-  bash: <Terminal className="h-4 w-4" />,
-  powershell: <Terminal className="h-4 w-4" />,
+  bash: <TerminalWindow className="h-4 w-4" />,
+  powershell: <TerminalWindow className="h-4 w-4" />,
   sql: <Database className="h-4 w-4" />,
 };
 
@@ -119,7 +128,7 @@ export function LanguageSelector({
         >
           {LANGUAGE_ICONS[selectedLanguage]}
           <span>{selectedConfig.name}</span>
-          <ChevronDown className="h-3 w-3" />
+          <CaretDown className="h-3 w-3" />
         </Button>
 
         {isOpen && (
@@ -165,7 +174,7 @@ export function LanguageSelector({
             </Badge>
           )}
         </div>
-        <ChevronDown className={cn('h-4 w-4 transition-transform', isOpen && 'rotate-180')} />
+        <CaretDown className={cn('h-4 w-4 transition-transform', isOpen && 'rotate-180')} />
       </Button>
 
       {/* Dropdown */}

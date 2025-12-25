@@ -16,16 +16,16 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  BarChart3,
   BookOpen,
+  ChartBar,
   Clock,
   FileText,
   Hash,
   Info,
   Target,
-  TrendingUp,
+  TrendUp,
   Users,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 
@@ -449,7 +449,7 @@ const TextAnalyzer: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
+                <ChartBar className="h-5 w-5" />
                 Text Metrics
               </CardTitle>
               <CardDescription>Basic text measurements and counts</CardDescription>
@@ -505,7 +505,7 @@ const TextAnalyzer: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
+              <TrendUp className="h-5 w-5" />
               Text Statistics
             </CardTitle>
             <CardDescription>Advanced linguistic analysis and patterns</CardDescription>

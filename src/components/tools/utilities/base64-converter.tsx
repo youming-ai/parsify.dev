@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Code, Copy, FileText, Image, Upload, Zap } from 'lucide-react';
+import { Code, Copy, FileText, Image, Lightning, UploadSimple } from '@phosphor-icons/react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -289,7 +289,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5" />
+                  <Lightning className="h-5 w-5" />
                   Base64 Encoding
                 </CardTitle>
               </CardHeader>
@@ -335,7 +335,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
               Text Input
             </TabsTrigger>
             <TabsTrigger value="file" className="flex items-center gap-2">
-              <Upload className="h-4 w-4" />
+              <UploadSimple className="h-4 w-4" />
               File Input
             </TabsTrigger>
           </TabsList>
