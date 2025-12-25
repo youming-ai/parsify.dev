@@ -11,7 +11,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "build:cf": "bun run build",
     "deploy": "bunx opennextjs-cloudflare deploy",
+    "deploy:cf": "bun run build && bun run deploy",
     "prepare": "husky",
     "clean": "rm -rf node_modules .next .open-next"
   },
