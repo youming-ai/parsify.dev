@@ -133,11 +133,11 @@ export default function HomeClient() {
                     {category}
                   </h2>
                   <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                    {groupedTools[category].length}
+                    {groupedTools[category]?.length ?? 0}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {groupedTools[category].map((tool) => (
+                  {groupedTools[category]?.map((tool) => (
                     <ToolCard key={tool.id} tool={tool} />
                   ))}
                 </div>

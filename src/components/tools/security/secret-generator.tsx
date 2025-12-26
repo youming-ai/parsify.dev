@@ -31,7 +31,7 @@ const generateSecret = (
   const bytes = new Uint32Array(length);
   crypto.getRandomValues(bytes);
   const chars = Array.from(bytes)
-    .map((value) => pool[value % pool.length])
+    .map((value) => pool[value % pool.length] ?? '')
     .join('');
   return `${options.prefix ?? ''}${chars}`;
 };
@@ -93,7 +93,7 @@ export const SecretGenerator = () => {
                 min={8}
                 max={128}
                 step={1}
-                onValueChange={(vals) => setLength(vals[0])}
+                onValueChange={(vals) => setLength(vals[0] ?? length)}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">

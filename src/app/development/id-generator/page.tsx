@@ -65,7 +65,7 @@ function generateUUIDv7(): string {
     Math.floor(Math.random() * 16).toString(16)
   ).join('');
 
-  return `${timeHex.slice(0, 8)}-${timeHex.slice(8, 12)}-7${random1}-${((Number.parseInt(random2[0], 16) & 0x3) | 0x8).toString(16)}${random2.slice(1)}-${random3}`;
+  return `${timeHex.slice(0, 8)}-${timeHex.slice(8, 12)}-7${random1}-${((Number.parseInt(random2[0] ?? '0', 16) & 0x3) | 0x8).toString(16)}${random2.slice(1)}-${random3}`;
 }
 
 // ULID generator

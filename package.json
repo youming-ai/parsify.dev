@@ -8,19 +8,23 @@
   "author": "Youming <ikashue@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "next build && bunx opennextjs-cloudflare build --skipNextBuild",
     "start": "next start",
+    "preview": "bunx wrangler dev",
     "deploy": "bunx wrangler deploy",
     "deploy:cf": "bun run build && bun run deploy",
+    "lint": "bunx biome check ./src",
+    "lint:fix": "bunx biome check --fix ./src",
+    "format": "bunx biome format --write ./src",
+    "typecheck": "tsc --noEmit",
     "prepare": "husky",
-    "clean": "rm -rf node_modules .next .open-next"
+    "clean": "rm -rf node_modules .next .open-next .wrangler"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,css,md}": ["biome check --fix --no-errors-on-unmatched"]
   },
   "dependencies": {
-    "@monaco-editor/react": "^4.7.0",
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -40,7 +44,6 @@
     "clsx": "^2.1.1",
     "critters": "^0.0.25",
     "crypto-js": "^4.2.0",
-    "monaco-editor": "^0.55.1",
     "next": "^15.5.9",
     "next-themes": "^0.4.6",
     "react": "^19.2.3",
@@ -64,7 +67,6 @@
     "lint-staged": "^16.2.7",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
-    "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.9.3",
     "wrangler": "^4.54.0"
   },

@@ -249,7 +249,9 @@ export function JsonPathQueries({
             if (index === '*') {
               return Array.isArray(current) ? current : [];
             }
-            current = current[Number.parseInt(index)];
+            if (index) {
+              current = current[Number.parseInt(index)];
+            }
             return current !== undefined ? [current] : [];
           }
         } else {

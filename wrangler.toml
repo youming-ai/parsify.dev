@@ -1,20 +1,23 @@
+# Parsify.dev - Developer Tools Platform
+# Deployed on Cloudflare Workers via OpenNext
+
 name = "parsify-dev"
 main = ".open-next/worker.js"
 compatibility_date = "2025-03-01"
 compatibility_flags = ["nodejs_compat"]
+minify = true
 
+# Static assets configuration
 [assets]
 binding = "ASSETS"
 directory = ".open-next/assets"
 
+# KV namespace for caching/storage
 [[kv_namespaces]]
 binding = "PARSIFY_KV"
 id = "6e3ca7737342485f952352e527a1c46e"
 
-[observability]
+# Observability - disabled in production for cost optimization
+# Enable during debugging by setting enabled = true
 [observability.logs]
 enabled = false
-head_sampling_rate = 1
-invocation_logs = true
-persist = true
-

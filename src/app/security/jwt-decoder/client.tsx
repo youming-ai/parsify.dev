@@ -63,8 +63,12 @@ export default function JWTDecoderClient() {
         };
       }
 
-      const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
-      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      const headerPart = parts[0] ?? '';
+      const payloadPart = parts[1] ?? '';
+      const signaturePart = parts[2] ?? '';
+
+      const header = JSON.parse(atob(headerPart.replace(/-/g, '+').replace(/_/g, '/')));
+      const payload = JSON.parse(atob(payloadPart.replace(/-/g, '+').replace(/_/g, '/')));
 
       // Check expiration
       const now = Math.floor(Date.now() / 1000);
@@ -73,7 +77,7 @@ export default function JWTDecoderClient() {
       return {
         header,
         payload,
-        signature: parts[2],
+        signature: signaturePart,
         valid: !isExpired,
         error: isExpired ? 'Token has expired' : undefined,
       };
@@ -130,12 +134,16 @@ export default function JWTDecoderClient() {
     const parts = token.split('.');
     if (parts.length !== 3) return token;
 
+    const headerPart = parts[0] ?? '';
+    const payloadPart = parts[1] ?? '';
+    const signaturePart = parts[2] ?? '';
+
     return (
       <div className="break-all font-mono text-sm">
-        <span className="text-blue-600 dark:text-blue-400">{parts[0]}</span>.
-        <span className="text-green-600 dark:text-green-400">{parts[1]}</span>.
+        <span className="text-blue-600 dark:text-blue-400">{headerPart}</span>.
+        <span className="text-green-600 dark:text-green-400">{payloadPart}</span>.
         <span className="text-purple-600 dark:text-purple-400">
-          {showSignature ? parts[2] : '•'.repeat(Math.min(parts[2].length, 20))}
+          {showSignature ? signaturePart : '•'.repeat(Math.min(signaturePart.length, 20))}
         </span>
       </div>
     );

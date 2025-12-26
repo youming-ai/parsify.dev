@@ -13,6 +13,7 @@ export function JsonErrorDisplay({ errors, content, className }: JsonErrorDispla
     const lineIndex = error.line - 1;
     if (lineIndex >= 0 && lineIndex < lines.length) {
       const lineContent = lines[lineIndex];
+      if (!lineContent) return null;
       const beforeError = lineContent.substring(0, error.column - 1);
       const errorChar = lineContent.charAt(error.column - 1) || ' ';
       const afterError = lineContent.substring(error.column);

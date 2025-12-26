@@ -72,10 +72,14 @@ const DiffViewer = () => {
 
     for (let i = 1; i <= m; i++) {
       for (let j = 1; j <= n; j++) {
-        if (linesA[i - 1] === linesB[j - 1]) {
-          dp[i][j] = dp[i - 1][j - 1] + 1;
-        } else {
-          dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+        const lineA = linesA[i - 1];
+        const lineB = linesB[j - 1];
+        const dpPrev = dp[i - 1];
+        const dpCurrent = dp[i];
+        if (lineA === lineB && dpPrev && dpCurrent) {
+          dpCurrent[j] = (dpPrev[j - 1] ?? 0) + 1;
+        } else if (dpPrev && dpCurrent) {
+          dpCurrent[j] = Math.max(dpPrev[j] ?? 0, dpCurrent[j - 1] ?? 0);
         }
       }
     }
@@ -86,26 +90,34 @@ const DiffViewer = () => {
     const temp: DiffLine[] = [];
 
     while (i > 0 || j > 0) {
-      if (i > 0 && j > 0 && linesA[i - 1] === linesB[j - 1]) {
+      const lineA = linesA[i - 1];
+      const lineB = linesB[j - 1];
+      const dpRow = dp[i];
+      const dpPrevRow = dp[i - 1];
+
+      if (i > 0 && j > 0 && lineA === lineB) {
         temp.unshift({
           type: 'unchanged',
-          content: linesA[i - 1],
+          content: lineA ?? '',
           oldLineNum: i,
           newLineNum: j,
         });
         i--;
         j--;
-      } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+      } else if (
+        j > 0 &&
+        (i === 0 || (dpRow && dpPrevRow && (dpRow[j - 1] ?? 0) >= (dpPrevRow[j] ?? 0)))
+      ) {
         temp.unshift({
           type: 'added',
-          content: linesB[j - 1],
+          content: lineB ?? '',
           newLineNum: j,
         });
         j--;
       } else if (i > 0) {
         temp.unshift({
           type: 'removed',
-          content: linesA[i - 1],
+          content: lineA ?? '',
           oldLineNum: i,
         });
         i--;

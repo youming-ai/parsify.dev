@@ -67,17 +67,18 @@ export function validateJson(content: string): JsonValidationResult {
     let line = 1;
     let column = 1;
 
-    if (lineMatch) {
+    if (lineMatch?.[1]) {
       line = Number.parseInt(lineMatch[1], 10);
-    } else if (positionMatch) {
+    } else if (positionMatch?.[1]) {
       // Calculate line and column from character position
       const position = Number.parseInt(positionMatch[1], 10);
       const lines = content.substring(0, position).split('\n');
       line = lines.length;
-      column = lines[lines.length - 1].length + 1;
+      const lastLine = lines[lines.length - 1];
+      column = (lastLine?.length ?? 0) + 1;
     }
 
-    if (columnMatch) {
+    if (columnMatch?.[1]) {
       column = Number.parseInt(columnMatch[1], 10);
     }
 

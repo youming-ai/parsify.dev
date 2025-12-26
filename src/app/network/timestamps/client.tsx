@@ -167,9 +167,9 @@ export default function TimestampConverterClient() {
       if (match) {
         const [, month, day, year, hour, minute, second] = match;
         date = new Date(
-          Number.parseInt(year, 10),
-          Number.parseInt(month, 10) - 1,
-          Number.parseInt(day, 10),
+          Number.parseInt(year ?? '0', 10),
+          Number.parseInt(month ?? '1', 10) - 1,
+          Number.parseInt(day ?? '1', 10),
           hour ? Number.parseInt(hour, 10) : 0,
           minute ? Number.parseInt(minute, 10) : 0,
           second ? Number.parseInt(second, 10) : 0

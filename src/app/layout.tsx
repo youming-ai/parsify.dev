@@ -2,7 +2,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { ThemeProvider } from '@/components/theme-provider';
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import localFont from 'next/font/local';
+import { Google_Sans_Code } from 'next/font/google';
 import type React from 'react';
 
 import './globals.css';
@@ -13,14 +13,8 @@ const inter = Inter({
   display: 'swap',
 });
 
-const paperMono = localFont({
-  src: [
-    {
-      path: './fonts/PaperMono-Regular.woff2',
-      weight: '400',
-      style: 'normal',
-    },
-  ],
+const googleSansCode = Google_Sans_Code({
+  subsets: ['latin'],
   variable: '--font-mono',
   display: 'swap',
 });
@@ -118,7 +112,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`min-h-screen bg-background font-sans antialiased ${inter.variable} ${paperMono.variable}`}
+        className={`min-h-screen bg-background font-sans antialiased ${inter.variable} ${googleSansCode.variable}`}
         suppressHydrationWarning
       >
         <ThemeProvider

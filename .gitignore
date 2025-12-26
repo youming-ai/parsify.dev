@@ -74,3 +74,11 @@ storybook-static/
 
 # Local development
 .local
+
+# Bun
+.bun
+bun.lockb
+
+# VSCode workspace settings (keep extensions.json)
+.vscode/settings.json
+.vscode/launch.json

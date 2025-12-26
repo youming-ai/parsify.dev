@@ -108,10 +108,12 @@ export const usePerformanceOptimization = () => {
       const lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1];
-        setVitals((prev) => ({
-          ...prev,
-          lcp: lastEntry.startTime,
-        }));
+        if (lastEntry) {
+          setVitals((prev) => ({
+            ...prev,
+            lcp: lastEntry.startTime,
+          }));
+        }
       });
 
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });

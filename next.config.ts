@@ -36,7 +36,6 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-dropdown-menu',
       '@radix-ui/react-select',
       '@radix-ui/react-slider',
-      '@monaco-editor/react',
     ],
   },
 
@@ -44,7 +43,6 @@ const nextConfig: NextConfig = {
 
   // Bundle analyzer and code splitting (webpack fallback when not using Turbopack)
   webpack: (config, { dev, isServer }) => {
-    // Monaco Editor: ensure server-side polyfills are disabled
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -64,13 +62,6 @@ const nextConfig: NextConfig = {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendors',
             chunks: 'all',
-          },
-          // Monaco Editor chunk (separate for better caching)
-          monaco: {
-            test: /[\\/]node_modules[\\/]monaco-editor[\\/]/,
-            name: 'monaco',
-            chunks: 'all',
-            priority: 20,
           },
           // Common chunks for shared code
           common: {
