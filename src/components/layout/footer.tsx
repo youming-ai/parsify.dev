@@ -54,86 +54,59 @@ export function Footer() {
               </div>
               <span className="text-lg font-bold tracking-tight">Parsify.dev</span>
             </Link>
-            <p className="max-w-xs text-sm leading-6 text-muted-foreground">
-              Professional developer tools for your daily workflow. <br />
-              Offline-ready, secure, and privacy-first.
-            </p>
           </div>
 
           {/* Navigation Grid */}
           <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm font-semibold leading-6 text-foreground">
-                  {footerSections[0].title}
-                </h3>
-                <ul className="mt-6 space-y-4">
-                  {footerSections[0].items.map((item) => (
-                    <li key={item.name}>
-                      <Link
-                        href={item.href}
-                        className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-10 md:mt-0">
-                <h3 className="text-sm font-semibold leading-6 text-foreground">
-                  {footerSections[1].title}
-                </h3>
-                <ul className="mt-6 space-y-4">
-                  {footerSections[1].items.map((item) => (
-                    <li key={item.name}>
-                      <Link
-                        href={item.href}
-                        className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm font-semibold leading-6 text-foreground">
-                  {footerSections[2].title}
-                </h3>
-                <ul className="mt-6 space-y-4">
-                  {footerSections[2].items.map((item) => (
-                    <li key={item.name}>
-                      <Link
-                        href={item.href}
-                        className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-10 md:mt-0">
-                <h3 className="text-sm font-semibold leading-6 text-foreground">
-                  {footerSections[3].title}
-                </h3>
-                <ul className="mt-6 space-y-4">
-                  {footerSections[3].items.map((item) => (
-                    <li key={item.name}>
-                      <Link
-                        href={item.href}
-                        className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+            {footerSections
+              .map((section, idx) => (
+                <div
+                  key={section.title}
+                  className={idx % 2 === 0 ? 'md:grid md:grid-cols-2 md:gap-8' : ''}
+                >
+                  {idx % 2 === 0 ? (
+                    <>
+                      <div>
+                        <h3 className="text-sm font-semibold leading-6 text-foreground">
+                          {section.title}
+                        </h3>
+                        <ul className="mt-6 space-y-4">
+                          {section.items.map((item) => (
+                            <li key={item.name}>
+                              <Link
+                                href={item.href}
+                                className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground"
+                              >
+                                {item.name}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      {footerSections[idx + 1] && (
+                        <div className="mt-10 md:mt-0">
+                          <h3 className="text-sm font-semibold leading-6 text-foreground">
+                            {footerSections[idx + 1]?.title}
+                          </h3>
+                          <ul className="mt-6 space-y-4">
+                            {footerSections[idx + 1]?.items.map((item) => (
+                              <li key={item.name}>
+                                <Link
+                                  href={item.href}
+                                  className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground"
+                                >
+                                  {item.name}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </>
+                  ) : null}
+                </div>
+              ))
+              .filter((_, idx) => idx % 2 === 0)}
           </div>
         </div>
 

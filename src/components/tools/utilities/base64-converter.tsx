@@ -80,7 +80,8 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
-        const base64 = result.split(',')[1]; // Remove data URL prefix
+        const parts = result.split(',');
+        const base64 = parts[1] ?? ''; // Remove data URL prefix
         resolve(base64);
       };
       reader.onerror = () => reject(new Error('Failed to read file'));

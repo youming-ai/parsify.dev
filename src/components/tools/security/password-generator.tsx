@@ -114,7 +114,11 @@ const PasswordGenerator: React.FC = () => {
     crypto.getRandomValues(array);
 
     for (let i = 0; i < options.length; i++) {
-      newPassword += charset[array[i] % charset.length];
+      const randomValue = array[i];
+      if (randomValue !== undefined) {
+        const char = charset[randomValue % charset.length];
+        if (char) newPassword += char;
+      }
     }
 
     setPassword(newPassword);
@@ -375,7 +379,9 @@ const PasswordGenerator: React.FC = () => {
                 </div>
                 <Slider
                   value={[options.length]}
-                  onValueChange={(value) => setOptions((prev) => ({ ...prev, length: value[0] }))}
+                  onValueChange={(value) =>
+                    setOptions((prev) => ({ ...prev, length: value[0] ?? prev.length }))
+                  }
                   min={4}
                   max={128}
                   step={1}

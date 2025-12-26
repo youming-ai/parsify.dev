@@ -6,7 +6,17 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignore": ["node_modules", ".next", "dist", "build", "coverage", "public", "tests"]
+    "ignore": [
+      "node_modules",
+      ".next",
+      ".open-next",
+      ".wrangler",
+      "dist",
+      "build",
+      "coverage",
+      "public",
+      "tests"
+    ]
   },
   "formatter": {
     "indentStyle": "space",

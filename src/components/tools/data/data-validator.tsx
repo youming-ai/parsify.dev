@@ -147,7 +147,9 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
         case 'csv': {
           // Simple CSV parsing
           const lines = data.split('\n').filter((line) => line.trim());
-          const headers = lines[0].split(',').map((h) => h.trim());
+          const firstLine = lines[0];
+          if (!firstLine) return [];
+          const headers = firstLine.split(',').map((h) => h.trim());
           const rows = lines.slice(1).map((line) => {
             const values = line.split(',').map((v) => v.trim());
             return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
@@ -319,7 +321,9 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
                 case 'range':
                   if (typeof fieldData.value === 'number' && rule.value) {
                     // For range, value should be like "min,max"
-                    const [min, max] = String(rule.value).split(',').map(Number);
+                    const rangeParts = String(rule.value).split(',').map(Number);
+                    const min = rangeParts[0] ?? 0;
+                    const max = rangeParts[1] ?? 0;
                     isValid = validateRange(fieldData.value, min, max);
                     errorMessage = `Value must be between ${min} and ${max}`;
                   }

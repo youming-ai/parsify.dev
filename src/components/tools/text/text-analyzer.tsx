@@ -284,7 +284,8 @@ const TextAnalyzer: React.FC = () => {
     let previousWasVowel = false;
 
     for (let i = 0; i < word.length; i++) {
-      const isVowel = 'aeiouy'.includes(word[i]);
+      const char = word[i];
+      const isVowel = char ? 'aeiouy'.includes(char) : false;
       if (isVowel && !previousWasVowel) {
         syllableCount++;
       }

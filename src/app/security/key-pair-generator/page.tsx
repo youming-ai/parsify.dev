@@ -1,12 +1,26 @@
 import { JsonLd } from '@/components/seo/json-ld';
+import KeyPairGenerator from '@/components/tools/security/key-pair-generator';
 import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = generateToolSEOMetadata({
   toolId: 'key-pair-generator',
+  customTitle: 'Key Pair Generator - RSA, ECDSA, Ed25519 | Parsify',
+  customDescription:
+    'Generate RSA, ECDSA, or Ed25519 key pairs for encryption, authentication, and digital signatures. Keys are generated entirely in your browser.',
+  extraKeywords: [
+    'rsa',
+    'ecdsa',
+    'ed25519',
+    'key-pair',
+    'encryption',
+    'public-key',
+    'private-key',
+    'pem',
+  ],
 });
 
-export default function UkeyUpairUgeneratorPage() {
+export default function KeyPairGeneratorPage() {
   const structuredData = generateToolStructuredData('key-pair-generator');
 
   return (
@@ -15,10 +29,7 @@ export default function UkeyUpairUgeneratorPage() {
         <JsonLd key={`json-ld-${index}`} data={data} />
       ))}
       <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">Key Pair Generator</h1>
-          <p className="text-muted-foreground">Tool component coming soon...</p>
-        </div>
+        <KeyPairGenerator />
       </div>
     </>
   );

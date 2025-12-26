@@ -42,6 +42,7 @@ export function FileUpload({
       const selectedFiles: File[] = [];
       for (let i = 0; i < Math.min(fileList.length, maxFiles); i++) {
         const file = fileList[i];
+        if (!file) continue;
         if (file.size > maxSize) {
           onError?.(
             `File "${file.name}" exceeds maximum size of ${Math.round(maxSize / 1024 / 1024)}MB`
