@@ -83,11 +83,10 @@ export default function HomeClient() {
               processing—your data never leaves your browser.
             </p>
 
-            {/* Modern MagnifyingGlass Box */}
+            {/* Brutalist Search Box */}
             <div className="fade-in animate-in slide-in-from-bottom-10 mx-auto w-full max-w-lg duration-1000">
               <div className="relative group">
-                <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-primary/20 to-primary/10 opacity-50 blur transition duration-1000 group-hover:opacity-100 group-hover:duration-200" />
-                <div className="relative flex items-center rounded-lg bg-background shadow-sm ring-1 ring-border transition-shadow focus-within:ring-2 focus-within:ring-primary/20">
+                <div className="relative flex items-center rounded-none border-2 border-foreground bg-background shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all duration-200 focus-within:shadow-[6px_6px_0_0_rgba(0,0,0,1)] focus-within:-translate-x-0.5 focus-within:-translate-y-0.5 dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)] dark:focus-within:shadow-[6px_6px_0_0_rgba(255,255,255,0.2)]">
                   <MagnifyingGlass
                     className="ml-3 h-5 w-5 text-muted-foreground"
                     aria-hidden="true"
