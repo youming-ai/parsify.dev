@@ -179,7 +179,7 @@ const DiffViewer = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)]">
+      <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
