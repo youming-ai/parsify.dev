@@ -61,7 +61,7 @@ export const JsonToolComplete: React.FC<JsonToolCompleteProps> = ({
 
   return (
     <div className={`mx-auto w-full ${className}`}>
-      <Card className={showHeader ? '' : 'border-0 shadow-none'}>
+      <Card>
         {showHeader && (
           <CardHeader>
             <div className="flex items-center justify-between">

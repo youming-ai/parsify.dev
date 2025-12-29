@@ -92,7 +92,7 @@ export const IDAnalyzer = () => {
   }, [results]);
 
   return (
-    <Card className="border-slate-200/80 shadow-sm dark:border-slate-800">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
           <IdentificationBadge className="h-5 w-5" /> ID Analyzer
