@@ -1,8 +1,7 @@
 import { ErrorBoundary } from '@/components/error-boundary';
 import { ThemeProvider } from '@/components/theme-provider';
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
-import { Google_Sans_Code } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import type React from 'react';
 
 import './globals.css';
@@ -13,7 +12,7 @@ const inter = Inter({
   display: 'swap',
 });
 
-const googleSansCode = Google_Sans_Code({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
   display: 'swap',
@@ -112,7 +111,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`min-h-screen bg-background font-sans antialiased ${inter.variable} ${googleSansCode.variable}`}
+        className={`min-h-screen bg-background font-sans antialiased ${inter.variable} ${jetbrainsMono.variable}`}
         suppressHydrationWarning
       >
         <ThemeProvider

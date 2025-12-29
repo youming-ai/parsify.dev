@@ -76,7 +76,6 @@ Open [http://localhost:3000](http://localhost:3000)
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript 5
 - **Styling**: Tailwind CSS + shadcn/ui
-- **Editor**: Monaco Editor
 - **State**: Zustand
 - **Deployment**: Cloudflare Workers / Pages (via OpenNext)
 
@@ -103,7 +102,6 @@ src/
 bunx wrangler login
 
 # Build and deploy
-bun run build:cf
 bun run deploy:cf
 ```
 
