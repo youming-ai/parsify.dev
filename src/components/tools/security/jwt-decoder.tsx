@@ -1,0 +1,377 @@
+'use client';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  ArrowsClockwise,
+  CheckCircle,
+  Clock,
+  Copy,
+  Eye,
+  EyeSlash,
+  Shield,
+  User,
+  XCircle,
+} from '@phosphor-icons/react';
+import { useState } from 'react';
+
+interface JWTPayload {
+  [key: string]: unknown;
+  iss?: string;
+  sub?: string;
+  aud?: string | string[];
+  exp?: number;
+  nbf?: number;
+  iat?: number;
+  jti?: string;
+}
+
+interface JWTHeader {
+  alg: string;
+  typ: string;
+  [key: string]: unknown;
+}
+
+interface DecodedJWT {
+  header: JWTHeader;
+  payload: JWTPayload;
+  signature: string;
+  valid: boolean;
+  error?: string;
+}
+
+export function JWTDecoder() {
+  const [jwtInput, setJwtInput] = useState('');
+  const [decoded, setDecoded] = useState<DecodedJWT | null>(null);
+  const [showSignature, setShowSignature] = useState(false);
+  const [copied, setCopied] = useState('');
+
+  const decodeJWT = (token: string): DecodedJWT => {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        return {
+          header: {} as JWTHeader,
+          payload: {} as JWTPayload,
+          signature: '',
+          valid: false,
+          error: 'Invalid JWT format. Expected 3 parts separated by dots.',
+        };
+      }
+
+      const headerPart = parts[0] ?? '';
+      const payloadPart = parts[1] ?? '';
+      const signaturePart = parts[2] ?? '';
+
+      const header = JSON.parse(atob(headerPart.replace(/-/g, '+').replace(/_/g, '/')));
+      const payload = JSON.parse(atob(payloadPart.replace(/-/g, '+').replace(/_/g, '/')));
+
+      const now = Math.floor(Date.now() / 1000);
+      const isExpired = payload.exp && payload.exp < now;
+
+      return {
+        header,
+        payload,
+        signature: signaturePart,
+        valid: !isExpired,
+        error: isExpired ? 'Token has expired' : undefined,
+      };
+    } catch (error) {
+      return {
+        header: {} as JWTHeader,
+        payload: {} as JWTPayload,
+        signature: '',
+        valid: false,
+        error: `Failed to decode JWT: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      };
+    }
+  };
+
+  const handleDecode = () => {
+    if (!jwtInput.trim()) {
+      setDecoded(null);
+      return;
+    }
+    const result = decodeJWT(jwtInput.trim());
+    setDecoded(result);
+  };
+
+  const copyToClipboard = async (text: string, type: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(type);
+      setTimeout(() => setCopied(''), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+    }
+  };
+
+  const formatTimestamp = (timestamp: number) => {
+    return new Date(timestamp * 1000).toLocaleString();
+  };
+
+  const getTimeRemaining = (exp: number) => {
+    const now = Math.floor(Date.now() / 1000);
+    const remaining = exp - now;
+
+    if (remaining <= 0) return 'Expired';
+
+    const days = Math.floor(remaining / 86400);
+    const hours = Math.floor((remaining % 86400) / 3600);
+    const minutes = Math.floor((remaining % 3600) / 60);
+
+    if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
+  };
+
+  const highlightJWT = (token: string) => {
+    const parts = token.split('.');
+    if (parts.length !== 3) return token;
+
+    const headerPart = parts[0] ?? '';
+    const payloadPart = parts[1] ?? '';
+    const signaturePart = parts[2] ?? '';
+
+    return (
+      <div className="break-all font-mono text-sm">
+        <span className="text-blue-600 dark:text-blue-400">{headerPart}</span>.
+        <span className="text-green-600 dark:text-green-400">{payloadPart}</span>.
+        <span className="text-purple-600 dark:text-purple-400">
+          {showSignature ? signaturePart : '•'.repeat(Math.min(signaturePart.length, 20))}
+        </span>
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card className="rounded-xl border shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">JWT Token Input</CardTitle>
+          <CardDescription>Paste your JWT token below to decode and verify it</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Textarea
+            placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+            value={jwtInput}
+            onChange={(e) => setJwtInput(e.target.value)}
+            className="min-h-64 font-mono text-sm rounded-md"
+          />
+          <div className="flex gap-2">
+            <Button onClick={handleDecode} className="flex items-center gap-2">
+              <ArrowsClockwise className="h-4 w-4" />
+              Decode JWT
+            </Button>
+            {jwtInput && (
+              <Button
+                variant="outline"
+                onClick={() => copyToClipboard(jwtInput, 'jwt')}
+                className="flex items-center gap-2"
+              >
+                <Copy className="h-4 w-4" />
+                {copied === 'jwt' ? 'Copied!' : 'Copy JWT'}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {decoded && (
+        <div className="space-y-6">
+          {decoded.error && (
+            <Alert variant="destructive">
+              <XCircle className="h-4 w-4" />
+              <AlertDescription>{decoded.error}</AlertDescription>
+            </Alert>
+          )}
+
+          <Card className="rounded-xl border shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Decoded JWT Structure</span>
+                <div className="flex items-center gap-2">
+                  <Badge variant={decoded.valid ? 'default' : 'destructive'}>
+                    {decoded.valid ? (
+                      <>
+                        <CheckCircle className="mr-1 h-3 w-3" />
+                        Valid
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="mr-1 h-3 w-3" />
+                        Invalid
+                      </>
+                    )}
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowSignature(!showSignature)}
+                  >
+                    {showSignature ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="mb-2 font-semibold">Token Structure:</h4>
+                  {highlightJWT(jwtInput)}
+                </div>
+
+                <div className="text-muted-foreground text-sm">
+                  <p>• Blue: Header (algorithm & token type)</p>
+                  <p>• Green: Payload (claims & data)</p>
+                  <p>• Purple: Signature (verification)</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Tabs defaultValue="payload" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="payload">Payload</TabsTrigger>
+              <TabsTrigger value="header">Header</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="payload" className="mt-0 space-y-4">
+              <Card className="rounded-xl border shadow-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    JWT Payload
+                  </CardTitle>
+                  <CardDescription>Claims and data contained in token</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {decoded.payload.exp && (
+                      <div className="rounded-lg bg-muted p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-2 font-semibold">
+                            <Clock className="h-4 w-4" />
+                            Expiration
+                          </span>
+                          <Badge
+                            variant={
+                              decoded.payload.exp < Date.now() / 1000 ? 'destructive' : 'default'
+                            }
+                          >
+                            {getTimeRemaining(decoded.payload.exp)}
+                          </Badge>
+                        </div>
+                        <div className="mt-1 text-muted-foreground text-sm">
+                          {formatTimestamp(decoded.payload.exp)}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid gap-3">
+                      {Object.entries(decoded.payload).map(
+                        ([key, value]) =>
+                          !['exp', 'iat', 'nbf'].includes(key) && (
+                            <div
+                              key={key}
+                              className="flex items-start justify-between rounded border p-2"
+                            >
+                              <div>
+                                <span className="font-mono font-semibold text-sm">{key}</span>
+                                <div className="break-all text-muted-foreground text-sm">
+                                  {typeof value === 'object'
+                                    ? JSON.stringify(value, null, 2)
+                                    : String(value)}
+                                </div>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => copyToClipboard(String(value), `payload-${key}`)}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )
+                      )}
+                    </div>
+
+                    <div className="pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          copyToClipboard(JSON.stringify(decoded.payload, null, 2), 'payload-full')
+                        }
+                        className="w-full"
+                      >
+                        <Copy className="mr-2 h-4 w-4" />
+                        {copied === 'payload-full' ? 'Copied!' : 'Copy Full Payload'}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="header" className="mt-0 space-y-4">
+              <Card className="rounded-xl border shadow-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    JWT Header
+                  </CardTitle>
+                  <CardDescription>Token metadata and algorithm information</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {Object.entries(decoded.header).map(([key, value]) => (
+                      <div
+                        key={key}
+                        className="flex items-start justify-between rounded border p-2"
+                      >
+                        <div>
+                          <span className="font-mono font-semibold text-sm">{key}</span>
+                          <div className="break-all text-muted-foreground text-sm">
+                            {typeof value === 'object'
+                              ? JSON.stringify(value, null, 2)
+                              : String(value)}
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(String(value), `header-${key}`)}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+
+                    <div className="pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          copyToClipboard(JSON.stringify(decoded.header, null, 2), 'header-full')
+                        }
+                        className="w-full"
+                      >
+                        <Copy className="mr-2 h-4 w-4" />
+                        {copied === 'header-full' ? 'Copied!' : 'Copy Full Header'}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      )}
+    </div>
+  );
+}

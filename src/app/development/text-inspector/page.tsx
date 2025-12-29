@@ -1,29 +1,23 @@
+import { JsonLd } from '@/components/seo/json-ld';
+import { TextInspector } from '@/components/tools/text/text-inspector';
+import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
-import TextCounterClient from './client';
 
-export const metadata: Metadata = {
-  title: 'Text Inspector - Word Counter & Character Counter Online',
-  description:
-    'Free online text analyzer. Count characters, words, lines, sentences with reading time calculation. Get encoding info and byte size analysis.',
-  keywords: [
-    'word counter',
-    'character counter',
-    'text analyzer',
-    'line counter',
-    'reading time calculator',
-    'text statistics',
-    'letter counter',
-  ],
-  openGraph: {
-    title: 'Text Inspector - Parsify.dev',
-    description: 'Analyze text with word count, character count, and reading time.',
-  },
-};
+export const metadata: Metadata = generateToolSEOMetadata({
+  toolId: 'text-inspector',
+});
 
-export default function TextCounterPage() {
+export default function TextInspectorPage() {
+  const structuredData = generateToolStructuredData('text-inspector');
+
   return (
-    <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
-      <TextCounterClient />
-    </div>
+    <>
+      {structuredData.map((data, index) => (
+        <JsonLd key={`json-ld-${index}`} data={data} />
+      ))}
+      <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+        <TextInspector />
+      </div>
+    </>
   );
 }
