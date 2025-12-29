@@ -11,9 +11,7 @@ import dynamic from 'next/dynamic';
 import type React from 'react';
 import { useState } from 'react';
 import { Badge } from '../../ui/badge';
-import { Button } from '../../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
 import { JsonHeroViewer } from './json-hero-viewer';
 
 const JsonSimpleEditor = dynamic(
@@ -36,104 +34,107 @@ interface JsonToolCompleteProps {
 }
 
 export const JsonToolComplete: React.FC<JsonToolCompleteProps> = ({
-  initialData = '{}',
+  initialData = '{\n  "name": "Parsify.dev",\n  "version": "1.0.0",\n  "description": "Essential Tools for Developers",\n  "features": [\n    "JSON Formatter",\n    "Base64 Encoder",\n    "JWT Decoder"\n  ],\n  "settings": {\n    "theme": "dark",\n    "autoFormat": true\n  }\n}',
   className,
   showHeader = true,
 }) => {
   const [jsonData, setJsonData] = useState(initialData);
-  const [activeTab, setActiveTab] = useState('editor');
   const [isValidJson, setIsValidJson] = useState(true);
+  const [parsedData, setParsedData] = useState<any>(() => {
+    try {
+      return JSON.parse(initialData);
+    } catch {
+      return {};
+    }
+  });
 
   const handleJsonChange = (newJsonData: string) => {
+    setJsonData(newJsonData);
     try {
-      setJsonData(newJsonData);
-      // Check if JSON is valid
-      try {
-        JSON.parse(newJsonData || '{}');
-        setIsValidJson(true);
-      } catch {
-        setIsValidJson(false);
-      }
-    } catch (error) {
-      console.warn('Error in handleJsonChange:', error);
+      const parsed = JSON.parse(newJsonData || '{}');
+      setParsedData(parsed);
+      setIsValidJson(true);
+    } catch {
+      setIsValidJson(false);
     }
   };
 
   return (
     <div className={`mx-auto w-full ${className}`}>
-      <Card>
-        {showHeader && (
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 font-bold text-2xl">
-                <FileCode className="h-6 w-6" />
-                Complete JSON Tools Suite
-              </CardTitle>
-              <Badge variant="secondary" className="text-sm">
-                33+ Tools Available
-              </Badge>
+      {showHeader && (
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25">
+              <FileCode className="h-5 w-5" />
             </div>
+            <div>
+              <h1 className="font-bold text-2xl">JSON Tools</h1>
+              <p className="text-muted-foreground text-sm">
+                Format, validate, and explore JSON data
+              </p>
+            </div>
+          </div>
+          <Badge variant="secondary" className="text-sm">
+            Live Preview
+          </Badge>
+        </div>
+      )}
 
-            <div className="text-muted-foreground text-sm">
-              Comprehensive JSON processing toolkit with formatting, validation, schema generation,
-              and more
-            </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Left: Editor */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <PencilSimple className="h-4 w-4" />
+              Editor
+            </CardTitle>
           </CardHeader>
-        )}
+          <CardContent>
+            <JsonSimpleEditor
+              value={jsonData}
+              onChange={handleJsonChange}
+              height={500}
+              showToolbar={true}
+            />
+          </CardContent>
+        </Card>
 
-        <CardContent className="p-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="editor" className="flex items-center gap-2">
-                <PencilSimple className="h-4 w-4" />
-                Editor
-              </TabsTrigger>
-              <TabsTrigger value="viewer" className="flex items-center gap-2">
-                <Eye className="h-4 w-4" />
-                Tree View
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="editor" className="p-6">
-              <JsonSimpleEditor
-                value={jsonData}
-                onChange={handleJsonChange}
-                height={600}
-                showToolbar={true}
-              />
-            </TabsContent>
-
-            <TabsContent value="viewer" className="p-6">
-              {isValidJson ? (
+        {/* Right: Tree View */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Eye className="h-4 w-4" />
+              Tree View
+              {!isValidJson && (
+                <Badge variant="destructive" className="ml-2 text-xs">
+                  Invalid JSON
+                </Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isValidJson ? (
+              <div className="h-[500px] overflow-auto">
                 <JsonHeroViewer
-                  data={JSON.parse(jsonData || '{}')}
+                  data={parsedData}
                   showSearch={true}
                   showTypes={true}
                   showCopyButton={true}
                   expandLevel={2}
                 />
-              ) : (
-                <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <div className="mb-4 text-4xl">⚠️</div>
-                  <h3 className="mb-2 text-lg font-semibold">Invalid JSON</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Cannot display tree view. Please fix the JSON errors first.
-                  </p>
-                  <Button
-                    onClick={() => setActiveTab('editor')}
-                    variant="default"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <PencilSimple className="h-4 w-4" />
-                    Go to Editor
-                  </Button>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+              </div>
+            ) : (
+              <div className="flex h-[500px] flex-col items-center justify-center text-center">
+                <div className="mb-4 text-4xl">⚠️</div>
+                <h3 className="mb-2 text-lg font-semibold">Invalid JSON</h3>
+                <p className="text-muted-foreground mb-4 max-w-xs">
+                  Please fix the syntax errors in the editor to see the tree view.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

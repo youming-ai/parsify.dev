@@ -36,10 +36,10 @@ export default function HomeClient() {
     return (
       <Link
         href={tool.href}
-        className="group relative flex flex-col justify-between overflow-hidden rounded-none border-2 border-foreground bg-card p-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all duration-200 hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5 dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)] dark:hover:shadow-[6px_6px_0_0_rgba(255,255,255,0.2)]"
+        className="group relative flex flex-col justify-between overflow-hidden rounded-xl border bg-card p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1"
       >
         <div className="mb-4 flex items-center justify-between">
-          <div className="flex h-10 w-10 items-center justify-center rounded-none border-2 border-foreground bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
             <IconComponent className="h-5 w-5" />
           </div>
         </div>
@@ -83,10 +83,11 @@ export default function HomeClient() {
               processing—your data never leaves your browser.
             </p>
 
-            {/* Brutalist Search Box */}
+            {/* Modern Search Box */}
             <div className="fade-in animate-in slide-in-from-bottom-10 mx-auto w-full max-w-lg duration-1000">
               <div className="relative group">
-                <div className="relative flex items-center rounded-none border-2 border-foreground bg-background shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all duration-200 focus-within:shadow-[6px_6px_0_0_rgba(0,0,0,1)] focus-within:-translate-x-0.5 focus-within:-translate-y-0.5 dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)] dark:focus-within:shadow-[6px_6px_0_0_rgba(255,255,255,0.2)]">
+                <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-primary/20 to-primary/10 opacity-50 blur transition duration-1000 group-hover:opacity-100 group-hover:duration-200" />
+                <div className="relative flex items-center rounded-lg bg-background shadow-sm ring-1 ring-border transition-shadow focus-within:ring-2 focus-within:ring-primary/20">
                   <MagnifyingGlass
                     className="ml-3 h-5 w-5 text-muted-foreground"
                     aria-hidden="true"

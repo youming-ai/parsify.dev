@@ -32,7 +32,7 @@ export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) 
     <div className="space-y-8 mt-8">
       {/* Section Header */}
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-none border-2 border-foreground bg-primary text-primary-foreground">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25">
           <Info className="h-5 w-5" />
         </div>
         <div>
@@ -47,7 +47,7 @@ export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) 
         {features && features.length > 0 && (
           <Card>
             <CardHeader className="pb-4">
-              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-none border-2 border-foreground bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
                 <Sparkle className="h-6 w-6" />
               </div>
               <CardTitle className="text-lg text-foreground">Key Features</CardTitle>
@@ -77,7 +77,7 @@ export function ToolInfoSection({ features, info, tags }: ToolInfoSectionProps) 
         {info && (
           <Card>
             <CardHeader className="pb-4">
-              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-none border-2 border-foreground bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
+              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
                 <Stack className="h-6 w-6" />
               </div>
               <CardTitle className="text-lg text-foreground">Specifications</CardTitle>
