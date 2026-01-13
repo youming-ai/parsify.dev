@@ -1,4 +1,3 @@
-import { ToolBreadcrumb } from '@/components/layout/breadcrumb';
 import { JsonLd } from '@/components/seo/json-ld';
 import { ToolLoading } from '@/components/tools/tool-loading';
 import { URLEncoderDocs } from '@/components/tools/utilities/url-encoder-docs';
@@ -28,12 +27,6 @@ export default function URLEncoderPage() {
         <JsonLd key={`json-ld-${index}`} data={data} />
       ))}
       <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
-        <ToolBreadcrumb
-          toolName="URL Parser"
-          category="Network & Utility"
-          categoryHref="/network"
-          className="mb-6"
-        />
         <PrivacyNotice message="URL parsing is performed entirely in your browser. Your data never leaves your device." />
         <div className="space-y-6">
           <URLEncoder />
