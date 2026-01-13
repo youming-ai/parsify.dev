@@ -1,4 +1,3 @@
-import { ToolBreadcrumb } from '@/components/layout/breadcrumb';
 import { JsonLd } from '@/components/seo/json-ld';
 import { ToolLoading } from '@/components/tools/tool-loading';
 import { PrivacyNotice } from '@/components/ui/privacy-notice';
@@ -40,12 +39,6 @@ export default function JsonToolsPage() {
         <JsonLd key={`json-ld-${index}`} data={data} />
       ))}
       <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
-        <ToolBreadcrumb
-          toolName="JSON Tools"
-          category="Data Format & Conversion"
-          categoryHref="/data-format"
-          className="mb-6"
-        />
         <PrivacyNotice message="JSON processing is performed entirely in your browser. Your JSON data never leaves your device." />
         <div className="relative">
           <JsonToolComplete showHeader={false} className="rounded-xl border shadow-sm" />
