@@ -7,20 +7,20 @@ import type React from 'react';
 
 // Base component props interface
 export interface BaseComponentProps {
-  /** Unique identifier for the component */
+  /** Unique identifier for component */
   id?: string;
   /** CSS class name for custom styling */
   className?: string;
   /** Children components or elements */
   children?: React.ReactNode;
   /** Additional HTML attributes */
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // Tool component interface
 export interface ToolComponentProps extends BaseComponentProps {
   /** Callback function when tool operation completes */
-  onComplete?: (result: any) => void;
+  onComplete?: (result: unknown) => void;
   /** Callback function when tool operation encounters an error */
   onError?: (error: Error) => void;
   /** Callback function when tool operation starts */
@@ -66,14 +66,14 @@ export interface ProcessingStatus {
 }
 
 // Tool result interface
-export interface ToolResult<T = any> {
+export interface ToolResult<T = unknown> {
   /** Result data */
   data: T;
-  /** Whether the operation was successful */
+  /** Whether operation was successful */
   success: boolean;
   /** Processing status information */
   status: ProcessingStatus;
-  /** Metadata about the result */
+  /** Metadata about result */
   metadata: {
     /** Result timestamp */
     timestamp: number;
@@ -82,7 +82,7 @@ export interface ToolResult<T = any> {
     /** Tool version */
     toolVersion: string;
     /** Additional tool-specific metadata */
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -123,13 +123,13 @@ export interface ExportOptions {
   /** Custom filename */
   filename?: string;
   /** Additional export-specific options */
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // Export interface
 export interface ExporterProps extends BaseComponentProps {
   /** Data to export */
-  data: any;
+  data: unknown;
   /** Export options */
   options: ExportOptions;
   /** Callback function when export completes */
@@ -196,7 +196,7 @@ export interface AnalyticsEvent {
   /** Event name */
   name: string;
   /** Event properties */
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
   /** Event timestamp */
   timestamp: number;
   /** Event category */
@@ -264,9 +264,9 @@ export interface ToolConfig {
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   /** Tool status */
   status: 'stable' | 'beta' | 'experimental' | 'deprecated';
-  /** Whether the tool is new */
+  /** Whether tool is new */
   isNew?: boolean;
-  /** Whether the tool is popular */
+  /** Whether tool is popular */
   isPopular?: boolean;
   /** Tool route */
   href: string;
@@ -277,7 +277,7 @@ export interface ToolConfig {
   /** Tool features */
   features: string[];
   /** Additional configuration */
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
 }
 
 // Tool registry interface
@@ -299,11 +299,11 @@ export interface ToolRegistry {
 // Component registry interface
 export interface ComponentRegistry {
   /** Register a component */
-  register: (name: string, component: React.ComponentType<any>) => void;
+  register: (name: string, component: React.ComponentType<unknown>) => void;
   /** Get a component by name */
-  get: (name: string) => React.ComponentType<any> | undefined;
+  get: (name: string) => React.ComponentType<unknown> | undefined;
   /** Get all registered components */
-  getAll: () => Record<string, React.ComponentType<any>>;
+  getAll: () => Record<string, React.ComponentType<unknown>>;
   /** Check if component is registered */
   has: (name: string) => boolean;
   /** Unregister a component */
@@ -319,8 +319,8 @@ export type HookReturnWithActions<T, A extends Record<string, unknown> = Record<
 ];
 
 // Generic event handler type
-export type EventHandler<T = any> = (event: T) => void;
-export type AsyncEventHandler<T = any> = (event: T) => Promise<void>;
+export type EventHandler<T = unknown> = (event: T) => void;
+export type AsyncEventHandler<T = unknown> = (event: T) => Promise<void>;
 
 // Async state type
 export type AsyncState<T> = {

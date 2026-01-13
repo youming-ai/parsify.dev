@@ -18,5 +18,5 @@ export const metadata: Metadata = generatePageMetadata({
 });
 
 export default function SecurityPage() {
-  return <CategoryView categoryName="Security & Authentication" categorySlug="security" />;
+  return <CategoryView categoryName="Security & Authentication" />;
 }

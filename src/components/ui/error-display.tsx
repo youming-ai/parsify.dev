@@ -1,11 +1,13 @@
+'use client';
+
 /**
  * Error Display Components
  * Consistent error presentation with helpful actions
  */
 
 import { Button } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
-import { ArrowsClockwise, WarningCircle } from '@phosphor-icons/react';
 
 interface ErrorDisplayProps {
   error: Error | string;
@@ -42,7 +44,7 @@ export function ErrorDisplay({
   const content = (
     <div className={cn(baseClasses, variantClasses[variant], className)}>
       <div className="flex-shrink-0">
-        <WarningCircle className="h-5 w-5 text-destructive" />
+        <Icon name="WarningCircle" className="h-5 w-5 text-destructive" />
       </div>
 
       <div className="min-w-0 flex-1 space-y-2">
@@ -64,7 +66,7 @@ export function ErrorDisplay({
         <div className="mt-3 flex items-center gap-2">
           {onRetry && (
             <Button variant="outline" size="sm" onClick={onRetry} className="h-8">
-              <ArrowsClockwise className="mr-1 h-3 w-3" />
+              <Icon name="ArrowsClockwise" className="mr-1 h-3 w-3" />
               Retry
             </Button>
           )}
@@ -155,18 +157,17 @@ export function FieldError({ error }: { error: string | undefined }) {
 
   return (
     <div className="mt-1 flex items-center gap-2 text-destructive text-xs">
-      <WarningCircle className="h-3 w-3 flex-shrink-0" />
+      <Icon name="WarningCircle" className="h-3 w-3 flex-shrink-0" />
       <span>{error}</span>
     </div>
   );
 }
 
 // Network error display
-export function NetworkError({ error, onRetry }: { error: Error | string; onRetry?: () => void }) {
+export function NetworkError(_props: { error: Error | string }) {
   return (
     <ErrorDisplay
       error="Network connection failed. Please check your internet connection and try again."
-      onRetry={onRetry}
       variant="card"
       action={() => window.location.reload()}
       actionLabel="Refresh Page"

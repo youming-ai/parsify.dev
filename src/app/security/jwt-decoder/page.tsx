@@ -1,8 +1,10 @@
 import { JsonLd } from '@/components/seo/json-ld';
-import { JWTDecoder } from '@/components/tools/security/jwt-decoder';
 import { JWTDecoderDocs } from '@/components/tools/security/jwt-decoder-docs';
+import { ToolLoading } from '@/components/tools/tool-loading';
+import { PrivacyNotice } from '@/components/ui/privacy-notice';
 import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 
 export const metadata: Metadata = generateToolSEOMetadata({
   toolId: 'jwt-decoder',
@@ -11,6 +13,14 @@ export const metadata: Metadata = generateToolSEOMetadata({
     'Decode and verify JSON Web Tokens (JWT) instantly. View header, payload, and signature information.',
   extraKeywords: ['JSON Web Token', 'parser', 'authentication', 'token'],
 });
+
+const JWTDecoder = dynamic(
+  () =>
+    import('@/components/tools/security/jwt-decoder').then((mod) => ({ default: mod.JWTDecoder })),
+  {
+    loading: () => <ToolLoading message="Loading JWT Decoder..." />,
+  }
+);
 
 export default function JWTDecoderPage() {
   const structuredData = generateToolStructuredData('jwt-decoder');
@@ -21,12 +31,7 @@ export default function JWTDecoderPage() {
         <JsonLd key={`json-ld-${index}`} data={data} />
       ))}
       <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
-        <div className="mb-8 border-l-4 border-yellow-500 bg-yellow-100 p-4 font-mono text-sm text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200">
-          <strong className="uppercase">[ Privacy Notice ]</strong>
-          <br />
-          JWT decoding is performed entirely in your browser. Your tokens never leave your device.
-        </div>
-
+        <PrivacyNotice message="JWT decoding is performed entirely in your browser. Your tokens never leave your device." />
         <JWTDecoder />
         <JWTDecoderDocs />
       </div>

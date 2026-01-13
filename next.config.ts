@@ -1,16 +1,17 @@
 import bundleAnalyzer from '@next/bundle-analyzer';
-import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 import type { NextConfig } from 'next';
 
 const withBundleAnalyzer = bundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
+  enabled: process.env['ANALYZE'] === 'true',
 });
 
 const nextConfig: NextConfig = {
   // OpenNext requires standalone output mode for Cloudflare Workers
   output: 'standalone',
   reactStrictMode: true,
-  transpilePackages: ['@phosphor-icons/react'],
+  // Note: @phosphor-icons/react removed from transpilePackages
+  // It already publishes ES modules compatible with Next.js 15
+  // Transpiling causes issues with Turbopack + RSC
   poweredByHeader: false,
   compress: true,
 
@@ -30,19 +31,22 @@ const nextConfig: NextConfig = {
   // Experimental performance optimizations
   experimental: {
     optimizeCss: true,
-    optimizePackageImports: [
-      '@phosphor-icons/react',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-dropdown-menu',
-      '@radix-ui/react-select',
-      '@radix-ui/react-slider',
-    ],
+    optimizePackageImports: ['@phosphor-icons/react'],
   },
 
   // Turbopack enabled via `next dev --turbo`
 
   // Bundle analyzer and code splitting (webpack fallback when not using Turbopack)
   webpack: (config, { dev, isServer }) => {
+    // Fix for entities package import compatibility
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'entities/lib/decode.js': 'entities/lib/decode.js',
+      'entities/lib/decode_codepoint.js': 'entities/lib/decode_codepoint.js',
+      'entities/lib/encode_codepoint.js': 'entities/lib/encode_codepoint.js',
+      'entities/lib/encode.js': 'entities/lib/encode.js',
+    };
+
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -56,29 +60,8 @@ const nextConfig: NextConfig = {
     if (!dev && !isServer) {
       config.optimization.splitChunks = {
         chunks: 'all',
-        cacheGroups: {
-          // Vendor chunks for third-party libraries
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-          },
-          // Common chunks for shared code
-          common: {
-            name: 'common',
-            minChunks: 2,
-            chunks: 'all',
-            enforce: true,
-            priority: 10,
-          },
-          // UI components chunk
-          ui: {
-            test: /[\\/]src[\\/]components[\\/]ui[\\/]/,
-            name: 'ui',
-            chunks: 'all',
-            priority: 15,
-          },
-        },
+        maxInitialRequests: 25,
+        minSize: 20000,
       };
     }
 
@@ -111,8 +94,8 @@ const nextConfig: NextConfig = {
 };
 
 // Initialize OpenNext for development mode
-if (process.env.NODE_ENV === 'development') {
-  initOpenNextCloudflareForDev();
-}
+// if (process.env.NODE_ENV === 'development') {
+//   initOpenNextCloudflareForDev();
+// }
 
 export default withBundleAnalyzer(nextConfig);

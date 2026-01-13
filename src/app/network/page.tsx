@@ -11,5 +11,5 @@ export const metadata: Metadata = generatePageMetadata({
 });
 
 export default function NetworkPage() {
-  return <CategoryView categoryName="Network & Utility" categorySlug="network" />;
+  return <CategoryView categoryName="Network & Utility" />;
 }

@@ -61,7 +61,7 @@ const DiffViewer = () => {
   const computeDiff = useCallback((a: string, b: string): DiffLine[] => {
     const linesA = a.split('\n');
     const linesB = b.split('\n');
-    const result: DiffLine[] = [];
+    const _result: DiffLine[] = [];
 
     // Build LCS table
     const m = linesA.length;

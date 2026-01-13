@@ -112,14 +112,14 @@ export const STORAGE_KEYS = {
 
 // Tool categories
 export const TOOL_CATEGORIES = {
-  JSON: 'JSON Tools',
-  CODE: 'Code Tools',
-  IMAGE: 'Image/Media Tools',
-  NETWORK: 'Network/Ops/Encoding Tools',
-  TEXT: 'Text Tools',
-  SECURITY: 'Encryption/Hashing/Generation',
-  COMMON: 'Common/Auxiliary Tools',
+  DATA_FORMAT: 'Data Format & Conversion',
+  SECURITY: 'Security & Authentication',
+  DEVELOPMENT: 'Development & Testing',
+  NETWORK: 'Network & Utility',
 } as const;
+
+// Tool category array for iteration
+export const TOOL_CATEGORY_LIST = Object.values(TOOL_CATEGORIES);
 
 // Default values
 export const DEFAULTS = {

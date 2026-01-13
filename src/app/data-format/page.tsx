@@ -18,5 +18,5 @@ export const metadata: Metadata = generatePageMetadata({
 });
 
 export default function DataFormatPage() {
-  return <CategoryView categoryName="Data Format & Conversion" categorySlug="data-format" />;
+  return <CategoryView categoryName="Data Format & Conversion" />;
 }

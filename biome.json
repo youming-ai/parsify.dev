@@ -33,11 +33,12 @@
       "complexity": {
         "useArrowFunction": "off",
         "noForEach": "off",
-        "noBannedTypes": "off"
+        "noBannedTypes": "off",
+        "useLiteralKeys": "off"
       },
       "correctness": {
-        "noUnusedVariables": "off",
-        "noUnusedImports": "warn",
+        "noUnusedVariables": "error",
+        "noUnusedImports": "error",
         "useExhaustiveDependencies": "off"
       },
       "suspicious": {

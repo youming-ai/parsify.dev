@@ -1,7 +1,10 @@
+import { ToolBreadcrumb } from '@/components/layout/breadcrumb';
 import { JsonLd } from '@/components/seo/json-ld';
-import PasswordGenerator from '@/components/tools/security/password-generator';
+import { ToolLoading } from '@/components/tools/tool-loading';
+import { PrivacyNotice } from '@/components/ui/privacy-notice';
 import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 
 export const metadata: Metadata = generateToolSEOMetadata({
   toolId: 'password-generator',
@@ -10,6 +13,16 @@ export const metadata: Metadata = generateToolSEOMetadata({
     'Generate strong, secure passwords with comprehensive strength analysis, entropy calculation, and security recommendations.',
   extraKeywords: ['security', 'entropy', 'authentication', 'crack time', 'password analyzer'],
 });
+
+const PasswordGenerator = dynamic(
+  () =>
+    import('@/components/tools/security/password-generator').then((mod) => ({
+      default: mod.default,
+    })),
+  {
+    loading: () => <ToolLoading message="Loading Password Generator..." />,
+  }
+);
 
 export default function PasswordGeneratorPage() {
   const structuredData = generateToolStructuredData('password-generator');
@@ -20,6 +33,13 @@ export default function PasswordGeneratorPage() {
         <JsonLd key={`json-ld-${index}`} data={data} />
       ))}
       <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+        <ToolBreadcrumb
+          toolName="Password Generator"
+          category="Security & Authentication"
+          categoryHref="/security"
+          className="mb-6"
+        />
+        <PrivacyNotice message="Password generation is performed entirely in your browser. Your passwords never leaves your device." />
         <PasswordGenerator />
       </div>
     </>

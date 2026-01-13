@@ -1,22 +1,68 @@
 {
-    "name": "Parsify.dev - Online Developer Tools",
-    "short_name": "Parsify",
-    "description": "Essential Tools for Developers - A privacy-first collection of utilities running entirely in your browser.",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#f7f7f4",
-    "theme_color": "#18181b",
-    "icons": [
+  "name": "Parsify.dev - Online Developer Tools",
+  "short_name": "Parsify",
+  "description": "Professional online developer tools for JSON processing, code execution, file transformation, and more. Privacy-first, client-side processing with no data sent to servers.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f7f4",
+  "theme_color": "#18181b",
+  "orientation": "portrait",
+  "categories": ["developer", "tools", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icon",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-icon",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/opengraph-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "JSON Tools",
+      "short_name": "JSON",
+      "description": "Format, validate, and manipulate JSON data",
+      "url": "/data-format/json-tools",
+      "icons": [
         {
-            "src": "/icon",
-            "sizes": "32x32",
-            "type": "image/png"
-        },
-        {
-            "src": "/apple-icon",
-            "sizes": "180x180",
-            "type": "image/png",
-            "purpose": "any maskable"
+          "src": "/icon",
+          "sizes": "96x96"
         }
-    ]
+      ]
+    },
+    {
+      "name": "Password Generator",
+      "short_name": "Password",
+      "description": "Generate secure passwords with strength analysis",
+      "url": "/security/password-generator",
+      "icons": [
+        {
+          "src": "/icon",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "URL Parser",
+      "short_name": "URL",
+      "description": "Parse and inspect URLs with query parameters",
+      "url": "/network/url-parser",
+      "icons": [
+        {
+          "src": "/icon",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
 }
