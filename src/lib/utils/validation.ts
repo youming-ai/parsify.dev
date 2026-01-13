@@ -254,7 +254,7 @@ export const validatePattern = (pattern: RegExp, message?: string): ValidationRu
  * Custom function validation
  */
 export const validateCustom = (
-  validator: (value: any) => boolean | string,
+  validator: (value: unknown) => boolean | string,
   message: string
 ): ValidationRule => ({
   name: 'custom',
@@ -266,7 +266,7 @@ export const validateCustom = (
  * Validate multiple rules and return all errors
  */
 export const validateRules = (
-  value: any,
+  value: unknown,
   rules: ValidationRule[]
 ): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
@@ -289,7 +289,7 @@ export const validateRules = (
  * Validate object properties with rules
  */
 export const validateObject = (
-  obj: Record<string, any>,
+  obj: Record<string, unknown>,
   rules: Record<string, ValidationRule[]>
 ): { isValid: boolean; errors: Record<string, string[]> } => {
   const errors: Record<string, string[]> = {};
@@ -383,9 +383,9 @@ export const validateAndSanitize = (
  * Async validation helper
  */
 export const validateAsync = async (
-  value: any,
+  value: unknown,
   asyncValidators: Array<{
-    validate: (value: any) => Promise<boolean | string>;
+    validate: (value: unknown) => Promise<boolean | string>;
     message: string;
   }>
 ): Promise<{ isValid: boolean; errors: string[] }> => {

@@ -1,6 +1,8 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ArrowsClockwise } from '@phosphor-icons/react';
 
 interface ToolLoadingProps {
   message?: string;
@@ -22,10 +24,12 @@ export function ToolLoading({ message = 'Loading...', onRetry }: ToolLoadingProp
           onClick={onRetry}
           className="flex items-center space-x-2"
         >
-          <ArrowsClockwise className="h-4 w-4" />
+          <Icon name="ArrowsClockwise" className="h-4 w-4" />
           <span>Retry</span>
         </Button>
       )}
     </div>
   );
 }
+
+export { LoadingSkeleton };

@@ -5,21 +5,22 @@ import type { MetadataRoute } from 'next';
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
-  // Static pages
+  // Static pages - Home page with highest priority
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: SEO_CONFIG.BASE_URL,
       lastModified: now,
-      changeFrequency: 'weekly',
+      changeFrequency: 'daily',
       priority: 1.0,
     },
   ];
 
   // Tool pages - dynamically generated from tools data
+  // Popular tools get higher priority and more frequent updates
   const toolPages: MetadataRoute.Sitemap = toolsData.map((tool) => ({
     url: `${SEO_CONFIG.BASE_URL}${tool.href}`,
     lastModified: now,
-    changeFrequency: 'monthly' as const,
+    changeFrequency: tool.isPopular ? ('weekly' as const) : ('monthly' as const),
     priority: tool.isPopular ? 0.9 : 0.8,
   }));
 
@@ -32,8 +33,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${SEO_CONFIG.BASE_URL}/${CATEGORY_SLUG_MAP[category]}`,
       lastModified: now,
       changeFrequency: 'weekly' as const,
-      priority: 0.8,
+      priority: 0.85,
     }));
 
-  return [...staticPages, ...toolPages, ...categoryPages];
+  return [...staticPages, ...categoryPages, ...toolPages];
 }

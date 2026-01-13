@@ -1,3 +1,4 @@
+import { Clarity } from '@/components/analytics/clarity';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { ThemeProvider } from '@/components/theme-provider';
 import type { Metadata, Viewport } from 'next';
@@ -120,7 +121,17 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          {/* Skip to main content link for accessibility */}
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+          >
+            Skip to main content
+          </a>
+
           <ErrorBoundary maxRetries={3}>{children}</ErrorBoundary>
+          {/* Microsoft Clarity Analytics */}
+          <Clarity projectId="uxo2bgwtio" />
         </ThemeProvider>
         {/* Cloudflare Web Analytics - add script in Cloudflare Dashboard */}
       </body>

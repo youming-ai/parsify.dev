@@ -9,12 +9,7 @@ import { JsonErrorDisplay } from './json-error-display';
 import type { JsonValidationResult, JsonValidatorProps } from './json-types';
 import { validateJson } from './json-utils';
 
-export function JsonValidator({
-  input,
-  onValidationChange,
-  showLineNumbers = true,
-  className,
-}: JsonValidatorProps) {
+export function JsonValidator({ input, onValidationChange, className }: JsonValidatorProps) {
   const [validationResult, setValidationResult] = React.useState<JsonValidationResult>({
     isValid: false,
     errors: [],

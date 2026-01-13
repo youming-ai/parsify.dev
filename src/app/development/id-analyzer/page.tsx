@@ -1,7 +1,9 @@
 import { JsonLd } from '@/components/seo/json-ld';
-import IDAnalyzer from '@/components/tools/security/id-analyzer';
+import { ToolLoading } from '@/components/tools/tool-loading';
+import { PrivacyNotice } from '@/components/ui/privacy-notice';
 import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 
 export const metadata: Metadata = generateToolSEOMetadata({
   toolId: 'id-analyzer',
@@ -10,6 +12,13 @@ export const metadata: Metadata = generateToolSEOMetadata({
     'Analyze and decode UUIDs, GUIDs, ULIDs, Nano IDs, MongoDB ObjectIDs and Snowflake IDs. Get detailed breakdowns and metadata.',
   extraKeywords: ['uuid', 'ulid', 'guid', 'objectid', 'nanoid', 'snowflake', 'decoder'],
 });
+
+const IDAnalyzer = dynamic(
+  () => import('@/components/tools/security/id-analyzer').then((mod) => ({ default: mod.default })),
+  {
+    loading: () => <ToolLoading message="Loading ID Analyzer..." />,
+  }
+);
 
 export default function IDAnalyzerPage() {
   const structuredData = generateToolStructuredData('id-analyzer');
@@ -20,6 +29,7 @@ export default function IDAnalyzerPage() {
         <JsonLd key={`json-ld-${index}`} data={data} />
       ))}
       <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+        <PrivacyNotice message="ID analysis is performed entirely in your browser. Your IDs never leave your device." />
         <IDAnalyzer />
       </div>
     </>

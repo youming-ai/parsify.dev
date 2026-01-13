@@ -84,7 +84,10 @@ export function LoremIpsumGenerator() {
 
             <div className="w-48 space-y-2">
               <Label>Type</Label>
-              <Select value={type} onValueChange={(v: any) => setType(v)}>
+              <Select
+                value={type}
+                onValueChange={(v) => setType(v as 'sentences' | 'words' | 'paragraphs')}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

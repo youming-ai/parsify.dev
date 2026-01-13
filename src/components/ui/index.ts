@@ -3,7 +3,6 @@
  * Centralized export for all UI components
  */
 
-// Re-export all UI components
 export { Button } from './button';
 export type { ButtonProps } from './button';
 
@@ -39,25 +38,6 @@ export { Progress } from './progress';
 export type { ProgressProps } from './progress';
 
 export {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from './dialog';
-export type {
-  DialogProps,
-  DialogContentProps,
-  DialogDescriptionProps,
-  DialogFooterProps,
-  DialogHeaderProps,
-  DialogTitleProps,
-  DialogTriggerProps,
-} from './dialog';
-
-export {
   Select,
   SelectContent,
   SelectGroup,
@@ -88,12 +68,6 @@ export type { SliderProps } from './slider';
 export { Switch } from './switch';
 export type { SwitchProps } from './switch';
 
-export { Checkbox } from './checkbox';
-export type { CheckboxProps } from './checkbox';
-
-export { RadioGroup, RadioGroupItem } from './radio-group';
-export type { RadioGroupProps, RadioGroupItemProps } from './radio-group';
-
 export { ScrollArea } from './scroll-area';
 export type { ScrollAreaProps } from './scroll-area';
 
@@ -103,54 +77,4 @@ export type { SeparatorProps } from './separator';
 export { Skeleton } from './skeleton';
 export type { SkeletonProps } from './skeleton';
 
-export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
-export type {
-  TooltipProps,
-  TooltipContentProps,
-  TooltipProviderProps,
-  TooltipTriggerProps,
-} from './tooltip';
-
-export { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table';
-export type {
-  TableProps,
-  TableBodyProps,
-  TableCellProps,
-  TableHeadProps,
-  TableHeaderProps,
-  TableRowProps,
-} from './table';
-
-export { Popover, PopoverContent, PopoverTrigger } from './popover';
-export type { PopoverProps, PopoverContentProps, PopoverTriggerProps } from './popover';
-
-export {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from './dropdown-menu';
-export type {
-  DropdownMenuProps,
-  DropdownMenuCheckboxItemProps,
-  DropdownMenuContentProps,
-  DropdownMenuItemProps,
-  DropdownMenuLabelProps,
-  DropdownMenuRadioGroupProps,
-  DropdownMenuRadioItemProps,
-  DropdownMenuSeparatorProps,
-  DropdownMenuShortcutProps,
-  DropdownMenuSubProps,
-  DropdownMenuSubContentProps,
-  DropdownMenuSubTriggerProps,
-  DropdownMenuTriggerProps,
-} from './dropdown-menu';
+export { PrivacyNotice } from './privacy-notice';

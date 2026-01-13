@@ -201,13 +201,13 @@ export function convertJson(
       case 'xml':
         return jsonToXml(
           parsed,
-          (options.rootElement as string) || 'root',
-          (options.arrayItemName as string) || 'item'
+          (options['rootElement'] as string) || 'root',
+          (options['arrayItemName'] as string) || 'item'
         );
       case 'yaml':
         return jsonToYaml(parsed);
       case 'csv':
-        return jsonToCsv(parsed, (options.delimiter as string) || ',');
+        return jsonToCsv(parsed, (options['delimiter'] as string) || ',');
       default:
         throw new Error(`Unsupported format: ${targetFormat}`);
     }

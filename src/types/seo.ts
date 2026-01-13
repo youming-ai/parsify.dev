@@ -4,7 +4,7 @@ export interface StructuredData {
   name?: string;
   description?: string;
   url?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface BreadcrumbItem {

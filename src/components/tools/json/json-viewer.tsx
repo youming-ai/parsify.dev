@@ -173,7 +173,6 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
 
 export function JsonViewer({
   data,
-  expandLevel = 3,
   showLineNumbers = false,
   copyable = true,
   className,

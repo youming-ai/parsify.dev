@@ -1,5 +1,6 @@
 import { JsonLd } from '@/components/seo/json-ld';
 import { HashGeneratorDocs } from '@/components/tools/data/hash-generator-docs';
+import { PrivacyNotice } from '@/components/ui/privacy-notice';
 import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
 
@@ -16,6 +17,7 @@ export default function HashGeneratorPage() {
         <JsonLd key={`json-ld-${index}`} data={data} />
       ))}
       <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+        <PrivacyNotice message="Hash generation is performed entirely in your browser. Your data never leaves your device." />
         <HashGeneratorDocs />
       </div>
     </>

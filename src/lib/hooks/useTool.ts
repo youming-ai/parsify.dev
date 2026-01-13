@@ -36,6 +36,7 @@ interface UseToolReturn<T = any> {
   /** Current error message */
   error: string | null;
   /** Function to start processing */
+  /** Function to start processing */
   startProcessing: (data: any) => Promise<void>;
   /** Function to stop processing */
   stopProcessing: () => void;

@@ -224,7 +224,6 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
   showCopyButton = true,
   showSearch = true,
   maxVisibleItems = MAX_VISIBLE_ITEMS_DEFAULT,
-  theme = 'auto',
   onCopyNode,
 }) => {
   const [tree, setTree] = useState<JsonNode | null>(null);

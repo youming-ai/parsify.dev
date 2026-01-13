@@ -139,7 +139,7 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
   };
 
   // Parse input data based on format
-  const parseData = (data: string, format: string): any => {
+  const parseData = (data: string, format: string): unknown => {
     try {
       switch (format) {
         case 'json':
@@ -149,10 +149,12 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
           const lines = data.split('\n').filter((line) => line.trim());
           const firstLine = lines[0];
           if (!firstLine) return [];
-          const headers = firstLine.split(',').map((h) => h.trim());
+          const headers = firstLine?.split(',')?.map((h) => h.trim()) ?? [];
           const rows = lines.slice(1).map((line) => {
             const values = line.split(',').map((v) => v.trim());
-            return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
+            return Object.fromEntries(
+              headers.map((header, index) => [header, values[index] ?? ''])
+            );
           });
           return rows;
         }
@@ -170,7 +172,7 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
           return { yaml: data, note: 'YAML parsing not implemented' };
         case 'form': {
           // Parse form data (key=value pairs)
-          const formObj: any = {};
+          const formObj: Record<string, string> = {};
           data.split('\n').forEach((line) => {
             const [key, ...valueParts] = line.split('=');
             if (key && valueParts.length > 0) {
@@ -183,9 +185,8 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
           return data;
       }
     } catch (error) {
-      throw new Error(
-        `Failed to parse ${format} data: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to parse ${format} data: ${errorMessage}`);
     }
   };
 
@@ -246,8 +247,11 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
       let totalWarnings = 0;
 
       // Get all fields from data
-      const getAllFields = (data: any, prefix = ''): Array<{ path: string; value: any }> => {
-        const fields: Array<{ path: string; value: any }> = [];
+      const getAllFields = (
+        data: unknown,
+        prefix = ''
+      ): Array<{ path: string; value: unknown }> => {
+        const fields: Array<{ path: string; value: unknown }> = [];
 
         if (Array.isArray(data)) {
           data.forEach((item, index) => {
@@ -393,7 +397,7 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
   };
 
   // Load sample data
-  const loadSampleData = (format: string) => {
+  const loadSampleData = (format: 'json' | 'csv' | 'xml' | 'yaml' | 'form') => {
     const samples = {
       json: `{
 	"name": "John Doe",
@@ -422,8 +426,8 @@ phone=555-123-4567
 website=https://johndoe.com`,
     };
 
-    setInputData(samples[format as keyof typeof samples] || '');
-    setDataFormat(format as any);
+    setInputData(samples[format] || '');
+    setDataFormat(format);
   };
 
   return (
@@ -441,7 +445,12 @@ website=https://johndoe.com`,
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>Data Format</Label>
-                <Select value={dataFormat} onValueChange={(value: any) => setDataFormat(value)}>
+                <Select
+                  value={dataFormat}
+                  onValueChange={(value: 'json' | 'csv' | 'xml' | 'yaml' | 'form') =>
+                    setDataFormat(value)
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select data format" />
                   </SelectTrigger>
@@ -533,9 +542,16 @@ website=https://johndoe.com`,
                         {(rule.type === 'length' || rule.type === 'range') && (
                           <Select
                             value={rule.operation}
-                            onValueChange={(value: any) =>
-                              updateRule(rule.id, { operation: value })
-                            }
+                            onValueChange={(
+                              value:
+                                | 'equals'
+                                | 'contains'
+                                | 'startsWith'
+                                | 'endsWith'
+                                | 'regex'
+                                | 'min'
+                                | 'max'
+                            ) => updateRule(rule.id, { operation: value })}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Operation" />

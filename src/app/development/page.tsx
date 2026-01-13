@@ -18,5 +18,5 @@ export const metadata: Metadata = generatePageMetadata({
 });
 
 export default function DevelopmentPage() {
-  return <CategoryView categoryName="Development & Testing" categorySlug="development" />;
+  return <CategoryView categoryName="Development & Testing" />;
 }

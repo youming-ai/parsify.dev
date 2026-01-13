@@ -1,11 +1,20 @@
 import { JsonLd } from '@/components/seo/json-ld';
-import JsonToTomlClient from '@/components/tools/json/json-to-toml';
+import { ToolLoading } from '@/components/tools/tool-loading';
+import { PrivacyNotice } from '@/components/ui/privacy-notice';
 import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 
 export const metadata: Metadata = generateToolSEOMetadata({
   toolId: 'json-to-toml',
 });
+
+const JsonToTomlClient = dynamic(
+  () => import('@/components/tools/json/json-to-toml').then((mod) => ({ default: mod.default })),
+  {
+    loading: () => <ToolLoading message="Loading JSON to TOML Converter..." />,
+  }
+);
 
 export default function JsonToTomlPage() {
   const structuredData = generateToolStructuredData('json-to-toml');
@@ -16,6 +25,7 @@ export default function JsonToTomlPage() {
         <JsonLd key={`json-ld-${index}`} data={data} />
       ))}
       <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+        <PrivacyNotice message="JSON to TOML conversion is performed entirely in your browser. Your data never leaves your device." />
         <JsonToTomlClient />
       </div>
     </>

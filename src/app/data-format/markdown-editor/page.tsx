@@ -1,7 +1,9 @@
 import { JsonLd } from '@/components/seo/json-ld';
-import MarkdownEditor from '@/components/tools/text/markdown-editor';
+import { ToolLoading } from '@/components/tools/tool-loading';
+import { PrivacyNotice } from '@/components/ui/privacy-notice';
 import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 
 export const metadata: Metadata = generateToolSEOMetadata({
   toolId: 'markdown-editor',
@@ -10,6 +12,13 @@ export const metadata: Metadata = generateToolSEOMetadata({
     'Edit and preview Markdown content with live rendering. Convert Markdown to HTML with GitHub Flavored Markdown support.',
   extraKeywords: ['markdown', 'editor', 'preview', 'gfm', 'html', 'converter', 'live-preview'],
 });
+
+const MarkdownEditor = dynamic(
+  () => import('@/components/tools/text/markdown-editor').then((mod) => ({ default: mod.default })),
+  {
+    loading: () => <ToolLoading message="Loading Markdown Editor..." />,
+  }
+);
 
 export default function MarkdownEditorPage() {
   const structuredData = generateToolStructuredData('markdown-editor');
@@ -20,6 +29,7 @@ export default function MarkdownEditorPage() {
         <JsonLd key={`json-ld-${index}`} data={data} />
       ))}
       <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+        <PrivacyNotice message="Markdown editing is performed entirely in your browser. Your content never leaves your device." />
         <MarkdownEditor />
       </div>
     </>

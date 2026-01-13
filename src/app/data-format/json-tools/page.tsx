@@ -1,21 +1,17 @@
+import { ToolBreadcrumb } from '@/components/layout/breadcrumb';
 import { JsonLd } from '@/components/seo/json-ld';
-import { JsonToolComplete } from '@/components/tools/json/json-tool-complete';
-import { toolsData } from '@/data/tools-data';
-import { generatePageMetadata } from '@/lib/metadata';
-import { generateStructuredData } from '@/lib/structured-data';
+import { ToolLoading } from '@/components/tools/tool-loading';
+import { PrivacyNotice } from '@/components/ui/privacy-notice';
+import { generateToolSEOMetadata, generateToolStructuredData } from '@/lib/tool-seo';
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 
-const tool = toolsData.find((t) => t.id === 'json-tools')!;
-const BASE_URL = 'https://parsify.dev';
-
-export const metadata: Metadata = generatePageMetadata({
-  title: 'JSON Formatter & Validator - Format, Beautify, Validate JSON Online',
-  description:
+export const metadata: Metadata = generateToolSEOMetadata({
+  toolId: 'json-tools',
+  customTitle: 'JSON Formatter & Validator - Format, Beautify, Validate JSON Online',
+  customDescription:
     'Free online JSON formatter and validator. Format, beautify, minify and validate JSON data with syntax highlighting. Runs entirely in your browser with no data sent to servers.',
-  path: '/data-format/json-tools',
-  keywords: [
-    'json formatter',
-    'json validator',
+  extraKeywords: [
     'json beautifier',
     'json minifier',
     'json parser',
@@ -24,29 +20,19 @@ export const metadata: Metadata = generatePageMetadata({
     'validate json',
   ],
 });
-// ... existing imports
 
-export default function JsonFormatterPage() {
-  const structuredData = [
-    generateStructuredData({
-      type: 'SoftwareApplication',
-      name: tool.name,
-      description: tool.description,
-      url: `${BASE_URL}${tool.href}`,
-      tool,
-    }),
-    generateStructuredData({
-      type: 'WebPage',
-      name: `${tool.name} - ${tool.description}`,
-      description: tool.description,
-      url: `${BASE_URL}${tool.href}`,
-      breadcrumb: [
-        { name: 'Home', url: BASE_URL },
-        { name: 'Data Format & Conversion', url: `${BASE_URL}/data-format` },
-        { name: tool.name, url: `${BASE_URL}${tool.href}` },
-      ],
-    }),
-  ];
+const JsonToolComplete = dynamic(
+  () =>
+    import('@/components/tools/json/json-tool-complete').then((mod) => ({
+      default: mod.JsonToolComplete,
+    })),
+  {
+    loading: () => <ToolLoading message="Loading JSON Tools..." />,
+  }
+);
+
+export default function JsonToolsPage() {
+  const structuredData = generateToolStructuredData('json-tools');
 
   return (
     <>
@@ -54,6 +40,13 @@ export default function JsonFormatterPage() {
         <JsonLd key={`json-ld-${index}`} data={data} />
       ))}
       <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
+        <ToolBreadcrumb
+          toolName="JSON Tools"
+          category="Data Format & Conversion"
+          categoryHref="/data-format"
+          className="mb-6"
+        />
+        <PrivacyNotice message="JSON processing is performed entirely in your browser. Your JSON data never leaves your device." />
         <div className="relative">
           <JsonToolComplete showHeader={false} className="rounded-xl border shadow-sm" />
         </div>
