@@ -116,7 +116,7 @@ export function SearchableToolsGrid({ tools, categories }: SearchableToolsGridPr
         ) : (
           <div className="fade-in zoom-in animate-in py-20 text-center duration-500">
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted">
-              <MagnifyingGlass className="h-8 w-8 text-muted-foreground" />
+              <MagnifyingGlass className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
             </div>
             <h3 className="mb-2 text-xl font-semibold">No tools found</h3>
             <p className="mx-auto max-w-sm text-muted-foreground">

@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-> **Last Updated:** 2026-01-08
+> **Last Updated:** 2026-01-14
 > **Project:** Parsify.dev
 > **Status:** Production Ready
 
@@ -67,27 +67,16 @@ export default function ToolPage() {
 - Reduces bundle size and complexity
 - Easier to reason about data flow
 
-**When to Use Zustand:**
-- Cross-tool state sharing (e.g., user preferences across multiple tools)
-- Global UI state (e.g., theme, notifications, modals)
-- Server-synchronized data (not applicable for this privacy-first architecture)
-
-**Recommended Pattern:**
+**Current Pattern:**
 ```typescript
-// Local state (preferred)
+// Local state only - no global state library
 const [input, setInput] = useState('');
 const [output, setOutput] = useState('');
 const stats = useMemo(() => calculateStats(input), [input]);
-
-// Zustand (for global state only)
-// Store: /store/use-app-store.ts
-export const useAppStore = create<AppState>((set) => ({
-  theme: 'light',
-  notifications: [],
-  setTheme: (theme) => set({ theme }),
-  // ...
-}));
 ```
+
+**If Global State is Needed in Future:**
+Consider adding Zustand back for user preferences, theme state, or notifications that need to persist across tool navigation.
 
 ---
 

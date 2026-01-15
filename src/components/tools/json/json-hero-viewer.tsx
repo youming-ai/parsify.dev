@@ -479,12 +479,16 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
 
         {showSearch && (
           <div className="relative">
-            <MagnifyingGlass className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
+            <MagnifyingGlass
+              className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground"
+              aria-hidden="true"
+            />
             <Input
-              placeholder="MagnifyingGlass JSON..."
+              placeholder="Search JSON..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
+              aria-label="Search JSON"
             />
           </div>
         )}
@@ -502,7 +506,9 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
                   >
                     {part}
                   </button>
-                  {index < breadcrumbPath.length - 1 && <CaretRight className="h-3 w-3" />}
+                  {index < breadcrumbPath.length - 1 && (
+                    <CaretRight className="h-3 w-3" aria-hidden="true" />
+                  )}
                 </React.Fragment>
               ))}
             </div>
@@ -543,15 +549,16 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
                     <button
                       type="button"
                       className="mr-1 rounded p-0.5 hover:bg-muted-foreground/10"
+                      aria-label={isExpanded ? 'Collapse' : 'Expand'}
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleNodeExpansion(node.path);
                       }}
                     >
                       {isExpanded ? (
-                        <CaretDown className="h-4 w-4" />
+                        <CaretDown className="h-4 w-4" aria-hidden="true" />
                       ) : (
-                        <CaretRight className="h-4 w-4" />
+                        <CaretRight className="h-4 w-4" aria-hidden="true" />
                       )}
                     </button>
                   )}
@@ -578,9 +585,12 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
                       size="sm"
                       className="ml-2 p-1 opacity-0 transition-opacity group-hover:opacity-100"
                       onClick={(e) => handleCopyNode(node, e)}
-                      title={isCopied ? 'Copied!' : 'Copy value'}
+                      aria-label={isCopied ? 'Copied!' : 'Copy value'}
                     >
-                      <Copy className={cn('h-3 w-3', isCopied && 'text-green-600')} />
+                      <Copy
+                        className={cn('h-3 w-3', isCopied && 'text-green-600')}
+                        aria-hidden="true"
+                      />
                     </Button>
                   )}
                 </div>

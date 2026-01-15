@@ -102,13 +102,19 @@ function JsonTreeItem({ node, level, showLineNumbers, lineNumber, onCopy }: Json
             <button
               type="button"
               onClick={toggleExpand}
+              aria-label={isExpanded ? 'Collapse' : 'Expand'}
+              aria-expanded={isExpanded}
               className={cn(
                 'mr-1 inline-flex h-4 w-4 items-center justify-center',
                 'text-muted-foreground hover:text-muted-foreground',
                 'focus:text-muted-foreground focus:outline-none'
               )}
             >
-              {isExpanded ? <CaretDown className="h-3 w-3" /> : <CaretRight className="h-3 w-3" />}
+              {isExpanded ? (
+                <CaretDown className="h-3 w-3" aria-hidden="true" />
+              ) : (
+                <CaretRight className="h-3 w-3" aria-hidden="true" />
+              )}
             </button>
           )}
 
@@ -237,7 +243,7 @@ export function JsonViewer({
               onClick={handleCopyAll}
               className="flex items-center gap-1"
             >
-              <Copy className="h-3 w-3" />
+              <Copy className="h-3 w-3" aria-hidden="true" />
               Copy All
             </Button>
             <Button
@@ -246,8 +252,8 @@ export function JsonViewer({
               onClick={handleDownload}
               className="flex items-center gap-1"
             >
-              <DownloadSimple className="h-3 w-3" />
-              DownloadSimple
+              <DownloadSimple className="h-3 w-3" aria-hidden="true" />
+              Download
             </Button>
           </div>
         )}
