@@ -76,7 +76,9 @@ Open [http://localhost:3000](http://localhost:3000)
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript 5
 - **Styling**: Tailwind CSS + shadcn/ui
-- **State**: Zustand
+- **State**: React hooks (useState, useMemo)
+- **Testing**: Vitest + happy-dom
+- **Linting**: Biome
 - **Deployment**: Cloudflare Workers / Pages (via OpenNext)
 
 ## 📁 Project Structure
@@ -105,13 +107,13 @@ bunx wrangler login
 bun run deploy:cf
 ```
 
-See [docs/CLOUDFLARE-DEPLOY.md](docs/CLOUDFLARE-DEPLOY.md) for detailed instructions.
+See [AGENTS.md](AGENTS.md) for complete development and deployment commands.
 
 ## 📚 Documentation
 
-- [Cloudflare Deployment](docs/CLOUDFLARE-DEPLOY.md)
-- [Design System](docs/DESIGN_SYSTEM.md)
-- [SEO Implementation](docs/SEO-IMPLEMENTATION.md)
+- [Architecture Decisions](docs/ARCHITECTURE.md)
+- [Bundle Analysis](docs/BUNDLE-ANALYSIS.md)
+- [Project History](docs/PROJECT-HISTORY.md)
 
 ## 🔒 Privacy
 

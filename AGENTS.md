@@ -53,9 +53,9 @@ src/
 │   └── utils.ts            # Tailwind merge helper (cn)
 ├── data/                   # Registry
 │   └── tools-data.ts       # Tool definitions (ID, SEO, UI)
-├── store/                  # Global State (Zustand)
+├── hooks/                  # Custom React hooks
 ├── types/                  # Shared TS Interfaces
-└── __tests__/              # Vitest tests
+└── __tests__/              # Vitest tests (happy-dom)
     ├── setup.ts            # Test setup & mocks
     └── lib/                # Library logic tests
 ```
@@ -161,7 +161,8 @@ export async function processData(input: string): Promise<Result<Data>> {
   - Use `React.lazy` for code-splitting large components
 - **State Management**:
   - Local state: `useState` for component-level state
-  - Global state: Zustand for cross-component state
+  - Computed values: `useMemo` for derived data
+  - Note: No global state library (Zustand removed for simplicity)
 - **Icons**: Use `@phosphor-icons/react` (e.g., `ArrowsClockwise`, `Copy`)
 - **Event Handlers**: Prefix unused parameters with `_` (e.g., `_error`, `_copied`)
 - **Pattern**:
