@@ -24,45 +24,56 @@ interface GeneratedId {
 }
 
 function generateUUIDv4(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  bytes[6] = (bytes[6]! & 0x0f) | 0x40;
+  bytes[8] = (bytes[8]! & 0x3f) | 0x80;
+
+  return [
+    bytes.subarray(0, 4),
+    bytes.subarray(4, 6),
+    bytes.subarray(6, 8),
+    bytes.subarray(8, 10),
+    bytes.subarray(10, 16),
+  ]
+    .map((group) => Array.from(group, (b) => b.toString(16).padStart(2, '0')).join(''))
+    .join('-');
 }
 
 function generateUUIDv1(): string {
   const now = Date.now();
   const timeHex = now.toString(16).padStart(12, '0');
-  const clockSeq = Math.floor(Math.random() * 16384);
-  const node = Array.from({ length: 6 }, () =>
-    Math.floor(Math.random() * 256)
-      .toString(16)
-      .padStart(2, '0')
-  ).join('');
+  const nodeBytes = new Uint8Array(6);
+  crypto.getRandomValues(nodeBytes);
+  const clockSeq = Array.from(nodeBytes, (b) => b).join('');
 
-  return `${timeHex.slice(0, 8)}-${timeHex.slice(8, 12)}-1${timeHex.slice(12, 15)}-${(
-    (clockSeq >> 8) |
-    0x80
-  )
-    .toString(16)
-    .padStart(2, '0')}${(clockSeq & 0xff).toString(16).padStart(2, '0')}-${node}`;
+  const clockSeqNumber = Number.parseInt(clockSeq.slice(0, 2), 16) >> 8;
+
+  return `${timeHex.slice(0, 8)}-${timeHex.slice(8, 12)}-1${timeHex.slice(12, 15)}-${clockSeqNumber.toString(16).padStart(2, '0')}${clockSeq}`;
 }
 
 function generateUUIDv7(): string {
   const timestamp = Date.now();
   const timeHex = timestamp.toString(16).padStart(12, '0');
-  const random1 = Math.floor(Math.random() * 4096)
-    .toString(16)
-    .padStart(3, '0');
-  const random2 = Math.floor(Math.random() * 16384)
-    .toString(16)
-    .padStart(4, '0');
-  const random3 = Array.from({ length: 12 }, () =>
-    Math.floor(Math.random() * 16).toString(16)
-  ).join('');
 
-  return `${timeHex.slice(0, 8)}-${timeHex.slice(8, 12)}-7${random1}-${((Number.parseInt(random2[0] ?? '0', 16) & 0x3) | 0x8).toString(16)}${random2.slice(1)}-${random3}`;
+  const randomBytes = new Uint8Array(20);
+  crypto.getRandomValues(randomBytes);
+
+  const random1Hex = Array.from(randomBytes.subarray(0, 3))
+    .map((b) => b.toString(16).padStart(3, '0'))
+    .join('');
+  const random2Hex = Array.from(randomBytes.subarray(3, 8))
+    .map((b) => b.toString(16).padStart(4, '0'))
+    .join('');
+  const random3Hex = Array.from(randomBytes.subarray(8, 20))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  return `${timeHex.slice(0, 8)}-${timeHex.slice(8, 12)}-7${random1Hex}${random2Hex}${random3Hex}`;
 }
 
 function generateULID(): string {
@@ -76,8 +87,11 @@ function generateULID(): string {
     ts = Math.floor(ts / 32);
   }
 
-  for (let i = 0; i < 16; i++) {
-    ulid += ENCODING[Math.floor(Math.random() * 32)];
+  const randomBytes = new Uint8Array(10);
+  crypto.getRandomValues(randomBytes);
+
+  for (let i = 0; i < 10; i++) {
+    ulid += ENCODING[randomBytes[i]! % 32];
   }
 
   return ulid;
@@ -85,9 +99,12 @@ function generateULID(): string {
 
 function generateNanoID(size = 21): string {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
+  const randomBytes = new Uint8Array(size);
+  crypto.getRandomValues(randomBytes);
+
   let id = '';
   for (let i = 0; i < size; i++) {
-    id += alphabet[Math.floor(Math.random() * alphabet.length)];
+    id += alphabet[randomBytes[i]! % alphabet.length];
   }
   return id;
 }
@@ -95,14 +112,16 @@ function generateNanoID(size = 21): string {
 function generateKSUID(): string {
   const EPOCH = 1400000000;
   const timestamp = Math.floor(Date.now() / 1000) - EPOCH;
-  const payload = Array.from({ length: 16 }, () => Math.floor(Math.random() * 256));
+
+  const payloadBytes = new Uint8Array(16);
+  crypto.getRandomValues(payloadBytes);
 
   const bytes = [
     (timestamp >> 24) & 0xff,
     (timestamp >> 16) & 0xff,
     (timestamp >> 8) & 0xff,
     timestamp & 0xff,
-    ...payload,
+    ...payloadBytes,
   ];
 
   const BASE62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -112,7 +131,7 @@ function generateKSUID(): string {
   }
 
   let encoded = '';
-  while (num > 0) {
+  while (num > BigInt(0)) {
     encoded = BASE62[Number(num % BigInt(62))] + encoded;
     num = num / BigInt(62);
   }
@@ -183,7 +202,7 @@ export function IdGenerator() {
   const selectedTypeInfo = ID_TYPES.find((t) => t.value === idType);
 
   return (
-    <Card className="rounded-xl border shadow-sm">
+    <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -239,37 +258,14 @@ export function IdGenerator() {
             <ArrowsClockwise className="mr-2 h-4 w-4" />
             Generate
           </Button>
-
-          {generatedIds.length > 0 && (
-            <>
-              <Button variant="outline" onClick={handleCopyAll}>
-                {copiedId === 'all' ? (
-                  <Check className="mr-2 h-4 w-4" />
-                ) : (
-                  <Copy className="mr-2 h-4 w-4" />
-                )}
-                {copiedId === 'all' ? 'Copied!' : 'Copy All'}
-              </Button>
-              <Button variant="ghost" onClick={handleClear}>
-                <Trash className="mr-2 h-4 w-4" />
-                Clear
-              </Button>
-            </>
-          )}
         </div>
 
-        {selectedTypeInfo && (
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900/50 dark:bg-blue-950/20">
-            <p className="text-sm text-blue-700 dark:text-blue-300">
-              <strong>{selectedTypeInfo.label}:</strong> {selectedTypeInfo.description}
-            </p>
-          </div>
-        )}
-
-        {generatedIds.length > 0 ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Generated IDs ({generatedIds.length})</Label>
+        {generatedIds.length > 0 && (
+          <>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Generated IDs ({generatedIds.length})</Label>
+              </div>
             </div>
             <div className="max-h-[400px] overflow-auto rounded-lg border bg-muted/20 p-2">
               {generatedIds.map((item, index) => (
@@ -298,11 +294,30 @@ export function IdGenerator() {
                 </div>
               ))}
             </div>
-          </div>
-        ) : (
-          <div className="flex h-[200px] items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/20">
-            <p className="text-sm text-muted-foreground">
-              Click "Generate" to create unique identifiers
+
+            {generatedIds.length > 0 && (
+              <>
+                <Button variant="outline" onClick={handleCopyAll}>
+                  {copiedId === 'all' ? (
+                    <Check className="mr-2 h-4 w-4" />
+                  ) : (
+                    <Copy className="mr-2 h-4 w-4" />
+                  )}
+                  {copiedId === 'all' ? 'Copied!' : 'Copy All'}
+                </Button>
+                <Button variant="ghost" onClick={handleClear}>
+                  <Trash className="mr-2 h-4 w-4" />
+                  Clear
+                </Button>
+              </>
+            )}
+          </>
+        )}
+
+        {selectedTypeInfo && (
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900/50 dark:bg-blue-950/20">
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              <strong>{selectedTypeInfo.label}:</strong> {selectedTypeInfo.description}
             </p>
           </div>
         )}

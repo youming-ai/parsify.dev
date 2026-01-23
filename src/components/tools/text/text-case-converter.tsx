@@ -354,7 +354,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
                 placeholder="Enter text to convert case..."
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                className="min-h-[150px]"
+                className="min-h-[300px]"
               />
             </div>
 
@@ -570,7 +570,7 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
                 <Textarea
                   value={selectedResult.converted}
                   readOnly
-                  className="min-h-[150px] font-mono"
+                  className="min-h-[300px] font-mono"
                 />
               </div>
 

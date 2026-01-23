@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { sanitizeHtml } from '@/lib/security/sanitize';
 import { Check, CheckCircle, Code, Copy, Play, Trash, WarningCircle } from '@phosphor-icons/react';
 import { useCallback, useMemo, useState } from 'react';
 
@@ -181,7 +182,7 @@ export function RegexValidator() {
   }, []);
 
   return (
-    <Card className="rounded-xl border shadow-sm">
+    <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -309,7 +310,7 @@ export function RegexValidator() {
                 placeholder="Enter test string..."
                 value={testString}
                 onChange={(e) => setTestString(e.target.value)}
-                className="min-h-64 font-mono text-sm resize-none"
+                className="min-h-[400px] font-mono text-sm resize-none"
               />
             </div>
 
@@ -317,8 +318,8 @@ export function RegexValidator() {
               <div className="space-y-2">
                 <Label>Highlighted Matches</Label>
                 <div
-                  className="min-h-64 whitespace-pre-wrap rounded-lg border bg-background p-4 font-mono text-sm"
-                  dangerouslySetInnerHTML={{ __html: highlightedText }}
+                  className="min-h-[400px] whitespace-pre-wrap rounded-lg border bg-background p-4 font-mono text-sm"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(highlightedText) }}
                 />
               </div>
             )}
@@ -326,7 +327,7 @@ export function RegexValidator() {
             {matches.length > 0 && (
               <div className="space-y-2">
                 <Label>Match Details ({matches.length})</Label>
-                <div className="max-h-[400px] overflow-auto rounded-lg border">
+                <div className="max-h-[600px] overflow-auto rounded-lg border">
                   <table className="w-full text-sm">
                     <thead className="bg-muted/40">
                       <tr>
@@ -387,42 +388,13 @@ export function RegexValidator() {
                 placeholder="Enter test string..."
                 value={testString}
                 onChange={(e) => setTestString(e.target.value)}
-                className="min-h-64 font-mono text-sm resize-none"
+                className="min-h-[400px] font-mono text-sm resize-none"
               />
             </div>
 
             <div className="space-y-2">
               <Label>Result</Label>
-              <div className="min-h-64 whitespace-pre-wrap rounded-lg border bg-muted/20 p-4 font-mono text-sm">
-                {replacedText}
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="replace" className="mt-0 space-y-4">
-            <div className="space-y-2">
-              <Label>Replacement String</Label>
-              <Input
-                placeholder="Enter replacement (use $1, $2 for groups)..."
-                value={replacement}
-                onChange={(e) => setReplacement(e.target.value)}
-                className="font-mono"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Input</Label>
-              <Textarea
-                placeholder="Enter test string..."
-                value={testString}
-                onChange={(e) => setTestString(e.target.value)}
-                className="min-h-64 font-mono text-sm resize-none"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Result</Label>
-              <div className="min-h-64 whitespace-pre-wrap rounded-lg border bg-muted/20 p-4 font-mono text-sm">
+              <div className="min-h-[400px] whitespace-pre-wrap rounded-lg border bg-muted/20 p-4 font-mono text-sm">
                 {replacedText}
               </div>
             </div>

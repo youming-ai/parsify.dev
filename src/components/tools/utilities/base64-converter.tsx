@@ -21,6 +21,28 @@ export interface Base64Result {
   timestamp: Date;
 }
 
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  const chunkSize = 0x8000;
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+
+  return btoa(binary);
+}
+
+function base64ToBytes(base64: string): Uint8Array {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  return bytes;
+}
+
 interface Base64ConverterProps {
   onConversionComplete?: (result: Base64Result) => void;
   className?: string;
@@ -44,7 +66,7 @@ const base64Examples = [
     name: 'Special Characters',
     input: 'Special chars: äöü ñ @#$%^&*()',
     description: 'Unicode and special characters',
-    encoded: 'U3BlY2lhbCBjaGFyczogw6TDtsO8IMw4ICBAIyQlXiYqKCk=',
+    encoded: 'U3BlY2lhbCBjaGFyczogw6TDtsO8IMOxIEAjJCVeJiooKQ==',
   },
 ];
 
@@ -59,7 +81,8 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
   // Base64 encode text
   const encodeText = (text: string): string => {
     try {
-      return btoa(unescape(encodeURIComponent(text)));
+      const bytes = new TextEncoder().encode(text);
+      return bytesToBase64(bytes);
     } catch (_error) {
       throw new Error('Failed to encode text to Base64');
     }
@@ -68,7 +91,8 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
   // Base64 decode text
   const decodeText = (base64: string): string => {
     try {
-      return decodeURIComponent(escape(atob(base64)));
+      const bytes = base64ToBytes(base64);
+      return new TextDecoder().decode(bytes);
     } catch (_error) {
       throw new Error('Invalid Base64 format or corrupted data');
     }
@@ -287,41 +311,31 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
           </TabsList>
 
           <TabsContent value="encode" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lightning className="h-5 w-5" />
-                  Base64 Encoding
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded border border-blue-200 bg-blue-50 p-4">
-                  <p className="text-blue-800 text-sm">
-                    <strong>Base64 Encoding:</strong> Converts binary data into ASCII string format.
-                    Commonly used for transmitting data over media designed to handle text.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/50 dark:bg-blue-950/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Lightning className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <h3 className="font-semibold text-blue-900 dark:text-blue-100">Base64 Encoding</h3>
+              </div>
+              <p className="text-blue-800 dark:text-blue-200 text-sm">
+                Converts binary data into ASCII string format. Commonly used for transmitting data
+                over media designed to handle text.
+              </p>
+            </div>
           </TabsContent>
 
           <TabsContent value="decode">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
+            <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-950/30">
+              <div className="flex items-center gap-2 mb-2">
+                <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <h3 className="font-semibold text-green-900 dark:text-green-100">
                   Base64 Decoding
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded border border-green-200 bg-green-50 p-4">
-                  <p className="text-green-800 text-sm">
-                    <strong>Base64 Decoding:</strong> Converts Base64 encoded strings back to
-                    original data. Automatically detects and decodes valid Base64 strings.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+                </h3>
+              </div>
+              <p className="text-green-800 dark:text-green-200 text-sm">
+                Converts Base64 encoded strings back to original data. Automatically detects and
+                decodes valid Base64 strings.
+              </p>
+            </div>
           </TabsContent>
         </Tabs>
 
@@ -366,7 +380,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
                         ? 'Enter text to encode to Base64...'
                         : 'Enter Base64 string to decode...'
                     }
-                    className="min-h-32 font-mono"
+                    className="min-h-[300px] font-mono"
                   />
                   <div className="mt-1 text-muted-foreground text-sm">
                     {inputText.length} characters
@@ -451,15 +465,18 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
               {base64Examples.map((example, index) => (
-                <div key={index} className="rounded border p-3">
-                  <div className="mb-1 font-medium">{example.name}</div>
-                  <div className="mb-2 text-muted-foreground text-sm">{example.description}</div>
-                  <div className="rounded bg-muted p-2">
-                    <div className="mb-1 text-muted-foreground text-xs">Input:</div>
+                <div
+                  key={index}
+                  className="rounded-lg border p-4 hover:border-primary/30 transition-colors"
+                >
+                  <div className="mb-1.5 font-medium">{example.name}</div>
+                  <div className="mb-3 text-muted-foreground text-sm">{example.description}</div>
+                  <div className="rounded-md bg-muted p-3">
+                    <div className="mb-1.5 text-muted-foreground text-xs font-medium">Input:</div>
                     <div className="truncate font-mono text-xs">{example.input}</div>
                   </div>
-                  <div className="mt-2 rounded bg-muted p-2">
-                    <div className="mb-1 text-muted-foreground text-xs">Output:</div>
+                  <div className="mt-2 rounded-md bg-muted p-3">
+                    <div className="mb-1.5 text-muted-foreground text-xs font-medium">Output:</div>
                     <div className="truncate font-mono text-xs">{example.encoded}</div>
                   </div>
                   <Button

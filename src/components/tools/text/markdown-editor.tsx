@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { sanitizeHtml } from '@/lib/security/sanitize';
 import {
   ArrowsClockwise,
   CheckCircle,
@@ -178,7 +179,7 @@ const MarkdownEditor = () => {
       })
       .join('\n');
 
-    return result;
+    return sanitizeHtml(result);
   }, []);
 
   useEffect(() => {
@@ -281,7 +282,7 @@ const MarkdownEditor = () => {
                 <Textarea
                   value={markdown}
                   onChange={(e) => setMarkdown(e.target.value)}
-                  className="min-h-[500px] resize-none font-mono text-sm"
+                  className="min-h-[650px] resize-none font-mono text-sm"
                   placeholder="Type your Markdown here..."
                 />
               </div>
@@ -290,7 +291,7 @@ const MarkdownEditor = () => {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Preview</label>
                 <div
-                  className="min-h-[500px] overflow-auto rounded-md border bg-card p-4"
+                  className="min-h-[650px] overflow-auto rounded-md border bg-card p-4"
                   dangerouslySetInnerHTML={{ __html: html }}
                 />
               </div>

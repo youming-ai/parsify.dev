@@ -138,9 +138,11 @@ export function JWTDecoder() {
     const signaturePart = parts[2] ?? '';
 
     return (
-      <div className="break-all font-mono text-sm">
-        <span className="text-blue-600 dark:text-blue-400">{headerPart}</span>.
-        <span className="text-green-600 dark:text-green-400">{payloadPart}</span>.
+      <div className="break-all rounded-lg border bg-muted/50 p-4 font-mono text-sm">
+        <span className="text-blue-600 dark:text-blue-400">{headerPart}</span>
+        <span className="text-muted-foreground">.</span>
+        <span className="text-green-600 dark:text-green-400">{payloadPart}</span>
+        <span className="text-muted-foreground">.</span>
         <span className="text-purple-600 dark:text-purple-400">
           {showSignature ? signaturePart : '•'.repeat(Math.min(signaturePart.length, 20))}
         </span>
@@ -150,7 +152,7 @@ export function JWTDecoder() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-xl border shadow-sm">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">JWT Token Input</CardTitle>
           <CardDescription>Paste your JWT token below to decode and verify it</CardDescription>
@@ -160,7 +162,7 @@ export function JWTDecoder() {
             placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
             value={jwtInput}
             onChange={(e) => setJwtInput(e.target.value)}
-            className="min-h-64 font-mono text-sm rounded-md"
+            className="min-h-[300px] font-mono text-sm rounded-md"
           />
           <div className="flex gap-2">
             <Button onClick={handleDecode} className="flex items-center gap-2">
@@ -190,7 +192,7 @@ export function JWTDecoder() {
             </Alert>
           )}
 
-          <Card className="rounded-xl border shadow-sm">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Decoded JWT Structure</span>
@@ -221,14 +223,23 @@ export function JWTDecoder() {
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <h4 className="mb-2 font-semibold">Token Structure:</h4>
+                  <h4 className="mb-3 font-semibold">Token Structure:</h4>
                   {highlightJWT(jwtInput)}
                 </div>
 
-                <div className="text-muted-foreground text-sm">
-                  <p>• Blue: Header (algorithm & token type)</p>
-                  <p>• Green: Payload (claims & data)</p>
-                  <p>• Purple: Signature (verification)</p>
+                <div className="rounded-lg bg-muted/50 p-4 text-muted-foreground text-sm space-y-1">
+                  <p className="flex items-center gap-2">
+                    <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-500" />
+                    <span>Header (algorithm & token type)</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className="inline-block h-2.5 w-2.5 rounded-full bg-green-500" />
+                    <span>Payload (claims & data)</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className="inline-block h-2.5 w-2.5 rounded-full bg-purple-500" />
+                    <span>Signature (verification)</span>
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -241,7 +252,7 @@ export function JWTDecoder() {
             </TabsList>
 
             <TabsContent value="payload" className="mt-0 space-y-4">
-              <Card className="rounded-xl border shadow-sm">
+              <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <User className="h-5 w-5" />
@@ -278,9 +289,9 @@ export function JWTDecoder() {
                           !['exp', 'iat', 'nbf'].includes(key) && (
                             <div
                               key={key}
-                              className="flex items-start justify-between rounded border p-2"
+                              className="flex items-start justify-between rounded-lg border p-3"
                             >
-                              <div>
+                              <div className="min-w-0 flex-1">
                                 <span className="font-mono font-semibold text-sm">{key}</span>
                                 <div className="break-all text-muted-foreground text-sm">
                                   {typeof value === 'object'
@@ -319,7 +330,7 @@ export function JWTDecoder() {
             </TabsContent>
 
             <TabsContent value="header" className="mt-0 space-y-4">
-              <Card className="rounded-xl border shadow-sm">
+              <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Shield className="h-5 w-5" />
@@ -332,9 +343,9 @@ export function JWTDecoder() {
                     {Object.entries(decoded.header).map(([key, value]) => (
                       <div
                         key={key}
-                        className="flex items-start justify-between rounded border p-2"
+                        className="flex items-start justify-between rounded-lg border p-3"
                       >
-                        <div>
+                        <div className="min-w-0 flex-1">
                           <span className="font-mono font-semibold text-sm">{key}</span>
                           <div className="break-all text-muted-foreground text-sm">
                             {typeof value === 'object'

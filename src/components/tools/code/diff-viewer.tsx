@@ -23,7 +23,7 @@ import {
   Swap,
   Trash,
 } from '@phosphor-icons/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface DiffLine {
   type: 'unchanged' | 'added' | 'removed';
@@ -57,79 +57,37 @@ const DiffViewer = () => {
   const [diffMode, setDiffMode] = useState<DiffMode>('split');
   const [copied, setCopied] = useState(false);
 
-  // Simple diff algorithm (LCS-based)
-  const computeDiff = useCallback((a: string, b: string): DiffLine[] => {
-    const linesA = a.split('\n');
-    const linesB = b.split('\n');
-    const _result: DiffLine[] = [];
+  const workerRef = useRef<Worker | null>(null);
+  const requestIdRef = useRef(0);
 
-    // Build LCS table
-    const m = linesA.length;
-    const n = linesB.length;
-    const dp: number[][] = Array(m + 1)
-      .fill(null)
-      .map(() => Array(n + 1).fill(0));
+  useEffect(() => {
+    const worker = new Worker(new URL('./diff-worker.ts', import.meta.url), { type: 'module' });
+    workerRef.current = worker;
 
-    for (let i = 1; i <= m; i++) {
-      for (let j = 1; j <= n; j++) {
-        const lineA = linesA[i - 1];
-        const lineB = linesB[j - 1];
-        const dpPrev = dp[i - 1];
-        const dpCurrent = dp[i];
-        if (lineA === lineB && dpPrev && dpCurrent) {
-          dpCurrent[j] = (dpPrev[j - 1] ?? 0) + 1;
-        } else if (dpPrev && dpCurrent) {
-          dpCurrent[j] = Math.max(dpPrev[j] ?? 0, dpCurrent[j - 1] ?? 0);
-        }
+    worker.onmessage = (event) => {
+      const payload = event.data as { id: number; diffLines: DiffLine[] };
+      if (payload.id !== requestIdRef.current) {
+        return;
       }
-    }
+      setDiffLines(payload.diffLines);
+    };
 
-    // Backtrack to find diff
-    let i = m;
-    let j = n;
-    const temp: DiffLine[] = [];
-
-    while (i > 0 || j > 0) {
-      const lineA = linesA[i - 1];
-      const lineB = linesB[j - 1];
-      const dpRow = dp[i];
-      const dpPrevRow = dp[i - 1];
-
-      if (i > 0 && j > 0 && lineA === lineB) {
-        temp.unshift({
-          type: 'unchanged',
-          content: lineA ?? '',
-          oldLineNum: i,
-          newLineNum: j,
-        });
-        i--;
-        j--;
-      } else if (
-        j > 0 &&
-        (i === 0 || (dpRow && dpPrevRow && (dpRow[j - 1] ?? 0) >= (dpPrevRow[j] ?? 0)))
-      ) {
-        temp.unshift({
-          type: 'added',
-          content: lineB ?? '',
-          newLineNum: j,
-        });
-        j--;
-      } else if (i > 0) {
-        temp.unshift({
-          type: 'removed',
-          content: lineA ?? '',
-          oldLineNum: i,
-        });
-        i--;
-      }
-    }
-
-    return temp;
+    return () => {
+      worker.terminate();
+      workerRef.current = null;
+    };
   }, []);
 
   useEffect(() => {
-    setDiffLines(computeDiff(textA, textB));
-  }, [textA, textB, computeDiff]);
+    const worker = workerRef.current;
+    if (!worker) {
+      return;
+    }
+
+    requestIdRef.current += 1;
+    const id = requestIdRef.current;
+    worker.postMessage({ id, a: textA, b: textB });
+  }, [textA, textB]);
 
   const swapTexts = () => {
     const temp = textA;
@@ -243,7 +201,7 @@ const DiffViewer = () => {
               <Textarea
                 value={textA}
                 onChange={(e) => setTextA(e.target.value)}
-                className="h-48 resize-none font-mono text-sm"
+                className="h-[300px] resize-none font-mono text-sm"
                 placeholder="Paste original text here..."
               />
             </div>
@@ -255,7 +213,7 @@ const DiffViewer = () => {
               <Textarea
                 value={textB}
                 onChange={(e) => setTextB(e.target.value)}
-                className="h-48 resize-none font-mono text-sm"
+                className="h-[300px] resize-none font-mono text-sm"
                 placeholder="Paste modified text here..."
               />
             </div>
@@ -264,7 +222,7 @@ const DiffViewer = () => {
           {/* Diff Output */}
           <div className="space-y-2">
             <Label>Diff Result</Label>
-            <ScrollArea className="h-80 rounded-md border bg-muted/30">
+            <ScrollArea className="h-[650px] rounded-md border bg-muted/30">
               {diffMode === 'split' ? (
                 <div className="grid grid-cols-2">
                   {/* Left side - Original */}

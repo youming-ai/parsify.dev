@@ -164,7 +164,7 @@ export const CompressionTool = () => {
               id="raw-input"
               value={rawInput}
               onChange={(e) => setRawInput(e.target.value)}
-              className="min-h-[200px]"
+              className="min-h-[400px]"
               placeholder="Text to compress"
             />
             <Button onClick={handleCompress} disabled={disabled}>
@@ -189,7 +189,7 @@ export const CompressionTool = () => {
                 <Textarea
                   value={compressed}
                   onChange={(e) => setCompressed(e.target.value)}
-                  className="min-h-[200px] font-mono"
+                  className="min-h-[400px] font-mono"
                   placeholder="Compressed Base64 output"
                 />
                 <Button
@@ -206,7 +206,7 @@ export const CompressionTool = () => {
                 <Textarea
                   value={decompressed}
                   readOnly
-                  className="min-h-[200px]"
+                  className="min-h-[400px]"
                   placeholder="Decompressed text"
                 />
               </TabsContent>

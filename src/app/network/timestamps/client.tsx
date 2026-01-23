@@ -359,7 +359,7 @@ export default function TimestampConverterClient() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
             <div className="rounded-lg bg-muted p-4">
               <div className="mb-1 font-medium text-muted-foreground text-sm">Timestamp</div>
               <div className="font-mono text-lg">{getCurrentTimestampDisplay()}</div>
@@ -397,7 +397,7 @@ export default function TimestampConverterClient() {
         </TabsList>
 
         <TabsContent value="single" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
             {/* Timestamp to Date */}
             <Card>
               <CardHeader>
@@ -406,7 +406,7 @@ export default function TimestampConverterClient() {
                   Timestamp to Date
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label>Unix Timestamp</Label>
                   <Input
@@ -438,7 +438,7 @@ export default function TimestampConverterClient() {
                   Date to Timestamp
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label>Date & Time</Label>
                   <Input
@@ -468,7 +468,7 @@ export default function TimestampConverterClient() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Timezone</Label>
                   <Select value={timezone} onValueChange={setTimezone}>
@@ -532,8 +532,8 @@ export default function TimestampConverterClient() {
               </CardHeader>
               <CardContent>
                 {result.isValid ? (
-                  <div className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-6">
+                    <div className="grid gap-6 md:grid-cols-2">
                       <div className="rounded-lg bg-muted p-4">
                         <div className="mb-1 font-medium text-muted-foreground text-sm">
                           {result.inputType === 'timestamp'
@@ -604,7 +604,7 @@ export default function TimestampConverterClient() {
                 Convert multiple timestamps or dates at once. One per line.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label>Input (one per line)</Label>
                 <Textarea

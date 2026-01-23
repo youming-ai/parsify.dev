@@ -84,9 +84,8 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
     try {
       return decodeURIComponent(text);
     } catch (_error) {
-      // Try fallback decoding
       try {
-        return unescape(text);
+        return decodeURIComponent(text.replace(/\+/g, '%20'));
       } catch {
         throw new Error('Failed to decode URL. The input may be malformed.');
       }
@@ -301,7 +300,7 @@ export function URLEncoder({ onProcessingComplete, className }: URLEncoderProps)
                     ? 'Enter text to encode or a URL to process...'
                     : 'Enter URL-encoded text to decode...'
                 }
-                className="min-h-32 font-mono"
+                className="min-h-[300px] font-mono"
               />
               <div className="mt-1 text-muted-foreground text-sm">
                 {inputText.length} characters

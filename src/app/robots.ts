@@ -1,6 +1,5 @@
+import { SEO_CONFIG } from '@/lib/seo-config';
 import type { MetadataRoute } from 'next';
-
-const BASE_URL = 'https://parsify.dev';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -40,7 +39,7 @@ export default function robots(): MetadataRoute.Robots {
         crawlDelay: 1,
       },
     ],
-    sitemap: `${BASE_URL}/sitemap.xml`,
-    host: BASE_URL,
+    sitemap: `${SEO_CONFIG.BASE_URL}/sitemap.xml`,
+    host: SEO_CONFIG.BASE_URL,
   };
 }

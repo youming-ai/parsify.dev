@@ -74,12 +74,13 @@ export function HeroSection({ tools, categories }: HeroSectionProps) {
           </div>
 
           <h1 className="fade-in animate-in slide-in-from-bottom-6 mx-auto text-4xl font-bold tracking-tight duration-700 sm:text-5xl md:text-6xl lg:text-7xl whitespace-nowrap">
-            Essential Tools for <span style={{ color: '#f54e00' }}>Developers</span>
+            Free Online <span style={{ color: '#f54e00' }}>Developer Tools</span>
           </h1>
 
           <p className="fade-in animate-in slide-in-from-bottom-8 mx-auto max-w-2xl text-lg text-muted-foreground duration-900 sm:text-xl">
-            A privacy-first collection of utilities for your daily workflow. No server-side
-            processing—your data never leaves your browser.
+            Privacy-first developer tools: JSON formatter, Base64 encoder, JWT decoder, password
+            generator, hash generator, URL parser, and more. All processing happens in your
+            browser—your data never leaves your device.
           </p>
 
           {/* Integrated Search Box */}
@@ -97,7 +98,7 @@ export function HeroSection({ tools, categories }: HeroSectionProps) {
                 <Input
                   id="tool-search"
                   type="text"
-                  placeholder="Search tools (e.g., JSON, Base64, Formatting)..."
+                  placeholder="Search developer tools (e.g., JSON formatter, Base64 encoder, JWT decoder)..."
                   className="h-12 border-0 bg-transparent py-3 pl-3 pr-4 placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}

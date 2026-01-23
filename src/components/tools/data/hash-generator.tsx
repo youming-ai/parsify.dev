@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { md5 as md5Hash } from '@/lib/crypto/hash-operations';
 import { Copy, FileText, Hash, UploadSimple } from '@phosphor-icons/react';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -54,21 +55,14 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [uppercase, setUppercase] = React.useState(false);
 
-  // MD5 implementation (since Web Crypto API doesn't support MD5)
-  const md5 = async (message: string): Promise<string> => {
-    // Simple MD5 implementation for demo purposes
-    // In production, use a proper crypto library
-    const msgBuffer = new TextEncoder().encode(message);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-    return hashHex.substring(0, 32); // Truncate to MD5 length for demo
-  };
-
   // Generate hash using Web Crypto API
   const generateHash = async (data: string, algorithm: string): Promise<string> => {
     if (algorithm === 'md5') {
-      return await md5(data);
+      const result = await md5Hash(data);
+      if (!result.success || !result.hash) {
+        throw new Error(result.error || 'MD5 hash generation failed');
+      }
+      return result.hash;
     }
 
     const encoder = new TextEncoder();
@@ -259,7 +253,7 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Enter text to generate hash..."
-                    className="min-h-32"
+                    className="min-h-[300px]"
                   />
                 </div>
                 <div className="flex items-center space-x-2">

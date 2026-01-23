@@ -1,6 +1,14 @@
 export interface StructuredData {
   '@context': string;
-  '@type': 'WebPage' | 'WebSite' | 'SoftwareApplication' | 'BreadcrumbList' | 'Organization';
+  '@type':
+    | 'WebPage'
+    | 'WebSite'
+    | 'SoftwareApplication'
+    | 'BreadcrumbList'
+    | 'Organization'
+    | 'ItemList'
+    | 'FAQPage'
+    | 'HowTo';
   name?: string;
   description?: string;
   url?: string;

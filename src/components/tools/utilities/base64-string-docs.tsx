@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 export function Base64StringDocs() {
   return (
     <div className="space-y-8">
-      <Card className="rounded-xl border shadow-sm">
+      <Card>
         <CardHeader className="bg-muted/10 border-b pb-4">
           <CardTitle className="text-lg font-semibold tracking-tight">How Base64 Works</CardTitle>
         </CardHeader>
@@ -38,7 +38,7 @@ export function Base64StringDocs() {
       </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="rounded-xl border shadow-sm">
+        <Card>
           <CardHeader className="bg-muted/10 border-b pb-4">
             <CardTitle className="text-lg font-semibold tracking-tight">Use Cases</CardTitle>
           </CardHeader>
@@ -70,7 +70,7 @@ export function Base64StringDocs() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-xl border shadow-sm">
+        <Card>
           <CardHeader className="bg-muted/10 border-b pb-4">
             <CardTitle className="text-lg font-semibold tracking-tight">Charset Table</CardTitle>
           </CardHeader>
@@ -92,7 +92,7 @@ export function Base64StringDocs() {
         </Card>
       </div>
 
-      <Card className="rounded-xl border shadow-sm">
+      <Card>
         <CardHeader className="bg-muted/10 border-b pb-4">
           <CardTitle className="text-lg font-semibold tracking-tight">Data URL Schema</CardTitle>
         </CardHeader>
