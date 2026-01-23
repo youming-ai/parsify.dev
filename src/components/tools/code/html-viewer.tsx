@@ -79,7 +79,7 @@ export const HtmlViewer = () => {
               id="html-input"
               value={html}
               onChange={(e) => setHtml(e.target.value)}
-              className="min-h-[320px] font-mono"
+              className="min-h-[650px] font-mono"
               placeholder="Paste HTML to render"
             />
           </TabsContent>
@@ -88,7 +88,7 @@ export const HtmlViewer = () => {
             <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-card">
               <iframe
                 title="HTML Preview"
-                className="h-[360px] w-full rounded-lg"
+                className="h-[650px] w-full rounded-lg"
                 sandbox="allow-scripts allow-same-origin"
                 srcDoc={iframeContent}
               />

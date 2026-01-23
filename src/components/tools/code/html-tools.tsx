@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { decodeEntities, encodeEntities } from '@/lib/html/entity-utils';
 import { BracketsCurly, CheckCircle, Scan, Sparkle, XCircle } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 
@@ -47,18 +48,6 @@ const minifyHtml = (input: string) => {
     .replace(/>\s+</g, '><')
     .replace(/\s{2,}/g, ' ')
     .trim();
-};
-
-const encodeEntities = (input: string) => {
-  const el = document.createElement('textarea');
-  el.textContent = input;
-  return el.innerHTML;
-};
-
-const decodeEntities = (input: string) => {
-  const el = document.createElement('textarea');
-  el.innerHTML = input;
-  return el.value;
 };
 
 export const HtmlTools = () => {
@@ -140,7 +129,7 @@ export const HtmlTools = () => {
               id="html-input"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              className="min-h-[320px] font-mono"
+              className="min-h-[650px] font-mono"
               placeholder="Paste HTML to process"
             />
             <div className="flex gap-2">
@@ -162,7 +151,7 @@ export const HtmlTools = () => {
               id="html-output"
               value={output}
               readOnly
-              className="min-h-[320px] font-mono"
+              className="min-h-[650px] font-mono"
               placeholder="Output will appear here"
             />
             {validationState && (

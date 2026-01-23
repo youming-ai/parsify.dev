@@ -5,9 +5,9 @@
 export const SEO_CONFIG = {
   BASE_URL: 'https://parsify.dev',
   SITE_NAME: 'Parsify.dev',
-  DEFAULT_TITLE: 'Parsify.dev - Professional Developer Tools',
+  DEFAULT_TITLE: 'Parsify.dev - Free Online Developer Tools',
   DEFAULT_DESCRIPTION:
-    'Professional online developer tools for JSON processing, code execution, file transformation, and more. Run securely in your browser with no data sent to servers.',
+    'Free online developer tools: JSON formatter/validator, Base64 encoder/decoder, JWT decoder, password generator, hash generator, URL parser, color converter, and more. Privacy-first—all processing happens in your browser.',
   DEFAULT_OG_IMAGE: 'https://parsify.dev/og-image.png',
   TWITTER_HANDLE: '@parsifydev',
 } as const;

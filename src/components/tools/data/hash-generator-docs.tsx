@@ -6,7 +6,7 @@ export function HashGeneratorDocs() {
     <div className="space-y-6">
       <HashGenerator />
 
-      <Card className="rounded-xl border shadow-sm">
+      <Card>
         <CardHeader>
           <CardTitle className="text-lg">Common Use Cases</CardTitle>
         </CardHeader>
@@ -38,7 +38,7 @@ export function HashGeneratorDocs() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-xl border shadow-sm">
+      <Card>
         <CardHeader>
           <CardTitle className="text-lg">Algorithm Comparison</CardTitle>
         </CardHeader>

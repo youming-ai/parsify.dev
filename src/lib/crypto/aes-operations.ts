@@ -1,24 +1,31 @@
 /**
  * AES Encryption/Decryption Utilities
- * Implements AES-256-CBC encryption using Web Crypto API
+ * Implements AES-256-GCM encryption using Web Crypto API with PBKDF2 key derivation
  */
+
+import { pbkdf2 } from './hash-operations';
 
 export interface AESEncryptionOptions {
   key: string | ArrayBuffer;
   iv?: ArrayBuffer;
   data: string | ArrayBuffer;
+  salt?: string;
+  iterations?: number;
 }
 
 export interface AESDecryptionOptions {
   key: string | ArrayBuffer;
   iv: ArrayBuffer;
   encryptedData: ArrayBuffer;
+  salt?: string;
+  iterations?: number;
 }
 
 export interface AESResult {
   success: boolean;
   data?: ArrayBuffer;
   iv?: ArrayBuffer;
+  salt?: string;
   error?: string;
 }
 
@@ -27,29 +34,47 @@ export interface AESResult {
  */
 export async function aesEncrypt(options: AESEncryptionOptions): Promise<AESResult> {
   try {
-    // Import or generate key
     let cryptoKey: CryptoKey;
+    let salt: string | undefined;
+    const iterations = options.iterations ?? 100000;
 
     if (typeof options.key === 'string') {
-      // Derive key from password
-      const encoder = new TextEncoder();
-      const keyData = encoder.encode(options.key);
-      cryptoKey = await crypto.subtle.importKey('raw', keyData, { name: 'AES-CBC' }, false, [
-        'encrypt',
-      ]);
+      salt =
+        options.salt ||
+        Array.from(crypto.getRandomValues(new Uint8Array(16)))
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join('');
+
+      const derivedKey = await pbkdf2(options.key, salt, iterations, 32, 'SHA-256');
+
+      if (!derivedKey.success || !derivedKey.hash) {
+        throw new Error(derivedKey.error || 'Key derivation failed');
+      }
+
+      const keyArray = new Uint8Array(32);
+      const hashBytes = derivedKey.hash!.match(/.{1,2}/g)!.map((byte) => Number.parseInt(byte, 16));
+      for (let i = 0; i < 32; i++) {
+        keyArray[i] = hashBytes[i]!;
+      }
+
+      cryptoKey = await crypto.subtle.importKey(
+        'raw',
+        keyArray.buffer,
+        { name: 'AES-GCM' },
+        false,
+        ['encrypt']
+      );
     } else {
-      cryptoKey = await crypto.subtle.importKey('raw', options.key, { name: 'AES-CBC' }, false, [
+      cryptoKey = await crypto.subtle.importKey('raw', options.key, { name: 'AES-GCM' }, false, [
         'encrypt',
       ]);
     }
 
-    // Generate or use provided IV
     const ivArray = options.iv
       ? new Uint8Array(options.iv)
-      : crypto.getRandomValues(new Uint8Array(16));
+      : crypto.getRandomValues(new Uint8Array(12));
     const ivBuffer = ivArray.buffer;
 
-    // Convert data to ArrayBuffer
     let dataArrayBuffer: ArrayBuffer;
     if (typeof options.data === 'string') {
       const encoder = new TextEncoder();
@@ -58,12 +83,8 @@ export async function aesEncrypt(options: AESEncryptionOptions): Promise<AESResu
       dataArrayBuffer = options.data;
     }
 
-    // Encrypt
     const encryptedData = await crypto.subtle.encrypt(
-      {
-        name: 'AES-CBC',
-        iv: ivBuffer,
-      },
+      { name: 'AES-GCM', iv: ivBuffer },
       cryptoKey,
       dataArrayBuffer
     );
@@ -72,6 +93,7 @@ export async function aesEncrypt(options: AESEncryptionOptions): Promise<AESResu
       success: true,
       data: encryptedData,
       iv: ivBuffer,
+      salt: salt,
     };
   } catch (error) {
     return {
@@ -86,27 +108,43 @@ export async function aesEncrypt(options: AESEncryptionOptions): Promise<AESResu
  */
 export async function aesDecrypt(options: AESDecryptionOptions): Promise<AESResult> {
   try {
-    // Import key
     let cryptoKey: CryptoKey;
+    const iterations = options.iterations ?? 100000;
 
     if (typeof options.key === 'string') {
-      const encoder = new TextEncoder();
-      const keyData = encoder.encode(options.key);
-      cryptoKey = await crypto.subtle.importKey('raw', keyData, { name: 'AES-CBC' }, false, [
-        'decrypt',
-      ]);
+      const salt = options.salt;
+
+      if (!salt) {
+        throw new Error('Salt is required for password-based decryption');
+      }
+
+      const derivedKey = await pbkdf2(options.key, salt, iterations, 32, 'SHA-256');
+
+      if (!derivedKey.success || !derivedKey.hash) {
+        throw new Error(derivedKey.error || 'Key derivation failed');
+      }
+
+      const keyArray = new Uint8Array(32);
+      const hashBytes = derivedKey.hash!.match(/.{1,2}/g)!.map((byte) => Number.parseInt(byte, 16));
+      for (let i = 0; i < 32; i++) {
+        keyArray[i] = hashBytes[i]!;
+      }
+
+      cryptoKey = await crypto.subtle.importKey(
+        'raw',
+        keyArray.buffer,
+        { name: 'AES-GCM' },
+        false,
+        ['decrypt']
+      );
     } else {
-      cryptoKey = await crypto.subtle.importKey('raw', options.key, { name: 'AES-CBC' }, false, [
+      cryptoKey = await crypto.subtle.importKey('raw', options.key, { name: 'AES-GCM' }, false, [
         'decrypt',
       ]);
     }
 
-    // Decrypt
     const decryptedData = await crypto.subtle.decrypt(
-      {
-        name: 'AES-CBC',
-        iv: options.iv,
-      },
+      { name: 'AES-GCM', iv: options.iv },
       cryptoKey,
       options.encryptedData
     );
@@ -127,7 +165,7 @@ export async function aesDecrypt(options: AESDecryptionOptions): Promise<AESResu
  * Generate AES key
  */
 export function generateAESKey(): ArrayBuffer {
-  return crypto.getRandomValues(new Uint8Array(32)).buffer; // 256-bit key
+  return crypto.getRandomValues(new Uint8Array(32)).buffer;
 }
 
 /**

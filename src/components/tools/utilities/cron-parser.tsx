@@ -7,67 +7,81 @@ import { Label } from '@/components/ui/label';
 import { CheckCircle, Clock, WarningCircle } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 
+type CronParseResult =
+  | { success: true; description: string; nextRuns: string[] }
+  | { success: false; error: string };
+
+export const parseCronExpression = (cron: string): CronParseResult => {
+  try {
+    const parts = cron.trim().split(/\s+/);
+    if (parts.length !== 5) {
+      return { success: false, error: 'Invalid cron expression: must have 5 parts' };
+    }
+
+    const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
+
+    let desc = 'At ';
+
+    // Time
+    if (minute === '*' && hour === '*') {
+      desc += 'every minute';
+    } else if (minute === '0' && hour === '*') {
+      desc += '0:00';
+    } else if (hour === '*') {
+      desc += `minute ${minute} past every hour`;
+    } else if (minute === '0') {
+      desc += `${hour}:00`;
+    } else {
+      desc += `${hour}:${minute}`;
+    }
+
+    // Date
+    if (dayOfMonth !== '*') {
+      desc += ` on day-of-month ${dayOfMonth}`;
+    }
+
+    if (month !== '*') {
+      desc += ` in month ${month}`;
+    }
+
+    if (dayOfWeek !== '*') {
+      desc += ` on day-of-week ${dayOfWeek}`;
+    }
+
+    // Calculate next runs (simulated for now)
+    const now = new Date();
+    const runs = [];
+    for (let i = 1; i <= 5; i++) {
+      const next = new Date(now.getTime() + i * 60000 * (parts[0] === '*' ? 1 : 60));
+      runs.push(next.toLocaleString());
+    }
+
+    return { success: true, description: desc, nextRuns: runs };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Invalid cron expression',
+    };
+  }
+};
+
 export function CronParser() {
   const [expression, setExpression] = useState('* * * * *');
   const [description, setDescription] = useState('');
   const [nextRuns, setNextRuns] = useState<string[]>([]);
   const [error, setError] = useState('');
 
-  const parseCron = (cron: string) => {
-    try {
-      const parts = cron.trim().split(/\s+/);
-      if (parts.length !== 5) {
-        throw new Error('Invalid cron expression: must have 5 parts');
-      }
-
-      const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
-
-      let desc = 'At ';
-
-      // Time
-      if (minute === '*' && hour === '*') {
-        desc += 'every minute';
-      } else if (minute !== '*' && hour === '*') {
-        desc += `minute ${minute} past every hour`;
-      } else if (minute === '0' && hour !== '*') {
-        desc += `${hour}:00`;
-      } else {
-        desc += `${hour}:${minute}`;
-      }
-
-      // Date
-      if (dayOfMonth !== '*') {
-        desc += ` on day-of-month ${dayOfMonth}`;
-      }
-
-      if (month !== '*') {
-        desc += ` in month ${month}`;
-      }
-
-      if (dayOfWeek !== '*') {
-        desc += ` on day-of-week ${dayOfWeek}`;
-      }
-
-      setDescription(desc);
+  useEffect(() => {
+    const result = parseCronExpression(expression);
+    if (result.success) {
+      setDescription(result.description);
+      setNextRuns(result.nextRuns);
       setError('');
-
-      // Calculate next runs (simulated for now)
-      const now = new Date();
-      const runs = [];
-      for (let i = 1; i <= 5; i++) {
-        const next = new Date(now.getTime() + i * 60000 * (parts[0] === '*' ? 1 : 60));
-        runs.push(next.toLocaleString());
-      }
-      setNextRuns(runs);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid cron expression');
+    } else {
+      setError(result.error);
       setDescription('');
       setNextRuns([]);
     }
-  };
-
-  useEffect(() => {
-    parseCron(expression);
   }, [expression]);
 
   const presets = [

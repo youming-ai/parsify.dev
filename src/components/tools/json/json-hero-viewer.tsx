@@ -69,6 +69,8 @@ interface JsonHeroViewerProps {
   maxVisibleItems?: number;
   theme?: 'light' | 'dark' | 'auto';
   onCopyNode?: (path: string, value: JsonValue) => void;
+  compact?: boolean;
+  scrollHeight?: string | number;
 }
 
 const DEFAULT_EXPAND_LEVEL = 2;
@@ -225,6 +227,8 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
   showSearch = true,
   maxVisibleItems = MAX_VISIBLE_ITEMS_DEFAULT,
   onCopyNode,
+  compact = false,
+  scrollHeight = '500px', // Increased default height
 }) => {
   const [tree, setTree] = useState<JsonNode | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -443,6 +447,17 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
   }, [selectedPath, expandedNodes, toggleNodeExpansion]);
 
   if (!filteredTree) {
+    if (compact) {
+      return (
+        <div className={cn('w-full p-6', className)}>
+          <Alert>
+            <AlertDescription>
+              Invalid JSON data. Please check the input and try again.
+            </AlertDescription>
+          </Alert>
+        </div>
+      );
+    }
     return (
       <Card className={cn('w-full', className)}>
         <CardContent className="p-6">
@@ -456,42 +471,147 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
     );
   }
 
-  return (
-    <Card className={cn('w-full', className)}>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="font-semibold text-lg">JSON Hero Viewer</CardTitle>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs">
-              {renderedCount} nodes
-            </Badge>
-            {showTypes && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={expandedNodes.size > 0 ? collapseAll : expandAll}
+  // Shared header content
+  const headerContent = (
+    <>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-xs">
+            {renderedCount} nodes
+          </Badge>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={expandedNodes.size > 0 ? collapseAll : expandAll}
+          >
+            {expandedNodes.size > 0 ? 'Collapse All' : 'Expand All'}
+          </Button>
+        </div>
+      </div>
+
+      {showSearch && (
+        <div className="relative mt-3">
+          <MagnifyingGlass
+            className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground"
+            aria-hidden="true"
+          />
+          <Input
+            placeholder="Search JSON..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+            aria-label="Search JSON"
+          />
+        </div>
+      )}
+    </>
+  );
+
+  // Shared tree content
+  const treeContent = (
+    <div className="font-mono text-sm">
+      {visibleNodes.map((node, index) => {
+        const isExpanded = expandedNodes.has(node.path);
+        const isSelected = selectedPath === node.path;
+        const isCopied = copiedPath === node.path;
+        const indent = node.depth * 20;
+
+        return (
+          <div
+            key={node.path}
+            className={cn(
+              'group flex cursor-pointer items-start rounded px-2 py-1 transition-colors hover:bg-muted/50',
+              isSelected && 'bg-muted',
+              'focus:outline-none focus:ring-2 focus:ring-ring'
+            )}
+            style={{ paddingLeft: `${indent + 8}px` }}
+            onClick={(e) => handleNodeClick(node, e)}
+            role="treeitem"
+            aria-expanded={isExpanded}
+            aria-selected={isSelected}
+          >
+            {showLineNumbers && (
+              <span className="mr-4 w-8 text-right text-muted-foreground text-xs">{index + 1}</span>
+            )}
+
+            {!node.isLeaf && (
+              <button
+                type="button"
+                className="mr-1 rounded p-0.5 hover:bg-muted-foreground/10"
+                aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleNodeExpansion(node.path);
+                }}
               >
-                {expandedNodes.size > 0 ? 'Collapse All' : 'Expand All'}
+                {isExpanded ? (
+                  <CaretDown className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <CaretRight className="h-4 w-4" aria-hidden="true" />
+                )}
+              </button>
+            )}
+
+            {node.isLeaf && <span className="mr-1 w-5" />}
+
+            <span className="mr-2 font-medium text-blue-600 dark:text-blue-400">
+              {typeof node.index === 'number' ? `[${node.index}]` : node.key}:
+            </span>
+
+            <span className={cn('flex-1', getSyntaxHighlightClass(node.type))}>
+              {formatValue(node.value, node.type)}
+            </span>
+
+            {showTypes && (
+              <Badge variant="outline" className="ml-2 text-xs">
+                {node.type}
+              </Badge>
+            )}
+
+            {showCopyButton && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-2 p-1 opacity-0 transition-opacity group-hover:opacity-100"
+                onClick={(e) => handleCopyNode(node, e)}
+                aria-label={isCopied ? 'Copied!' : 'Copy value'}
+              >
+                <Copy className={cn('h-3 w-3', isCopied && 'text-green-600')} aria-hidden="true" />
               </Button>
             )}
           </div>
-        </div>
+        );
+      })}
 
-        {showSearch && (
-          <div className="relative">
-            <MagnifyingGlass
-              className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground"
-              aria-hidden="true"
-            />
-            <Input
-              placeholder="Search JSON..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-              aria-label="Search JSON"
-            />
-          </div>
-        )}
+      {renderedCount > maxVisibleItems && (
+        <div className="py-4 text-center text-muted-foreground text-sm">
+          Showing {maxVisibleItems} of {renderedCount} nodes
+        </div>
+      )}
+    </div>
+  );
+
+  // Compact mode - no Card wrapper
+  if (compact) {
+    return (
+      <div className={cn('w-full', className)} ref={containerRef}>
+        <div className="border-b px-4 py-3">{headerContent}</div>
+        <ScrollArea
+          className="w-full"
+          style={{ height: typeof scrollHeight === 'number' ? `${scrollHeight}px` : scrollHeight }}
+        >
+          <div className="p-4">{treeContent}</div>
+        </ScrollArea>
+      </div>
+    );
+  }
+
+  // Standard mode - with Card wrapper
+  return (
+    <Card className={cn('w-full', className)}>
+      <CardHeader className="pb-3">
+        <CardTitle className="font-semibold text-lg">JSON Hero Viewer</CardTitle>
+        {headerContent}
 
         {breadcrumbPath.length > 0 && (
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
@@ -517,92 +637,12 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
       </CardHeader>
 
       <CardContent className="p-0">
-        <ScrollArea className="h-96" ref={containerRef}>
-          <div className="p-4 font-mono text-sm">
-            {visibleNodes.map((node, index) => {
-              const isExpanded = expandedNodes.has(node.path);
-              const isSelected = selectedPath === node.path;
-              const isCopied = copiedPath === node.path;
-              const indent = node.depth * 20;
-
-              return (
-                <div
-                  key={node.path}
-                  className={cn(
-                    'group flex cursor-pointer items-start rounded px-2 py-1 transition-colors hover:bg-muted/50',
-                    isSelected && 'bg-muted',
-                    'focus:outline-none focus:ring-2 focus:ring-ring'
-                  )}
-                  style={{ paddingLeft: `${indent + 8}px` }}
-                  onClick={(e) => handleNodeClick(node, e)}
-                  role="treeitem"
-                  aria-expanded={isExpanded}
-                  aria-selected={isSelected}
-                >
-                  {showLineNumbers && (
-                    <span className="mr-4 w-8 text-right text-muted-foreground text-xs">
-                      {index + 1}
-                    </span>
-                  )}
-
-                  {!node.isLeaf && (
-                    <button
-                      type="button"
-                      className="mr-1 rounded p-0.5 hover:bg-muted-foreground/10"
-                      aria-label={isExpanded ? 'Collapse' : 'Expand'}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleNodeExpansion(node.path);
-                      }}
-                    >
-                      {isExpanded ? (
-                        <CaretDown className="h-4 w-4" aria-hidden="true" />
-                      ) : (
-                        <CaretRight className="h-4 w-4" aria-hidden="true" />
-                      )}
-                    </button>
-                  )}
-
-                  {node.isLeaf && <span className="mr-1 w-5" />}
-
-                  <span className="mr-2 font-medium text-blue-600 dark:text-blue-400">
-                    {typeof node.index === 'number' ? `[${node.index}]` : node.key}:
-                  </span>
-
-                  <span className={cn('flex-1', getSyntaxHighlightClass(node.type))}>
-                    {formatValue(node.value, node.type)}
-                  </span>
-
-                  {showTypes && (
-                    <Badge variant="outline" className="ml-2 text-xs">
-                      {node.type}
-                    </Badge>
-                  )}
-
-                  {showCopyButton && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="ml-2 p-1 opacity-0 transition-opacity group-hover:opacity-100"
-                      onClick={(e) => handleCopyNode(node, e)}
-                      aria-label={isCopied ? 'Copied!' : 'Copy value'}
-                    >
-                      <Copy
-                        className={cn('h-3 w-3', isCopied && 'text-green-600')}
-                        aria-hidden="true"
-                      />
-                    </Button>
-                  )}
-                </div>
-              );
-            })}
-
-            {renderedCount > maxVisibleItems && (
-              <div className="py-4 text-center text-muted-foreground text-sm">
-                Showing {maxVisibleItems} of {renderedCount} nodes
-              </div>
-            )}
-          </div>
+        <ScrollArea
+          className="w-full"
+          style={{ height: typeof scrollHeight === 'number' ? `${scrollHeight}px` : scrollHeight }}
+          ref={containerRef}
+        >
+          <div className="p-4">{treeContent}</div>
         </ScrollArea>
       </CardContent>
     </Card>

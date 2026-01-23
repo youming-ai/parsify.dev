@@ -119,7 +119,7 @@ export function JsonToToml() {
               id="json-input"
               value={jsonInput}
               onChange={(e) => setJsonInput(e.target.value)}
-              className="min-h-[400px] font-mono text-sm resize-none"
+              className="min-h-[650px] font-mono text-sm resize-none"
               placeholder="Paste your JSON here..."
             />
             <Button className="w-full" onClick={handleConvert} size="lg">
@@ -145,7 +145,7 @@ export function JsonToToml() {
               <Textarea
                 value={tomlOutput}
                 readOnly
-                className="min-h-[400px] font-mono text-sm bg-muted/30 resize-none"
+                className="min-h-[650px] font-mono text-sm bg-muted/30 resize-none"
                 placeholder="TOML output will appear here..."
               />
               {error && (

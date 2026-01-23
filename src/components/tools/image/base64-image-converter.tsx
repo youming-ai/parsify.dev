@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Copy, DownloadSimple, Image, Trash, UploadSimple } from '@phosphor-icons/react';
 import { useCallback, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 export function Base64ImageConverter() {
   const [imageBase64, setImageBase64] = useState('');
@@ -15,21 +16,53 @@ export function Base64ImageConverter() {
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const loadFile = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
 
     setFileName(file.name);
     setFileSize(file.size);
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const base64 = event.target?.result as string;
+      const base64 = event.target?.result;
+      if (typeof base64 !== 'string') {
+        toast.error('Failed to read file');
+        return;
+      }
       setImageBase64(base64);
       setImageSrc(base64);
     };
+    reader.onerror = () => {
+      toast.error('Failed to read file');
+    };
     reader.readAsDataURL(file);
   }, []);
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      loadFile(file);
+    },
+    [loadFile]
+  );
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      const file = e.dataTransfer.files?.[0];
+      if (!file) return;
+      loadFile(file);
+    },
+    [loadFile]
+  );
 
   const handleBase64Input = useCallback((value: string) => {
     setImageBase64(value);
@@ -97,8 +130,10 @@ export function Base64ImageConverter() {
               </Button>
             </div>
             <div
-              className="flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/30 p-6 transition-colors hover:border-primary/50"
+              className="flex min-h-[300px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/30 p-6 transition-colors hover:border-primary/50"
               onClick={() => fileInputRef.current?.click()}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
               onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
             >
               <UploadSimple className="mb-4 h-10 w-10 text-muted-foreground" />
@@ -123,12 +158,12 @@ export function Base64ImageConverter() {
           {/* Preview Section */}
           <div className="space-y-4">
             <Label className="text-base font-semibold">Preview</Label>
-            <div className="flex min-h-[200px] items-center justify-center rounded-lg border bg-muted/30 p-4">
+            <div className="flex min-h-[300px] items-center justify-center rounded-lg border bg-muted/30 p-4">
               {imageSrc ? (
                 <img
                   src={imageSrc}
                   alt="Preview"
-                  className="max-h-[300px] max-w-full rounded object-contain"
+                  className="max-h-[400px] max-w-full rounded object-contain"
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">No image to preview</p>
@@ -155,7 +190,7 @@ export function Base64ImageConverter() {
             value={imageBase64}
             onChange={(e) => handleBase64Input(e.target.value)}
             placeholder="Paste Base64 string here or upload an image..."
-            className="min-h-[150px] font-mono text-xs"
+            className="min-h-[300px] font-mono text-xs"
           />
         </div>
       </CardContent>

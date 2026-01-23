@@ -35,7 +35,7 @@
 ### 🛠️ Utility
 - Timestamp Converter
 - Color Tools
-- Cron Job Generator
+- Cron Expression Parser
 
 ## 🚀 Quick Start
 

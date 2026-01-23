@@ -12,11 +12,6 @@ minify = true
 binding = "ASSETS"
 directory = ".open-next/assets"
 
-# KV namespace for caching/storage
-[[kv_namespaces]]
-binding = "PARSIFY_KV"
-id = "6e3ca7737342485f952352e527a1c46e"
-
 # Observability - disabled in production for cost optimization
 # Enable during debugging by setting enabled = true
 [observability.logs]

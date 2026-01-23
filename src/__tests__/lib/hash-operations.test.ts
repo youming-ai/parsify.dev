@@ -4,6 +4,7 @@ import {
   hashData,
   hmacData,
   hmacSha256,
+  md5,
   pbkdf2,
   sha1,
   sha256,
@@ -100,6 +101,33 @@ describe('hmacSha256', () => {
     const result = await hmacSha256('data', 'key');
     expect(result.success).toBe(true);
     expect(result.hmac).toHaveLength(64);
+  });
+});
+
+describe('md5', () => {
+  it('computes correct MD5 hash for known test vector', async () => {
+    const result = await md5('hello world');
+    expect(result.success).toBe(true);
+    expect(result.hash).toBe('5eb63bbbe01eeed093cb22bb8f5acdc3');
+  });
+
+  it('produces 32 character hash', async () => {
+    const result = await md5('test');
+    expect(result.success).toBe(true);
+    expect(result.hash).toBeDefined();
+    expect(result.hash).toHaveLength(32);
+  });
+
+  it('produces consistent hashes for same input', async () => {
+    const result1 = await md5('test');
+    const result2 = await md5('test');
+    expect(result1.hash).toBe(result2.hash);
+  });
+
+  it('produces different hashes for different inputs', async () => {
+    const result1 = await md5('hello');
+    const result2 = await md5('world');
+    expect(result1.hash).not.toBe(result2.hash);
   });
 });
 

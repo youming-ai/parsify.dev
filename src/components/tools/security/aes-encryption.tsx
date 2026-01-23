@@ -408,7 +408,7 @@ export const AESEncryption: React.FC = () => {
                   value={plaintext}
                   onChange={(e) => setPlaintext(e.target.value)}
                   placeholder="Enter text to encrypt..."
-                  className="min-h-[120px] font-mono text-sm"
+                  className="min-h-[200px] font-mono text-sm"
                 />
               </div>
 
@@ -429,7 +429,7 @@ export const AESEncryption: React.FC = () => {
                       id="encrypted"
                       value={encryptionResult.encrypted}
                       readOnly
-                      className="min-h-[100px] font-mono text-sm"
+                      className="min-h-[200px] font-mono text-sm"
                     />
                     <Button
                       variant="outline"
@@ -500,7 +500,7 @@ export const AESEncryption: React.FC = () => {
                   value={ciphertext}
                   onChange={(e) => setCiphertext(e.target.value)}
                   placeholder="Enter Base64 encrypted text..."
-                  className="min-h-[100px] font-mono text-sm"
+                  className="min-h-[200px] font-mono text-sm"
                 />
               </div>
 
@@ -534,7 +534,7 @@ export const AESEncryption: React.FC = () => {
                           id="decrypted"
                           value={decryptionResult.decrypted}
                           readOnly
-                          className="min-h-[120px] font-mono text-sm"
+                          className="min-h-[200px] font-mono text-sm"
                         />
                         <Button
                           variant="outline"

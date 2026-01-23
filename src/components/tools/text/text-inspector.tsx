@@ -230,7 +230,7 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
             placeholder="Enter your text here to analyze characters, words, lines, and more..."
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="min-h-64"
+            className="min-h-[400px]"
           />
         </CardContent>
       </Card>

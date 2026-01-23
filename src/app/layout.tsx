@@ -1,6 +1,7 @@
 import { Clarity } from '@/components/analytics/clarity';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { ThemeProvider } from '@/components/theme-provider';
+import { SEO_CONFIG } from '@/lib/seo-config';
 import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import type React from 'react';
@@ -20,77 +21,101 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://parsify.dev'),
+  metadataBase: new URL(SEO_CONFIG.BASE_URL),
   title: {
-    default: 'Parsify.dev - Professional Developer Tools',
+    default: SEO_CONFIG.DEFAULT_TITLE,
     template: '%s | Parsify.dev',
   },
-  description:
-    'Professional online developer tools for JSON processing, code execution, file transformation, and more. Run securely in your browser with no data sent to servers.',
+  description: SEO_CONFIG.DEFAULT_DESCRIPTION,
   keywords: [
     'developer tools',
+    'online tools',
     'json formatter',
+    'json beautifier',
+    'json validator',
     'base64 encoder',
+    'base64 decoder',
     'jwt decoder',
+    'jwt debugger',
     'password generator',
+    'secure password',
     'hash generator',
+    'md5 hash',
+    'sha256 hash',
     'url parser',
+    'url encoder',
     'regex tester',
+    'regex validator',
     'color converter',
+    'hex to rgb',
     'timestamp converter',
+    'unix timestamp',
     'privacy-first tools',
     'browser tools',
+    'client-side processing',
+    'no server upload',
+    'free developer tools',
   ],
-  authors: [{ name: 'Parsify.dev Team' }],
+  authors: [{ name: 'Parsify.dev Team', url: SEO_CONFIG.BASE_URL }],
   creator: 'Parsify.dev',
   publisher: 'Parsify.dev',
+  category: 'Developer Tools',
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
   openGraph: {
-    title: 'Parsify.dev - Professional Developer Tools',
-    description:
-      'Professional online developer tools for JSON processing, code execution, file transformation, and more. Run securely in your browser with no data sent to servers.',
+    title: SEO_CONFIG.DEFAULT_TITLE,
+    description: SEO_CONFIG.DEFAULT_DESCRIPTION,
     type: 'website',
-    url: 'https://parsify.dev',
-    siteName: 'Parsify.dev',
+    url: SEO_CONFIG.BASE_URL,
+    siteName: SEO_CONFIG.SITE_NAME,
+    locale: 'en_US',
     images: [
       {
-        url: 'https://parsify.dev/og-image.png',
+        url: SEO_CONFIG.DEFAULT_OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: 'Parsify.dev - Professional Developer Tools',
+        alt: SEO_CONFIG.DEFAULT_TITLE,
+        type: 'image/png',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Parsify.dev - Professional Developer Tools',
-    description:
-      'Professional online developer tools for JSON processing, code execution, file transformation, and more.',
-    images: ['https://parsify.dev/og-image.png'],
+    title: SEO_CONFIG.DEFAULT_TITLE,
+    description: SEO_CONFIG.DEFAULT_DESCRIPTION,
+    images: [SEO_CONFIG.DEFAULT_OG_IMAGE],
+    creator: SEO_CONFIG.TWITTER_HANDLE,
+    site: SEO_CONFIG.TWITTER_HANDLE,
   },
   robots: {
     index: true,
     follow: true,
+    nocache: false,
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': '-1',
+      noimageindex: false,
+      'max-video-preview': -1,
       'max-image-preview': 'large',
       'max-snippet': -1,
     },
   },
   manifest: '/manifest.json',
   alternates: {
-    canonical: 'https://parsify.dev/',
+    canonical: SEO_CONFIG.BASE_URL,
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Parsify.dev',
+    title: SEO_CONFIG.SITE_NAME,
+  },
+  verification: {
+    // Add your verification codes here when available
+    // google: 'your-google-verification-code',
+    // yandex: 'your-yandex-verification-code',
   },
 };
 

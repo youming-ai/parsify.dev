@@ -338,6 +338,8 @@ export const validateFile = (
 
 /**
  * Sanitize user input
+ * Note: This provides basic sanitization for text inputs.
+ * For HTML rendering, always use DOMPurify from @/lib/security/sanitize
  */
 export const sanitizeInput = (input: string): string => {
   return input

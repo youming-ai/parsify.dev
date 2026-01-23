@@ -307,7 +307,7 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
           </CardTitle>
           <CardDescription>Paste your text or upload a file to analyze</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div className="flex gap-2">
             <input
               type="file"
@@ -351,7 +351,7 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
       </Card>
 
       {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-4">
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
@@ -405,7 +405,7 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-4">
+            <div className="space-y-6">
               <h4 className="font-semibold">Basic Metrics</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -435,7 +435,7 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               <h4 className="font-semibold">Readability Analysis</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -488,7 +488,7 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
             <TabsTrigger value="chars">Character Frequency</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="words" className="space-y-4">
+          <TabsContent value="words" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -518,7 +518,7 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
             </Card>
           </TabsContent>
 
-          <TabsContent value="chars" className="space-y-4">
+          <TabsContent value="chars" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -559,7 +559,7 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-6">
             <div className="flex items-center space-x-2">
               <Switch
                 id="case-sensitive"

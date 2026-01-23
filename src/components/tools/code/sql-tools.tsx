@@ -377,7 +377,7 @@ export function SqlTools() {
                 setValidationResult(null);
               }}
               placeholder="Enter your SQL query here..."
-              className="min-h-64 font-mono text-sm resize-none"
+              className="min-h-[650px] font-mono text-sm resize-none"
             />
           </div>
 
@@ -394,7 +394,7 @@ export function SqlTools() {
                 Copy
               </Button>
             </div>
-            <div className="min-h-64 overflow-auto rounded-md border bg-background p-4 font-mono text-sm text-green-400 shadow-inner">
+            <div className="min-h-[650px] overflow-auto rounded-md border bg-background p-4 font-mono text-sm text-green-400 shadow-inner">
               <pre className="whitespace-pre-wrap">
                 {formattedSQL || sql || (
                   <span className="text-slate-500">{'> WAITING FOR INPUT...'}</span>

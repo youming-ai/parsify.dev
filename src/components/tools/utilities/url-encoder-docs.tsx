@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 export function URLEncoderDocs() {
   return (
     <div className="space-y-6">
-      <Card className="rounded-xl border shadow-sm">
+      <Card>
         <CardHeader>
           <CardTitle className="text-lg">Encoding Types</CardTitle>
         </CardHeader>
@@ -41,7 +41,7 @@ export function URLEncoderDocs() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-xl border shadow-sm">
+      <Card>
         <CardHeader>
           <CardTitle className="text-lg">Common Use Cases</CardTitle>
         </CardHeader>

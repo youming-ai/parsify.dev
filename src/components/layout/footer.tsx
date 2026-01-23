@@ -43,11 +43,11 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="border-t bg-background text-foreground">
-      <div className="mx-auto max-w-screen-2xl px-6 py-16 lg:px-8 md:py-24">
+    <footer className="bg-background text-foreground">
+      <div className="mx-auto max-w-screen-2xl px-6 py-8 md:py-10 lg:px-8">
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           {/* Brand Column */}
-          <div className="space-y-8">
+          <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
                 <Command className="h-4 w-4" />
@@ -57,7 +57,7 @@ export function Footer() {
           </div>
 
           {/* Navigation Grid */}
-          <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
+          <div className="mt-8 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
             {footerSections
               .map((section, idx) => (
                 <div
@@ -70,7 +70,7 @@ export function Footer() {
                         <h3 className="text-sm font-semibold leading-6 text-foreground">
                           {section.title}
                         </h3>
-                        <ul className="mt-6 space-y-4">
+                        <ul className="mt-4 space-y-2">
                           {section.items.map((item) => (
                             <li key={item.name}>
                               <Link
@@ -84,11 +84,11 @@ export function Footer() {
                         </ul>
                       </div>
                       {footerSections[idx + 1] && (
-                        <div className="mt-10 md:mt-0">
+                        <div className="mt-8 md:mt-0">
                           <h3 className="text-sm font-semibold leading-6 text-foreground">
                             {footerSections[idx + 1]?.title}
                           </h3>
-                          <ul className="mt-6 space-y-4">
+                          <ul className="mt-4 space-y-2">
                             {footerSections[idx + 1]?.items.map((item) => (
                               <li key={item.name}>
                                 <Link
@@ -111,7 +111,7 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-16 border-t border-border/50 pt-8 sm:mt-20 lg:mt-24">
+        <div className="mt-8 pt-6 sm:mt-10 lg:mt-12">
           <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
             <p className="text-xs leading-5 text-muted-foreground order-2 md:order-1">
               &copy; {new Date().getFullYear()} Parsify.dev. All rights reserved.

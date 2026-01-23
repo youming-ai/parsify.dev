@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 export function JWTDecoderDocs() {
   return (
     <div className="mt-12 grid gap-6 md:grid-cols-2">
-      <Card className="rounded-xl border shadow-sm">
+      <Card>
         <CardHeader className="border-b bg-muted/40 pb-2">
           <CardTitle className="flex items-center gap-2 text-lg font-bold">What is JWT?</CardTitle>
         </CardHeader>
@@ -24,7 +24,7 @@ export function JWTDecoderDocs() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-xl border shadow-sm">
+      <Card>
         <CardHeader className="border-b bg-muted/40 pb-2">
           <CardTitle className="text-lg font-bold">Common Use Cases</CardTitle>
         </CardHeader>

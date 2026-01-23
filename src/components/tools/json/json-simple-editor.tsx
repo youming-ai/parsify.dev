@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { cn } from '../../../lib/utils';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { CodeEditor } from '../code/codemirror-editor';
 import { isSerializedJsonString, parseSerializedJson } from './json-utils';
 
@@ -148,75 +147,71 @@ export const JsonSimpleEditor: React.FC<JsonSimpleEditorProps> = ({
 
   return (
     <div className={cn('w-full', className)}>
-      <Card>
-        {showToolbar && (
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="font-semibold text-lg">JSON Editor</CardTitle>
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant={isValid ? 'default' : 'destructive'}
-                  className="flex items-center gap-1"
-                >
-                  {isValid ? (
-                    <>
-                      <CheckCircle className="h-3 w-3" />
-                      Valid
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="h-3 w-3" />
-                      {validationErrors.length} Error
-                      {validationErrors.length !== 1 ? 's' : ''}
-                    </>
-                  )}
-                </Badge>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={formatJson} disabled={!isValid}>
-                <FileText className="mr-1 h-4 w-4" />
-                Format
-              </Button>
-
-              <Button variant="outline" size="sm" onClick={minifyJson} disabled={!isValid}>
-                <Lightning className="mr-1 h-4 w-4" />
-                Minify
-              </Button>
-
-              {isSerialized && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={unescapeJson}
-                  className="border-amber-500/50 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400"
-                  title="Detected serialized JSON string. Click to unescape and format."
-                >
-                  <Quotes className="mr-1 h-4 w-4" />
-                  Unescape
-                </Button>
+      {showToolbar && (
+        <div className="mb-3 space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="font-semibold text-base">JSON Editor</h4>
+            <Badge
+              variant={isValid ? 'default' : 'destructive'}
+              className="flex items-center gap-1"
+            >
+              {isValid ? (
+                <>
+                  <CheckCircle className="h-3 w-3" />
+                  Valid
+                </>
+              ) : (
+                <>
+                  <XCircle className="h-3 w-3" />
+                  {validationErrors.length} Error
+                  {validationErrors.length !== 1 ? 's' : ''}
+                </>
               )}
+            </Badge>
+          </div>
 
-              <Button variant="outline" size="sm" onClick={copyJson}>
-                <Copy className="mr-1 h-4 w-4" />
-                Copy
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={formatJson} disabled={!isValid}>
+              <FileText className="mr-1 h-4 w-4" />
+              Format
+            </Button>
+
+            <Button variant="outline" size="sm" onClick={minifyJson} disabled={!isValid}>
+              <Lightning className="mr-1 h-4 w-4" />
+              Minify
+            </Button>
+
+            {isSerialized && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={unescapeJson}
+                className="border-amber-500/50 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400"
+                title="Detected serialized JSON string. Click to unescape and format."
+              >
+                <Quotes className="mr-1 h-4 w-4" />
+                Unescape
               </Button>
-            </div>
-          </CardHeader>
-        )}
+            )}
 
-        <CardContent className="p-0">
-          <CodeEditor
-            value={value}
-            onChange={handleChange}
-            language="json"
-            height={height}
-            readOnly={readOnly}
-            placeholder={placeholder}
-          />
-        </CardContent>
-      </Card>
+            <Button variant="outline" size="sm" onClick={copyJson}>
+              <Copy className="mr-1 h-4 w-4" />
+              Copy
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <div className="overflow-hidden rounded-lg border">
+        <CodeEditor
+          value={value}
+          onChange={handleChange}
+          language="json"
+          height={height}
+          readOnly={readOnly}
+          placeholder={placeholder}
+        />
+      </div>
     </div>
   );
 };

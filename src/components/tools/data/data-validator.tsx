@@ -481,7 +481,7 @@ website=https://johndoe.com`,
                 value={inputData}
                 onChange={(e) => setInputData(e.target.value)}
                 placeholder={`Enter ${dataFormat.toUpperCase()} data to validate...`}
-                className="min-h-32 font-mono"
+                className="min-h-[400px] font-mono"
               />
             </div>
           </CardContent>

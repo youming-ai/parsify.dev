@@ -416,7 +416,7 @@ const TextAnalyzer: React.FC = () => {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Enter your text here for analysis..."
-              className="min-h-[200px] font-mono text-sm"
+              className="min-h-[400px] font-mono text-sm"
             />
 
             <div className="flex flex-wrap gap-2">

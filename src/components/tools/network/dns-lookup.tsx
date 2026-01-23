@@ -112,7 +112,7 @@ export const DNSLookup = () => {
           <Label>Results</Label>
           <Textarea
             readOnly
-            className="min-h-[220px] font-mono"
+            className="min-h-[400px] font-mono"
             value={
               answers.length === 0
                 ? 'No results yet'

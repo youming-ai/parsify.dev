@@ -1,7 +1,4 @@
-/**
- * Hash Operations Utilities
- * Implements various hash algorithms using Web Crypto API
- */
+import SparkMD5 from 'spark-md5';
 
 export interface HashOptions {
   data: string | ArrayBuffer;
@@ -136,13 +133,31 @@ export async function sha512(data: string | ArrayBuffer): Promise<HashResult> {
 }
 
 /**
- * MD5-like hash (using SHA-1 for compatibility)
+ * MD5 Hash using spark-md5
  */
 export async function md5(data: string | ArrayBuffer): Promise<HashResult> {
-  // Note: Web Crypto API doesn't support MD5
-  // This is a placeholder that uses SHA-1 instead
-  // For actual MD5, would need an external library
-  return hashData({ data, algorithm: 'SHA-1' });
+  try {
+    let buffer: ArrayBuffer;
+
+    if (typeof data === 'string') {
+      const encoder = new TextEncoder();
+      buffer = encoder.encode(data).buffer;
+    } else {
+      buffer = data;
+    }
+
+    const hash = SparkMD5.ArrayBuffer.hash(buffer);
+
+    return {
+      success: true,
+      hash: hash,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'MD5 computation failed',
+    };
+  }
 }
 
 /**
