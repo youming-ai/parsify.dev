@@ -1,9 +1,9 @@
 # Bundle Analysis & Optimization Plan
 
-> **Date:** 2026-01-08
-> **Current Bundle Size:** 235 kB
+> **Date:** 2026-01-23
+> **Current Bundle Size:** TBD (pending verification)
 > **Target:** <150 kB
-> **Gap:** -85 kB
+> **Gap:** TBD
 
 ---
 
@@ -17,6 +17,8 @@ Bundle size has been reduced from 317 kB to 235 kB (26% reduction). However, sig
 - 📊 Vendor chunk at 738K (226 kB compressed)
 - ✅ 10 unused dependencies removed via knip audit
 - ✅ Phosphor icons optimizePackageImports configured (but ineffective with wildcard import)
+- ✅ New security dependencies added (dompurify)
+- ✅ New performance dependencies added (spark-md5 WASM)
 
 ---
 
@@ -173,6 +175,25 @@ Evaluate if simpler components can replace complex Radix UI components.
 
 ---
 
+## New Dependencies (2026-01-23)
+
+### Added for Security
+| Package | Size | Purpose | Notes |
+|---------|------|---------|-------|
+| `dompurify` | ~30 kB | XSS prevention | Essential for HTML sanitization |
+| `@types/dompurify` | ~2 kB | TypeScript types | Dev dependency |
+
+### Added for Performance
+| Package | Size | Purpose | Notes |
+|---------|------|---------|-------|
+| `spark-md5` | ~20 kB | WASM MD5 | Faster than JS implementation |
+| `@types/spark-md5` | ~2 kB | TypeScript types | Dev dependency |
+
+**Estimated Bundle Impact:** +50 to +60 kB (uncompressed)
+**Compressed Impact:** +15 to +20 kB (gzip)
+
+---
+
 ## Completed Optimizations
 
 ### ✅ Dependency Cleanup (via knip audit)
@@ -240,23 +261,24 @@ Evaluate if simpler components can replace complex Radix UI components.
 ## Projected Results
 
 ### Current State
-- Bundle: 235 kB
-- Gap to target: -85 kB
+- Bundle: TBD (last measured: 235 kB)
+- New dependencies added: +15 to +20 kB (dompurify, spark-md5)
+- Gap to target: TBD
 
 ### After Phase 1 (Phosphor Icons Fix)
-- **Estimated:** 155-185 kB
-- **Gap to target:** -5 to +35 kB
-- **Probability of reaching target:** 70-80%
+- **Estimated:** 170-200 kB (includes new dependencies)
+- **Gap to target:** +20 to +50 kB
+- **Probability of reaching target:** 40-60%
 
 ### After Phase 2 (Radix Optimization)
-- **Estimated:** 135-165 kB
-- **Gap to target:** +15 to -15 kB
-- **Probability of reaching target:** 85-95%
+- **Estimated:** 150-180 kB
+- **Gap to target:** 0 to +30 kB
+- **Probability of reaching target:** 50-70%
 
 ### After Phase 3 (Final Polish)
-- **Estimated:** 120-150 kB
-- **Gap to target:** -30 to 0 kB
-- **Probability of reaching target:** 95-100%
+- **Estimated:** 135-165 kB
+- **Gap to target:** -15 to +15 kB
+- **Probability of reaching target:** 70-90%
 
 ---
 
@@ -373,20 +395,26 @@ Consider adding bundle size check to CI:
 ## Conclusion
 
 **Current Status:**
-- Bundle size: 235 kB
+- Bundle size: TBD (last measured: 235 kB)
 - Progress: 26% reduced from 317 kB
-- Remaining gap: -85 kB
+- New dependencies: dompurify, spark-md5 (security & performance)
+- Remaining gap: TBD
 
 **Quick Win Available:**
-Fix Phosphor Icons wildcard import → **-50 to -80 kB savings** (estimated: 155-185 kB final)
+Fix Phosphor Icons wildcard import → **-50 to -80 kB savings** (estimated: 170-200 kB with new deps)
 
 **Recommended Action:**
-Implement Phase 1 (individual named imports for Phosphor Icons) immediately.
+1. Implement Phase 1 (individual named imports for Phosphor Icons)
+2. Verify bundle size after new dependencies
+3. Assess if further optimization is needed
 
-This single change has the highest ROI and is the most straightforward path to reaching the <150 kB target.
+**Priority:**
+- **HIGH**: Fix Phosphor icons (biggest impact)
+- **MEDIUM**: Optimize Radix UI (moderate impact)
+- **LOW**: Final polish (diminishing returns)
 
 ---
 
-**Document Version:** 1.0
-**Next Review:** After implementing Phase 1
-**Analysis Date:** 2026-01-08
+**Document Version:** 1.1
+**Next Review:** After bundle size verification
+**Analysis Date:** 2026-01-23
