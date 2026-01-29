@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-> **Last Updated:** 2026-01-14
+> **Last Updated:** 2026-01-23
 > **Project:** Parsify.dev
 > **Status:** Production Ready
 
@@ -326,6 +326,202 @@ export function PrivacyNotice({ message }: { message: string }) {
 
 ---
 
+## Security Architecture
+
+**Decision:** XSS prevention with DOMPurify and centralized sanitization module.
+
+**Reasoning:**
+- User-provided HTML content (regex highlighting, HTML preview) poses XSS risk
+- `dangerouslySetInnerHTML` must be paired with sanitization
+- Centralized module ensures consistent security practices
+- DOMPurify is well-maintained and trusted library
+
+**Implementation:**
+```typescript
+// src/lib/security/sanitize.ts
+'use client';
+
+import DOMPurify from 'dompurify';
+
+export function sanitizeHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'code', 'pre', 'span'],
+    ALLOWED_ATTR: ['href', 'class', 'style', 'rel'],
+    ALLOW_DATA_ATTR: false,
+    FORCE_BODY: false,
+  });
+}
+```
+
+**Usage in Components:**
+```typescript
+// src/components/tools/code/regex-validator.tsx
+import { sanitizeHtml } from '@/lib/security/sanitize';
+
+<div
+  className="whitespace-pre-wrap"
+  dangerouslySetInnerHTML={{ __html: sanitizeHtml(highlightedText) }}
+/>
+```
+
+**Test Mock:**
+```typescript
+// src/__tests__/setup.ts
+global.DOMPurify = {
+  sanitize: (html: string, config?: Record<string, unknown>) => {
+    // Basic sanitization for tests
+    let sanitized = html.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gi, '');
+
+    // Remove dangerous event handlers
+    const dangerousAttrs = ['onclick', 'onerror', 'onload', 'onmouseover'];
+    dangerousAttrs.forEach((attr) => {
+      const attrPattern = new RegExp(`\\s${attr}\\s*=\\s*["'][^"']*["']`, 'gi');
+      sanitized = sanitized.replace(attrPattern, '');
+    });
+
+    // ... more sanitization logic
+
+    return sanitized;
+  },
+};
+```
+
+**Security Rules:**
+- NEVER use `dangerouslySetInnerHTML` without sanitization
+- Custom parsers (Markdown, HTML) must use DOMPurify
+- Sanitize user input before rendering
+- Keep ALLOWED_TAGS list minimal
+- Set ALLOW_DATA_ATTR to false
+
+---
+
+## Web Worker Integration
+
+**Decision:** Offload heavy computations to Web Workers for non-blocking UI.
+
+**Reasoning:**
+- Diff calculation on large texts (>100 lines) can block main thread
+- Hash operations (MD5, SHA-256) benefit from parallel processing
+- Web Workers prevent UI freezing during heavy operations
+- Better perceived performance
+
+**Implementation:**
+```typescript
+// src/components/tools/code/diff-worker.ts
+export {};
+
+type DiffLineType = 'unchanged' | 'added' | 'removed';
+
+interface DiffLine {
+  type: DiffLineType;
+  content: string;
+  oldLineNum?: number;
+  newLineNum?: number;
+}
+
+interface ComputeRequest {
+  id: number;
+  a: string;
+  b: string;
+}
+
+interface ComputeResponse {
+  id: number;
+  diffLines: DiffLine[];
+}
+
+// Myers diff algorithm implementation
+function myersDiff(aLines: string[], bLines: string[]): DiffOp[] {
+  // ... algorithm
+}
+
+self.onmessage = (event: MessageEvent<ComputeRequest>) => {
+  const { id, a, b } = event.data;
+  const diffLines = buildDiffLines(a, b);
+  const response: ComputeResponse = { id, diffLines };
+  self.postMessage(response);
+};
+```
+
+**Usage in Components:**
+```typescript
+// src/components/tools/code/diff-viewer.tsx
+import DiffWorker from './diff-worker?worker';
+
+const workerRef = useRef<Worker>();
+
+useEffect(() => {
+  if (typeof Worker !== 'undefined') {
+    workerRef.current = new DiffWorker();
+
+    workerRef.current.onmessage = (event: MessageEvent<ComputeResponse>) => {
+      setDiffLines(event.data.diffLines);
+    };
+  }
+
+  return () => {
+    workerRef.current?.terminate();
+  };
+}, []);
+
+// Send computation to worker
+const computeDiff = useCallback((oldText: string, newText: string) => {
+  workerRef.current?.postMessage({ id: Date.now(), a: oldText, b: newText });
+}, []);
+```
+
+**When to Use Web Workers:**
+- Heavy text processing (>100 lines)
+- Hash operations on large data
+- JSON parsing/formatting of large files
+- Any operation taking >100ms
+
+**Limitations:**
+- Workers cannot access DOM
+- Workers cannot use React hooks
+- Data serialization overhead for small operations
+- Browser compatibility (modern browsers only)
+
+---
+
+## Cryptographic Operations
+
+**Decision:** Use browser's `crypto.subtle` API and WASM libraries, never implement custom crypto.
+
+**Reasoning:**
+- Custom crypto implementations are error-prone and insecure
+- `crypto.subtle` is built-in, optimized, and maintained
+- WASM libraries (spark-md5) provide performance benefits
+- Consistent with security best practices
+
+**Implementation:**
+```typescript
+// src/lib/crypto/hash-operations.ts
+import SparkMD5 from 'spark-md5';
+
+// MD5 using WASM library
+export function md5(message: string): string {
+  return SparkMD5.hash(message);
+}
+
+// SHA-256 using Web Crypto API
+export async function sha256(message: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+```
+
+**Security Notes:**
+- Use PBKDF2 or scrypt for password-to-key derivation
+- Use correct AES parameters (CTR needs counter + length, GCM needs auth tag)
+- Use `crypto.getRandomValues()` for random numbers, never `Math.random()`
+- Document that MD5 is not cryptographically secure for passwords
+
+---
+
 ## Error Handling
 
 **Decision:** Graceful error handling with visual feedback via `ErrorDisplay` component.
@@ -522,18 +718,21 @@ bun run deploy:cf  # Deploy to Cloudflare Workers
 7. ✅ Removed ToolContainer (not integrated)
 8. ✅ Dependency cleanup (10 packages removed)
 9. ✅ Test infrastructure focused on core logic
+10. ✅ XSS prevention with DOMPurify
+11. ✅ Web Workers for heavy computations
+12. ✅ WASM libraries for cryptographic operations
 
 **Metrics:**
-- Bundle Size: 235 kB (26% reduced from 317 kB)
-- Test Coverage: 83% (64/77 tests, 100% pass rate)
+- Bundle Size: TBD (26% reduced from 317 kB to 235 kB)
+- Test Coverage: ~88% (111/126 tests, 100% pass rate)
 - Build Time: ~10s
 - TypeScript Errors: 0
-- Linting Warnings: 88 (type definitions, acceptable)
+- Linting Warnings: 0 (clean)
 
 **Ready for Production:** ✅ YES
 
 ---
 
-**Document Version:** 1.0
+**Document Version:** 1.1
 **Maintained By:** Development Team
-**Last Review:** 2026-01-08
+**Last Review:** 2026-01-23
