@@ -79,27 +79,27 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
   const [activeInputTab, setActiveInputTab] = React.useState<'text' | 'file'>('text');
 
   // Base64 encode text
-  const encodeText = (text: string): string => {
+  const encodeText = React.useCallback((text: string): string => {
     try {
       const bytes = new TextEncoder().encode(text);
       return bytesToBase64(bytes);
     } catch (_error) {
       throw new Error('Failed to encode text to Base64');
     }
-  };
+  }, []);
 
   // Base64 decode text
-  const decodeText = (base64: string): string => {
+  const decodeText = React.useCallback((base64: string): string => {
     try {
       const bytes = base64ToBytes(base64);
       return new TextDecoder().decode(bytes);
     } catch (_error) {
       throw new Error('Invalid Base64 format or corrupted data');
     }
-  };
+  }, []);
 
   // Convert file to Base64
-  const fileToBase64 = (file: File): Promise<string> => {
+  const fileToBase64 = React.useCallback((file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
@@ -111,7 +111,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
       reader.onerror = () => reject(new Error('Failed to read file'));
       reader.readAsDataURL(file);
     });
-  };
+  }, []);
 
   // Convert Base64 to blob
   const _base64ToBlob = (base64: string, mimeType = 'application/octet-stream'): Blob => {
@@ -129,7 +129,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
   };
 
   // Process text encoding/decoding
-  const processText = async () => {
+  const processText = React.useCallback(async () => {
     if (!inputText.trim()) {
       toast.error('Please enter text to process');
       return;
@@ -162,10 +162,10 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
       toast.error(errorMessage);
       setOutputText('');
     }
-  };
+  }, [activeTab, decodeText, encodeText, inputText, onConversionComplete]);
 
   // Process file encoding/decoding
-  const processFiles = async () => {
+  const processFiles = React.useCallback(async () => {
     if (inputFiles.length === 0) {
       toast.error('Please select files to process');
       return;
@@ -202,20 +202,20 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
         toast.error(`${file.name}: ${errorMessage}`);
       }
     }
-  };
+  }, [activeTab, decodeText, fileToBase64, inputFiles, onConversionComplete]);
 
   // Copy to clipboard
-  const copyToClipboard = async (text: string) => {
+  const copyToClipboard = React.useCallback(async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
       toast.success('Copied to clipboard');
     } catch (_error) {
       toast.error('Failed to copy to clipboard');
     }
-  };
+  }, []);
 
   // Download Base64 as file
-  const downloadAsFile = (base64: string, fileName: string) => {
+  const downloadAsFile = React.useCallback((base64: string, fileName: string) => {
     try {
       const blob = new Blob([base64], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
@@ -230,39 +230,72 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
     } catch (_error) {
       toast.error('Failed to download file');
     }
-  };
+  }, []);
 
   // Load example
-  const loadExample = (example: (typeof base64Examples)[0]) => {
+  const loadExample = React.useCallback((example: (typeof base64Examples)[0]) => {
     setInputText(example.input);
     setActiveTab('encode');
     setActiveInputTab('text');
-  };
+  }, []);
 
   // Clear all
-  const clearAll = () => {
+  const clearAll = React.useCallback(() => {
     setInputText('');
     setOutputText('');
     setInputFiles([]);
-  };
+  }, []);
 
   // Swap input and output
-  const swapInputOutput = () => {
+  const swapInputOutput = React.useCallback(() => {
     if (outputText) {
       setInputText(outputText);
       setOutputText('');
       setActiveTab(activeTab === 'encode' ? 'decode' : 'encode');
     }
-  };
+  }, [activeTab, outputText]);
 
   // Validate Base64 input
-  const isValidBase64 = (str: string): boolean => {
+  const isValidBase64 = React.useCallback((str: string): boolean => {
     try {
       return btoa(atob(str)) === str;
     } catch {
       return false;
     }
-  };
+  }, []);
+
+  const handleActiveTabChange = React.useCallback((value: string) => {
+    setActiveTab(value as 'encode' | 'decode');
+  }, []);
+
+  const handleActiveInputTabChange = React.useCallback((value: string) => {
+    setActiveInputTab(value as 'text' | 'file');
+  }, []);
+
+  const handleInputTextChange = React.useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
+  }, []);
+
+  const handleCopyOutput = React.useCallback(() => {
+    copyToClipboard(outputText);
+  }, [copyToClipboard, outputText]);
+
+  const handleDownloadDecodedOutput = React.useCallback(() => {
+    downloadAsFile(outputText, 'decoded.txt');
+  }, [downloadAsFile, outputText]);
+
+  const textPlaceholder = React.useMemo(
+    () =>
+      activeTab === 'encode'
+        ? 'Enter text to encode to Base64...'
+        : 'Enter Base64 string to decode...',
+    [activeTab]
+  );
+
+  const outputLabel = React.useMemo(
+    () => (activeTab === 'encode' ? 'Base64 Output' : 'Decoded Output'),
+    [activeTab]
+  );
 
   React.useEffect(() => {
     // Auto-process when input changes (for text)
@@ -295,10 +328,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
     <div className={className}>
       <div className="space-y-6">
         {/* Operation Selection */}
-        <Tabs
-          value={activeTab}
-          onValueChange={(value) => setActiveTab(value as 'encode' | 'decode')}
-        >
+        <Tabs value={activeTab} onValueChange={handleActiveTabChange}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="encode" className="flex items-center gap-2">
               <Code className="h-4 w-4" />
@@ -340,10 +370,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
         </Tabs>
 
         {/* Input Selection */}
-        <Tabs
-          value={activeInputTab}
-          onValueChange={(value) => setActiveInputTab(value as 'text' | 'file')}
-        >
+        <Tabs value={activeInputTab} onValueChange={handleActiveInputTabChange}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="text" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
@@ -374,12 +401,8 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
                 <div>
                   <Textarea
                     value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    placeholder={
-                      activeTab === 'encode'
-                        ? 'Enter text to encode to Base64...'
-                        : 'Enter Base64 string to decode...'
-                    }
+                    onChange={handleInputTextChange}
+                    placeholder={textPlaceholder}
                     className="min-h-[300px] font-mono"
                   />
                   <div className="mt-1 text-muted-foreground text-sm">
@@ -390,24 +413,14 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
                 {outputText && (
                   <div>
                     <div className="mb-2 flex items-center justify-between">
-                      <label className="font-medium text-sm">
-                        {activeTab === 'encode' ? 'Base64 Output' : 'Decoded Output'}
-                      </label>
+                      <label className="font-medium text-sm">{outputLabel}</label>
                       <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(outputText)}
-                        >
+                        <Button variant="ghost" size="sm" onClick={handleCopyOutput}>
                           <Copy className="mr-1 h-4 w-4" />
                           Copy
                         </Button>
                         {activeTab === 'decode' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => downloadAsFile(outputText, 'decoded.txt')}
-                          >
+                          <Button variant="ghost" size="sm" onClick={handleDownloadDecodedOutput}>
                             Download
                           </Button>
                         )}
@@ -444,6 +457,7 @@ export function Base64Converter({ onConversionComplete, className }: Base64Conve
                   onFilesChange={setInputFiles}
                   maxFiles={10}
                   acceptedFormats={activeTab === 'encode' ? ['*'] : ['txt', 'base64']}
+                  uploadAriaLabel="Upload file for encoding"
                 />
                 <Button
                   onClick={processFiles}

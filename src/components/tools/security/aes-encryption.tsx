@@ -21,7 +21,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Copy, Key, Lock, LockOpen, Shield, WarningCircle } from '@phosphor-icons/react';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 interface EncryptionResult {
   encrypted: string;
@@ -65,22 +66,22 @@ export const AESEncryption: React.FC = () => {
   const [autoKey, setAutoKey] = useState(true);
 
   // Generate random key and IV
-  const generateRandomData = (length: number): string => {
+  const generateRandomData = useCallback((length: number): string => {
     const array = new Uint8Array(length);
     crypto.getRandomValues(array);
     return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
-  };
+  }, []);
 
   // Generate random IV for GCM and CBC modes
-  const generateIV = (): Uint8Array => {
+  const generateIV = useCallback((): Uint8Array => {
     const ivLength = mode === 'AES-GCM' ? 12 : 16; // GCM uses 96-bit IV, CBC uses 128-bit
     const iv = new Uint8Array(ivLength);
     crypto.getRandomValues(iv);
     return iv;
-  };
+  }, [mode]);
 
   // Convert hex string to Uint8Array
-  const hexToArray = (hex: string): Uint8Array => {
+  const hexToArray = useCallback((hex: string): Uint8Array => {
     const matches = hex.match(/.{1,2}/g);
     if (!matches) return new Uint8Array();
 
@@ -90,15 +91,15 @@ export const AESEncryption: React.FC = () => {
     });
 
     return bytes;
-  };
+  }, []);
 
   // Convert Uint8Array to hex string
-  const arrayToHex = (array: Uint8Array): string => {
+  const arrayToHex = useCallback((array: Uint8Array): string => {
     return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
-  };
+  }, []);
 
   // Convert base64 to hex
-  const base64ToHex = (base64: string): string => {
+  const base64ToHex = useCallback((base64: string): string => {
     try {
       const binary = atob(base64);
       return Array.from(binary, (char) => char.charCodeAt(0).toString(16).padStart(2, '0')).join(
@@ -107,26 +108,29 @@ export const AESEncryption: React.FC = () => {
     } catch (_err) {
       throw new Error('Invalid base64 input');
     }
-  };
+  }, []);
 
   // Convert hex to base64
-  const hexToBase64 = (hex: string): string => {
-    try {
-      const array = hexToArray(hex);
-      return btoa(String.fromCharCode(...array));
-    } catch (_err) {
-      throw new Error('Invalid hex input');
-    }
-  };
+  const hexToBase64 = useCallback(
+    (hex: string): string => {
+      try {
+        const array = hexToArray(hex);
+        return btoa(String.fromCharCode(...array));
+      } catch (_err) {
+        throw new Error('Invalid hex input');
+      }
+    },
+    [hexToArray]
+  );
 
-  const toArrayBuffer = (bytes: Uint8Array): ArrayBuffer => {
+  const toArrayBuffer = useCallback((bytes: Uint8Array): ArrayBuffer => {
     const buffer = new ArrayBuffer(bytes.byteLength);
     new Uint8Array(buffer).set(bytes);
     return buffer;
-  };
+  }, []);
 
   // Generate encryption key
-  const generateKey = async (): Promise<CryptoKey> => {
+  const generateKey = useCallback(async (): Promise<CryptoKey> => {
     const keyData = hexToArray(key);
     const keyBuffer = toArrayBuffer(keyData);
 
@@ -134,30 +138,30 @@ export const AESEncryption: React.FC = () => {
       'encrypt',
       'decrypt',
     ]);
-  };
+  }, [hexToArray, key, mode, toArrayBuffer]);
 
   // Generate new key
-  const generateNewKey = () => {
+  const generateNewKey = useCallback(() => {
     const keyLength = keySize / 8;
     const newKey = generateRandomData(keyLength);
     setKey(newKey);
-  };
+  }, [generateRandomData, keySize]);
 
   // Generate new IV
-  const generateNewIV = () => {
+  const generateNewIV = useCallback(() => {
     const ivArray = generateIV();
     setIv(arrayToHex(ivArray));
-  };
+  }, [arrayToHex, generateIV]);
 
   // Initialize with random key
   useEffect(() => {
     if (autoKey && !key) {
       generateNewKey();
     }
-  }, [autoKey, keySize]);
+  }, [autoKey, generateNewKey, key]);
 
   // Encrypt data
-  const encrypt = async () => {
+  const encrypt = useCallback(async () => {
     if (!plaintext.trim()) {
       setError('Please enter plaintext to encrypt');
       return;
@@ -214,10 +218,10 @@ export const AESEncryption: React.FC = () => {
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [arrayToHex, generateIV, generateKey, hexToBase64, key, mode, plaintext, toArrayBuffer]);
 
   // Decrypt data
-  const decrypt = async () => {
+  const decrypt = useCallback(async () => {
     if (!ciphertext.trim()) {
       setError('Please enter ciphertext to decrypt');
       return;
@@ -278,21 +282,70 @@ export const AESEncryption: React.FC = () => {
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [base64ToHex, ciphertext, generateKey, hexToArray, iv, mode, toArrayBuffer, key]);
 
   // Copy to clipboard
-  const copyToClipboard = async (text: string) => {
+  const copyToClipboard = useCallback(async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-    } catch (err) {
-      console.error('Failed to copy to clipboard:', err);
+    } catch (_err) {
+      toast.error('Failed to copy to clipboard');
     }
-  };
+  }, []);
 
-  const getModeDescription = () => {
+  const getModeDescription = useCallback(() => {
     const modeInfo = AES_MODES.find((m) => m.value === mode);
     return modeInfo?.description || '';
-  };
+  }, [mode]);
+
+  const modeDescription = useMemo(() => getModeDescription(), [getModeDescription]);
+
+  const handleKeySizeChange = useCallback((value: string) => {
+    setKeySize(Number(value) as AESKeySize);
+  }, []);
+
+  const handleModeChange = useCallback((value: string) => {
+    setMode(value as AESMode);
+  }, []);
+
+  const handleKeyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setKey(e.target.value);
+    setAutoKey(false);
+  }, []);
+
+  const handleAutoKeyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setAutoKey(e.target.checked);
+  }, []);
+
+  const handlePlaintextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPlaintext(e.target.value);
+  }, []);
+
+  const handleCiphertextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCiphertext(e.target.value);
+  }, []);
+
+  const handleIvChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setIv(e.target.value);
+  }, []);
+
+  const handleCopyEncrypted = useCallback(() => {
+    if (encryptionResult) {
+      copyToClipboard(encryptionResult.encrypted);
+    }
+  }, [copyToClipboard, encryptionResult]);
+
+  const handleCopyIv = useCallback(() => {
+    if (encryptionResult) {
+      copyToClipboard(encryptionResult.iv);
+    }
+  }, [copyToClipboard, encryptionResult]);
+
+  const handleCopyDecrypted = useCallback(() => {
+    if (decryptionResult?.success) {
+      copyToClipboard(decryptionResult.decrypted);
+    }
+  }, [copyToClipboard, decryptionResult]);
 
   return (
     <div className="space-y-6">
@@ -308,11 +361,8 @@ export const AESEncryption: React.FC = () => {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
               <Label htmlFor="keySize">Key Size</Label>
-              <Select
-                value={keySize.toString()}
-                onValueChange={(value) => setKeySize(Number(value) as AESKeySize)}
-              >
-                <SelectTrigger>
+              <Select value={keySize.toString()} onValueChange={handleKeySizeChange}>
+                <SelectTrigger id="keySize">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -327,8 +377,8 @@ export const AESEncryption: React.FC = () => {
 
             <div>
               <Label htmlFor="mode">Encryption Mode</Label>
-              <Select value={mode} onValueChange={(value) => setMode(value as AESMode)}>
-                <SelectTrigger>
+              <Select value={mode} onValueChange={handleModeChange}>
+                <SelectTrigger id="mode">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -339,7 +389,7 @@ export const AESEncryption: React.FC = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="mt-1 text-muted-foreground text-xs">{getModeDescription()}</p>
+              <p className="mt-1 text-muted-foreground text-xs">{modeDescription}</p>
             </div>
 
             <div>
@@ -348,15 +398,18 @@ export const AESEncryption: React.FC = () => {
                 <Input
                   id="key"
                   value={key}
-                  onChange={(e) => {
-                    setKey(e.target.value);
-                    setAutoKey(false);
-                  }}
+                  onChange={handleKeyChange}
                   placeholder={`Enter ${keySize}-bit key in hex`}
                   className="font-mono text-xs"
                   disabled={autoKey}
                 />
-                <Button variant="outline" size="sm" onClick={generateNewKey} disabled={autoKey}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={generateNewKey}
+                  disabled={autoKey}
+                  aria-label="Generate new encryption key"
+                >
                   Generate
                 </Button>
               </div>
@@ -367,12 +420,7 @@ export const AESEncryption: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="autoKey"
-              checked={autoKey}
-              onChange={(e) => setAutoKey(e.target.checked)}
-            />
+            <input type="checkbox" id="autoKey" checked={autoKey} onChange={handleAutoKeyChange} />
             <Label htmlFor="autoKey">Auto-generate key on size change</Label>
           </div>
         </CardContent>
@@ -406,7 +454,7 @@ export const AESEncryption: React.FC = () => {
                 <Textarea
                   id="plaintext"
                   value={plaintext}
-                  onChange={(e) => setPlaintext(e.target.value)}
+                  onChange={handlePlaintextChange}
                   placeholder="Enter text to encrypt..."
                   className="min-h-[200px] font-mono text-sm"
                 />
@@ -434,7 +482,7 @@ export const AESEncryption: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => copyToClipboard(encryptionResult.encrypted)}
+                      onClick={handleCopyEncrypted}
                       className="mt-2"
                     >
                       <Copy className="mr-1 h-4 w-4" />
@@ -448,20 +496,20 @@ export const AESEncryption: React.FC = () => {
                       <Input
                         id="iv"
                         value={encryptionResult.iv}
-                        onChange={(e) => setIv(e.target.value)}
+                        onChange={handleIvChange}
                         placeholder="IV in hex format"
                         className="font-mono text-sm"
                       />
-                      <Button variant="outline" size="sm" onClick={generateNewIV}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={generateNewIV}
+                        aria-label="Generate new initialization vector"
+                      >
                         New IV
                       </Button>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copyToClipboard(encryptionResult.iv)}
-                      className="mt-2"
-                    >
+                    <Button variant="outline" size="sm" onClick={handleCopyIv} className="mt-2">
                       <Copy className="mr-1 h-4 w-4" />
                       Copy IV
                     </Button>
@@ -498,7 +546,7 @@ export const AESEncryption: React.FC = () => {
                 <Textarea
                   id="ciphertext"
                   value={ciphertext}
-                  onChange={(e) => setCiphertext(e.target.value)}
+                  onChange={handleCiphertextChange}
                   placeholder="Enter Base64 encrypted text..."
                   className="min-h-[200px] font-mono text-sm"
                 />
@@ -509,7 +557,7 @@ export const AESEncryption: React.FC = () => {
                 <Input
                   id="decrypt-iv"
                   value={iv}
-                  onChange={(e) => setIv(e.target.value)}
+                  onChange={handleIvChange}
                   placeholder="Enter IV in hex format"
                   className="font-mono text-sm"
                 />
@@ -539,7 +587,7 @@ export const AESEncryption: React.FC = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => copyToClipboard(decryptionResult.decrypted)}
+                          onClick={handleCopyDecrypted}
                           className="mt-2"
                         >
                           <Copy className="mr-1 h-4 w-4" />

@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -13,11 +14,14 @@ import {
   Copy,
   Eye,
   EyeSlash,
+  Lock,
   Shield,
+  ShieldCheck,
   User,
   XCircle,
 } from '@phosphor-icons/react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 
 interface JWTPayload {
   [key: string]: unknown;
@@ -44,11 +48,125 @@ interface DecodedJWT {
   error?: string;
 }
 
+function base64UrlDecode(str: string): Uint8Array {
+  const base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  const pad = base64.length % 4;
+  const padded = pad ? base64 + '='.repeat(4 - pad) : base64;
+  const binary = atob(padded);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let index = 0; index < binary.length; index++) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return bytes;
+}
+
+function getHashAlgorithm(algorithm: string): 'SHA-256' | 'SHA-384' | 'SHA-512' {
+  const hashMap: Record<string, 'SHA-256' | 'SHA-384' | 'SHA-512'> = {
+    HS256: 'SHA-256',
+    HS384: 'SHA-384',
+    HS512: 'SHA-512',
+    RS256: 'SHA-256',
+    RS384: 'SHA-384',
+    RS512: 'SHA-512',
+  };
+
+  const hashAlgorithm = hashMap[algorithm];
+  if (!hashAlgorithm) {
+    throw new Error(`Unsupported algorithm: ${algorithm}`);
+  }
+
+  return hashAlgorithm;
+}
+
+async function verifyHMAC(token: string, secret: string, algorithm: string): Promise<boolean> {
+  const parts = token.split('.');
+  const headerPart = parts[0] ?? '';
+  const payloadPart = parts[1] ?? '';
+  const signaturePart = parts[2] ?? '';
+  const headerPayload = `${headerPart}.${payloadPart}`;
+  const signature = base64UrlDecode(signaturePart);
+
+  const hashAlg = getHashAlgorithm(algorithm);
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secret);
+
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: hashAlg },
+    false,
+    ['sign']
+  );
+
+  const signatureCheck = new Uint8Array(
+    await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(headerPayload))
+  );
+
+  if (signature.length !== signatureCheck.length) {
+    return false;
+  }
+
+  let result = 0;
+  for (let index = 0; index < signature.length; index++) {
+    result |= (signature[index] ?? 0) ^ (signatureCheck[index] ?? 0);
+  }
+
+  return result === 0;
+}
+
+async function verifyRSA(token: string, publicKeyPem: string, algorithm: string): Promise<boolean> {
+  const parts = token.split('.');
+  const headerPart = parts[0] ?? '';
+  const payloadPart = parts[1] ?? '';
+  const signaturePart = parts[2] ?? '';
+  const headerPayload = `${headerPart}.${payloadPart}`;
+  const signature = base64UrlDecode(signaturePart);
+  const normalizedSignature = new Uint8Array(signature.length);
+  normalizedSignature.set(signature);
+
+  const hashAlg = getHashAlgorithm(algorithm);
+
+  const pemBody = publicKeyPem
+    .replace(/-----BEGIN PUBLIC KEY-----/, '')
+    .replace(/-----END PUBLIC KEY-----/, '')
+    .replace(/\s/g, '');
+  const binaryDer = atob(pemBody);
+  const derBuffer = new Uint8Array(binaryDer.length);
+
+  for (let index = 0; index < binaryDer.length; index++) {
+    derBuffer[index] = binaryDer.charCodeAt(index);
+  }
+
+  const cryptoKey = await crypto.subtle.importKey(
+    'spki',
+    derBuffer.buffer,
+    { name: 'RSASSA-PKCS1-v1_5', hash: hashAlg },
+    false,
+    ['verify']
+  );
+
+  const encoder = new TextEncoder();
+  return crypto.subtle.verify(
+    'RSASSA-PKCS1-v1_5',
+    cryptoKey,
+    normalizedSignature,
+    encoder.encode(headerPayload)
+  );
+}
+
 export function JWTDecoder() {
   const [jwtInput, setJwtInput] = useState('');
   const [decoded, setDecoded] = useState<DecodedJWT | null>(null);
   const [showSignature, setShowSignature] = useState(false);
   const [copied, setCopied] = useState('');
+  const [verificationSecret, setVerificationSecret] = useState('');
+  const [verificationStatus, setVerificationStatus] = useState<
+    'idle' | 'verified' | 'invalid' | 'error'
+  >('idle');
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const decodeJWT = (token: string): DecodedJWT => {
     try {
@@ -94,19 +212,55 @@ export function JWTDecoder() {
   const handleDecode = () => {
     if (!jwtInput.trim()) {
       setDecoded(null);
+      setVerificationStatus('idle');
+      setVerificationError(null);
       return;
     }
+
     const result = decodeJWT(jwtInput.trim());
     setDecoded(result);
+    setVerificationStatus('idle');
+    setVerificationError(null);
   };
+
+  const handleVerify = useCallback(async () => {
+    if (!decoded || !verificationSecret.trim()) {
+      return;
+    }
+
+    setIsVerifying(true);
+    setVerificationError(null);
+
+    try {
+      const alg = decoded.header.alg;
+      let isValid = false;
+
+      if (alg.startsWith('HS')) {
+        isValid = await verifyHMAC(jwtInput.trim(), verificationSecret, alg);
+      } else if (alg.startsWith('RS')) {
+        isValid = await verifyRSA(jwtInput.trim(), verificationSecret, alg);
+      } else {
+        setVerificationError(`Algorithm ${alg} is not yet supported for verification`);
+        setVerificationStatus('error');
+        return;
+      }
+
+      setVerificationStatus(isValid ? 'verified' : 'invalid');
+    } catch (error) {
+      setVerificationError(error instanceof Error ? error.message : 'Verification failed');
+      setVerificationStatus('error');
+    } finally {
+      setIsVerifying(false);
+    }
+  }, [decoded, verificationSecret, jwtInput]);
 
   const copyToClipboard = async (text: string, type: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(type);
       setTimeout(() => setCopied(''), 2000);
-    } catch (error) {
-      console.error('Failed to copy:', error);
+    } catch (_error) {
+      toast.error('Failed to copy to clipboard');
     }
   };
 
@@ -150,6 +304,12 @@ export function JWTDecoder() {
     );
   };
 
+  const verificationAlgorithm = decoded?.header.alg ?? 'Unknown';
+  const isHmacAlgorithm = /^HS(256|384|512)$/.test(verificationAlgorithm);
+  const isRsaAlgorithm = /^RS(256|384|512)$/.test(verificationAlgorithm);
+  const isEcdsaAlgorithm = /^ES(256|384|512)$/.test(verificationAlgorithm);
+  const supportsVerification = isHmacAlgorithm || isRsaAlgorithm;
+
   return (
     <div className="space-y-6">
       <Card>
@@ -185,6 +345,100 @@ export function JWTDecoder() {
 
       {decoded && (
         <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <ShieldCheck className="h-5 w-5" />
+                  Signature Verification
+                </span>
+                <Badge variant="secondary" className="font-mono">
+                  {verificationAlgorithm}
+                </Badge>
+              </CardTitle>
+              <CardDescription>
+                Verify JWT signature using HMAC secret or RSA public key (PEM)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {isHmacAlgorithm ? (
+                <div className="space-y-2">
+                  <label htmlFor="jwt-verification-secret" className="font-medium text-sm">
+                    Secret Key
+                  </label>
+                  <Input
+                    id="jwt-verification-secret"
+                    type="password"
+                    placeholder="Enter HMAC secret key"
+                    value={verificationSecret}
+                    onChange={(event) => {
+                      setVerificationSecret(event.target.value);
+                      setVerificationStatus('idle');
+                      setVerificationError(null);
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <label htmlFor="jwt-verification-public-key" className="font-medium text-sm">
+                    Public Key (PEM format)
+                  </label>
+                  <Textarea
+                    id="jwt-verification-public-key"
+                    placeholder="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
+                    value={verificationSecret}
+                    onChange={(event) => {
+                      setVerificationSecret(event.target.value);
+                      setVerificationStatus('idle');
+                      setVerificationError(null);
+                    }}
+                    className="min-h-[140px] font-mono text-sm"
+                  />
+                </div>
+              )}
+
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleVerify}
+                  disabled={!supportsVerification || isVerifying || !verificationSecret.trim()}
+                  className="flex items-center gap-2"
+                >
+                  <Lock className="h-4 w-4" />
+                  {isVerifying ? 'Verifying...' : 'Verify Signature'}
+                </Button>
+
+                {verificationStatus === 'verified' && (
+                  <Badge variant="outline" className="text-green-600 dark:text-green-400">
+                    <CheckCircle className="mr-1 h-3 w-3" />
+                    Signature Verified
+                  </Badge>
+                )}
+
+                {verificationStatus === 'invalid' && (
+                  <Badge variant="outline" className="text-red-600 dark:text-red-400">
+                    <XCircle className="mr-1 h-3 w-3" />
+                    Signature Invalid
+                  </Badge>
+                )}
+              </div>
+
+              {isEcdsaAlgorithm && verificationStatus === 'idle' && (
+                <Alert>
+                  <AlertDescription>
+                    ECDSA verification ({verificationAlgorithm}) is not implemented yet.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {verificationStatus === 'error' && verificationError && (
+                <Alert variant="destructive">
+                  <XCircle className="h-4 w-4" />
+                  <AlertDescription>{verificationError}</AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+
           {decoded.error && (
             <Alert variant="destructive">
               <XCircle className="h-4 w-4" />

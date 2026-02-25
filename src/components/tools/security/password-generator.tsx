@@ -296,6 +296,7 @@ const PasswordGenerator: React.FC = () => {
                   size="sm"
                   className="-translate-y-1/2 absolute top-1/2 right-1"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>

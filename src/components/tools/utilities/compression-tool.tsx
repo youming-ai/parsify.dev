@@ -13,16 +13,12 @@ import {
 } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 
-const CompressionCtor = (globalThis as any).CompressionStream as
-  | (new (
-      format: string
-    ) => any)
-  | undefined;
-const DecompressionCtor = (globalThis as any).DecompressionStream as
-  | (new (
-      format: string
-    ) => any)
-  | undefined;
+const CompressionCtor =
+  typeof globalThis.CompressionStream !== 'undefined' ? globalThis.CompressionStream : undefined;
+const DecompressionCtor =
+  typeof globalThis.DecompressionStream !== 'undefined'
+    ? globalThis.DecompressionStream
+    : undefined;
 
 const supportsCompression =
   typeof CompressionCtor !== 'undefined' && typeof DecompressionCtor !== 'undefined';
