@@ -1,4 +1,4 @@
-import { ImageResponse } from 'next/og';
+// dynamic import to avoid @vercel/og eager initialization crash on Cloudflare Workers
 
 export const size = {
   width: 180,
@@ -6,7 +6,8 @@ export const size = {
 };
 export const contentType = 'image/png';
 
-export default function AppleIcon() {
+export default async function AppleIcon() {
+  const { ImageResponse } = await import('next/og');
   return new ImageResponse(
     <div
       style={{
