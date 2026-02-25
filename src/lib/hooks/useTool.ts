@@ -7,9 +7,9 @@ import { SUCCESS_MESSAGES, TIMEOUTS } from '@/lib/constants';
 import type { ProcessingStatus, ToolComponentProps, ToolResult } from '@/types/components';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-interface UseToolOptions<T = any> extends Partial<ToolComponentProps> {
+interface UseToolOptions<T = unknown> extends Partial<ToolComponentProps> {
   /** Tool-specific processing function */
-  processFunction?: (data: any) => Promise<T>;
+  processFunction?: (data: unknown) => Promise<T>;
   /** Auto-reset on completion */
   autoReset?: boolean;
   /** Reset delay in milliseconds */
@@ -20,7 +20,7 @@ interface UseToolOptions<T = any> extends Partial<ToolComponentProps> {
   enableProgress?: boolean;
 }
 
-interface UseToolReturn<T = any> {
+interface UseToolReturn<T = unknown> {
   /** Current processing status */
   status: ProcessingStatus;
   /** Current result */
@@ -37,7 +37,7 @@ interface UseToolReturn<T = any> {
   error: string | null;
   /** Function to start processing */
   /** Function to start processing */
-  startProcessing: (data: any) => Promise<void>;
+  startProcessing: (data: unknown) => Promise<void>;
   /** Function to stop processing */
   stopProcessing: () => void;
   /** Function to reset state */
@@ -53,7 +53,7 @@ interface UseToolReturn<T = any> {
 /**
  * Hook for managing tool state and operations
  */
-export function useTool<T = any>(options: UseToolOptions<T> = {}): UseToolReturn<T> {
+export function useTool<T = unknown>(options: UseToolOptions<T> = {}): UseToolReturn<T> {
   const {
     processFunction,
     onComplete,
@@ -177,7 +177,7 @@ export function useTool<T = any>(options: UseToolOptions<T> = {}): UseToolReturn
 
   // Start processing function
   const startProcessing = useCallback(
-    async (data: any) => {
+    async (data: unknown) => {
       if (!processFunction) {
         setError('No processing function provided');
         return;

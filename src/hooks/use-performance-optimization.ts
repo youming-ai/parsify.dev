@@ -122,8 +122,9 @@ export const usePerformanceOptimization = () => {
       let clsValue = 0;
       const clsObserver = new PerformanceObserver((list) => {
         list.getEntries().forEach((entry) => {
-          if (!(entry as any).hadRecentInput) {
-            clsValue += (entry as any).value;
+          const shift = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number };
+          if (!shift.hadRecentInput) {
+            clsValue += shift.value ?? 0;
             setVitals((prev) => ({
               ...prev,
               cls: clsValue,
@@ -144,9 +145,12 @@ export const usePerformanceOptimization = () => {
 
   // Monitor memory usage
   const getMemoryUsage = useCallback((): number => {
-    if (typeof window !== 'undefined' && 'performance' in window && (performance as any).memory) {
-      const memory = (performance as any).memory;
-      return memory.usedJSHeapSize / 1024 / 1024; // Convert to MB
+    if (typeof window === 'undefined') return 0;
+    const perf = performance as Performance & {
+      memory?: { usedJSHeapSize: number };
+    };
+    if (perf.memory) {
+      return perf.memory.usedJSHeapSize / 1024 / 1024; // Convert to MB
     }
     return 0;
   }, []);
