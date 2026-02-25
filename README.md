@@ -1,8 +1,8 @@
 # Parsify.dev
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
-[![Cloudflare](https://img.shields.io/badge/Cloudflare-Pages-orange.svg)](https://pages.cloudflare.com/)
+[![vinext](https://img.shields.io/badge/vinext-Vite%20%2B%20Next.js-blue.svg)](https://github.com/vinextjs/vinext)
+[![Cloudflare](https://img.shields.io/badge/Cloudflare-Workers-orange.svg)](https://workers.cloudflare.com/)
 
 **Essential Tools for Developers** - Privacy-first utilities running entirely in your browser.
 
@@ -73,13 +73,14 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## 🏗️ Tech Stack
 
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Next.js 15 (App Router) via **vinext** (Vite-based)
 - **Language**: TypeScript 5
 - **Styling**: Tailwind CSS + shadcn/ui
 - **State**: React hooks (useState, useMemo)
 - **Testing**: Vitest + happy-dom
 - **Linting**: Biome
-- **Deployment**: Cloudflare Workers / Pages (via OpenNext)
+- **Build**: Vite + vinext
+- **Deployment**: Cloudflare Workers
 
 ## 📁 Project Structure
 
@@ -97,23 +98,37 @@ src/
 
 ## 🌐 Deployment
 
-### Cloudflare Pages (Recommended)
+### Cloudflare Workers
 
 ```bash
 # Login to Cloudflare
 bunx wrangler login
 
 # Build and deploy
-bun run deploy:cf
+bun run deploy
+
+# Or deploy to staging
+bun run deploy --env staging
 ```
 
-See [AGENTS.md](AGENTS.md) for complete development and deployment commands.
+### Environment Variables
+
+Set secrets via Wrangler:
+
+```bash
+# For AI API route
+bunx wrangler secret put GROQ_API_KEY
+
+# Set allowed origin
+bunx wrangler secret put ALLOWED_ORIGIN
+```
+
+See [wrangler.toml](wrangler.toml) for configuration.
 
 ## 📚 Documentation
 
-- [Architecture Decisions](docs/ARCHITECTURE.md)
-- [Bundle Analysis](docs/BUNDLE-ANALYSIS.md)
-- [Project History](docs/PROJECT-HISTORY.md)
+- [vinext Migration Guide](docs/VINEXT-MIGRATION.md) - How we migrated to vinext
+- [Security Best Practices](docs/SECURITY.md) - Security considerations and guidelines
 
 ## 🔒 Privacy
 
