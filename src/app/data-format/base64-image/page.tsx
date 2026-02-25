@@ -12,7 +12,7 @@ export const metadata: Metadata = generateToolSEOMetadata({
 const Base64ImageConverter = dynamic(
   () =>
     import('@/components/tools/image/base64-image-converter').then((mod) => ({
-      default: mod.default,
+      default: mod.Base64ImageConverter,
     })),
   {
     loading: () => <ToolLoading message="Loading Base64 Image Converter..." />,
