@@ -133,7 +133,7 @@ export function RegexValidator() {
       for (const m of matchResults) {
         const before = highlighted.substring(0, m.index + offset);
         const after = highlighted.substring(m.index + offset + m.fullMatch.length);
-        const wrapped = `<mark class="bg-yellow-300 dark:bg-yellow-600 rounded px-0.5">${m.fullMatch}</mark>`;
+        const wrapped = `<mark class="bg-yellow-200 dark:bg-yellow-700 rounded px-0.5">${m.fullMatch}</mark>`;
         highlighted = before + wrapped + after;
         offset += wrapped.length - m.fullMatch.length;
       }
@@ -246,6 +246,8 @@ export function RegexValidator() {
                 size="sm"
                 onClick={() => toggleFlag(flag.key)}
                 title={flag.description}
+                aria-pressed={selectedFlags.has(flag.key)}
+                aria-label={flag.description}
               >
                 <code className="mr-1">{flag.key}</code>
                 {flag.label}

@@ -57,6 +57,16 @@ greet('Developer');
 **Enjoy writing in Markdown!** 🚀
 `;
 
+const sanitizeUrl = (url: string): string => {
+  const trimmedUrl = url.trim();
+
+  if (/^(javascript:|vbscript:|data:text\/html)/i.test(trimmedUrl)) {
+    return '';
+  }
+
+  return url;
+};
+
 const MarkdownEditor = () => {
   const [markdown, setMarkdown] = useState(defaultMarkdown);
   const [html, setHtml] = useState('');
@@ -120,16 +130,16 @@ const MarkdownEditor = () => {
     result = result.replace(/~~(.*?)~~/g, '<del>$1</del>');
 
     // Links
-    result = result.replace(
-      /\[([^\]]+)\]\(([^)]+)\)/g,
-      '<a href="$2" class="text-primary underline hover:no-underline" target="_blank" rel="noopener noreferrer">$1</a>'
-    );
+    result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, text: string, url: string) => {
+      const safeUrl = sanitizeUrl(url);
+      return `<a href="${safeUrl}" class="text-primary underline hover:no-underline" target="_blank" rel="noopener noreferrer">${text}</a>`;
+    });
 
     // Images
-    result = result.replace(
-      /!\[([^\]]*)\]\(([^)]+)\)/g,
-      '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg my-4" />'
-    );
+    result = result.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_match, alt: string, url: string) => {
+      const safeUrl = sanitizeUrl(url);
+      return `<img src="${safeUrl}" alt="${alt}" class="max-w-full h-auto rounded-lg my-4" />`;
+    });
 
     // Tables
     result = result.replace(/^\|(.+)\|$/gim, (match) => {

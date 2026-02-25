@@ -9,6 +9,7 @@ interface FileUploadProps {
   multiple?: boolean;
   maxSize?: number;
   maxFiles?: number;
+  uploadAriaLabel?: string;
   files?: File[];
   acceptedFormats?: string[];
   onFilesSelected?: (files: File[]) => void;
@@ -22,6 +23,7 @@ export function FileUpload({
   multiple = true,
   maxSize = 10 * 1024 * 1024,
   maxFiles = 10,
+  uploadAriaLabel = 'Upload files',
   files: controlledFiles,
   acceptedFormats,
   onFilesSelected,
@@ -88,6 +90,9 @@ export function FileUpload({
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+        role="button"
+        tabIndex={0}
+        aria-label={uploadAriaLabel}
       >
         <UploadSimple className="mb-3 h-8 w-8 text-muted-foreground" />
         <p className="text-sm text-muted-foreground">Click to upload or drag and drop</p>

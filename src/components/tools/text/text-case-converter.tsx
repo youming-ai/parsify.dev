@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 
 export type CaseType =
   | 'upper'
@@ -302,8 +303,8 @@ export function TextCaseConverter({ className }: TextCaseConverterProps) {
       textArea.select();
       try {
         document.execCommand('copy');
-      } catch (error) {
-        console.error('Failed to copy text: ', error);
+      } catch (_error) {
+        toast.error('Failed to copy text');
       }
       document.body.removeChild(textArea);
     }

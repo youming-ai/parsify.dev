@@ -26,6 +26,7 @@ import {
 } from '@phosphor-icons/react';
 import { useCallback, useState } from 'react';
 import type React from 'react';
+import { toast } from 'sonner';
 
 interface WordFrequency {
   word: string;
@@ -101,8 +102,8 @@ export function TextInspector() {
       await navigator.clipboard.writeText(content);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy:', error);
+    } catch (_error) {
+      toast.error('Failed to copy to clipboard');
     }
   }, []);
 

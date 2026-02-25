@@ -27,7 +27,8 @@ import {
   Users,
 } from '@phosphor-icons/react';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 interface TextMetrics {
   characterCount: number;
@@ -85,18 +86,21 @@ const TextAnalyzer: React.FC = () => {
   const [sentiment, setSentiment] = useState<SentimentAnalysis | null>(null);
   const [statistics, setStatistics] = useState<TextStatistics | null>(null);
 
-  const sampleTexts = {
-    essay:
-      'The advancement of technology has fundamentally transformed the way we communicate, work, and live. From the invention of the internet to the proliferation of smartphones, digital innovations have reshaped nearly every aspect of modern society. These changes have brought unprecedented convenience and efficiency, but they have also introduced new challenges and concerns that we must address thoughtfully.',
+  const sampleTexts = useMemo(
+    () => ({
+      essay:
+        'The advancement of technology has fundamentally transformed the way we communicate, work, and live. From the invention of the internet to the proliferation of smartphones, digital innovations have reshaped nearly every aspect of modern society. These changes have brought unprecedented convenience and efficiency, but they have also introduced new challenges and concerns that we must address thoughtfully.',
 
-    technical:
-      'Machine learning algorithms leverage statistical techniques to identify patterns in large datasets. These models iteratively improve their performance through exposure to training examples. Deep learning architectures, particularly neural networks with multiple layers, excel at feature extraction and representation learning. Recent advances in transformer models have revolutionized natural language processing tasks.',
+      technical:
+        'Machine learning algorithms leverage statistical techniques to identify patterns in large datasets. These models iteratively improve their performance through exposure to training examples. Deep learning architectures, particularly neural networks with multiple layers, excel at feature extraction and representation learning. Recent advances in transformer models have revolutionized natural language processing tasks.',
 
-    narrative:
-      'Sarah walked through the old library, her footsteps echoing on the wooden floors. Sunlight streamed through tall arched windows, illuminating dust motes dancing in the air. She ran her fingers along the spines of ancient books, each one containing worlds waiting to be discovered. In the quiet sanctuary of knowledge, she felt at home.',
+      narrative:
+        'Sarah walked through the old library, her footsteps echoing on the wooden floors. Sunlight streamed through tall arched windows, illuminating dust motes dancing in the air. She ran her fingers along the spines of ancient books, each one containing worlds waiting to be discovered. In the quiet sanctuary of knowledge, she felt at home.',
 
-    business: `Our company's third-quarter performance exceeded expectations with revenue growth of 15% year-over-year. Strategic initiatives in digital transformation have yielded significant operational efficiencies. Customer satisfaction scores improved to an all-time high of 92%. We anticipate continued expansion into emerging markets throughout the next fiscal year.`,
-  };
+      business: `Our company's third-quarter performance exceeded expectations with revenue growth of 15% year-over-year. Strategic initiatives in digital transformation have yielded significant operational efficiencies. Customer satisfaction scores improved to an all-time high of 92%. We anticipate continued expansion into emerging markets throughout the next fiscal year.`,
+    }),
+    []
+  );
 
   useEffect(() => {
     if (text) {
@@ -135,8 +139,8 @@ const TextAnalyzer: React.FC = () => {
       }
 
       await simulateProgress(100);
-    } catch (error) {
-      console.error('Text analysis failed:', error);
+    } catch (_error) {
+      toast.error('Text analysis failed');
     } finally {
       setIsAnalyzing(false);
     }
@@ -370,9 +374,79 @@ const TextAnalyzer: React.FC = () => {
     return { level: 'Very Difficult', color: 'text-red-600' };
   };
 
-  const loadSampleText = (type: keyof typeof sampleTexts) => {
-    setText(sampleTexts[type]);
-  };
+  const loadSampleText = useCallback(
+    (type: keyof typeof sampleTexts) => {
+      setText(sampleTexts[type]);
+    },
+    [sampleTexts]
+  );
+
+  const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setText(e.target.value);
+  }, []);
+
+  const handleLoadEssay = useCallback(() => {
+    loadSampleText('essay');
+  }, [loadSampleText]);
+
+  const handleLoadTechnical = useCallback(() => {
+    loadSampleText('technical');
+  }, [loadSampleText]);
+
+  const handleLoadNarrative = useCallback(() => {
+    loadSampleText('narrative');
+  }, [loadSampleText]);
+
+  const handleLoadBusiness = useCallback(() => {
+    loadSampleText('business');
+  }, [loadSampleText]);
+
+  const readabilityMetrics = useMemo(() => {
+    if (!readability) {
+      return [] as Array<{ score: number; name: string; desc: string }>;
+    }
+
+    return [
+      {
+        score: readability.fleschReading,
+        name: 'Flesch Reading Ease',
+        desc: '0-30: Very Difficult, 90-100: Very Easy',
+      },
+      {
+        score: readability.fleschKincaid,
+        name: 'Flesch-Kincaid Grade',
+        desc: 'U.S. school grade level',
+      },
+      {
+        score: readability.colemanLiau,
+        name: 'Coleman-Liau Index',
+        desc: 'Grade level based on characters',
+      },
+      {
+        score: readability.automatedReadability,
+        name: 'Automated Readability',
+        desc: 'Formula based on characters',
+      },
+      {
+        score: readability.gunningFog,
+        name: 'Gunning Fog Index',
+        desc: 'Years of education needed',
+      },
+      {
+        score: readability.daleChall,
+        name: 'Dale-Chall Score',
+        desc: 'Based on familiar words',
+      },
+    ];
+  }, [readability]);
+
+  const readabilityLevel = useMemo(() => {
+    if (!readability) {
+      return null;
+    }
+
+    return getReadabilityLevel(readability.fleschReading);
+  }, [readability]);
 
   return (
     <div className="space-y-6">
@@ -414,22 +488,22 @@ const TextAnalyzer: React.FC = () => {
 
             <Textarea
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={handleTextChange}
               placeholder="Enter your text here for analysis..."
               className="min-h-[400px] font-mono text-sm"
             />
 
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => loadSampleText('essay')} variant="outline" size="sm">
+              <Button onClick={handleLoadEssay} variant="outline" size="sm">
                 Essay Sample
               </Button>
-              <Button onClick={() => loadSampleText('technical')} variant="outline" size="sm">
+              <Button onClick={handleLoadTechnical} variant="outline" size="sm">
                 Technical Sample
               </Button>
-              <Button onClick={() => loadSampleText('narrative')} variant="outline" size="sm">
+              <Button onClick={handleLoadNarrative} variant="outline" size="sm">
                 Narrative Sample
               </Button>
-              <Button onClick={() => loadSampleText('business')} variant="outline" size="sm">
+              <Button onClick={handleLoadBusiness} variant="outline" size="sm">
                 Business Sample
               </Button>
             </div>
@@ -587,38 +661,7 @@ const TextAnalyzer: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {[
-                    {
-                      score: readability.fleschReading,
-                      name: 'Flesch Reading Ease',
-                      desc: '0-30: Very Difficult, 90-100: Very Easy',
-                    },
-                    {
-                      score: readability.fleschKincaid,
-                      name: 'Flesch-Kincaid Grade',
-                      desc: 'U.S. school grade level',
-                    },
-                    {
-                      score: readability.colemanLiau,
-                      name: 'Coleman-Liau Index',
-                      desc: 'Grade level based on characters',
-                    },
-                    {
-                      score: readability.automatedReadability,
-                      name: 'Automated Readability',
-                      desc: 'Formula based on characters',
-                    },
-                    {
-                      score: readability.gunningFog,
-                      name: 'Gunning Fog Index',
-                      desc: 'Years of education needed',
-                    },
-                    {
-                      score: readability.daleChall,
-                      name: 'Dale-Chall Score',
-                      desc: 'Based on familiar words',
-                    },
-                  ].map((metric, index) => (
+                  {readabilityMetrics.map((metric, index) => (
                     <div key={index} className="rounded-lg border p-4">
                       <div className="mb-2 flex items-start justify-between">
                         <h4 className="font-medium text-sm">{metric.name}</h4>
@@ -644,8 +687,7 @@ const TextAnalyzer: React.FC = () => {
                 <Alert className="mt-4">
                   <Info className="h-4 w-4" />
                   <AlertDescription>
-                    <strong>Reading Level:</strong>{' '}
-                    {getReadabilityLevel(readability.fleschReading).level}
+                    <strong>Reading Level:</strong> {readabilityLevel?.level}
                   </AlertDescription>
                 </Alert>
               </CardContent>
