@@ -40,7 +40,7 @@ export default function JsonToolsPage() {
       ))}
       <div className="container mx-auto max-w-7xl px-6 py-4 lg:px-8">
         <PrivacyNotice message="JSON processing is performed entirely in your browser. Your JSON data never leaves your device." />
-        <JsonToolComplete showHeader={false} />
+        <JsonToolComplete />
       </div>
     </>
   );

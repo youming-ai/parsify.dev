@@ -18,6 +18,7 @@ import {
   XCircle,
 } from '@phosphor-icons/react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface JWTPayload {
   [key: string]: unknown;
@@ -106,8 +107,8 @@ export default function JWTDecoderClient() {
       await navigator.clipboard.writeText(text);
       setCopied(type);
       setTimeout(() => setCopied(''), 2000);
-    } catch (error) {
-      console.error('Failed to copy:', error);
+    } catch (_error) {
+      toast.error('Failed to copy to clipboard');
     }
   };
 

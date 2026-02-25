@@ -25,6 +25,7 @@ import {
 } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 import type React from 'react';
+import { toast } from 'sonner';
 
 interface TextStats {
   characters: number;
@@ -215,8 +216,8 @@ export default function TextCounterClient() {
       await navigator.clipboard.writeText(content);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy:', error);
+    } catch (_error) {
+      toast.error('Failed to copy to clipboard');
     }
   };
 
