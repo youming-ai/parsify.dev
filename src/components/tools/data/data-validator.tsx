@@ -95,51 +95,54 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
   const [isProcessing, setIsProcessing] = React.useState(false);
 
   // Validate email format
-  const validateEmail = (email: string): boolean => {
+  const validateEmail = React.useCallback((email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  };
+  }, []);
 
   // Validate URL format
-  const validateURL = (url: string): boolean => {
+  const validateURL = React.useCallback((url: string): boolean => {
     try {
       new URL(url);
       return true;
     } catch {
       return false;
     }
-  };
+  }, []);
 
   // Validate pattern (regex)
-  const validatePattern = (value: string, pattern: string): boolean => {
+  const validatePattern = React.useCallback((value: string, pattern: string): boolean => {
     try {
       const regex = new RegExp(pattern);
       return regex.test(value);
     } catch {
       return false;
     }
-  };
+  }, []);
 
   // Validate length
-  const validateLength = (value: string, operation: 'min' | 'max', length: number): boolean => {
-    const valueLength = value.length;
-    switch (operation) {
-      case 'min':
-        return valueLength >= length;
-      case 'max':
-        return valueLength <= length;
-      default:
-        return true;
-    }
-  };
+  const validateLength = React.useCallback(
+    (value: string, operation: 'min' | 'max', length: number): boolean => {
+      const valueLength = value.length;
+      switch (operation) {
+        case 'min':
+          return valueLength >= length;
+        case 'max':
+          return valueLength <= length;
+        default:
+          return true;
+      }
+    },
+    []
+  );
 
   // Validate range
-  const validateRange = (value: number, min: number, max: number): boolean => {
+  const validateRange = React.useCallback((value: number, min: number, max: number): boolean => {
     return value >= min && value <= max;
-  };
+  }, []);
 
   // Parse input data based on format
-  const parseData = (data: string, format: string): unknown => {
+  const parseData = React.useCallback((data: string, format: string): unknown => {
     try {
       switch (format) {
         case 'json':
@@ -188,21 +191,24 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
       const errorMessage = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to parse ${format} data: ${errorMessage}`);
     }
-  };
+  }, []);
 
   // Add rule
-  const addRule = (template: (typeof ruleTemplates)[keyof typeof ruleTemplates]) => {
-    const newRule: ValidationRule = {
-      id: Date.now().toString(),
-      name: template.field,
-      ...template,
-      enabled: true,
-    };
-    setValidationRules((prev) => [...prev, newRule]);
-  };
+  const addRule = React.useCallback(
+    (template: (typeof ruleTemplates)[keyof typeof ruleTemplates]) => {
+      const newRule: ValidationRule = {
+        id: Date.now().toString(),
+        name: template.field,
+        ...template,
+        enabled: true,
+      };
+      setValidationRules((prev) => [...prev, newRule]);
+    },
+    []
+  );
 
   // Add custom rule
-  const addCustomRule = () => {
+  const addCustomRule = React.useCallback(() => {
     const newRule: ValidationRule = {
       id: Date.now().toString(),
       name: 'Custom Rule',
@@ -212,22 +218,22 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
       description: 'Custom validation rule',
     };
     setValidationRules((prev) => [...prev, newRule]);
-  };
+  }, []);
 
   // Remove rule
-  const removeRule = (id: string) => {
+  const removeRule = React.useCallback((id: string) => {
     setValidationRules((prev) => prev.filter((rule) => rule.id !== id));
-  };
+  }, []);
 
   // Update rule
-  const updateRule = (id: string, updates: Partial<ValidationRule>) => {
+  const updateRule = React.useCallback((id: string, updates: Partial<ValidationRule>) => {
     setValidationRules((prev) =>
       prev.map((rule) => (rule.id === id ? { ...rule, ...updates } : rule))
     );
-  };
+  }, []);
 
   // Validate data
-  const validateData = async () => {
+  const validateData = React.useCallback(async () => {
     if (!inputData.trim()) {
       toast.error('Please enter data to validate');
       return;
@@ -394,10 +400,21 @@ export function DataValidator({ onValidationComplete, className }: DataValidator
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [
+    dataFormat,
+    inputData,
+    onValidationComplete,
+    parseData,
+    validateEmail,
+    validateLength,
+    validatePattern,
+    validateRange,
+    validateURL,
+    validationRules,
+  ]);
 
   // Load sample data
-  const loadSampleData = (format: 'json' | 'csv' | 'xml' | 'yaml' | 'form') => {
+  const loadSampleData = React.useCallback((format: 'json' | 'csv' | 'xml' | 'yaml' | 'form') => {
     const samples = {
       json: `{
 	"name": "John Doe",
@@ -428,7 +445,36 @@ website=https://johndoe.com`,
 
     setInputData(samples[format] || '');
     setDataFormat(format);
-  };
+  }, []);
+
+  const handleDataFormatChange = React.useCallback(
+    (value: 'json' | 'csv' | 'xml' | 'yaml' | 'form') => {
+      setDataFormat(value);
+    },
+    []
+  );
+
+  const handleLoadSampleData = React.useCallback(() => {
+    loadSampleData(dataFormat);
+  }, [dataFormat, loadSampleData]);
+
+  const handleInputDataChange = React.useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputData(e.target.value);
+  }, []);
+
+  const ruleTemplateEntries = React.useMemo(() => Object.entries(ruleTemplates), []);
+
+  const resultsOverview = React.useMemo(() => {
+    if (!results) {
+      return null;
+    }
+
+    return {
+      fields: results.results.length,
+      passed: results.results.filter((result) => result.valid).length,
+      failed: results.results.filter((result) => !result.valid).length,
+    };
+  }, [results]);
 
   return (
     <div className={className}>
@@ -445,12 +491,7 @@ website=https://johndoe.com`,
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>Data Format</Label>
-                <Select
-                  value={dataFormat}
-                  onValueChange={(value: 'json' | 'csv' | 'xml' | 'yaml' | 'form') =>
-                    setDataFormat(value)
-                  }
-                >
+                <Select value={dataFormat} onValueChange={handleDataFormatChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select data format" />
                   </SelectTrigger>
@@ -465,11 +506,7 @@ website=https://johndoe.com`,
               </div>
               <div className="space-y-2">
                 <Label>Sample Data</Label>
-                <Button
-                  variant="outline"
-                  onClick={() => loadSampleData(dataFormat)}
-                  className="w-full"
-                >
+                <Button variant="outline" onClick={handleLoadSampleData} className="w-full">
                   Load {dataFormat.toUpperCase()} Sample
                 </Button>
               </div>
@@ -479,7 +516,7 @@ website=https://johndoe.com`,
               <Label>Input Data</Label>
               <Textarea
                 value={inputData}
-                onChange={(e) => setInputData(e.target.value)}
+                onChange={handleInputDataChange}
                 placeholder={`Enter ${dataFormat.toUpperCase()} data to validate...`}
                 className="min-h-[400px] font-mono"
               />
@@ -577,7 +614,7 @@ website=https://johndoe.com`,
               )}
 
               <div className="flex flex-wrap gap-2 border-t pt-4">
-                {Object.entries(ruleTemplates).map(([key, template]) => (
+                {ruleTemplateEntries.map(([key, template]) => (
                   <Button key={key} variant="outline" size="sm" onClick={() => addRule(template)}>
                     Add {key}
                   </Button>
@@ -618,7 +655,7 @@ website=https://johndoe.com`,
                   </Badge>
                 </div>
                 <div>
-                  <span className="font-medium">Fields:</span> {results.results.length}
+                  <span className="font-medium">Fields:</span> {resultsOverview?.fields ?? 0}
                 </div>
                 <div>
                   <span className="font-medium">Errors:</span>

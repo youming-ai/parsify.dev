@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { md5 as md5Hash } from '@/lib/crypto/hash-operations';
@@ -54,6 +55,16 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
   const [results, setResults] = React.useState<HashResult[]>([]);
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [uppercase, setUppercase] = React.useState(false);
+  const [hashProgress, setHashProgress] = React.useState<number>(0);
+  const [currentFileName, setCurrentFileName] = React.useState<string>('');
+
+  // Format file size for display
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  };
 
   // Generate hash using Web Crypto API
   const generateHash = async (data: string, algorithm: string): Promise<string> => {
@@ -86,6 +97,54 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
     throw new Error(`Algorithm ${algorithm} not supported`);
   };
 
+  // Hash file with chunked reading for large files
+  const hashFileChunked = async (
+    file: File,
+    algorithm: string,
+    onProgress: (progress: number) => void
+  ): Promise<string> => {
+    const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB chunks
+
+    if (algorithm === 'md5') {
+      // spark-md5 supports incremental hashing
+      const { default: SparkMD5 } = await import('spark-md5');
+      const spark = new SparkMD5.ArrayBuffer();
+      let offset = 0;
+
+      while (offset < file.size) {
+        const chunk = await file.slice(offset, offset + CHUNK_SIZE).arrayBuffer();
+        spark.append(chunk);
+        offset += CHUNK_SIZE;
+        onProgress(Math.min((offset / file.size) * 100, 100));
+      }
+
+      return spark.end();
+    }
+
+    // For SHA-* algorithms, read entire file as ArrayBuffer
+    // (crypto.subtle.digest doesn't support streaming)
+    // But we still show progress during the read phase
+    const buffer = await file.arrayBuffer();
+    onProgress(50); // Reading done
+
+    const webCryptoAlg = algorithm.toUpperCase().replace('-', '');
+    // Map: sha1→SHA-1, sha256→SHA-256, etc.
+    const algMap: Record<string, string> = {
+      SHA1: 'SHA-1',
+      SHA256: 'SHA-256',
+      SHA384: 'SHA-384',
+      SHA512: 'SHA-512',
+    };
+    const digestAlg = algMap[webCryptoAlg];
+    if (!digestAlg) throw new Error(`Unsupported algorithm: ${algorithm}`);
+
+    const hashBuffer = await crypto.subtle.digest(digestAlg as AlgorithmIdentifier, buffer);
+    onProgress(100);
+
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+  };
+
   // Process text input
   const processText = async () => {
     if (!inputText.trim()) {
@@ -109,8 +168,8 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
           };
           newResults.push(result);
           onHashGenerated?.(result);
-        } catch (error) {
-          console.error(`Error generating ${algorithm} hash:`, error);
+        } catch (_error) {
+          // Individual algorithm failure — skip and continue with remaining
         }
       }
 
@@ -135,11 +194,12 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
 
     try {
       for (const file of inputFiles) {
-        const fileContent = await file.text();
+        setCurrentFileName(file.name);
 
         for (const algorithm of selectedAlgorithms) {
           try {
-            const hash = await generateHash(fileContent, algorithm);
+            setHashProgress(0);
+            const hash = await hashFileChunked(file, algorithm, setHashProgress);
             const result: HashResult = {
               algorithm,
               input: 'File content',
@@ -151,8 +211,8 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
             };
             newResults.push(result);
             onHashGenerated?.(result);
-          } catch (error) {
-            console.error(`Error generating ${algorithm} hash for ${file.name}:`, error);
+          } catch (_error) {
+            // Individual file hash failure — skip and continue
           }
         }
       }
@@ -163,6 +223,8 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
       toast.error('Failed to process files');
     } finally {
       setIsProcessing(false);
+      setHashProgress(0);
+      setCurrentFileName('');
     }
   };
 
@@ -282,12 +344,18 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
                 <CardTitle>File Input</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <FileUpload
-                  files={inputFiles}
-                  onFilesChange={setInputFiles}
-                  maxFiles={10}
-                  acceptedFormats={['txt', 'json', 'xml', 'csv', 'md', 'log']}
-                />
+                <FileUpload files={inputFiles} onFilesChange={setInputFiles} maxFiles={10} />
+                {isProcessing && currentFileName && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Hashing: {currentFileName}</span>
+                      <span className="font-mono text-muted-foreground">
+                        {Math.round(hashProgress)}%
+                      </span>
+                    </div>
+                    <Progress value={hashProgress} className="h-2" />
+                  </div>
+                )}
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
@@ -333,7 +401,11 @@ export function HashGenerator({ onHashGenerated, className }: HashGeneratorProps
                           <>
                             <span className="text-muted-foreground text-sm">{result.fileName}</span>
                             <span className="text-muted-foreground text-xs">
-                              ({result.fileSize} bytes)
+                              (
+                              {result.fileSize !== undefined
+                                ? formatFileSize(result.fileSize)
+                                : 'unknown'}
+                              )
                             </span>
                           </>
                         )}

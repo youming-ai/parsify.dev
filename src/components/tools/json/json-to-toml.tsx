@@ -36,7 +36,7 @@ export function JsonToToml() {
   const [jsonInput, setJsonInput] = useState(sampleJson);
   const [tomlOutput, setTomlOutput] = useState('');
   const [error, setError] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [_copied, setCopied] = useState(false);
 
   const handleConvert = useCallback(() => {
     try {
@@ -96,22 +96,22 @@ export function JsonToToml() {
       <CardContent className="space-y-6">
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Input Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="json-input" className="text-base font-semibold">
+          <div className="flex flex-col overflow-hidden rounded-lg border bg-background shadow-sm">
+            <div className="flex items-center justify-between border-b px-4 py-3 bg-muted/30">
+              <Label htmlFor="json-input" className="font-semibold px-2">
                 JSON Input
               </Label>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setJsonInput(sampleJson)}>
+                <Button size="sm" variant="ghost" onClick={() => setJsonInput(sampleJson)}>
                   Sample
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="text-destructive hover:bg-destructive/10"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
                   onClick={handleClear}
                 >
-                  <Trash className="mr-2 h-4 w-4" /> Clear
+                  <Trash className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -119,37 +119,38 @@ export function JsonToToml() {
               id="json-input"
               value={jsonInput}
               onChange={(e) => setJsonInput(e.target.value)}
-              className="min-h-[650px] font-mono text-sm resize-none"
+              className="min-h-[600px] font-mono text-sm resize-none rounded-none border-0 focus-visible:ring-0"
               placeholder="Paste your JSON here..."
             />
-            <Button className="w-full" onClick={handleConvert} size="lg">
-              <Sparkle className="mr-2 h-5 w-5" /> Convert to TOML
-            </Button>
+            <div className="p-3 border-t bg-muted/10">
+              <Button className="w-full" onClick={handleConvert}>
+                <Sparkle className="mr-2 h-4 w-4" /> Convert to TOML
+              </Button>
+            </div>
           </div>
 
           {/* Output Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-base font-semibold">TOML Output</Label>
+          <div className="flex flex-col overflow-hidden rounded-lg border bg-background shadow-sm h-full relative">
+            <div className="flex items-center justify-between border-b px-4 py-3 bg-muted/30">
+              <Label className="font-semibold px-2">TOML Output</Label>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={handleCopy} disabled={!tomlOutput}>
-                  <Copy className="mr-2 h-4 w-4" />
-                  {copied ? 'Copied!' : 'Copy'}
+                <Button size="sm" variant="ghost" onClick={handleCopy} disabled={!tomlOutput}>
+                  <Copy className="h-4 w-4" />
                 </Button>
-                <Button size="sm" variant="outline" onClick={handleDownload} disabled={!tomlOutput}>
-                  <DownloadSimple className="mr-2 h-4 w-4" /> Download
+                <Button size="sm" variant="ghost" onClick={handleDownload} disabled={!tomlOutput}>
+                  <DownloadSimple className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-            <div className="relative">
+            <div className="relative flex-1">
               <Textarea
                 value={tomlOutput}
                 readOnly
-                className="min-h-[650px] font-mono text-sm bg-muted/30 resize-none"
+                className="h-full min-h-[600px] font-mono text-sm bg-muted/5 resize-none rounded-none border-0 focus-visible:ring-0"
                 placeholder="TOML output will appear here..."
               />
               {error && (
-                <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px] rounded-md">
+                <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px]">
                   <div className="max-w-[80%] rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
                     <p className="text-sm font-medium text-destructive">{error}</p>
                   </div>

@@ -29,14 +29,15 @@ import {
   ToggleLeft,
   X,
 } from '@phosphor-icons/react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
 import { cn } from '../../../lib/utils';
 import { Alert, AlertDescription } from '../../ui/alert';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Input } from '../../ui/input';
-import { ScrollArea } from '../../ui/scroll-area';
 
 // Types for JSON Hero Viewer
 type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
@@ -74,7 +75,6 @@ interface JsonHeroViewerProps {
 }
 
 const DEFAULT_EXPAND_LEVEL = 2;
-const MAX_VISIBLE_ITEMS_DEFAULT = 1000;
 const SEARCH_DEBOUNCE_MS = 300;
 
 // Utility functions
@@ -225,7 +225,6 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
   showTypes = true,
   showCopyButton = true,
   showSearch = true,
-  maxVisibleItems = MAX_VISIBLE_ITEMS_DEFAULT,
   onCopyNode,
   compact = false,
   scrollHeight = '500px', // Increased default height
@@ -238,9 +237,9 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
   const [copiedPath, setCopiedPath] = useState<string>('');
   const [breadcrumbPath, setBreadcrumbPath] = useState<string[]>([]);
   const [visibleNodes, setVisibleNodes] = useState<JsonNode[]>([]);
-  const [renderedCount, setRenderedCount] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Parse JSON data into tree
@@ -260,8 +259,8 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
       };
       markExpanded(parsedTree, 0);
       setExpandedNodes(initialExpanded);
-    } catch (error) {
-      console.error('Failed to parse JSON data:', error);
+    } catch (_error) {
+      toast.error('Failed to parse JSON data');
       setTree(null);
       setFilteredTree(null);
     }
@@ -293,34 +292,32 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
 
   // Calculate visible nodes for virtual scrolling
   useEffect(() => {
-    if (!filteredTree) return;
+    if (!filteredTree) {
+      setVisibleNodes([]);
+      return;
+    }
 
     const nodes: JsonNode[] = [];
     const traverse = (node: JsonNode) => {
       nodes.push(node);
 
       if (expandedNodes.has(node.path) && node.children) {
-        const limitedChildren = node.children.slice(0, maxVisibleItems);
-        limitedChildren.forEach((child) => traverse(child));
-
-        if (node.children.length > maxVisibleItems) {
-          nodes.push({
-            key: `... ${node.children.length - maxVisibleItems} more items`,
-            value: null,
-            path: `${node.path}.truncated`,
-            depth: node.depth + 1,
-            expanded: false,
-            isLeaf: true,
-            type: 'null',
-          });
+        for (const child of node.children) {
+          traverse(child);
         }
       }
     };
 
     traverse(filteredTree);
-    setVisibleNodes(nodes.slice(0, maxVisibleItems));
-    setRenderedCount(nodes.length);
-  }, [filteredTree, expandedNodes, maxVisibleItems]);
+    setVisibleNodes(nodes);
+  }, [filteredTree, expandedNodes]);
+
+  const virtualizer = useVirtualizer({
+    count: visibleNodes.length,
+    getScrollElement: () => scrollContainerRef.current,
+    estimateSize: () => 28,
+    overscan: 10,
+  });
 
   // Update breadcrumb when selected path changes
   useEffect(() => {
@@ -349,7 +346,7 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
 
   // Handle node click
   const handleNodeClick = useCallback(
-    (node: JsonNode, event: React.MouseEvent) => {
+    (node: JsonNode, event: React.MouseEvent | React.KeyboardEvent) => {
       event.preventDefault();
 
       // Update selected path
@@ -380,8 +377,8 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
 
         // Clear copied state after 2 seconds
         setTimeout(() => setCopiedPath(''), 2000);
-      } catch (error) {
-        console.error('Failed to copy to clipboard:', error);
+      } catch (_error) {
+        toast.error('Failed to copy to clipboard');
       }
     },
     [onCopyNode]
@@ -477,7 +474,7 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-xs">
-            {renderedCount} nodes
+            {visibleNodes.length} nodes
           </Badge>
           <Button
             variant="ghost"
@@ -508,86 +505,121 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
   );
 
   // Shared tree content
+  const virtualItems = virtualizer.getVirtualItems();
+
   const treeContent = (
-    <div className="font-mono text-sm">
-      {visibleNodes.map((node, index) => {
-        const isExpanded = expandedNodes.has(node.path);
-        const isSelected = selectedPath === node.path;
-        const isCopied = copiedPath === node.path;
-        const indent = node.depth * 20;
+    <div
+      ref={scrollContainerRef}
+      className="overflow-auto p-4"
+      style={{ height: typeof scrollHeight === 'number' ? `${scrollHeight}px` : scrollHeight }}
+    >
+      <div
+        style={{
+          height: virtualizer.getTotalSize(),
+          width: '100%',
+          position: 'relative',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            transform: `translateY(${virtualItems[0]?.start ?? 0}px)`,
+          }}
+        >
+          {virtualItems.map((virtualItem) => {
+            const node = visibleNodes[virtualItem.index];
+            if (!node) return null;
 
-        return (
-          <div
-            key={node.path}
-            className={cn(
-              'group flex cursor-pointer items-start rounded px-2 py-1 transition-colors hover:bg-muted/50',
-              isSelected && 'bg-muted',
-              'focus:outline-none focus:ring-2 focus:ring-ring'
-            )}
-            style={{ paddingLeft: `${indent + 8}px` }}
-            onClick={(e) => handleNodeClick(node, e)}
-            role="treeitem"
-            aria-expanded={isExpanded}
-            aria-selected={isSelected}
-          >
-            {showLineNumbers && (
-              <span className="mr-4 w-8 text-right text-muted-foreground text-xs">{index + 1}</span>
-            )}
+            const isExpanded = expandedNodes.has(node.path);
+            const isSelected = selectedPath === node.path;
+            const isCopied = copiedPath === node.path;
+            const indent = node.depth * 20;
 
-            {!node.isLeaf && (
-              <button
-                type="button"
-                className="mr-1 rounded p-0.5 hover:bg-muted-foreground/10"
-                aria-label={isExpanded ? 'Collapse' : 'Expand'}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleNodeExpansion(node.path);
-                }}
-              >
-                {isExpanded ? (
-                  <CaretDown className="h-4 w-4" aria-hidden="true" />
-                ) : (
-                  <CaretRight className="h-4 w-4" aria-hidden="true" />
+            return (
+              <div
+                key={node.path}
+                data-index={virtualItem.index}
+                ref={virtualizer.measureElement}
+                className={cn(
+                  'group flex cursor-pointer items-start rounded px-2 py-1 transition-colors hover:bg-muted/50',
+                  isSelected && 'bg-muted',
+                  'focus:outline-none focus:ring-2 focus:ring-ring'
                 )}
-              </button>
-            )}
-
-            {node.isLeaf && <span className="mr-1 w-5" />}
-
-            <span className="mr-2 font-medium text-blue-600 dark:text-blue-400">
-              {typeof node.index === 'number' ? `[${node.index}]` : node.key}:
-            </span>
-
-            <span className={cn('flex-1', getSyntaxHighlightClass(node.type))}>
-              {formatValue(node.value, node.type)}
-            </span>
-
-            {showTypes && (
-              <Badge variant="outline" className="ml-2 text-xs">
-                {node.type}
-              </Badge>
-            )}
-
-            {showCopyButton && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="ml-2 p-1 opacity-0 transition-opacity group-hover:opacity-100"
-                onClick={(e) => handleCopyNode(node, e)}
-                aria-label={isCopied ? 'Copied!' : 'Copy value'}
+                style={{ paddingLeft: `${indent + 8}px` }}
+                onClick={(e) => handleNodeClick(node, e)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleNodeClick(node, e);
+                  }
+                }}
+                role="button"
+                aria-expanded={!node.isLeaf ? isExpanded : undefined}
+                aria-pressed={isSelected}
+                tabIndex={0}
               >
-                <Copy className={cn('h-3 w-3', isCopied && 'text-green-600')} aria-hidden="true" />
-              </Button>
-            )}
-          </div>
-        );
-      })}
+                {showLineNumbers && (
+                  <span className="mr-4 w-8 text-right text-muted-foreground text-xs">
+                    {virtualItem.index + 1}
+                  </span>
+                )}
 
-      {renderedCount > maxVisibleItems && (
-        <div className="py-4 text-center text-muted-foreground text-sm">
-          Showing {maxVisibleItems} of {renderedCount} nodes
+                {!node.isLeaf && (
+                  <button
+                    type="button"
+                    className="mr-1 rounded p-0.5 hover:bg-muted-foreground/10"
+                    aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleNodeExpansion(node.path);
+                    }}
+                  >
+                    {isExpanded ? (
+                      <CaretDown className="h-4 w-4" aria-hidden="true" />
+                    ) : (
+                      <CaretRight className="h-4 w-4" aria-hidden="true" />
+                    )}
+                  </button>
+                )}
+
+                {node.isLeaf && <span className="mr-1 w-5" />}
+
+                <span className="mr-2 font-medium text-blue-600 dark:text-blue-400">
+                  {typeof node.index === 'number' ? `[${node.index}]` : node.key}:
+                </span>
+
+                <span className={cn('flex-1', getSyntaxHighlightClass(node.type))}>
+                  {formatValue(node.value, node.type)}
+                </span>
+
+                {showTypes && (
+                  <Badge variant="outline" className="ml-2 text-xs">
+                    {node.type}
+                  </Badge>
+                )}
+
+                {showCopyButton && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ml-2 p-1 opacity-0 transition-opacity group-hover:opacity-100"
+                    onClick={(e) => handleCopyNode(node, e)}
+                    aria-label={isCopied ? 'Copied!' : 'Copy value'}
+                  >
+                    <Copy
+                      className={cn('h-3 w-3', isCopied && 'text-green-600')}
+                      aria-hidden="true"
+                    />
+                  </Button>
+                )}
+              </div>
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 
@@ -596,12 +628,7 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
     return (
       <div className={cn('w-full', className)} ref={containerRef}>
         <div className="border-b px-4 py-3">{headerContent}</div>
-        <ScrollArea
-          className="w-full"
-          style={{ height: typeof scrollHeight === 'number' ? `${scrollHeight}px` : scrollHeight }}
-        >
-          <div className="p-4">{treeContent}</div>
-        </ScrollArea>
+        <div className="font-mono text-sm">{treeContent}</div>
       </div>
     );
   }
@@ -636,14 +663,8 @@ export const JsonHeroViewer: React.FC<JsonHeroViewerProps> = ({
         )}
       </CardHeader>
 
-      <CardContent className="p-0">
-        <ScrollArea
-          className="w-full"
-          style={{ height: typeof scrollHeight === 'number' ? `${scrollHeight}px` : scrollHeight }}
-          ref={containerRef}
-        >
-          <div className="p-4">{treeContent}</div>
-        </ScrollArea>
+      <CardContent className="p-0" ref={containerRef}>
+        <div className="font-mono text-sm">{treeContent}</div>
       </CardContent>
     </Card>
   );

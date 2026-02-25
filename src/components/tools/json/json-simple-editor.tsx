@@ -2,6 +2,7 @@
 
 import { CheckCircle, Copy, FileText, Lightning, Quotes, XCircle } from '@phosphor-icons/react';
 import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { cn } from '../../../lib/utils';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
@@ -85,9 +86,8 @@ export const JsonSimpleEditor: React.FC<JsonSimpleEditorProps> = ({
         setValidationErrors(errors);
         setIsValid(valid);
         onValidationChange?.(errors);
-      } catch (stateError) {
-        // Silently ignore state update errors
-        console.warn('State update error during validation:', stateError);
+      } catch (_stateError) {
+        // State update race condition — safe to ignore
       }
     },
     [onValidationChange]
@@ -98,8 +98,8 @@ export const JsonSimpleEditor: React.FC<JsonSimpleEditorProps> = ({
     (newValue: string) => {
       try {
         onChange(newValue);
-      } catch (error) {
-        console.warn('Error during onChange:', error);
+      } catch (_error) {
+        // onChange callback error — safe to ignore
       }
     },
     [onChange]
@@ -112,8 +112,8 @@ export const JsonSimpleEditor: React.FC<JsonSimpleEditorProps> = ({
       const formatted = JSON.stringify(parsed, null, 2);
       onChange(formatted);
       onFormat?.();
-    } catch (error) {
-      console.error('Cannot format invalid JSON:', error);
+    } catch (_error) {
+      toast.error('Cannot format invalid JSON');
     }
   }, [value, onChange, onFormat]);
 
@@ -124,8 +124,8 @@ export const JsonSimpleEditor: React.FC<JsonSimpleEditorProps> = ({
       const minified = JSON.stringify(parsed);
       onChange(minified);
       onMinify?.();
-    } catch (error) {
-      console.error('Cannot minify invalid JSON:', error);
+    } catch (_error) {
+      toast.error('Cannot minify invalid JSON');
     }
   }, [value, onChange, onMinify]);
 
@@ -140,8 +140,8 @@ export const JsonSimpleEditor: React.FC<JsonSimpleEditorProps> = ({
     try {
       const parsed = parseSerializedJson(value);
       onChange(parsed);
-    } catch (error) {
-      console.error('Cannot unescape JSON:', error);
+    } catch (_error) {
+      toast.error('Cannot unescape JSON');
     }
   }, [value, onChange]);
 

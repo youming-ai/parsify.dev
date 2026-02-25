@@ -19,11 +19,12 @@ import {
   MagnifyingGlass,
   Play,
 } from '@phosphor-icons/react';
-import { useState } from 'react';
+import { JSONPath } from 'jsonpath-plus';
+import { useCallback, useMemo, useState } from 'react';
 
 interface JSONPathResult {
   path: string;
-  matches: any[];
+  matches: unknown[];
   count: number;
   executionTime: number;
   error?: string;
@@ -143,129 +144,16 @@ export function JsonPathQueries({
   const [error, setError] = useState<string | null>(null);
   const [selectedResult, setSelectedResult] = useState<JSONPathResult | null>(null);
 
-  // JSONPath implementation
-  const evaluateJSONPath = (path: string, data: any): any[] => {
+  const evaluateJSONPath = useCallback((path: string, data: unknown): unknown[] => {
     try {
-      // Simple JSONPath evaluator implementation
-      // This is a basic version - in production, you'd use a proper JSONPath library
-
-      if (path === '$') {
-        return [data];
-      }
-
-      if (path === '$.store.*') {
-        if (data.store) {
-          return Object.values(data.store);
-        }
-        return [];
-      }
-
-      if (path === '$.store.book[*].title') {
-        if (data.store?.book) {
-          return data.store.book.map((book: any) => book.title).filter(Boolean);
-        }
-        return [];
-      }
-
-      if (path === '$..title') {
-        const titles: string[] = [];
-        function extractTitles(obj: any, path = '') {
-          if (obj && typeof obj === 'object') {
-            if (obj.title) {
-              titles.push(obj.title);
-            }
-            Object.values(obj).forEach((value) => {
-              if (value && typeof value === 'object') {
-                extractTitles(value, `${path}.title`);
-              }
-            });
-          }
-        }
-        extractTitles(data);
-        return titles;
-      }
-
-      if (path.includes('[?(@.price < 10)]')) {
-        if (data.store?.book) {
-          return data.store.book.filter((book: any) => book.price < 10);
-        }
-        return [];
-      }
-
-      if (path.includes('[?(@.author == "J.R.R. Tolkien")]')) {
-        if (data.store?.book) {
-          return data.store.book.filter((book: any) => book.author === 'J.R.R. Tolkien');
-        }
-        return [];
-      }
-
-      if (path.includes('[(@.length-1)]')) {
-        if (data.store?.book) {
-          const books = data.store.book;
-          return [books[books.length - 1]];
-        }
-        return [];
-      }
-
-      if (path.includes('[?(@.isbn)]')) {
-        const items: any[] = [];
-        function findWithIsbn(obj: any) {
-          if (obj && typeof obj === 'object') {
-            if (obj.isbn) {
-              items.push(obj);
-            }
-            Object.values(obj).forEach((value) => {
-              if (value && typeof value === 'object' && !Array.isArray(value)) {
-                findWithIsbn(value);
-              } else if (Array.isArray(value)) {
-                value.forEach((item) => {
-                  if (item && typeof item === 'object') {
-                    findWithIsbn(item);
-                  }
-                });
-              }
-            });
-          }
-        }
-        findWithIsbn(data);
-        return items;
-      }
-
-      // Default case - try to evaluate simple path
-      const parts = path.replace('$.', '').split('.');
-      let current = data;
-
-      for (const part of parts) {
-        if (part.includes('[')) {
-          const base = part.split('[')[0];
-          const indexMatch = part.match(/\[(\d+|\*)\]/);
-
-          if (base) {
-            current = current[base];
-          }
-
-          if (indexMatch) {
-            const index = indexMatch[1];
-            if (index === '*') {
-              return Array.isArray(current) ? current : [];
-            }
-            if (index) {
-              current = current[Number.parseInt(index)];
-            }
-            return current !== undefined ? [current] : [];
-          }
-        } else {
-          current = current[part];
-        }
-      }
-
-      return current !== undefined ? [current] : [];
-    } catch (_err) {
+      const result = JSONPath({ path, json: data as object, eval: 'safe', wrap: true });
+      return (result as unknown[]) ?? [];
+    } catch {
       return [];
     }
-  };
+  }, []);
 
-  const executeQuery = async () => {
+  const executeQuery = useCallback(async () => {
     if (!currentQuery.trim()) {
       setError('Please enter a JSONPath expression');
       return;
@@ -329,21 +217,21 @@ export function JsonPathQueries({
     } finally {
       setIsExecuting(false);
     }
-  };
+  }, [currentQuery, jsonInput, evaluateJSONPath, results, queryHistory]);
 
-  const loadExample = (example: JSONPathQuery) => {
+  const loadExample = useCallback((example: JSONPathQuery) => {
     setCurrentQuery(example.expression);
-  };
+  }, []);
 
-  const loadSampleData = () => {
+  const loadSampleData = useCallback(() => {
     setJsonInput(JSON.stringify(SAMPLE_DATA, null, 2));
-  };
+  }, []);
 
-  const copyQuery = (query: string) => {
+  const copyQuery = useCallback((query: string) => {
     navigator.clipboard.writeText(query);
-  };
+  }, []);
 
-  const exportResults = () => {
+  const exportResults = useCallback(() => {
     const exportData = {
       query: currentQuery,
       timestamp: new Date().toISOString(),
@@ -366,7 +254,12 @@ export function JsonPathQueries({
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  };
+  }, [currentQuery, results]);
+
+  const formattedMatches = useMemo(
+    () => (selectedResult ? JSON.stringify(selectedResult.matches, null, 2) : ''),
+    [selectedResult]
+  );
 
   return (
     <div className={cn('space-y-6', className)}>
@@ -498,7 +391,7 @@ export function JsonPathQueries({
                       <Label>Results ({selectedResult.matches.length})</Label>
                       <div className="mt-2 overflow-hidden rounded-lg border">
                         <CodeEditor
-                          value={JSON.stringify(selectedResult.matches, null, 2)}
+                          value={formattedMatches}
                           onChange={() => {}}
                           height={250}
                           className="h-64"

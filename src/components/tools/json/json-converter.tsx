@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { ArrowRight, Copy, DownloadSimple, Play } from '@phosphor-icons/react';
 import * as React from 'react';
+import { toast } from 'sonner';
 import type { JsonConversionOptions, JsonConverterProps } from './json-types';
 import { convertJson, copyToClipboard, downloadFile } from './json-utils';
 
@@ -56,8 +57,8 @@ export function JsonConverter({
       await copyToClipboard(convertedOutput);
       setShowCopyNotification(true);
       setTimeout(() => setShowCopyNotification(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy:', error);
+    } catch (_error) {
+      toast.error('Failed to copy to clipboard');
     }
   };
 

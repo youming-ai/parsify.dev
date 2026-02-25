@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Copy, DownloadSimple, Faders, Play } from '@phosphor-icons/react';
 import * as React from 'react';
+import { toast } from 'sonner';
 import type { JsonFormatOptions, JsonFormatterProps } from './json-types';
 import { copyToClipboard, downloadFile, formatJson } from './json-utils';
 
@@ -49,8 +50,8 @@ export function JsonFormatter({
       await copyToClipboard(formattedOutput);
       setShowCopyNotification(true);
       setTimeout(() => setShowCopyNotification(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy:', error);
+    } catch (_error) {
+      toast.error('Failed to copy to clipboard');
     }
   };
 

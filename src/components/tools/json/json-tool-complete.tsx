@@ -1,20 +1,24 @@
 /**
  * JSON Tool Complete Component
  * Integrated JSON tools component that combines all JSON functionality
- * Simplified UI design with minimal nesting
  */
 
 'use client';
 
+import { useJsonWorker } from '@/hooks/use-json-worker';
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { CheckCircle, Copy, FileText, Lightning, Quotes, XCircle } from '@phosphor-icons/react';
 import dynamic from 'next/dynamic';
 import type React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
+
 import { JsonHeroViewer } from './json-hero-viewer';
 import { isSerializedJsonString, parseSerializedJson } from './json-utils';
+
+const SIZE_THRESHOLD = 100 * 1024;
 
 const CodeEditor = dynamic(
   () => import('../code/codemirror-editor').then((mod) => mod.CodeEditor),
@@ -39,6 +43,12 @@ export const JsonToolComplete: React.FC<JsonToolCompleteProps> = ({
   className,
   showHeader = false,
 }) => {
+  const {
+    isWorkerReady,
+    parseJson: workerParseJson,
+    formatJson: workerFormatJson,
+    minifyJson: workerMinifyJson,
+  } = useJsonWorker();
   const [jsonData, setJsonData] = useState(initialData);
   const [isValidJson, setIsValidJson] = useState(true);
   const [isSerialized, setIsSerialized] = useState(false);
@@ -61,23 +71,34 @@ export const JsonToolComplete: React.FC<JsonToolCompleteProps> = ({
 
   const parseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleJsonChange = useCallback((newJsonData: string) => {
-    setJsonData(newJsonData);
+  const handleJsonChange = useCallback(
+    (newJsonData: string) => {
+      setJsonData(newJsonData);
 
-    if (parseTimeoutRef.current) {
-      clearTimeout(parseTimeoutRef.current);
-    }
-
-    parseTimeoutRef.current = setTimeout(() => {
-      try {
-        const parsed = JSON.parse(newJsonData || '{}');
-        setParsedData(parsed);
-        setIsValidJson(true);
-      } catch {
-        setIsValidJson(false);
+      if (parseTimeoutRef.current) {
+        clearTimeout(parseTimeoutRef.current);
       }
-    }, 250);
-  }, []);
+
+      parseTimeoutRef.current = setTimeout(async () => {
+        try {
+          let parsed: unknown;
+
+          if (newJsonData.length > SIZE_THRESHOLD && isWorkerReady) {
+            const workerResult = await workerParseJson(newJsonData || '{}');
+            parsed = workerResult.parsedData;
+          } else {
+            parsed = JSON.parse(newJsonData || '{}');
+          }
+
+          setParsedData(parsed);
+          setIsValidJson(true);
+        } catch {
+          setIsValidJson(false);
+        }
+      }, 250);
+    },
+    [isWorkerReady, workerParseJson]
+  );
 
   useEffect(() => {
     return () => {
@@ -88,28 +109,34 @@ export const JsonToolComplete: React.FC<JsonToolCompleteProps> = ({
   }, []);
 
   // Format JSON
-  const formatJson = useCallback(() => {
+  const formatJson = useCallback(async () => {
     try {
-      const parsed = JSON.parse(jsonData);
-      const formatted = JSON.stringify(parsed, null, 2);
+      const formatted =
+        jsonData.length > SIZE_THRESHOLD && isWorkerReady
+          ? await workerFormatJson(jsonData)
+          : JSON.stringify(JSON.parse(jsonData), null, 2);
+
       setJsonData(formatted);
       toast.success('JSON formatted');
     } catch {
       toast.error('Cannot format invalid JSON');
     }
-  }, [jsonData]);
+  }, [isWorkerReady, jsonData, workerFormatJson]);
 
   // Minify JSON
-  const minifyJson = useCallback(() => {
+  const minifyJson = useCallback(async () => {
     try {
-      const parsed = JSON.parse(jsonData);
-      const minified = JSON.stringify(parsed);
+      const minified =
+        jsonData.length > SIZE_THRESHOLD && isWorkerReady
+          ? await workerMinifyJson(jsonData)
+          : JSON.stringify(JSON.parse(jsonData));
+
       setJsonData(minified);
       toast.success('JSON minified');
     } catch {
       toast.error('Cannot minify invalid JSON');
     }
-  }, [jsonData]);
+  }, [isWorkerReady, jsonData, workerMinifyJson]);
 
   // Copy JSON
   const copyJson = useCallback(() => {
@@ -127,6 +154,39 @@ export const JsonToolComplete: React.FC<JsonToolCompleteProps> = ({
       toast.error('Cannot unescape JSON');
     }
   }, [jsonData]);
+
+  const shortcuts = useMemo(
+    () => [
+      {
+        key: 'f',
+        ctrl: true,
+        shift: true,
+        handler: () => {
+          void formatJson();
+        },
+        description: 'Format JSON',
+      },
+      {
+        key: 'm',
+        ctrl: true,
+        shift: true,
+        handler: () => {
+          void minifyJson();
+        },
+        description: 'Minify JSON',
+      },
+      {
+        key: 'c',
+        ctrl: true,
+        shift: true,
+        handler: copyJson,
+        description: 'Copy JSON',
+      },
+    ],
+    [copyJson, formatJson, minifyJson]
+  );
+
+  useKeyboardShortcuts(shortcuts);
 
   return (
     <div className={`mx-auto w-full ${className}`}>
@@ -146,10 +206,16 @@ export const JsonToolComplete: React.FC<JsonToolCompleteProps> = ({
               <Button variant="ghost" size="sm" onClick={formatJson} disabled={!isValidJson}>
                 <FileText className="mr-1.5 h-4 w-4" />
                 Format
+                <kbd className="ml-1.5 hidden rounded bg-muted px-1 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-block">
+                  ⌘⇧F
+                </kbd>
               </Button>
               <Button variant="ghost" size="sm" onClick={minifyJson} disabled={!isValidJson}>
                 <Lightning className="mr-1.5 h-4 w-4" />
                 Minify
+                <kbd className="ml-1.5 hidden rounded bg-muted px-1 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-block">
+                  ⌘⇧M
+                </kbd>
               </Button>
               {isSerialized && (
                 <Button
@@ -165,6 +231,9 @@ export const JsonToolComplete: React.FC<JsonToolCompleteProps> = ({
               <Button variant="ghost" size="sm" onClick={copyJson}>
                 <Copy className="mr-1.5 h-4 w-4" />
                 Copy
+                <kbd className="ml-1.5 hidden rounded bg-muted px-1 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-block">
+                  ⌘⇧C
+                </kbd>
               </Button>
             </div>
             <Badge
@@ -204,7 +273,7 @@ export const JsonToolComplete: React.FC<JsonToolCompleteProps> = ({
               showCopyButton={true}
               expandLevel={2}
               compact={true}
-              scrollHeight={600} // Slightly less to account for header difference if needed, but 600-650 range is good. Let's try 594 to match editor content area approx or just 600.
+              scrollHeight={600}
             />
           ) : (
             <div className="flex h-[650px] flex-col items-center justify-center text-center px-6">
