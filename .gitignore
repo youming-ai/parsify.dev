@@ -6,6 +6,7 @@ dist/
 build/
 out/
 .next/
+.vinexr/
 .open-next/
 .wrangler/
 next-env.d.ts
