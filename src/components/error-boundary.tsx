@@ -131,9 +131,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 </svg>
               </div>
               <div className="ml-3">
-                <h1 className="font-medium text-foreground text-lg">出现了一些问题</h1>
+                <h1 className="font-medium text-foreground text-lg">Something went wrong</h1>
                 <p className="mt-1 text-muted-foreground text-sm">
-                  应用程序遇到了意外错误。我们已经记录了这个问题。
+                  The application encountered an unexpected error. We logged the issue.
                 </p>
               </div>
             </div>
@@ -141,7 +141,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <details className="mt-4 rounded bg-red-50 p-3 text-sm">
                 <summary className="cursor-pointer font-medium text-red-800">
-                  错误详情 (开发模式)
+                  Error details (development)
                 </summary>
                 <pre className="mt-2 whitespace-pre-wrap text-red-700 text-xs">
                   {this.state.error.toString()}
@@ -153,12 +153,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <div className="mt-6 space-y-3">
               {this.state.retryCount < (this.props.maxRetries || 3) && (
                 <Button onClick={this.handleRetry} className="w-full" variant="outline">
-                  重试 ({this.state.retryCount + 1}/{this.props.maxRetries || 3})
+                  Retry ({this.state.retryCount + 1}/{this.props.maxRetries || 3})
                 </Button>
               )}
 
               <Button onClick={this.handleReset} className="w-full" variant="default">
-                刷新页面
+                Refresh Page
               </Button>
             </div>
 
@@ -170,7 +170,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 }}
                 className="text-primary text-sm hover:text-primary/80"
               >
-                返回首页
+                Back to Home
               </button>
             </div>
           </div>
