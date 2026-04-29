@@ -2,7 +2,7 @@
 # Deployed on Cloudflare Workers via Astro + @astrojs/cloudflare
 
 name = "parsify-dev"
-main = "dist/server/index.js"
+main = "dist/_worker.js/index.js"
 compatibility_date = "2025-04-28"
 compatibility_flags = ["nodejs_compat"]
 minify = true
@@ -28,7 +28,7 @@ routes = [
 
 [assets]
 binding = "ASSETS"
-directory = "dist/client"
+directory = "dist"
 
 [observability.logs]
 enabled = false
