@@ -1,34 +1,9 @@
 # Parsify.dev - AI & LLM Developer Tools
-# Deployed on Cloudflare Workers via Astro + @astrojs/cloudflare
+# Deployed on Cloudflare Pages via Astro + @astrojs/cloudflare
 
 name = "parsify-dev"
-main = "dist/_worker.js/index.js"
 compatibility_date = "2025-04-28"
 compatibility_flags = ["nodejs_compat"]
-minify = true
-
-[build]
-command = "bun run build"
-cwd = "."
 
 [vars]
 ENVIRONMENT = "production"
-
-[env.production]
-name = "parsify-dev"
-routes = [
-  { pattern = "parsify.dev/*", zone_name = "parsify.dev" }
-]
-
-[env.staging]
-name = "parsify-dev-staging"
-routes = [
-  { pattern = "staging.parsify.dev/*", zone_name = "parsify.dev" }
-]
-
-[assets]
-binding = "ASSETS"
-directory = "dist"
-
-[observability.logs]
-enabled = false
