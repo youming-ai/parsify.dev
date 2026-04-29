@@ -1,0 +1,11 @@
+---
+import Layout from '../../layouts/BaseLayout.astro';
+import { CostCalculator as CostCalculatorTool } from '../../components/tools/ai/cost-calculator';
+import { SEO_CONFIG } from '../../lib/seo-config';
+const title = 'LLM Cost Calculator | Parsify.dev';
+const desc = 'Estimate monthly LLM API costs locally across providers.';
+---
+<Layout>
+  <slot name="head"><title>{title}</title><meta name="description" content={desc} /><link rel="canonical" href={`${SEO_CONFIG.BASE_URL}/ai/cost-calculator`} /></slot>
+  <main id="main-content" class="container mx-auto max-w-7xl px-6 py-8 lg:px-8"><CostCalculatorTool client:load /></main>
+</Layout>

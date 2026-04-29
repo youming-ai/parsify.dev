@@ -1,0 +1,11 @@
+---
+import Layout from '../../layouts/BaseLayout.astro';
+import { SchemaGenerator as SchemaGeneratorTool } from '../../components/tools/ai/schema-generator';
+import { SEO_CONFIG } from '../../lib/seo-config';
+const title = 'LLM JSON Schema Generator | Parsify.dev';
+const desc = 'Generate LLM-friendly JSON Schema from JSON examples with provider compatibility notes.';
+---
+<Layout>
+  <slot name="head"><title>{title}</title><meta name="description" content={desc} /><link rel="canonical" href={`${SEO_CONFIG.BASE_URL}/ai/schema-generator`} /></slot>
+  <main id="main-content" class="container mx-auto max-w-7xl px-6 py-8 lg:px-8"><SchemaGeneratorTool client:load /></main>
+</Layout>

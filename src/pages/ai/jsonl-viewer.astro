@@ -1,0 +1,11 @@
+---
+import Layout from '../../layouts/BaseLayout.astro';
+import { JsonlViewer as JsonlViewerTool } from '../../components/tools/ai/jsonl-viewer';
+import { SEO_CONFIG } from '../../lib/seo-config';
+const title = 'JSONL Viewer / Editor | Parsify.dev';
+const desc = 'Inspect, validate, lightly edit, and export JSONL datasets in your browser.';
+---
+<Layout>
+  <slot name="head"><title>{title}</title><meta name="description" content={desc} /><link rel="canonical" href={`${SEO_CONFIG.BASE_URL}/ai/jsonl-viewer`} /></slot>
+  <main id="main-content" class="container mx-auto max-w-7xl px-6 py-8 lg:px-8"><JsonlViewerTool client:load /></main>
+</Layout>

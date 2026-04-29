@@ -1,0 +1,11 @@
+---
+import Layout from '../../layouts/BaseLayout.astro';
+import { PromptVariableFiller as PromptVariableFillerTool } from '../../components/tools/ai/prompt-variable-filler';
+import { SEO_CONFIG } from '../../lib/seo-config';
+const title = 'Prompt Variable Filler | Parsify.dev';
+const desc = 'Extract prompt variables, fill templates, and export batch prompts as JSONL.';
+---
+<Layout>
+  <slot name="head"><title>{title}</title><meta name="description" content={desc} /><link rel="canonical" href={`${SEO_CONFIG.BASE_URL}/ai/prompt-variable-filler`} /></slot>
+  <main id="main-content" class="container mx-auto max-w-7xl px-6 py-8 lg:px-8"><PromptVariableFillerTool client:load /></main>
+</Layout>

@@ -1,0 +1,11 @@
+---
+import Layout from '../../layouts/BaseLayout.astro';
+import { PromptLinter as PromptLinterTool } from '../../components/tools/ai/prompt-linter';
+import { SEO_CONFIG } from '../../lib/seo-config';
+const title = 'System Prompt Linter | Parsify.dev';
+const desc = 'Analyze system prompts for clarity, structure, safety, and maintainability issues.';
+---
+<Layout>
+  <slot name="head"><title>{title}</title><meta name="description" content={desc} /><link rel="canonical" href={`${SEO_CONFIG.BASE_URL}/ai/prompt-linter`} /></slot>
+  <main id="main-content" class="container mx-auto max-w-7xl px-6 py-8 lg:px-8"><PromptLinterTool client:load /></main>
+</Layout>

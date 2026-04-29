@@ -1,47 +1,34 @@
-# Parsify.dev - Developer Tools Platform
-# Deployed on Cloudflare Workers via vinext (Vite-based Next.js)
+# Parsify.dev - AI & LLM Developer Tools
+# Deployed on Cloudflare Workers via Astro + @astrojs/cloudflare
 
 name = "parsify-dev"
 main = "dist/server/index.js"
-compatibility_date = "2024-01-01"
+compatibility_date = "2025-04-28"
 compatibility_flags = ["nodejs_compat"]
 minify = true
 
-# Build configuration
 [build]
 command = "bun run build"
 cwd = "."
 
-# Environment variables (public)
 [vars]
 ENVIRONMENT = "production"
 
-# Production deployment configuration
 [env.production]
 name = "parsify-dev"
 routes = [
   { pattern = "parsify.dev/*", zone_name = "parsify.dev" }
 ]
 
-# Staging deployment configuration
 [env.staging]
 name = "parsify-dev-staging"
 routes = [
   { pattern = "staging.parsify.dev/*", zone_name = "parsify.dev" }
 ]
 
-# KV Namespaces (optional - for distributed rate limiting)
-# Create with: wrangler kv:namespace create RATE_LIMIT
-# [[kv_namespaces]]
-# binding = "RATE_LIMIT"
-# id = "your-kv-namespace-id"
-
-# Static assets configuration
 [assets]
 binding = "ASSETS"
 directory = "dist/client"
 
-# Observability - disabled in production for cost optimization
-# Enable during debugging by setting enabled = true
 [observability.logs]
 enabled = false

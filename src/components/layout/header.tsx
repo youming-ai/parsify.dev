@@ -1,7 +1,7 @@
 'use client';
 
+import { Link } from '@/components/link';
 import { Command } from '@phosphor-icons/react';
-import Link from 'next/link';
 import { ThemeToggle } from './theme-toggle';
 
 export function Header() {

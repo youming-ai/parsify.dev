@@ -1,0 +1,11 @@
+---
+import Layout from '../../layouts/BaseLayout.astro';
+import { TokenCounter as TokenCounterTool } from '../../components/tools/ai/token-counter';
+import { SEO_CONFIG } from '../../lib/seo-config';
+const title = 'Multi-Model Token Counter | Parsify.dev';
+const desc = 'Compare estimated LLM token usage locally across major model providers.';
+---
+<Layout>
+  <slot name="head"><title>{title}</title><meta name="description" content={desc} /><link rel="canonical" href={`${SEO_CONFIG.BASE_URL}/ai/token-counter`} /></slot>
+  <main id="main-content" class="container mx-auto max-w-7xl px-6 py-8 lg:px-8"><TokenCounterTool client:load /></main>
+</Layout>

@@ -1,0 +1,11 @@
+---
+import Layout from '../../layouts/BaseLayout.astro';
+import { SSEParser } from '../../components/tools/ai/sse-parser';
+import { SEO_CONFIG } from '../../lib/seo-config';
+const title = 'LLM SSE Stream Parser | Parsify.dev';
+const desc = 'Parse and inspect raw LLM streaming responses locally.';
+---
+<Layout>
+  <slot name="head"><title>{title}</title><meta name="description" content={desc} /><link rel="canonical" href={`${SEO_CONFIG.BASE_URL}/ai/sse-parser`} /></slot>
+  <main id="main-content" class="container mx-auto max-w-7xl px-6 py-8 lg:px-8"><SSEParser client:load /></main>
+</Layout>

@@ -1,0 +1,32 @@
+---
+import Layout from '../../layouts/BaseLayout.astro';
+import { SEO_CONFIG } from '../../lib/seo-config';
+import { toolsData, AI_TOOLS_CATEGORY } from '../../data/tools-data';
+
+const tools = toolsData.filter((tool) => tool.category === AI_TOOLS_CATEGORY);
+const title = 'AI & LLM Developer Tools | Parsify.dev';
+const desc = 'Privacy-first browser tools for AI agent and LLM application developers.';
+---
+
+<Layout>
+  <slot name="head">
+    <title>{title}</title>
+    <meta name="description" content={desc} />
+    <link rel="canonical" href={`${SEO_CONFIG.BASE_URL}/ai`} />
+  </slot>
+  <main id="main-content" class="container mx-auto max-w-7xl px-6 py-12 lg:px-8">
+    <div class="mb-10 max-w-3xl">
+      <p class="text-sm font-medium text-primary">AI & LLM Tools</p>
+      <h1 class="mt-3 text-4xl font-bold tracking-tight">Browser tools for AI agent developers</h1>
+      <p class="mt-4 text-lg text-muted-foreground">Count tokens, estimate costs, convert tool schemas, chunk RAG data, and debug streaming responses without sending your data to Parsify servers.</p>
+    </div>
+    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {tools.map((tool) => (
+        <a href={tool.href} class="rounded-xl border bg-card p-5 transition hover:border-primary">
+          <h2 class="font-semibold">{tool.name}</h2>
+          <p class="mt-2 text-sm text-muted-foreground">{tool.description}</p>
+        </a>
+      ))}
+    </div>
+  </main>
+</Layout>

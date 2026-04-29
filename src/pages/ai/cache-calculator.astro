@@ -1,0 +1,11 @@
+---
+import Layout from '../../layouts/BaseLayout.astro';
+import { CacheCalculator as CacheCalculatorTool } from '../../components/tools/ai/cache-calculator';
+import { SEO_CONFIG } from '../../lib/seo-config';
+const title = 'Prompt Cache Calculator | Parsify.dev';
+const desc = 'Calculate whether prompt caching saves money based on static tokens, dynamic tokens, usage, and hit rate.';
+---
+<Layout>
+  <slot name="head"><title>{title}</title><meta name="description" content={desc} /><link rel="canonical" href={`${SEO_CONFIG.BASE_URL}/ai/cache-calculator`} /></slot>
+  <main id="main-content" class="container mx-auto max-w-7xl px-6 py-8 lg:px-8"><CacheCalculatorTool client:load /></main>
+</Layout>

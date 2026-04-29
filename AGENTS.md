@@ -1,132 +1,159 @@
-# 🤖 AGENTS.md - Parsify.dev
+# AGENTS.md - Parsify.dev
 
-> Privacy-first, client-side developer tools platform.
+> Privacy-first, browser-side AI & LLM developer tools platform.
 > Guidelines for AI coding agents to maintain consistency, performance, and security.
 
-## 🏗️ Tech Stack
+## Tech Stack
 
-- **Framework**: Next.js 15 (App Router) - 'use client' for logic components
+- **Framework**: Astro 5 + React 19 islands
 - **Runtime**: Bun 1.3+ (packageManager: bun@1.3.5)
 - **Styling**: Tailwind CSS 3 + shadcn/ui (class-variance-authority, clsx)
 - **Testing**: Vitest with happy-dom
-- **Deployment**: Cloudflare Workers (OpenNext)
+- **Deployment**: Cloudflare Workers (@astrojs/cloudflare)
 - **Lint**: Biome (2-space indent, 100 char width)
 - **TypeScript**: Strict mode, noUncheckedIndexedAccess enabled
 
----
-
-## 🛠️ Essential Commands
+## Essential Commands
 
 | Purpose | Command | Notes |
 |----------|----------|--------|
-| **Dev** | `bun run dev` | Turbopack dev server (port 3000) |
+| **Dev** | `bun run dev` | Astro dev server |
 | **Build** | `bun run build` | Production + Cloudflare bundle |
 | **Lint** | `bun run lint` | Biome check `./src` |
 | **Fix** | `bun run lint:fix` | Auto-fix with `--fix ./src` |
 | **Format** | `bun run format` | Biome format `--write ./src` |
-| **Type Check** | `bun run typecheck` | TypeScript `--noEmit` |
+| **Type Check** | `bun run typecheck` | `astro check` |
 | **Test All** | `bun test` | Vitest with happy-dom |
-| **Test File** | `bun test <path>` | Run specific test file (e.g., `src/__tests__/lib/utils.test.ts`) |
+| **Test File** | `bun test <path>` | Run specific test file |
 | **Test UI** | `bun run test:ui` | Interactive Vitest UI |
 | **Coverage** | `bun run test:coverage` | V8 provider, excludes `src/components/ui/**` |
 | **Deploy** | `bun run deploy:cf` | Build + deploy to Cloudflare |
 
 **Pre-commit**: `bun run lint:fix && bun run typecheck && bun test` (via husky)
 
----
-
-## 📂 Project Structure
+## Project Structure
 
 ```
 src/
-├── app/[category]/[tool]/
-│   ├── page.tsx         # Server Component (Metadata, no 'use client')
-│   └── client.tsx       # Client Component (Logic) - MUST have 'use client'
+├── pages/
+│   ├── index.astro          # Homepage
+│   └── ai/                  # All AI/LLM tool routes
+│       ├── index.astro      # AI tools category page
+│       └── <tool>.astro     # One route per tool
 ├── components/
-│   ├── ui/              # shadcn/ui (Radix primitives) - REUSE FIRST
-│   ├── tools/          # Tool implementations
-│   └── layout/          # Header, Footer, ToolsLayout
+│   ├── ui/                  # shadcn/ui (Radix primitives) — REUSE FIRST
+│   ├── layout/              # Header, Footer, AppShell
+│   ├── home/                # HeroSection
+│   ├── tools/ai/            # AI/LLM tool React components
+│   │   ├── <tool>.tsx       # Per-tool implementation
+│   │   └── shared/          # Shared AI components
+│   │       ├── model-selector.tsx
+│   │       ├── token-counter-bar.tsx
+│   │       ├── api-key-input.tsx
+│   │       ├── code-export-tabs.tsx
+│   │       ├── metric-card.tsx
+│   │       ├── json-textarea.tsx
+│   │       ├── related-tools.tsx
+│   │       ├── provider-selector.tsx
+│   │       └── byok-notice.tsx
+│   └── seo/, analytics/, error-boundary.tsx, theme-provider.tsx
 ├── lib/
-│   ├── crypto/          # AES, RSA, Hash (use crypto.subtle, NOT custom crypto)
-│   ├── json/            # Formatters, validators
-│   └── utils.ts         # cn() helper (Tailwind merge via twMerge/clsx)
+│   ├── llm/                 # AI/LLM pure logic modules
+│   │   ├── registry.ts, cost-calculator.ts, text-chunker.ts
+│   │   ├── sse-parser.ts, tool-schema-converter.ts
+│   │   ├── context-visualizer.ts, prompt-cache.ts
+│   │   ├── prompt-diff.ts, prompt-linter.ts
+│   │   ├── schema-generator.ts, structured-output-validator.ts
+│   │   ├── jsonl.ts, model-comparison.ts
+│   │   ├── rate-limit-calculator.ts, prompt-format-converter.ts
+│   │   ├── few-shot-builder.ts, prompt-variable-filler.ts
+│   │   ├── schema-builder.ts, finetuning-validator.ts
+│   │   ├── embedding-visualizer.ts, api-request-builder.ts
+│   │   └── provider-client.ts
+│   ├── seo-config.ts, structured-data.ts
+│   ├── icon-map.ts, performance.ts
+│   └── utils.ts             # cn() helper
 ├── data/
-│   └── tools-data.ts    # Tool registry (ID, SEO, UI config)
-├── hooks/              # Custom React hooks
-├── types/              # Shared TS interfaces
-└── __tests__/         # Vitest tests (happy-dom, setup mocks)
+│   ├── tools-data.ts        # AI/LLM tool registry
+│   └── llm-registry.json    # Model facts & pricing
+├── hooks/                   # Custom React hooks
+├── layout/
+│   └── BaseLayout.astro     # HTML shell
+├── types/
+│   ├── tools.ts             # Tool, ToolCategoryData interfaces
+│   └── llm.ts               # LLM model types
+└── __tests__/
+    ├── setup.ts
+    └── lib/llm/              # Per-module test files
 ```
 
----
-
-## 🎨 Code Style & Standards (Biome)
+## Code Style & Standards (Biome)
 
 **Formatting**:
-- **Indent**: 2 spaces
-- **Line width**: 100 chars
-- **Quotes**: Single `'` for JS/JSX, Double `"` for JSX props
-- **Semicolons**: Always
-- **Trailing commas**: ES5 style
-- **Line ending**: LF (Unix)
+- 2 spaces
+- 100 chars line width
+- Single quotes for JS/JSX, Double quotes for JSX props
+- Semicolons always
+- Trailing commas ES5 style
+- Line ending LF (Unix)
 
 **Naming**:
-- **Components**: `PascalCase` (e.g., `ToolCard`, `JWTDecoder`)
-- **Functions/Hooks**: `camelCase` (e.g., `useTextAnalysis`, `processFile`, `cn`)
-- **Files**: `kebab-case` (e.g., `json-formatter.ts`, `hash-operations.ts`)
-- **Constants**: `UPPER_SNAKE_CASE` (e.g., `MAX_PAYLOAD_SIZE`)
-- **Interfaces**: `PascalCase` (e.g., `ConversionResult`, `Tool`)
+- **Components**: `PascalCase` (`ModelSelector`, `PrompDiff`)
+- **Functions/Hooks**: `camelCase` (`useTextAnalysis`, `cn`)
+- **Files**: `kebab-case` (`json-textarea.ts`, `hash-operations.ts`)
+- **Constants**: `UPPER_SNAKE_CASE` (`MAX_PAYLOAD_SIZE`)
+- **Interfaces**: `PascalCase` (`Tool`, `LLMModel`)
 
 **Imports Order** (STRICT):
 ```typescript
 'use client';
 
-import React from 'react';
 import { Icon } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { MetricCard } from '@/components/tools/ai/shared/metric-card';
 import { cn } from '@/lib/utils';
-import { processData } from '@/lib/crypto/hash-operations';
+import { calculateMonthlyCost } from '@/lib/llm/cost-calculator';
 import type { Tool } from '@/types/tools';
 ```
 
 **TypeScript**:
-- **Strict mode**: Enabled
-- **NoUncheckedIndexedAccess**: Enabled (check array/object access)
-- **Prefer**: `unknown` over `any` - use type guards
-- **Interfaces**: Prefer for objects, `type` for unions/primitives
-- **Return types**: Explicit on all exported functions
-- **Type imports**: Use `import type` for type-only imports
+- Strict mode enabled
+- NoUncheckedIndexedAccess enabled
+- `unknown` over `any`
+- Interfaces for objects, `type` for unions/primitives
+- Explicit return types on exported functions
+- `import type` for type-only imports
 
-**React**:
-- **Directives**: Logic MUST be in `'use client'` files
-- **Performance**: `useMemo` for expensive computations, `useCallback` for handlers
-- **State**: Local `useState` only (no global store)
-- **Composition**: Function components preferred over class
-- **Event handlers**: Prefix unused params with `_` (e.g., `_error`, `_copied`)
+**Astro + React**:
+- `.astro` page files are the route entry (SEO metadata, `<slot name="head">`)
+- React tool components are islands with `client:load`
+- Tool components use **named exports**: `export function TokenCounter() { ... }`
+- Astro pages import with aliases to avoid typecheck conflicts:
+  ```astro
+  import { TokenCounter as TokenCounterTool } from '../../components/tools/ai/token-counter';
+  <TokenCounterTool client:load />
+  ```
+- No `'use client'` directives — unnecessary in Astro React islands
 
----
-
-## 🧪 Testing Guidelines
+## Testing Guidelines
 
 **Framework**: Vitest with happy-dom
 
-**Test Location**: `src/__tests__/lib/[module].test.ts`
+**Test Location**: `src/__tests__/lib/llm/[module].test.ts`
 
 **Pattern**:
 ```typescript
 import { describe, expect, it } from 'vitest';
-import { myFunction } from '@/lib/module';
+import { myFunction } from '@/lib/llm/my-module';
 
 describe('myFunction', () => {
   it('does what it should', async () => {
     const result = await myFunction('input');
-    expect(result.success).toBe(true);
-    expect(result.data).toBeDefined();
+    expect(result).toBeDefined();
   });
 
   it('handles errors gracefully', async () => {
     const result = await myFunction('');
-    expect(result.success).toBe(false);
     expect(result.error).toBeDefined();
   });
 });
@@ -134,148 +161,107 @@ describe('myFunction', () => {
 
 **Coverage**: Excludes `src/components/ui/**` (third-party), targets `src/**/*.{ts,tsx}`
 
----
-
-## 🔐 Security Rules (CRITICAL)
+## Security Rules (CRITICAL)
 
 **1. NEVER Server-Side Processing**:
 - All user data must stay in `localStorage` or memory
 - NO external script loading or server-side processing
 
-**2. Cryptographic Operations**:
-- Use browser's `crypto.subtle` for hash, encryption, signing
-- **NEVER** implement custom crypto (MD5, SHA) - use WASM libraries or Web Crypto API
-- **Encryption keys**: Use `PBKDF2` or scrypt for password-to-key derivation
-- **AES modes**: Use correct parameters (CTR needs `counter` + `length`, GCM needs auth tag)
-- **Random numbers**: Use `crypto.getRandomValues()`, NEVER `Math.random()`
+**2. BYOK Privacy**:
+- API keys are held in component state only, not persisted
+- Provider calls go directly from browser to provider
+- UI must state `Parsify does not receive your key or request body`
+- No backend proxy
 
-**3. Hash Generator**:
-- ✅ `md5()` now uses `spark-md5` in `src/lib/crypto/hash-operations.ts`
+**3. Cryptographic Operations**:
+- Use browser's `crypto.subtle` for hash, encryption, signing
+- NEVER implement custom crypto — use WASM libraries or Web Crypto API
+- Random numbers: use `crypto.getRandomValues()`, NEVER `Math.random()`
 
 **4. XSS Prevention**:
 - NEVER use `dangerouslySetInnerHTML` without sanitization
 - Use `DOMPurify` for any user-provided HTML
-- Custom parsers are XSS risks (Markdown, HTML, SQL)
 
 **5. Error Handling**:
 - NEVER use empty `catch` blocks
-- Always log errors or show user-friendly error state
-- Return consistent error structure: `{ success: boolean; data?: T; error?: string }`
+- Always show user-friendly error state
+- Return consistent error structure
 
 **6. Privacy**:
 - NO tracking/analytics that capture user input contents
 - NO external API calls for data processing
 - Clear sensitive data from state after use
 
----
-
-## 🚀 Workflow: Adding a New Tool
+## Workflow: Adding a New AI/LLM Tool
 
 **1. Define Tool Metadata** (in `src/data/tools-data.ts`):
 ```typescript
 {
-  id: 'tool-id',
-  name: 'Tool Name',
+  id: 'my-tool',
+  name: 'My Tool',
   description: 'One-line description...',
-  category: 'Category Name',
-  icon: 'IconName', // @phosphor-icons/react
-  features: ['Feature 1', 'Feature 2'],
-  tags: ['tag1', 'tag2'],
-  difficulty: 'beginner' | 'intermediate' | 'advanced',
-  status: 'stable' | 'beta',
-  href: '/category/tool-id',
-  isPopular: true, // optional
+  category: 'AI & LLM Tools',
+  subcategory: 'Tokens & Cost',
+  icon: 'Gauge',
+  features: ['Feature 1'],
+  tags: ['tag'],
+  difficulty: 'beginner',
+  status: 'stable',
+  href: '/ai/my-tool',
+  processingType: 'client-side',
+  security: 'local-only',
 }
 ```
 
-**2. Create Page Files**:
+**2. Create Pure Logic** (`src/lib/llm/my-tool.ts`):
+
+**3. Create Test** (`src/__tests__/lib/llm/my-tool.test.ts`):
+
+**4. Create React Component** (`src/components/tools/ai/my-tool.tsx`):
 ```typescript
-// src/app/[category]/[tool-id]/page.tsx
-import type { Metadata } from 'next';
-import { generateToolSEOMetadata } from '@/lib/tool-seo';
-
-export const metadata: Metadata = generateToolSEOMetadata({ toolId: 'tool-id', ... });
-
-export default function ToolPage() {
-  return <ToolClient />;
-}
-
-// src/app/[category]/[tool-id]/client.tsx
-'use client';
-import { Card } from '@/components/ui/card';
-// ... tool logic
-export default function ToolClient() {
-  // useState, useEffect, handlers
-}
-```
-
-**3. Verify**: `bun run lint && bun run typecheck && bun test src/__tests__/lib/[tool].test.ts`
-
----
-
-## 📦 Component Guidelines
-
-**UI Components** (`src/components/ui/`):
-- **ALWAYS** reuse existing shadcn/ui components (Button, Card, Input, etc.)
-- Use `cn()` for conditional classes: `cn('base-class', isActive && 'active-class')`
-- Use Radix primitives where possible (via shadcn/ui)
-
-**Tool Layout Pattern**:
-```typescript
-// Card-based, dual-pane for input/output
 'use client';
 
-export default function Tool() {
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RelatedTools } from '@/components/tools/ai/shared/related-tools';
+
+export function MyTool() {
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader><CardTitle>Input</CardTitle></CardHeader>
-        <CardContent>{/* inputs */}</CardContent>
-      </Card>
-      <Card>
-        <CardHeader><CardTitle>Output</CardTitle></CardHeader>
-        <CardContent>{/* results */}</CardContent>
-      </Card>
-    </div>
+    <Card>
+      <CardHeader><CardTitle>My Tool</CardTitle></CardHeader>
+      <CardContent>{/* tool UI */}</CardContent>
+      <RelatedTools toolId="my-tool" />
+    </Card>
   );
 }
 ```
 
-**Spacing**: Use `space-y-6` for card-to-card, `gap-6` for grid layouts
+**5. Create Astro Route** (`src/pages/ai/my-tool.astro`):
+```astro
+---
+import Layout from '../../layouts/BaseLayout.astro';
+import { MyTool as MyToolView } from '../../components/tools/ai/my-tool';
+import { SEO_CONFIG } from '../../lib/seo-config';
+---
+<Layout>
+  <slot name="head"><title>My Tool | Parsify.dev</title><link rel="canonical" href={`${SEO_CONFIG.BASE_URL}/ai/my-tool`} /></slot>
+  <main id="main-content" class="container mx-auto max-w-7xl px-6 py-8 lg:px-8"><MyToolView client:load /></main>
+</Layout>
+```
 
-**Icons**: `@phosphor-icons/react` (e.g., `ArrowsClockwise`, `Copy`, `CheckCircle`)
+**6. Add Related Tools** (in `src/components/tools/ai/shared/related-tools.tsx`).
+
+**7. Verify**: `bun run lint && bun run typecheck && bun test`
+
+## Key Conventions
+
+- Business logic in `src/lib/llm/`, UI in `src/components/tools/ai/`
+- Shared components stay flat under `src/components/tools/ai/shared/`
+- All tools use the single category `AI & LLM Tools`
+- Routes use `/ai/<tool-id>` prefix
+- No server-side processing of user input
+- BYOK = direct browser-to-provider calls only
+- No account, no installation, no tracking
 
 ---
 
-## ⚠️ Known Issues to Fix
-
-**CRITICAL** (from recent audit):
-- All issues have been resolved ✅
-
-**HIGH** (from recent audit):
-- All issues have been resolved ✅
-
-**Medium** (from recent audit):
-- All issues have been resolved ✅
-
----
-
-## 🤖 Agent Interaction Notes
-
-**Proactivity**: Suggest missing tools when you see user needs not met by `tools-data.ts`
-
-**Consistency**: Check `src/components/ui/` before creating new components - REUSE FIRST
-
-**Validation**: Always run `bun run lint` after changes - DO NOT suppress type errors
-
-**Testing**: Add tests for new utility functions in `src/__tests__/lib/`
-
-**Performance**: For heavy computations (>100ms), consider Web Workers or chunking
-
-**Type Safety**: NEVER use `as any`, `@ts-ignore`, or suppress type errors
-
-**Documentation**: NEVER create `.md` files unless explicitly requested
-
----
-
-*Last Updated: January 2026 - P0 and P1 security issues fully resolved*
+*Last Updated: April 2026 — Phase 1-3 AI/LLM tools complete (21 tools)*

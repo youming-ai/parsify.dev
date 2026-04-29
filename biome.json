@@ -6,17 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignore": [
-      "node_modules",
-      ".next",
-      ".open-next",
-      ".wrangler",
-      "dist",
-      "build",
-      "coverage",
-      "public",
-      "tests"
-    ]
+    "ignore": [".astro", "public", "*.astro"]
   },
   "formatter": {
     "indentStyle": "space",
@@ -30,41 +20,28 @@
   "linter": {
     "rules": {
       "recommended": true,
+      "a11y": {
+        "noLabelWithoutControl": "off"
+      },
       "complexity": {
-        "useArrowFunction": "off",
         "noForEach": "off",
-        "noBannedTypes": "off",
         "useLiteralKeys": "off"
       },
       "correctness": {
         "noUnusedVariables": "error",
-        "noUnusedImports": "error",
-        "useExhaustiveDependencies": "off"
-      },
-      "suspicious": {
-        "noExplicitAny": "off",
-        "noArrayIndexKey": "off",
-        "noRedeclare": "off",
-        "noImplicitAnyLet": "off",
-        "noAssignInExpressions": "off"
-      },
-      "style": {
-        "noNonNullAssertion": "off",
-        "noParameterAssign": "off"
+        "noUnusedImports": "error"
       },
       "security": {
         "noDangerouslySetInnerHtml": "off"
       },
-      "a11y": {
-        "recommended": true,
-        "noSvgWithoutTitle": "off",
-        "noLabelWithoutControl": "off",
-        "useButtonType": "warn",
-        "useSemanticElements": "off",
-        "useKeyWithClickEvents": "off",
-        "noRedundantRoles": "off",
-        "useValidAriaRole": "off",
-        "noInteractiveElementToNoninteractiveRole": "off"
+      "style": {
+        "noNonNullAssertion": "off"
+      },
+      "suspicious": {
+        "noArrayIndexKey": "off",
+        "noAssignInExpressions": "off",
+        "noExplicitAny": "off",
+        "noImplicitAnyLet": "off"
       }
     }
   },
