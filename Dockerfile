@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.7
-
 # Stage 1 — build static site with bun
 FROM oven/bun:1.3.5-alpine AS builder
 WORKDIR /app
