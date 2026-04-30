@@ -21,7 +21,6 @@ const subcategories = [
   { id: 'Tool Calling', name: 'Tool Calling' },
   { id: 'RAG & Data', name: 'RAG & Data' },
   { id: 'API Debugging', name: 'API Debugging' },
-  { id: 'Prompt Engineering', name: 'Prompt Engineering' },
   { id: 'Models & Providers', name: 'Models & Providers' },
 ];
 

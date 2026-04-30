@@ -3,11 +3,14 @@
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useSelectedModel } from '@/hooks/use-selected-model';
-import { estimateTokens } from '@/lib/llm/text-chunker';
 
 interface TokenCounterBarProps {
   text: string;
   modelId: string;
+}
+
+function estimateTokens(text: string): number {
+  return Math.max(1, Math.ceil(text.length / 4));
 }
 
 export function TokenCounterBar({ text, modelId }: TokenCounterBarProps) {
