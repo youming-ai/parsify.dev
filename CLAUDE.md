@@ -21,7 +21,7 @@ The project is an **Astro 5 + React 19 islands** AI/LLM developer tools site bui
 | Single test file | `bun test src/__tests__/lib/llm/<module>.test.ts` |
 | Test UI | `bun run test:ui` |
 | Coverage | `bun run test:coverage` |
-| Deploy | Cloudflare Pages with Git integration — auto-deploys on push to `main`. Pure static, no Worker / no SSR adapter. |
+| Deploy | Cloudflare Workers Static Assets (Git integration) — auto-deploys on push to `main`. `wrangler.toml` declares `[assets]` only; no Worker script, no SSR. |
 
 Pre-commit (husky): Biome `check --fix` + `vitest related --run` on staged `.ts(x)`.
 
@@ -82,21 +82,28 @@ src/
 
 ### Deployment
 
-The site is a fully static build (`output: 'static'` in `astro.config.mjs`, no adapter) deployed to **Cloudflare Pages with Git integration**. Cloudflare Pages clones the repo, runs `bun install --frozen-lockfile && bun run build`, and serves `dist/` from its CDN. No Worker, no SSR, no `wrangler.toml` — Pages handles everything via Dashboard config.
+The site is a fully static build (`output: 'static'` in `astro.config.mjs`, no adapter) deployed to **Cloudflare Workers Static Assets** (Git integration). Cloudflare clones the repo, runs `bun install --frozen-lockfile && bun run build`, then runs `npx wrangler deploy` which uploads `dist/` as assets — no Worker script, no SSR.
 
-Build settings in the Cloudflare Pages project:
-- **Build command**: `bun install --frozen-lockfile && bun run build`
-- **Build output directory**: `dist`
-- **Environment variables**: `BUN_VERSION=1.3.5`
+The `wrangler.toml` is intentionally minimal:
 
-Cache and security headers are declared in `public/_headers` (Astro copies it to `dist/_headers` on build, where Cloudflare Pages reads it):
+```toml
+name = "parsify-dev"
+compatibility_date = "2026-04-30"
+
+[assets]
+directory = "./dist"
+```
+
+It exists for one reason: **without it, `wrangler deploy` runs `astro add cloudflare` automatically** and re-installs the SSR adapter, which then crashes during prerender on the React 19 + `@phosphor-icons/react` `useContext` incompatibility. With this file in place, Wrangler considers the project configured and just uploads `dist/`.
+
+Cache and security headers are declared in `public/_headers` (Astro copies it to `dist/_headers` on build):
 - `/_astro/*` → 1y immutable cache (Astro's hashed assets are content-addressable)
 - `/*.html` and `/` → must-revalidate (so deploys propagate immediately)
 - All paths → `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`
 
-There are no server-side secrets — every provider call is BYOK from the browser, so no environment variables beyond `BUN_VERSION` need setting.
+There are no server-side secrets — every provider call is BYOK from the browser. Only `BUN_VERSION=1.3.5` needs setting in the Cloudflare environment.
 
-History: Cloudflare Workers Builds was tried briefly on 2026-04-30 and abandoned (the `output: 'server'` adapter forced a `MessageChannel` workaround and a `_worker.js`/`.assetsignore` dance for zero functional benefit). A short Dokploy-via-compose detour later that day failed on the host's IPv6/Tailscale DNS resolver — the current Pages-static setup avoids both classes of problem.
+History: an earlier attempt with `@astrojs/cloudflare` SSR adapter required a `MessageChannel` workaround and a `_worker.js`/`.assetsignore` dance for zero functional benefit. A subsequent Dokploy-via-compose detour failed on the host's IPv6/Tailscale DNS resolver. A pure Cloudflare Pages attempt got auto-converted into a Workers project by Cloudflare's UI. The current assets-only Worker config is the simplest configuration that works without surprises.
 
 ### Testing
 

@@ -9,7 +9,7 @@
 - **Runtime**: Bun 1.3+ (packageManager: bun@1.3.5)
 - **Styling**: Tailwind CSS 3 + shadcn/ui (class-variance-authority, clsx)
 - **Testing**: Vitest in `node` environment (pure-logic suite, no DOM)
-- **Deployment**: Cloudflare Pages with Git integration. Static build only (`output: 'static'`); `public/_headers` carries cache/security headers.
+- **Deployment**: Cloudflare Workers Static Assets (Git integration); minimal `wrangler.toml` declares `[assets]` only. Static build (`output: 'static'`); `public/_headers` carries cache/security headers.
 - **Lint**: Biome (2-space indent, 100 char width)
 - **TypeScript**: Strict mode, noUncheckedIndexedAccess enabled
 

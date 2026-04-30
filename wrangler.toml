@@ -1,0 +1,9 @@
+# Cloudflare Workers — assets-only deploy (no SSR, no Worker script).
+# This file's existence prevents `wrangler deploy` from auto-running
+# `astro add cloudflare`, which would otherwise re-install the SSR adapter.
+
+name = "parsify-dev"
+compatibility_date = "2026-04-30"
+
+[assets]
+directory = "./dist"
