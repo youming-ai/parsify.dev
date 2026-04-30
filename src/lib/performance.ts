@@ -170,7 +170,7 @@ export async function collectWebVitals(): Promise<WebVitals> {
  */
 export function reportWebVitals(vitals: WebVitals): void {
   // In production, send to analytics service
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env['NODE_ENV'] === 'production') {
     // Example: Send to Cloudflare Web Analytics
     // window._cfBeacon?.('web-vitals', vitals);
     // Example: Send to Google Analytics
@@ -178,7 +178,7 @@ export function reportWebVitals(vitals: WebVitals): void {
   }
 
   // In development, log to console
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env['NODE_ENV'] === 'development') {
     console.group('📊 Web Vitals');
     Object.entries(vitals).forEach(([name, metric]) => {
       if (metric) {

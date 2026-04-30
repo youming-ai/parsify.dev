@@ -144,7 +144,7 @@ export function ToolError({
       error={helpfulMessage}
       onRetry={onRetry}
       variant="card"
-      showDetails={process.env.NODE_ENV === 'development'}
+      showDetails={process.env['NODE_ENV'] === 'development'}
       action={showHelp && docLink ? () => window.open(docLink, '_blank') : undefined}
       actionLabel={showHelp && docLink ? 'Get Help' : undefined}
     />
