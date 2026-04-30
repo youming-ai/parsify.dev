@@ -16,6 +16,10 @@ export default defineConfig({
     resolve: {
       alias: {
         '@': '/src',
+        // Cloudflare Workers runtime does not expose MessageChannel, which the
+        // default react-dom/server.browser build relies on via the scheduler
+        // package. Use the edge build (Web Streams based) for SSR instead.
+        'react-dom/server': 'react-dom/server.edge',
       },
     },
     ssr: {
