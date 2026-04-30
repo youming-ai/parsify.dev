@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current Reality
 
-The project is an **Astro 5 + React 19 islands** AI/LLM developer tools site deployed to Cloudflare Workers via `@astrojs/cloudflare` in `output: 'server'` mode. It was fully pivoted from general developer tools to **AI agent / LLM application developer tools** across three phases, with 21 active tools.
+The project is an **Astro 5 + React 19 islands** AI/LLM developer tools site deployed to **Cloudflare Pages** via `@astrojs/cloudflare` in `output: 'server'` mode (SSR runs in `_worker.js` on Pages Functions). It was fully pivoted from general developer tools to **AI agent / LLM application developer tools** across three phases, with 21 active tools.
 
 `AGENTS.md` is authoritative for **security rules**, **code style / Biome conventions**, and **tool workflow**. Follow it for all implementation decisions.
 
@@ -13,7 +13,7 @@ The project is an **Astro 5 + React 19 islands** AI/LLM developer tools site dep
 | Purpose | Command |
 |---|---|
 | Dev server | `bun run dev` (Astro dev) |
-| Build | `bun run build` (outputs `dist/server` + `dist/client`) |
+| Build | `bun run build` (outputs `dist/` containing `_worker.js`, `_routes.json`, and static assets) |
 | Typecheck | `bun run typecheck` (`astro check` — covers `.astro` + `.ts(x)`) |
 | Lint | `bun run lint` / `bun run lint:fix` (Biome on `./src`) |
 | Format | `bun run format` |
@@ -21,7 +21,7 @@ The project is an **Astro 5 + React 19 islands** AI/LLM developer tools site dep
 | Single test file | `bun test src/__tests__/lib/llm/<module>.test.ts` |
 | Test UI | `bun run test:ui` |
 | Coverage | `bun run test:coverage` |
-| Deploy | `bun run deploy:cf` (build + wrangler deploy) |
+| Deploy | Auto-deploys on push to `main` via Cloudflare Pages Git integration. Manual fallback: `bun run deploy:cf:manual` (only for emergencies — using it while Git integration is active will conflict) |
 
 Pre-commit (husky): Biome `check --fix` + `vitest related --run` on staged `.ts(x)`.
 
@@ -81,9 +81,11 @@ src/
 
 `tsconfig.json` enables `strict`, `noUncheckedIndexedAccess`, and `noPropertyAccessFromIndexSignature`. `@/*` resolves to `src/*`.
 
-### Cloudflare Workers deployment
+### Cloudflare Pages deployment
 
-`wrangler.toml` has `main = "dist/server/index.js"` (Astro Cloudflare adapter) and `assets = "dist/client"`. Secrets: `GROQ_API_KEY`, `ALLOWED_ORIGIN`. Node.js compat enabled.
+Deployed via **Cloudflare Pages with Git integration** — every push to `main` triggers a Pages build. Build command `bun run build`, output directory `dist`. The Astro Cloudflare adapter emits `dist/_worker.js` for SSR plus static assets.
+
+`wrangler.toml` only declares `name`, `compatibility_date`, `compatibility_flags = ["nodejs_compat"]`, and a placeholder `[vars] ENVIRONMENT`. **Pages + Git mode does NOT read `[vars]` from `wrangler.toml`** — environment variables and secrets (`BUN_VERSION`, `ENVIRONMENT`, `GROQ_API_KEY`, `ALLOWED_ORIGIN`) must be set in the Cloudflare Dashboard under Settings → Environment variables.
 
 ### Testing
 

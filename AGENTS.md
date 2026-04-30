@@ -9,7 +9,7 @@
 - **Runtime**: Bun 1.3+ (packageManager: bun@1.3.5)
 - **Styling**: Tailwind CSS 3 + shadcn/ui (class-variance-authority, clsx)
 - **Testing**: Vitest with happy-dom
-- **Deployment**: Cloudflare Workers (@astrojs/cloudflare)
+- **Deployment**: Cloudflare Pages with Git integration (@astrojs/cloudflare adapter, SSR via `_worker.js`)
 - **Lint**: Biome (2-space indent, 100 char width)
 - **TypeScript**: Strict mode, noUncheckedIndexedAccess enabled
 
@@ -27,7 +27,7 @@
 | **Test File** | `bun test <path>` | Run specific test file |
 | **Test UI** | `bun run test:ui` | Interactive Vitest UI |
 | **Coverage** | `bun run test:coverage` | V8 provider, excludes `src/components/ui/**` |
-| **Deploy** | `bun run deploy:cf` | Build + deploy to Cloudflare |
+| **Deploy** | Auto on push to `main` | Cloudflare Pages Git integration; manual fallback `bun run deploy:cf:manual` |
 
 **Pre-commit**: `bun run lint:fix && bun run typecheck && bun test` (via husky)
 
