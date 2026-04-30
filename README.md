@@ -2,7 +2,6 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Astro](https://img.shields.io/badge/Astro-5.x-purple.svg)](https://astro.build/)
-[![Cloudflare](https://img.shields.io/badge/Cloudflare-Workers-orange.svg)](https://workers.cloudflare.com/)
 
 **AI & LLM Developer Tools** — Privacy-first browser utilities for AI agent and LLM application developers.
 
@@ -11,37 +10,21 @@
 ## ✨ Tools
 
 ### Tokens & Cost
-- Multi-Model Token Counter — compare token counts across providers
-- LLM Cost Calculator — estimate monthly API spend
-- Context Window Visualizer — visualize prompt context usage
-- Prompt Cache Calculator — calculate cache savings
-
-### Prompt Engineering
-- Prompt Diff — compare prompt versions with token delta
-- System Prompt Linter — analyze prompt quality with rule-based checks
-- Prompt Format Converter — convert between OpenAI, Anthropic, Gemini, ChatML
-- Few-shot Builder — generate structured few-shot prompts
-- Prompt Variable Filler — fill templates and export batch prompts
-
-### Tool Calling
-- Tool Schema Converter — convert schemas across provider formats
-- LLM JSON Schema Generator — generate schemas from JSON examples
-- Structured Output Validator — validate LLM output against schemas
-- Tool Schema Builder — build schemas with visual parameter forms
-
-### RAG & Data
-- Token-Aware Text Chunker — split text into RAG-ready chunks
-- JSONL Viewer / Editor — inspect and edit JSONL datasets
-- Fine-tuning Dataset Validator — check dataset quality
-- Embedding Similarity Visualizer — compare embedding vectors
-
-### API Debugging
-- LLM SSE Stream Parser — parse streaming responses
-- LLM API Request Builder — build and test API calls
-- Rate Limit Calculator — calculate API throughput limits
+- **Multi-Model Token Counter** — compare token counts across providers
+- **LLM Cost Calculator** — estimate monthly API spend with batch + cache pricing
+- **Prompt Cache Calculator** — quantify whether prompt caching pays off
 
 ### Models & Providers
-- Model Comparison Table — filter and compare LLM models
+- **Rate Limit Calculator** — derive throughput from TPM / RPM / TPD / concurrency
+
+### API Debugging
+- **LLM SSE Stream Parser** — parse and inspect raw streaming responses
+
+### Tool Calling
+- **Tool Schema Converter** — convert function-calling schemas between OpenAI, Anthropic, Gemini, MCP
+
+### RAG & Data
+- **JSONL Viewer / Editor** — inspect, validate, edit, and export JSONL datasets in your browser
 
 ## 🚀 Quick Start
 
@@ -64,20 +47,20 @@ bun run dev
 - **Framework**: Astro 5 + React 19 islands
 - **Language**: TypeScript 5 (strict mode)
 - **Styling**: Tailwind CSS 3 + shadcn/ui
-- **Testing**: Vitest + happy-dom (78 tests)
+- **Testing**: Vitest (node env, 18 tests)
 - **Linting**: Biome
-- **Deployment**: Cloudflare Workers (@astrojs/cloudflare)
+- **Deployment**: Static build (`output: 'static'`), deploy `dist/` to any static host
 
 ## 📁 Project Structure
 
 ```
 src/
-├── pages/ai/         # Astro route shells (SEO + island mount)
+├── pages/ai/             # Astro route shells (SEO + island mount)
 ├── components/tools/ai/  # React tool implementations
-├── lib/llm/          # Pure logic modules (calculators, parsers, validators)
-├── data/             # Tool registry + LLM model facts
-├── types/            # Shared TypeScript interfaces
-└── __tests__/lib/llm/  # Vitest tests
+├── lib/llm/              # Pure logic modules (calculators, parsers, JSONL)
+├── data/                 # Tool registry + LLM model facts
+├── types/                # Shared TypeScript interfaces
+└── __tests__/lib/llm/    # Vitest tests
 ```
 
 ## 🔒 Privacy
