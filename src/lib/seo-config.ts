@@ -9,8 +9,8 @@ export const SEO_CONFIG = {
   DEFAULT_DESCRIPTION:
     'Privacy-first browser tools for AI agent and LLM developers. Token counter, cost calculator, prompt cache calculator, rate limit calculator, SSE stream parser, tool schema converter, and JSONL viewer — all processing happens in your browser.',
   DEFAULT_OG_IMAGE: 'https://parsify.dev/opengraph-image.png',
-  DEFAULT_OG_IMAGE_WIDTH: 1024,
-  DEFAULT_OG_IMAGE_HEIGHT: 1024,
+  DEFAULT_OG_IMAGE_WIDTH: 1200,
+  DEFAULT_OG_IMAGE_HEIGHT: 630,
   DEFAULT_LOCALE: 'en_US',
   TWITTER_HANDLE: '@parsifydev',
 } as const;
