@@ -49,7 +49,7 @@ bun run dev
 - **Styling**: Tailwind CSS 3 + shadcn/ui
 - **Testing**: Vitest (node env, 18 tests)
 - **Linting**: Biome
-- **Deployment**: Dokploy via Docker Compose (multi-stage `Dockerfile`: bun build → nginx serve)
+- **Deployment**: Cloudflare Pages (static, Git integration)
 
 ## 📁 Project Structure
 

@@ -1,0 +1,20 @@
+# Cloudflare Pages headers config
+# https://developers.cloudflare.com/pages/configuration/headers/
+
+# Astro's hashed assets — safe to cache forever
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML must revalidate so deploys propagate immediately
+/*.html
+  Cache-Control: public, must-revalidate
+
+/
+  Cache-Control: public, must-revalidate
+
+# Baseline security headers on every response
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()

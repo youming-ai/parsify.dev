@@ -9,7 +9,7 @@
 - **Runtime**: Bun 1.3+ (packageManager: bun@1.3.5)
 - **Styling**: Tailwind CSS 3 + shadcn/ui (class-variance-authority, clsx)
 - **Testing**: Vitest in `node` environment (pure-logic suite, no DOM)
-- **Deployment**: Dokploy via Docker Compose. Multi-stage `Dockerfile` (bun → nginx), `docker-compose.yml` wires the service for Dokploy's reverse proxy. Static build only (`output: 'static'`).
+- **Deployment**: Cloudflare Pages with Git integration. Static build only (`output: 'static'`); `public/_headers` carries cache/security headers.
 - **Lint**: Biome (2-space indent, 100 char width)
 - **TypeScript**: Strict mode, noUncheckedIndexedAccess enabled
 
@@ -27,7 +27,7 @@
 | **Test File** | `bun test <path>` | Run specific test file |
 | **Test UI** | `bun run test:ui` | Interactive Vitest UI |
 | **Coverage** | `bun run test:coverage` | V8 provider, excludes `src/components/ui/**` |
-| **Deploy** | `git push` to `main` | Dokploy rebuilds via `docker compose up --build` |
+| **Deploy** | `git push` to `main` | Cloudflare Pages rebuilds and deploys |
 
 **Pre-commit**: `bun run lint:fix && bun run typecheck && bun test` (via husky)
 
