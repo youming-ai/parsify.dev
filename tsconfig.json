@@ -24,5 +24,5 @@
     "types": ["astro/client"]
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.astro", ".astro/types.d.ts"],
-  "exclude": ["node_modules", "src/__tests__/**", "tests/**", "dist", ".wrangler"]
+  "exclude": ["node_modules", "src/__tests__/**", "tests/**", "scripts/**", "dist", ".wrangler"]
 }
