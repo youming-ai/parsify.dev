@@ -8,8 +8,8 @@
 - **Framework**: Astro 5 + React 19 islands
 - **Runtime**: Bun 1.3+ (packageManager: bun@1.3.5)
 - **Styling**: Tailwind CSS 3 + shadcn/ui (class-variance-authority, clsx)
-- **Testing**: Vitest with happy-dom
-- **Deployment**: Cloudflare Workers Builds with Git integration (@astrojs/cloudflare adapter, SSR worker + static assets via `ASSETS` binding)
+- **Testing**: Vitest in `node` environment (pure-logic suite, no DOM)
+- **Deployment**: Dokploy via Docker Compose. Multi-stage `Dockerfile` (bun → nginx), `docker-compose.yml` wires the service for Dokploy's reverse proxy. Static build only (`output: 'static'`).
 - **Lint**: Biome (2-space indent, 100 char width)
 - **TypeScript**: Strict mode, noUncheckedIndexedAccess enabled
 
@@ -18,16 +18,16 @@
 | Purpose | Command | Notes |
 |----------|----------|--------|
 | **Dev** | `bun run dev` | Astro dev server |
-| **Build** | `bun run build` | Production + Cloudflare bundle |
+| **Build** | `bun run build` | Static site → `dist/` |
 | **Lint** | `bun run lint` | Biome check `./src` |
 | **Fix** | `bun run lint:fix` | Auto-fix with `--fix ./src` |
 | **Format** | `bun run format` | Biome format `--write ./src` |
 | **Type Check** | `bun run typecheck` | `astro check` |
-| **Test All** | `bun test` | Vitest with happy-dom |
+| **Test All** | `bun test` | Vitest (node env, no DOM) |
 | **Test File** | `bun test <path>` | Run specific test file |
 | **Test UI** | `bun run test:ui` | Interactive Vitest UI |
 | **Coverage** | `bun run test:coverage` | V8 provider, excludes `src/components/ui/**` |
-| **Deploy** | Auto on push to `main` | Cloudflare Workers Builds runs `npx wrangler deploy`; manual: `bunx wrangler deploy` |
+| **Deploy** | `git push` to `main` | Dokploy rebuilds via `docker compose up --build` |
 
 **Pre-commit**: `bun run lint:fix && bun run typecheck && bun test` (via husky)
 
