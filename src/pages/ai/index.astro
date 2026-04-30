@@ -1,18 +1,42 @@
 ---
 import Layout from '../../layouts/BaseLayout.astro';
-import { SEO_CONFIG } from '../../lib/seo-config';
+import PageSEO from '../../components/seo/page-seo.astro';
 import { toolsData, AI_TOOLS_CATEGORY } from '../../data/tools-data';
 
 const tools = toolsData.filter((tool) => tool.category === AI_TOOLS_CATEGORY);
-const title = 'AI & LLM Developer Tools | Parsify.dev';
-const desc = 'Privacy-first browser tools for AI agent and LLM application developers.';
+const title = 'AI & LLM Developer Tools';
+const desc = 'Privacy-first browser tools for AI agent and LLM application developers — token counters, cost calculators, schema converters, JSONL editors, and more.';
+
+const collectionJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: title,
+  description: desc,
+  url: 'https://parsify.dev/ai',
+  hasPart: tools.map((tool) => ({
+    '@type': 'SoftwareApplication',
+    name: tool.name,
+    description: tool.description,
+    url: `https://parsify.dev${tool.href}`,
+    applicationCategory: 'DeveloperApplication',
+    operatingSystem: 'Web',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  })),
+};
 ---
 
 <Layout>
   <slot name="head">
-    <title>{title}</title>
-    <meta name="description" content={desc} />
-    <link rel="canonical" href={`${SEO_CONFIG.BASE_URL}/ai`} />
+    <PageSEO
+      title={title}
+      description={desc}
+      path="/ai"
+      breadcrumbs={[
+        { name: 'Home', url: '/' },
+        { name: 'AI & LLM Tools', url: '/ai' },
+      ]}
+      extraJsonLd={collectionJsonLd}
+    />
   </slot>
   <main id="main-content" class="container mx-auto max-w-7xl px-6 py-12 lg:px-8">
     <div class="mb-10 max-w-3xl">

@@ -1,11 +1,29 @@
 ---
 import Layout from '../../layouts/BaseLayout.astro';
+import PageSEO from '../../components/seo/page-seo.astro';
 import { TokenCounter as TokenCounterTool } from '../../components/tools/ai/token-counter';
-import { SEO_CONFIG } from '../../lib/seo-config';
-const title = 'Multi-Model Token Counter | Parsify.dev';
-const desc = 'Compare estimated LLM token usage locally across major model providers.';
+import { toolsData } from '../../data/tools-data';
+import { softwareApplicationJsonLd } from '../../lib/seo-config';
+
+const tool = toolsData.find((t) => t.id === 'token-counter');
+if (!tool) throw new Error('Tool token-counter not found in tools-data');
 ---
 <Layout>
-  <slot name="head"><title>{title}</title><meta name="description" content={desc} /><link rel="canonical" href={`${SEO_CONFIG.BASE_URL}/ai/token-counter`} /></slot>
-  <main id="main-content" class="container mx-auto max-w-7xl px-6 py-8 lg:px-8"><TokenCounterTool client:load /></main>
+  <slot name="head">
+    <PageSEO
+      title={tool.name}
+      description={tool.description}
+      path={tool.href}
+      ogType="article"
+      breadcrumbs={[
+        { name: 'Home', url: '/' },
+        { name: 'AI & LLM Tools', url: '/ai' },
+        { name: tool.name, url: tool.href },
+      ]}
+      extraJsonLd={softwareApplicationJsonLd(tool)}
+    />
+  </slot>
+  <main id="main-content" class="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
+    <TokenCounterTool client:load />
+  </main>
 </Layout>

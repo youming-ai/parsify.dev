@@ -1,11 +1,29 @@
 ---
 import Layout from '../../layouts/BaseLayout.astro';
+import PageSEO from '../../components/seo/page-seo.astro';
 import { JsonlViewer as JsonlViewerTool } from '../../components/tools/ai/jsonl-viewer';
-import { SEO_CONFIG } from '../../lib/seo-config';
-const title = 'JSONL Viewer / Editor | Parsify.dev';
-const desc = 'Inspect, validate, lightly edit, and export JSONL datasets in your browser.';
+import { toolsData } from '../../data/tools-data';
+import { softwareApplicationJsonLd } from '../../lib/seo-config';
+
+const tool = toolsData.find((t) => t.id === 'jsonl-viewer');
+if (!tool) throw new Error('Tool jsonl-viewer not found in tools-data');
 ---
 <Layout>
-  <slot name="head"><title>{title}</title><meta name="description" content={desc} /><link rel="canonical" href={`${SEO_CONFIG.BASE_URL}/ai/jsonl-viewer`} /></slot>
-  <main id="main-content" class="container mx-auto max-w-7xl px-6 py-8 lg:px-8"><JsonlViewerTool client:load /></main>
+  <slot name="head">
+    <PageSEO
+      title={tool.name}
+      description={tool.description}
+      path={tool.href}
+      ogType="article"
+      breadcrumbs={[
+        { name: 'Home', url: '/' },
+        { name: 'AI & LLM Tools', url: '/ai' },
+        { name: tool.name, url: tool.href },
+      ]}
+      extraJsonLd={softwareApplicationJsonLd(tool)}
+    />
+  </slot>
+  <main id="main-content" class="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
+    <JsonlViewerTool client:load />
+  </main>
 </Layout>
