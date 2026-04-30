@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current Reality
 
-The project is an **Astro 5 + React 19 islands** AI/LLM developer tools site deployed to **Cloudflare Pages** via `@astrojs/cloudflare` in `output: 'server'` mode (SSR runs in `_worker.js` on Pages Functions). It was fully pivoted from general developer tools to **AI agent / LLM application developer tools** across three phases, with 21 active tools.
+The project is an **Astro 5 + React 19 islands** AI/LLM developer tools site deployed to **Cloudflare Workers** via Workers Builds (Git integration) using `@astrojs/cloudflare` in `output: 'server'` mode. SSR runs in `dist/_worker.js/index.js`; static assets are served from `dist/` via the `ASSETS` binding. The project was fully pivoted from general developer tools to **AI agent / LLM application developer tools** across three phases, with 21 active tools.
 
 `AGENTS.md` is authoritative for **security rules**, **code style / Biome conventions**, and **tool workflow**. Follow it for all implementation decisions.
 
@@ -21,7 +21,7 @@ The project is an **Astro 5 + React 19 islands** AI/LLM developer tools site dep
 | Single test file | `bun test src/__tests__/lib/llm/<module>.test.ts` |
 | Test UI | `bun run test:ui` |
 | Coverage | `bun run test:coverage` |
-| Deploy | Auto-deploys on push to `main` via Cloudflare Pages Git integration. Manual fallback: `bun run deploy:cf:manual` (only for emergencies — using it while Git integration is active will conflict) |
+| Deploy | Auto-deploys on push to `main` via Cloudflare Workers Builds (Git integration runs `npx wrangler deploy`). Manual fallback: `bunx wrangler deploy` |
 
 Pre-commit (husky): Biome `check --fix` + `vitest related --run` on staged `.ts(x)`.
 
@@ -81,11 +81,17 @@ src/
 
 `tsconfig.json` enables `strict`, `noUncheckedIndexedAccess`, and `noPropertyAccessFromIndexSignature`. `@/*` resolves to `src/*`.
 
-### Cloudflare Pages deployment
+### Cloudflare Workers deployment
 
-Deployed via **Cloudflare Pages with Git integration** — every push to `main` triggers a Pages build. Build command `bun run build`, output directory `dist`. The Astro Cloudflare adapter emits `dist/_worker.js` for SSR plus static assets.
+Deployed via **Cloudflare Workers Builds with Git integration** — every push to `main` triggers Cloudflare to run `bun install` → `bun run build` → `npx wrangler deploy`. The Astro Cloudflare adapter emits `dist/_worker.js/index.js` (SSR worker) plus static assets in `dist/`.
 
-`wrangler.toml` only declares `name`, `compatibility_date`, `compatibility_flags = ["nodejs_compat"]`, and a placeholder `[vars] ENVIRONMENT`. **Pages + Git mode does NOT read `[vars]` from `wrangler.toml`** — environment variables and secrets (`BUN_VERSION`, `ENVIRONMENT`, `GROQ_API_KEY`, `ALLOWED_ORIGIN`) must be set in the Cloudflare Dashboard under Settings → Environment variables.
+`wrangler.toml` declares:
+- `main = "./dist/_worker.js/index.js"` — Worker entry
+- `[assets] directory = "./dist", binding = "ASSETS"` — static assets bound to `env.ASSETS`
+- `compatibility_flags = ["nodejs_compat"]`
+- `[vars] ENVIRONMENT = "production"` — Workers Builds reads `[vars]` from this file at deploy time
+
+**Secrets** (`GROQ_API_KEY`, `ALLOWED_ORIGIN`) must be set via `wrangler secret put <NAME>` or in the Cloudflare Dashboard (Worker → Settings → Variables → Secrets). They are NOT committed to `wrangler.toml`. `BUN_VERSION` is auto-detected by Cloudflare from the Bun toolchain detection.
 
 ### Testing
 
