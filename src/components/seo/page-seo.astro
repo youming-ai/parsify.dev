@@ -1,0 +1,80 @@
+---
+import { SEO_CONFIG } from '@/lib/seo-config';
+
+interface Breadcrumb {
+  name: string;
+  url: string;
+}
+
+interface Props {
+  /** Page title; "| Parsify.dev" suffix is appended when `appendSiteName` is true. */
+  title: string;
+  /** Meta description (≤ 160 chars recommended). */
+  description: string;
+  /** Path relative to BASE_URL, e.g. "/ai/token-counter". */
+  path: string;
+  /** OG type: "website" for hubs, "article" for individual tool pages. */
+  ogType?: 'website' | 'article';
+  /** Override the default OG image URL. Should be absolute. */
+  ogImage?: string;
+  /** Append " | Parsify.dev" to the title. Default true. */
+  appendSiteName?: boolean;
+  /** Optional crumbs for BreadcrumbList JSON-LD. Url is path-relative or absolute. */
+  breadcrumbs?: Breadcrumb[];
+  /** Optional extra JSON-LD payload appended after the standard schema(s). */
+  extraJsonLd?: object;
+}
+
+const {
+  title,
+  description,
+  path,
+  ogType = 'website',
+  ogImage = SEO_CONFIG.DEFAULT_OG_IMAGE,
+  appendSiteName = true,
+  breadcrumbs,
+  extraJsonLd,
+} = Astro.props;
+
+const fullTitle = appendSiteName && !title.includes('Parsify.dev') ? `${title} | Parsify.dev` : title;
+const url = new URL(path, SEO_CONFIG.BASE_URL).toString();
+
+const breadcrumbsJsonLd = breadcrumbs && breadcrumbs.length > 0 ? {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbs.map((crumb, idx) => ({
+    '@type': 'ListItem',
+    position: idx + 1,
+    name: crumb.name,
+    item: new URL(crumb.url, SEO_CONFIG.BASE_URL).toString(),
+  })),
+} : null;
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={url} />
+
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content={ogType} />
+<meta property="og:url" content={url} />
+<meta property="og:site_name" content={SEO_CONFIG.SITE_NAME} />
+<meta property="og:locale" content={SEO_CONFIG.DEFAULT_LOCALE} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content={String(SEO_CONFIG.DEFAULT_OG_IMAGE_WIDTH)} />
+<meta property="og:image:height" content={String(SEO_CONFIG.DEFAULT_OG_IMAGE_HEIGHT)} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content={SEO_CONFIG.TWITTER_HANDLE} />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+
+{breadcrumbsJsonLd && (
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbsJsonLd)} />
+)}
+
+{extraJsonLd && (
+  <script type="application/ld+json" set:html={JSON.stringify(extraJsonLd)} />
+)}

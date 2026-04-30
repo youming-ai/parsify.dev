@@ -1,35 +1,33 @@
 ---
 import Layout from '../layouts/BaseLayout.astro';
+import PageSEO from '../components/seo/page-seo.astro';
 import { SEO_CONFIG } from '../lib/seo-config';
 import { HeroSection } from '../components/home/hero-section';
-import { toolsData, toolCategories } from '../data/tools-data';
+import { toolsData } from '../data/tools-data';
+
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SEO_CONFIG.SITE_NAME,
+  description: SEO_CONFIG.DEFAULT_DESCRIPTION,
+  url: `${SEO_CONFIG.BASE_URL}/`,
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: `${SEO_CONFIG.BASE_URL}/?q={search_term_string}`,
+    'query-input': 'required name=search_term_string',
+  },
+};
 ---
 
 <Layout>
   <slot name="head">
-    <title>{SEO_CONFIG.DEFAULT_TITLE}</title>
-    <meta name="description" content={SEO_CONFIG.DEFAULT_DESCRIPTION} />
-    <link rel="canonical" href={`${SEO_CONFIG.BASE_URL}/`} />
-    <meta property="og:title" content={SEO_CONFIG.DEFAULT_TITLE} />
-    <meta property="og:description" content={SEO_CONFIG.DEFAULT_DESCRIPTION} />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={SEO_CONFIG.DEFAULT_TITLE} />
-    <meta name="twitter:description" content={SEO_CONFIG.DEFAULT_DESCRIPTION} />
-    <script type="application/ld+json">
-      {JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: 'Parsify.dev',
-        description: SEO_CONFIG.DEFAULT_DESCRIPTION,
-        url: `${SEO_CONFIG.BASE_URL}/`,
-        potentialAction: {
-          '@type': 'SearchAction',
-          target: `${SEO_CONFIG.BASE_URL}/?q={search_term_string}`,
-          'query-input': 'required name=search_term_string'
-        }
-      })}
-    </script>
+    <PageSEO
+      title={SEO_CONFIG.DEFAULT_TITLE}
+      description={SEO_CONFIG.DEFAULT_DESCRIPTION}
+      path="/"
+      appendSiteName={false}
+      extraJsonLd={websiteJsonLd}
+    />
   </slot>
   <div>
     <HeroSection client:load tools={toolsData} />
