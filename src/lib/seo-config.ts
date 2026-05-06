@@ -7,7 +7,7 @@ export const SEO_CONFIG = {
   SITE_NAME: 'Parsify.dev',
   DEFAULT_TITLE: 'Parsify.dev - AI & LLM Developer Tools',
   DEFAULT_DESCRIPTION:
-    'Privacy-first browser tools for AI agent and LLM developers. Token counter, cost calculator, prompt cache calculator, rate limit calculator, SSE stream parser, tool schema converter, and JSONL viewer — all processing happens in your browser.',
+    'Privacy-first browser tools for AI agent and LLM developers. Estimate LLM API costs across providers and calculate prompt caching ROI — all processing happens in your browser.',
   DEFAULT_OG_IMAGE: 'https://parsify.dev/opengraph-image.png',
   DEFAULT_OG_IMAGE_WIDTH: 1200,
   DEFAULT_OG_IMAGE_HEIGHT: 630,

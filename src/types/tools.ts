@@ -3,7 +3,6 @@ export interface Tool {
   name: string;
   description: string;
   category: string;
-  subcategory?: string; // For nested categories like "Common/Auxiliary Tools"
   icon: string; // Lucide icon name as string
   features: string[];
   tags: string[];
@@ -17,13 +16,6 @@ export interface Tool {
 }
 
 export interface ToolCategoryData {
-  id: string;
-  name: string;
-  description?: string;
-  subcategories?: ToolSubcategory[];
-}
-
-export interface ToolSubcategory {
   id: string;
   name: string;
   description?: string;

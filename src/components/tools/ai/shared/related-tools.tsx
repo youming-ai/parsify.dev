@@ -4,13 +4,8 @@ import { toolsData } from '@/data/tools-data';
 import type { Tool } from '@/types/tools';
 
 const relatedToolIds: Record<string, string[]> = {
-  'token-counter': ['cost-calculator', 'cache-calculator', 'rate-limit-calculator'],
-  'cost-calculator': ['cache-calculator', 'rate-limit-calculator', 'token-counter'],
-  'cache-calculator': ['cost-calculator', 'rate-limit-calculator', 'token-counter'],
-  'rate-limit-calculator': ['cost-calculator', 'cache-calculator', 'token-counter'],
-  'sse-parser': ['tool-schema-converter', 'jsonl-viewer'],
-  'tool-schema-converter': ['sse-parser', 'jsonl-viewer'],
-  'jsonl-viewer': ['tool-schema-converter', 'token-counter', 'sse-parser'],
+  'cost-calculator': ['cache-calculator'],
+  'cache-calculator': ['cost-calculator'],
 };
 
 interface RelatedToolsProps {
@@ -27,7 +22,7 @@ export function RelatedTools({ toolId }: RelatedToolsProps) {
   return (
     <section className="rounded-lg border p-4">
       <h2 className="text-sm font-semibold">Related tools</h2>
-      <div className="mt-3 grid gap-2 md:grid-cols-3">
+      <div className="mt-3 grid gap-2 md:grid-cols-2">
         {tools.map((tool) => (
           <a
             key={tool.id}

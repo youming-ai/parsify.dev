@@ -15,15 +15,6 @@ const difficultyColor: Record<string, string> = {
   advanced: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300',
 };
 
-const subcategories = [
-  { id: 'all', name: 'All' },
-  { id: 'Tokens & Cost', name: 'Tokens & Cost' },
-  { id: 'Tool Calling', name: 'Tool Calling' },
-  { id: 'RAG & Data', name: 'RAG & Data' },
-  { id: 'API Debugging', name: 'API Debugging' },
-  { id: 'Models & Providers', name: 'Models & Providers' },
-];
-
 interface HeroSectionProps {
   tools: Tool[];
 }
@@ -80,13 +71,9 @@ function ToolCard({ tool }: { tool: Tool }) {
 
 export function HeroSection({ tools }: HeroSectionProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState('all');
 
   const filtered = useMemo(() => {
     let result = [...tools];
-    if (activeCategory !== 'all') {
-      result = result.filter((t) => t.subcategory === activeCategory);
-    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -97,7 +84,7 @@ export function HeroSection({ tools }: HeroSectionProps) {
       );
     }
     return result;
-  }, [tools, activeCategory, searchQuery]);
+  }, [tools, searchQuery]);
 
   return (
     <>
@@ -137,13 +124,10 @@ export function HeroSection({ tools }: HeroSectionProps) {
                 <Input
                   id="tool-search"
                   type="text"
-                  placeholder="Search tools (e.g., token counter, cost calculator, SSE parser)..."
+                  placeholder="Search tools (e.g., cost calculator, cache calculator)..."
                   className="h-12 border-0 bg-transparent py-3 pl-3 pr-4 placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
                   value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setActiveCategory('all');
-                  }}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 {searchQuery && (
                   <button
@@ -163,39 +147,6 @@ export function HeroSection({ tools }: HeroSectionProps) {
       </section>
 
       <section className="mx-auto max-w-screen-2xl px-6 py-10 lg:px-8">
-        {/* Subcategory filters */}
-        <div className="mb-10 flex flex-wrap items-center gap-2">
-          {subcategories.map((cat) => {
-            const isActive = activeCategory === cat.id;
-            const count =
-              cat.id === 'all'
-                ? tools.length
-                : tools.filter((t) => t.subcategory === cat.id).length;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => {
-                  setActiveCategory(cat.id);
-                  setSearchQuery('');
-                }}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                }`}
-              >
-                {cat.name}
-                <span
-                  className={`rounded-full px-1.5 py-0.5 text-[10px] ${isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-background text-muted-foreground'}`}
-                >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           {filtered.map((tool) => (
             <ToolCard key={tool.id} tool={tool} />
@@ -214,10 +165,7 @@ export function HeroSection({ tools }: HeroSectionProps) {
             </p>
             <button
               type="button"
-              onClick={() => {
-                setSearchQuery('');
-                setActiveCategory('all');
-              }}
+              onClick={() => setSearchQuery('')}
               className="mt-6 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
               Clear Search

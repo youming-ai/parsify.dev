@@ -21,17 +21,12 @@ Pre-commit (husky → lint-staged): Biome `check --fix` + `vitest related --run`
 
 **No server-side processing of user input** — that's the product invariant. All logic runs in the browser. Provider calls go browser-direct via BYOK. API keys live in component state only (not persisted).
 
-**7 tools** (after Apr 2026 triage from 21 → 7):
+**2 tools** (after Apr 2026 triage from 21 → 2):
 
 | Tool | Route | Logic module |
 |---|---|---|
-| Multi-Model Token Counter | `/ai/token-counter` | (uses live-registry hooks) |
 | LLM Cost Calculator | `/ai/cost-calculator` | `cost-calculator.ts` |
 | Prompt Cache Calculator | `/ai/cache-calculator` | `prompt-cache.ts` |
-| Rate Limit Calculator | `/ai/rate-limit-calculator` | `rate-limit-calculator.ts` |
-| LLM SSE Stream Parser | `/ai/sse-parser` | `sse-parser.ts` |
-| Tool Schema Converter | `/ai/tool-schema-converter` | `tool-schema-converter.ts` |
-| JSONL Viewer / Editor | `/ai/jsonl-viewer` | `jsonl.ts` |
 
 **Route → island pattern:**
 
@@ -49,12 +44,10 @@ src/
 ├── components/
 │   ├── ui/               # shadcn/ui primitives — REUSE FIRST
 │   └── tools/ai/
-│       ├── shared/       # ModelSelector, APIKeyInput, CodeExportTabs, MetricCard,
-│       │                 # JsonTextarea, RelatedTools, ProviderSelector, BYOKNotice,
-│       │                 # TokenCounterBar
-│       └── <tool>.tsx    # 7 tool islands
+│       ├── shared/       # ModelSelector, MetricCard, RelatedTools
+│       └── <tool>.tsx    # 2 tool islands
 ├── data/
-│   ├── tools-data.ts     # 7-tool registry (5 subcategories)
+│   ├── tools-data.ts     # 2-tool registry
 │   └── llm-registry.json # 9 models, 7 providers
 ├── hooks/                # use-live-models.ts, use-selected-model.ts
 └── __tests__/lib/llm/    # Per-module Vitest tests
@@ -96,4 +89,4 @@ Cache/security headers in `public/_headers`: `/_astro/*` → 1y immutable, HTML 
 6. Add related tools in `shared/related-tools.tsx`
 7. Verify: `bun run lint && bun run typecheck && bun test`
 
-*Apr 2026 — 7 tools*
+*Apr 2026 — 4 tools*
