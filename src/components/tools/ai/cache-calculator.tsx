@@ -1,10 +1,12 @@
 'use client';
 
+import { CostBreakdown } from '@/components/tools/ai/shared/cost-breakdown';
 import { MetricCard } from '@/components/tools/ai/shared/metric-card';
 import { ModelSelector } from '@/components/tools/ai/shared/model-selector';
 import { RelatedTools } from '@/components/tools/ai/shared/related-tools';
+import { ResultCard } from '@/components/tools/ai/shared/result-card';
+import { ToolPageShell } from '@/components/tools/ai/shared/tool-page-shell';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useSelectedModel } from '@/hooks/use-selected-model';
@@ -38,80 +40,88 @@ export function CacheCalculator() {
     });
   }, [staticTokens, dynamicTokens, outputTokens, monthlyCalls, hitRate, model]);
 
-  const badgeColor =
-    result.recommendation === 'recommended'
-      ? 'bg-green-100 text-green-800'
-      : result.recommendation === 'not-worth-it'
-        ? 'bg-red-100 text-red-800'
-        : 'bg-yellow-100 text-yellow-800';
+  const badgeClasses: Record<string, string> = {
+    recommended: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    neutral: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+    'not-worth-it': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    unavailable: 'bg-muted text-muted-foreground',
+  };
+
+  const breakdownItems = [
+    { label: 'Cached cost', value: result.cachedCost, color: '#10b981' },
+    { label: 'Uncached cost', value: result.uncachedCost, color: '#3b82f6' },
+  ];
+
+  const savingsPercent = result.uncachedCost > 0 ? (result.savings / result.uncachedCost) * 100 : 0;
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Prompt Cache Calculator</CardTitle>
-          <CardDescription>
-            Calculate whether prompt caching saves money based on token mix and hit rate.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          <ModelSelector value={modelId} onValueChange={setModelId} />
-          <div className="space-y-2">
-            <Label>Static tokens (per request)</Label>
-            <Input
-              type="number"
-              value={staticTokens}
-              onChange={(event) => setStaticTokens(Number(event.target.value))}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Dynamic tokens (per request)</Label>
-            <Input
-              type="number"
-              value={dynamicTokens}
-              onChange={(event) => setDynamicTokens(Number(event.target.value))}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Output tokens (per request)</Label>
-            <Input
-              type="number"
-              value={outputTokens}
-              onChange={(event) => setOutputTokens(Number(event.target.value))}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Monthly calls</Label>
-            <Input
-              type="number"
-              value={monthlyCalls}
-              onChange={(event) => setMonthlyCalls(Number(event.target.value))}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Cache hit rate (%)</Label>
-            <Input
-              type="number"
-              value={hitRate}
-              onChange={(event) => setHitRate(Number(event.target.value))}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <MetricCard label="Uncached Cost" value={`$${result.uncachedCost.toFixed(2)}`} />
-        <MetricCard label="Cached Cost" value={`$${result.cachedCost.toFixed(2)}`} />
-        <MetricCard label="Savings" value={`$${result.savings.toFixed(2)}`} />
-        <MetricCard label="Break-even Calls" value={result.breakEvenCalls.toLocaleString()} />
+    <ToolPageShell
+      title="Prompt Cache Calculator"
+      description="Calculate whether prompt caching saves money based on token mix and hit rate."
+      backHref="/ai"
+    >
+      <div className="space-y-4">
+        <ModelSelector value={modelId} onValueChange={setModelId} />
+        <div className="space-y-2">
+          <Label>Static tokens (per request)</Label>
+          <Input
+            type="number"
+            value={staticTokens}
+            onChange={(event) => setStaticTokens(Number(event.target.value))}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Dynamic tokens (per request)</Label>
+          <Input
+            type="number"
+            value={dynamicTokens}
+            onChange={(event) => setDynamicTokens(Number(event.target.value))}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Output tokens (per request)</Label>
+          <Input
+            type="number"
+            value={outputTokens}
+            onChange={(event) => setOutputTokens(Number(event.target.value))}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Monthly calls</Label>
+          <Input
+            type="number"
+            value={monthlyCalls}
+            onChange={(event) => setMonthlyCalls(Number(event.target.value))}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Cache hit rate (%)</Label>
+          <Input
+            type="number"
+            value={hitRate}
+            onChange={(event) => setHitRate(Number(event.target.value))}
+          />
+        </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium">Recommendation:</span>
-        <Badge className={badgeColor}>{result.recommendation}</Badge>
+      <div className="space-y-4">
+        <ResultCard value={result.savings} label="Estimated savings" />
+        <CostBreakdown items={breakdownItems} label="Cost comparison" />
+        <div className="grid grid-cols-2 gap-4">
+          <MetricCard
+            label="Break-even calls"
+            value={result.breakEvenCalls.toLocaleString('en-US')}
+          />
+          <MetricCard label="Savings %" value={`${savingsPercent.toFixed(1)}%`} />
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium">Recommendation:</span>
+          <Badge className={badgeClasses[result.recommendation] ?? badgeClasses.unavailable}>
+            {result.recommendation}
+          </Badge>
+        </div>
+        <RelatedTools toolId="cache-calculator" />
       </div>
-
-      <RelatedTools toolId="cache-calculator" />
-    </div>
+    </ToolPageShell>
   );
 }
