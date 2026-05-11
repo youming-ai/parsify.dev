@@ -1,7 +1,9 @@
 'use client';
 
+import { CostBreakdown } from '@/components/tools/ai/shared/cost-breakdown';
 import { ModelSelector } from '@/components/tools/ai/shared/model-selector';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ResultCard } from '@/components/tools/ai/shared/result-card';
+import { ToolPageShell } from '@/components/tools/ai/shared/tool-page-shell';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -16,7 +18,9 @@ export function CostCalculator() {
   const [outputTokens, setOutputTokens] = useState(500);
   const [cacheHitRate, setCacheHitRate] = useState(0);
   const [useBatch, setUseBatch] = useState(false);
+
   const model = useSelectedModel(modelId);
+
   const result = model
     ? calculateMonthlyCost({
         monthlyRequests,
@@ -32,15 +36,20 @@ export function CostCalculator() {
       })
     : undefined;
 
+  const breakdownItems = result
+    ? [
+        { label: 'Input tokens', value: result.inputCost, color: '#3b82f6' },
+        { label: 'Output tokens', value: result.outputCost, color: '#10b981' },
+      ]
+    : [];
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>LLM Cost Calculator</CardTitle>
-        <CardDescription>
-          Compare estimated monthly API spend using local calculations.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4 lg:grid-cols-2">
+    <ToolPageShell
+      title="LLM Cost Calculator"
+      description="Compare estimated monthly API spend using local calculations."
+      backHref="/ai"
+    >
+      <div className="space-y-4">
         <ModelSelector value={modelId} onValueChange={setModelId} />
         <div className="space-y-2">
           <Label>Monthly requests</Label>
@@ -78,11 +87,12 @@ export function CostCalculator() {
           <Switch checked={useBatch} onCheckedChange={setUseBatch} />
           <Label>Use batch pricing when available</Label>
         </div>
-        <div className="rounded-lg border p-4 lg:col-span-2">
-          <p className="text-sm text-muted-foreground">Estimated monthly cost</p>
-          <p className="text-3xl font-semibold">${(result?.totalCost ?? 0).toFixed(2)}</p>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="space-y-4">
+        <ResultCard value={result?.totalCost ?? 0} label="Estimated monthly cost" />
+        <CostBreakdown items={breakdownItems} label="Cost breakdown" />
+      </div>
+    </ToolPageShell>
   );
 }
