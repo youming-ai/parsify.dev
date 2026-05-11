@@ -116,7 +116,7 @@ export function CacheCalculator() {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium">Recommendation:</span>
-          <Badge className={badgeClasses[result.recommendation] ?? badgeClasses.unavailable}>
+          <Badge className={badgeClasses[result.recommendation] ?? badgeClasses['unavailable']}>
             {result.recommendation}
           </Badge>
         </div>
