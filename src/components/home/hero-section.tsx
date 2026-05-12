@@ -3,9 +3,9 @@
 import { Link } from '@/components/link';
 import { Icon } from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
+import type { Tool } from '@/data/tools-data';
 import { iconNames } from '@/lib/icon-map';
 import { SEO_CONFIG } from '@/lib/seo-config';
-import type { Tool } from '@/types/tools';
 import { Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 

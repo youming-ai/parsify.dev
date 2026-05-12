@@ -1,4 +1,25 @@
-import type { Tool, ToolCategoryData } from '@/types/tools';
+export interface Tool {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  icon: string;
+  features: string[];
+  tags: string[];
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  status: 'stable' | 'beta' | 'experimental';
+  href: string;
+  isNew?: boolean;
+  isPopular?: boolean;
+  processingType?: 'client-side' | 'server-side' | 'hybrid';
+  security?: 'local-only' | 'secure-sandbox' | 'network-required';
+}
+
+export interface ToolCategoryData {
+  id: string;
+  name: string;
+  description?: string;
+}
 
 export const AI_TOOLS_CATEGORY = 'AI & LLM Tools';
 
