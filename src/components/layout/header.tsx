@@ -1,7 +1,7 @@
 'use client';
 
 import { Link } from '@/components/link';
-import { Command } from '@phosphor-icons/react';
+import { Terminal } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';
 
 export function Header() {
@@ -14,7 +14,7 @@ export function Header() {
           className="flex items-center gap-2 font-bold tracking-tight transition-opacity hover:opacity-80"
         >
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Command className="h-3.5 w-3.5" />
+            <Terminal className="h-3.5 w-3.5" />
           </div>
           <span>Parsify</span>
         </Link>

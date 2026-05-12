@@ -1,16 +1,16 @@
 'use client';
 
 import { Link } from '@/components/link';
-import { EnvelopeSimple, GithubLogo, XLogo } from '@phosphor-icons/react';
+import { Github, Mail, Twitter } from 'lucide-react';
 
 const socialLinks = [
   {
     name: 'GitHub',
     href: 'https://github.com/youming-ai/parsify.dev',
-    icon: GithubLogo,
+    icon: Github,
   },
-  { name: 'X', href: 'https://x.com/um1ng_x', icon: XLogo },
-  { name: 'Email', href: 'mailto:ikashue@gmail.com', icon: EnvelopeSimple },
+  { name: 'X', href: 'https://x.com/um1ng_x', icon: Twitter },
+  { name: 'Email', href: 'mailto:ikashue@gmail.com', icon: Mail },
 ];
 
 export function Footer() {

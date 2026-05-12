@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { iconNames } from '@/lib/icon-map';
 import { SEO_CONFIG } from '@/lib/seo-config';
 import type { Tool } from '@/types/tools';
-import { MagnifyingGlass } from '@phosphor-icons/react';
+import { Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 const difficultyColor: Record<string, string> = {
@@ -114,10 +114,7 @@ export function HeroSection({ tools }: HeroSectionProps) {
             <div className="relative group">
               <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-primary/20 to-primary/10 opacity-50 blur transition duration-1000 group-hover:opacity-100 group-hover:duration-200" />
               <div className="relative flex items-center rounded-lg bg-background shadow-sm ring-1 ring-border transition-shadow focus-within:ring-2 focus-within:ring-primary/20">
-                <MagnifyingGlass
-                  className="ml-3 h-5 w-5 text-muted-foreground"
-                  aria-hidden="true"
-                />
+                <Search className="ml-3 h-5 w-5 text-muted-foreground" aria-hidden="true" />
                 <label htmlFor="tool-search" className="sr-only">
                   Search tools
                 </label>
@@ -156,7 +153,7 @@ export function HeroSection({ tools }: HeroSectionProps) {
         {filtered.length === 0 && (
           <div className="fade-in zoom-in animate-in py-20 text-center duration-500">
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted">
-              <MagnifyingGlass className="h-8 w-8 text-muted-foreground" />
+              <Search className="h-8 w-8 text-muted-foreground" />
             </div>
             <h3 className="mb-2 text-xl font-semibold">No tools found</h3>
             <p className="mx-auto max-w-sm text-muted-foreground">
