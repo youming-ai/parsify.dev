@@ -20,9 +20,20 @@
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "esModuleInterop": true,
-    "types": ["astro/client"]
+    "esModuleInterop": true
   },
-  "include": ["**/*.ts", "**/*.tsx", "**/*.astro", ".astro/types.d.ts"],
-  "exclude": ["node_modules", "src/__tests__/**", "tests/**", "scripts/**", "dist", "server.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".vinxi/types.d.ts",
+    "routeTree.gen.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/__tests__/**",
+    "tests/**",
+    "scripts/**",
+    "dist",
+    "server.ts"
+  ]
 }
