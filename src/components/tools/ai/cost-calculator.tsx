@@ -90,8 +90,24 @@ export function CostCalculator() {
       </div>
 
       <div className="space-y-4">
-        <ResultCard value={result?.totalCost ?? 0} label="Estimated monthly cost" />
-        <CostBreakdown items={breakdownItems} label="Cost breakdown" />
+        {model ? (
+          <>
+            <ResultCard value={result?.totalCost ?? 0} label="Estimated monthly cost" />
+            <CostBreakdown items={breakdownItems} label="Cost breakdown" />
+          </>
+        ) : (
+          <>
+            <div className="rounded-xl border bg-card p-6 space-y-3">
+              <div className="h-4 w-32 rounded bg-muted animate-pulse" />
+              <div className="h-10 w-48 rounded bg-muted animate-pulse" />
+            </div>
+            <div className="space-y-3">
+              <div className="h-4 w-24 rounded bg-muted animate-pulse" />
+              <div className="h-8 w-full rounded bg-muted animate-pulse" />
+              <div className="h-8 w-full rounded bg-muted animate-pulse" />
+            </div>
+          </>
+        )}
       </div>
     </ToolPageShell>
   );

@@ -32,6 +32,7 @@ export function ResultCard({ value, label, format = 'currency', className }: Res
 
     const duration = 300;
     const startTime = performance.now();
+    let raf = 0;
 
     function animate(now: number) {
       const elapsed = now - startTime;
@@ -40,11 +41,12 @@ export function ResultCard({ value, label, format = 'currency', className }: Res
       setDisplayValue(start + diff * eased);
 
       if (progress < 1) {
-        requestAnimationFrame(animate);
+        raf = requestAnimationFrame(animate);
       }
     }
 
-    requestAnimationFrame(animate);
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
   }, [value]);
 
   return (

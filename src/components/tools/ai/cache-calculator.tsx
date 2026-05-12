@@ -105,22 +105,49 @@ export function CacheCalculator() {
       </div>
 
       <div className="space-y-4">
-        <ResultCard value={result.savings} label="Estimated savings" />
-        <CostBreakdown items={breakdownItems} label="Cost comparison" />
-        <div className="grid grid-cols-2 gap-4">
-          <MetricCard
-            label="Break-even calls"
-            value={result.breakEvenCalls.toLocaleString('en-US')}
-          />
-          <MetricCard label="Savings %" value={`${savingsPercent.toFixed(1)}%`} />
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-medium">Recommendation:</span>
-          <Badge className={badgeClasses[result.recommendation] ?? badgeClasses['unavailable']}>
-            {result.recommendation}
-          </Badge>
-        </div>
-        <RelatedTools toolId="cache-calculator" />
+        {model ? (
+          <>
+            <ResultCard value={result.savings} label="Estimated savings" />
+            <CostBreakdown items={breakdownItems} label="Cost comparison" />
+            <div className="grid grid-cols-2 gap-4">
+              <MetricCard
+                label="Break-even calls"
+                value={result.breakEvenCalls.toLocaleString('en-US')}
+              />
+              <MetricCard label="Savings %" value={`${savingsPercent.toFixed(1)}%`} />
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium">Recommendation:</span>
+              <Badge className={badgeClasses[result.recommendation] ?? badgeClasses['unavailable']}>
+                {result.recommendation}
+              </Badge>
+            </div>
+            <RelatedTools toolId="cache-calculator" />
+          </>
+        ) : (
+          <>
+            <div className="rounded-xl border bg-card p-6 space-y-3">
+              <div className="h-4 w-28 rounded bg-muted animate-pulse" />
+              <div className="h-10 w-36 rounded bg-muted animate-pulse" />
+            </div>
+            <div className="space-y-3">
+              <div className="h-4 w-24 rounded bg-muted animate-pulse" />
+              <div className="h-8 w-full rounded bg-muted animate-pulse" />
+              <div className="h-8 w-full rounded bg-muted animate-pulse" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-xl border bg-card p-4 space-y-2">
+                <div className="h-3 w-20 rounded bg-muted animate-pulse" />
+                <div className="h-6 w-16 rounded bg-muted animate-pulse" />
+              </div>
+              <div className="rounded-xl border bg-card p-4 space-y-2">
+                <div className="h-3 w-16 rounded bg-muted animate-pulse" />
+                <div className="h-6 w-12 rounded bg-muted animate-pulse" />
+              </div>
+            </div>
+            <div className="h-6 w-32 rounded bg-muted animate-pulse" />
+          </>
+        )}
       </div>
     </ToolPageShell>
   );
