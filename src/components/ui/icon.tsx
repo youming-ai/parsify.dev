@@ -3,7 +3,7 @@
 import {
   ArrowRight,
   Binary,
-  BracketsCurly,
+  Braces,
   ChartBar,
   ChartLine,
   Check,
@@ -26,7 +26,6 @@ import {
   Fingerprint,
   Folder,
   GitCompare,
-  Github,
   Globe,
   Hash,
   Info,
@@ -48,7 +47,6 @@ import {
   Terminal,
   Timer,
   Trash,
-  Twitter,
   Upload,
   X,
 } from 'lucide-react';
@@ -56,7 +54,7 @@ import {
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   ArrowRight,
   Binary,
-  BracketsCurly,
+  Braces,
   ChartBar,
   ChartLine,
   Check,
@@ -79,7 +77,6 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Folder,
   Fingerprint,
   GitCompare,
-  Github,
   Globe,
   Hash,
   Info,
@@ -101,7 +98,6 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Terminal,
   Timer,
   Trash,
-  Twitter,
   Upload,
   X,
 };
