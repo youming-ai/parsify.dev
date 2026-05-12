@@ -9,56 +9,51 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "generate:og": "bun scripts/generate-og.ts",
-    "preview": "astro preview",
+    "dev": "vite",
+    "build": "vite build",
     "start": "bun run server.ts",
-    "lint": "bunx biome check ./src",
-    "lint:fix": "bunx biome check --fix ./src",
-    "format": "bunx biome format --write ./src",
-    "typecheck": "astro check",
-    "test": "vitest run",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage",
+    "lint": "biome check ./src ./routes ./app.tsx ./router.tsx",
+    "lint:fix": "biome check --fix ./src ./routes ./app.tsx ./router.tsx",
+    "format": "biome format --write ./src ./routes ./app.tsx ./router.tsx",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
     "prepare": "husky",
-    "clean": "rm -rf node_modules dist"
+    "clean": "rm -rf node_modules dist .output"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,json,css,md}": ["biome check --fix --no-errors-on-unmatched"],
-    "*.{ts,tsx}": ["vitest related --run --passWithNoTests"]
+    "*.{js,jsx,ts,tsx,json,css,md}": [
+      "biome check --fix --no-errors-on-unmatched"
+    ],
+    "*.{ts,tsx}": [
+      "bun test --related --run"
+    ]
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-progress": "^1.1.8",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-switch": "^1.2.6",
+    "@tailwindcss/vite": "^4.3.0",
+    "@tanstack/react-router": "^1.169.2",
+    "@tanstack/react-router-devtools": "^1.166.13",
+    "@tanstack/react-start": "^1.167.65",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.14.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "tailwind-merge": "^2.6.1"
+    "tailwind-merge": "^2.6.1",
+    "tailwindcss": "4"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.9",
-    "@astrojs/react": "^4.4.2",
-    "@astrojs/tailwind": "^6.0.2",
-    "@biomejs/biome": "^1.9.4",
-    "@tailwindcss/typography": "^0.5.19",
+    "@biomejs/biome": "^2.4.15",
     "@types/node": "^22.19.19",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitest/coverage-v8": "^4.1.6",
-    "astro": "^5.18.1",
-    "autoprefixer": "^10.5.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
-    "postcss": "^8.5.14",
-    "tailwindcss": "^3.4.19",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.3",
-    "vitest": "^4.1.6"
+    "typescript": "^6.0.3",
+    "vite": "^8.0.12"
   },
   "engines": {
     "node": ">=20"
