@@ -1,5 +1,3 @@
-'use client';
-
 import { CostBreakdown } from '@/components/tools/ai/shared/cost-breakdown';
 import { ModelSelector } from '@/components/tools/ai/shared/model-selector';
 import { ResultCard } from '@/components/tools/ai/shared/result-card';

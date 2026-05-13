@@ -1,5 +1,3 @@
-'use client';
-
 import { useLiveModels } from '@/hooks/use-live-models';
 import type { LiveModel } from '@/lib/llm/live-registry';
 

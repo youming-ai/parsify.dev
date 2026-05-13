@@ -1,5 +1,3 @@
-'use client';
-
 import { Link } from '@/components/link';
 import { Terminal } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';

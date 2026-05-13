@@ -1,5 +1,3 @@
-'use client';
-
 import { Footer } from '@/components/layout/footer';
 import { Header } from '@/components/layout/header';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -9,7 +7,7 @@ interface AppShellProps {
   children: React.ReactNode;
 }
 
-export default function AppShell({ children }: AppShellProps) {
+export function AppShell({ children }: AppShellProps) {
   return (
     <ThemeProvider>
       <div className="flex min-h-screen flex-col bg-background">
