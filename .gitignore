@@ -86,3 +86,8 @@ bun.lockb
 /# Worktree isolation
 .worktrees/
 
+# TanStack Start
+.vinxi/
+routeTree.gen.ts
+.output/
+

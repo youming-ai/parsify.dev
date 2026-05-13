@@ -1,5 +1,8 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.15/schema.json",
+  "files": {
+    "ignore": [".vinxi", "public", "routeTree.gen.ts"]
+  },
   "vcs": {
     "enabled": true,
     "clientKind": "git",
