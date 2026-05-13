@@ -1,25 +1,30 @@
 # AGENTS.md — Parsify.dev
 
-Privacy-first, browser-side AI/LLM developer tools. Static site (Astro 5 + React 19 islands), no SSR, no server routes.
+Privacy-first, browser-side AI/LLM developer tools. SPA built with TanStack Start (React 19 + TanStack Router + Vite 7), served as static files by Bun.
 
 ## Essential commands
 
 | Command | What it runs |
 |---|---|
-| `bun run dev` | Astro dev server |
-| `bun run build` | Static build → `dist/` |
-| `bun test` | `vitest run` (node env, no DOM) |
+| `bun run dev` | Vite dev server |
+| `bun run build` | `vite build && bun run scripts/create-shell.ts` (client+SSR bundles, generates SPA shell HTML) |
+| `bun run start` | `bun run server.ts` (Bun static file server) |
+| `bun run typecheck` | `tsc --noEmit` |
+| `bun test` | Bun test runner (no DOM) |
 | `bun test src/__tests__/lib/llm/<file>.test.ts` | Single test file |
 | `bun run lint` | `biome check ./src` |
 | `bun run lint:fix` | `biome check --fix ./src` |
-| `bun run typecheck` | `astro check` |
 | `bun run format` | `biome format --write ./src` |
 
-Pre-commit (husky → lint-staged): Biome `check --fix` + `vitest related --run` on staged `.ts(x)`.
+Pre-commit (husky → lint-staged): Biome `check --fix` + `bun test` on staged `.ts(x)`.
 
 ## Architecture
 
 **No server-side processing of user input** — that's the product invariant. All logic runs in the browser. Provider calls go browser-direct via BYOK. API keys live in component state only (not persisted).
+
+SPA mode — single `index.html` shell served by Bun static file server. TanStack Router handles all client-side navigation. No SSR, no server routes.
+
+**Tech stack**: TanStack Start + TanStack Router + Vite 7 + React 19 + Tailwind CSS v4 + shadcn/ui + Lucide React + Biome v2 + Bun + TypeScript strict
 
 **2 tools** (after Apr 2026 triage from 21 → 2):
 
@@ -28,43 +33,61 @@ Pre-commit (husky → lint-staged): Biome `check --fix` + `vitest related --run`
 | LLM Cost Calculator | `/ai/cost-calculator` | `cost-calculator.ts` |
 | Prompt Cache Calculator | `/ai/cache-calculator` | `prompt-cache.ts` |
 
-**Route → island pattern:**
+**Route → component pattern:**
 
-- `src/pages/ai/<tool>.astro` — thin shell: imports `BaseLayout`, renders React component with `client:load`, sets `<slot name="head">` SEO
-- `src/components/tools/ai/<tool>.tsx` — React island, named export (`export function TokenCounter()`)
-- Astro pages use import aliases to avoid typecheck conflicts: `import { TokenCounter as TokenCounterTool } from '...'; <TokenCounterTool client:load />`
-- Components use `'use client'` directive (needed for React 19 islands)
+- `src/routes/ai/<tool>.tsx` — TanStack Router file-based route using `createFileRoute`, imports React component from `src/components/tools/ai/<tool>.tsx`
+- `src/components/tools/ai/<tool>.tsx` — React component, named export
+- Each route uses `useDocumentHead` (from `src/components/seo/`) for SEO meta tags
 - Model selector in `shared/model-selector.tsx` fetches live model list from OpenRouter API (CORS-permitted)
 
 **Source layout:**
 
 ```
 src/
-├── lib/llm/              # Pure logic (7 modules + live-registry.ts)
+├── routes/                    # TanStack Router file-based routes
+│   ├── __root.tsx             # Root layout (HTML shell, providers)
+│   ├── index.tsx              # Homepage
+│   ├── 404.tsx                # 404 page
+│   └── ai/                    # AI tool routes
+│       ├── index.tsx
+│       ├── cost-calculator.tsx
+│       └── cache-calculator.tsx
+├── router.tsx                 # TanStack Router config + route tree
+├── client.tsx                 # Client entry (hydration)
+├── routeTree.gen.ts           # Auto-generated route tree (gitignored)
 ├── components/
-│   ├── ui/               # shadcn/ui primitives — REUSE FIRST
+│   ├── ui/                    # shadcn/ui primitives — REUSE FIRST
+│   ├── layout/                # app-shell, header, footer, theme-toggle
+│   ├── seo/                   # useDocumentHead hook
+│   ├── home/                  # hero-section
+│   ├── link.tsx               # TanStack Router <Link> for internal, <a> for external
 │   └── tools/ai/
-│       ├── shared/       # ModelSelector, MetricCard, RelatedTools
-│       └── <tool>.tsx    # 2 tool islands
-├── data/
-│   ├── tools-data.ts     # 2-tool registry
-│   └── llm-registry.json # 9 models, 7 providers
-├── hooks/                # use-live-models.ts, use-selected-model.ts
-└── __tests__/lib/llm/    # Per-module Vitest tests
+│       ├── shared/            # ModelSelector, MetricCard, RelatedTools
+│       └── <tool>.tsx         # 2 tool components
+├── lib/
+│   ├── llm/                   # Pure logic (cost-calculator, prompt-cache, live-registry)
+│   ├── icon-map.ts, seo-config.ts, utils.ts
+├── data/tools-data.ts         # 2-tool registry
+├── hooks/                     # use-live-models, use-selected-model
+├── styles/app.css             # Tailwind v4 entry (@theme, no JS config)
+└── __tests__/lib/llm/         # Per-module Bun tests
 ```
 
 **`@/*` → `src/*`** via tsconfig paths and Vite alias.
 
-## Deploy (Cloudflare Workers Static Assets)
+**Route tree**: `src/routeTree.gen.ts` is auto-generated by TanStack Router — gitignored, regenerated on `bun run dev` or `bun run build`.
 
-Push to `main`. Cloudflare clones, runs `bun install --frozen-lockfile && bun run build`, then `npx wrangler deploy`. The `wrangler.toml` file exists solely to prevent `wrangler deploy` from auto-running `astro add cloudflare` (which would install the SSR adapter and crash on React 19's `@phosphor-icons/react` `useContext` incompatibility). No Worker script, no SSR — just static asset hosting.
+**SPA shell**: `scripts/create-shell.ts` generates `dist/client/index.html` post-build.
 
-Cache/security headers in `public/_headers`: `/_astro/*` → 1y immutable, HTML → must-revalidate, all paths → `X-Frame-Options` + `X-Content-Type-Options` + `Referrer-Policy` + `Permissions-Policy`.
+**Link component**: `src/components/link.tsx` uses TanStack Router `<Link>` for internal routes, plain `<a>` for external.
+
+## Deploy (Hetzner VPS + Dokploy)
+
+Push to `main`. Dokploy triggers Docker build via `Dockerfile` — installs deps with Bun, runs `bun run build`, serves static files from `dist/client/` via `server.ts` (Bun static file server).
 
 ## Code style (Biome)
 
 - 2-space indent, 100 char width, single quotes, JSX double quotes, semicolons always, trailing commas (ES5), LF
-- Biome ignores `.astro` files (`biome.json: files.ignore: ["*.astro"]`) — Astro files are formatted by Astro's own formatter
 - Enabled rules: `noUnusedVariables`/`noUnusedImports` (error), `noLabelWithoutControl` (off), `noForEach`/`useLiteralKeys` (off), `noDangerouslySetInnerHtml` (off), `noNonNullAssertion`/`noArrayIndexKey`/`noAssignInExpressions`/`noExplicitAny`/`noImplicitAnyLet` (off)
 - TypeScript: strict, `noUncheckedIndexedAccess`, `noPropertyAccessFromIndexSignature`
 - `import type` for type-only imports, explicit return types on exported functions
@@ -85,8 +108,6 @@ Cache/security headers in `public/_headers`: `/_astro/*` → 1y immutable, HTML 
 2. Create pure logic in `src/lib/llm/<tool>.ts`
 3. Create test in `src/__tests__/lib/llm/<tool>.test.ts`
 4. Create React component in `src/components/tools/ai/<tool>.tsx` (named export)
-5. Create Astro route in `src/pages/ai/<tool>.astro`
+5. Create route in `src/routes/ai/<tool>.tsx` using `createFileRoute`
 6. Add related tools in `shared/related-tools.tsx`
 7. Verify: `bun run lint && bun run typecheck && bun test`
-
-*Apr 2026 — 4 tools*
