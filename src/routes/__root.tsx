@@ -1,6 +1,6 @@
 import { AppShell } from '@/components/layout/app-shell';
 import '@/styles/app.css';
-import { Outlet, createRootRouteWithContext } from '@tanstack/react-router';
+import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
 
 function RootComponent() {
   return (
@@ -49,6 +49,6 @@ function RootComponent() {
   );
 }
 
-export const Route = createRootRouteWithContext<{}>()({
+export const Route = createRootRouteWithContext<object>()({
   component: RootComponent,
 });

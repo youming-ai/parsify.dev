@@ -1,6 +1,6 @@
-import { useDocumentHead } from '@/components/seo/head';
-import { toolsData, AI_TOOLS_CATEGORY } from '@/data/tools-data';
 import { createFileRoute } from '@tanstack/react-router';
+import { useDocumentHead } from '@/components/seo/head';
+import { AI_TOOLS_CATEGORY, toolsData } from '@/data/tools-data';
 
 const tools = toolsData.filter((tool) => tool.category === AI_TOOLS_CATEGORY);
 const title = 'AI & LLM Developer Tools';
@@ -50,7 +50,11 @@ function AIToolsPage() {
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {tools.map((tool) => (
-          <a key={tool.id} href={tool.href} className="rounded-xl border bg-card p-5 transition hover:border-primary">
+          <a
+            key={tool.id}
+            href={tool.href}
+            className="rounded-xl border bg-card p-5 transition hover:border-primary"
+          >
             <h2 className="font-semibold">{tool.name}</h2>
             <p className="mt-2 text-sm text-muted-foreground">{tool.description}</p>
           </a>

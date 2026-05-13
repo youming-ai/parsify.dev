@@ -1,5 +1,5 @@
-import { Link } from '@/components/link';
 import { Mail } from 'lucide-react';
+import { Link } from '@/components/link';
 
 const socialLinks = [
   {

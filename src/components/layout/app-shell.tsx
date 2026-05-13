@@ -1,7 +1,7 @@
+import type React from 'react';
 import { Footer } from '@/components/layout/footer';
 import { Header } from '@/components/layout/header';
 import { ThemeProvider } from '@/components/theme-provider';
-import type React from 'react';
 
 interface AppShellProps {
   children: React.ReactNode;

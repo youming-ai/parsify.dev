@@ -1,8 +1,8 @@
+import { createFileRoute } from '@tanstack/react-router';
 import { HeroSection } from '@/components/home/hero-section';
 import { useDocumentHead } from '@/components/seo/head';
-import { SEO_CONFIG } from '@/lib/seo-config';
 import { toolsData } from '@/data/tools-data';
-import { createFileRoute } from '@tanstack/react-router';
+import { SEO_CONFIG } from '@/lib/seo-config';
 
 const websiteJsonLd = {
   '@context': 'https://schema.org',

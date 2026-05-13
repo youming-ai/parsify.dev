@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -9,7 +10,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useLiveModels } from '@/hooks/use-live-models';
-import { useMemo } from 'react';
 
 interface ModelSelectorProps {
   value: string;

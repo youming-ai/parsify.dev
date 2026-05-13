@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils';
 import * as React from 'react';
+import { cn } from '@/lib/utils';
 
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
@@ -59,4 +59,4 @@ export type CardTitleProps = React.ComponentPropsWithoutRef<'h3'>;
 export type CardDescriptionProps = React.ComponentPropsWithoutRef<'p'>;
 export type CardContentProps = React.ComponentPropsWithoutRef<'div'>;
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle };

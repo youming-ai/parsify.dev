@@ -26,7 +26,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".vinxi/types.d.ts",
-    "routeTree.gen.ts"
+    "src/routeTree.gen.ts"
   ],
   "exclude": [
     "node_modules",

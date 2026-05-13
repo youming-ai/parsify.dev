@@ -1,12 +1,12 @@
-import { CacheCalculator } from '@/components/tools/ai/cache-calculator';
-import { useDocumentHead } from '@/components/seo/head';
-import { softwareApplicationJsonLd } from '@/lib/seo-config';
-import { toolsData } from '@/data/tools-data';
 import { createFileRoute } from '@tanstack/react-router';
+import { useDocumentHead } from '@/components/seo/head';
+import { CostCalculator } from '@/components/tools/ai/cost-calculator';
+import { toolsData } from '@/data/tools-data';
+import { softwareApplicationJsonLd } from '@/lib/seo-config';
 
-const tool = toolsData.find((t) => t.id === 'cache-calculator')!;
+const tool = toolsData.find((t) => t.id === 'cost-calculator')!;
 
-function CacheCalculatorPage() {
+function CostCalculatorPage() {
   useDocumentHead({
     title: tool.name,
     description: tool.description,
@@ -22,11 +22,11 @@ function CacheCalculatorPage() {
 
   return (
     <main id="main-content" className="container mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <CacheCalculator />
+      <CostCalculator />
     </main>
   );
 }
 
-export const Route = createFileRoute('/ai/cache-calculator')({
-  component: CacheCalculatorPage,
+export const Route = createFileRoute('/ai/cost-calculator')({
+  component: CostCalculatorPage,
 });

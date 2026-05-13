@@ -1,10 +1,10 @@
+import { useCallback, useEffect, useState } from 'react';
 import {
-  type LiveRegistryResult,
   fetchLiveRegistry,
+  type LiveRegistryResult,
   loadCachedRegistry,
   saveCachedRegistry,
 } from '@/lib/llm/live-registry';
-import { useCallback, useEffect, useState } from 'react';
 
 interface UseLiveModelsResult {
   data: LiveRegistryResult | null;

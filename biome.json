@@ -1,7 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.15/schema.json",
   "files": {
-    "ignore": [".vinxi", "public", "routeTree.gen.ts"]
+    "includes": ["src/**", "!src/routeTree.gen.ts", "!src/styles/**"]
   },
   "vcs": {
     "enabled": true,

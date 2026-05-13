@@ -88,6 +88,6 @@ bun.lockb
 
 # TanStack Start
 .vinxi/
-routeTree.gen.ts
+src/routeTree.gen.ts
 .output/
 

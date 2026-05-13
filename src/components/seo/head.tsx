@@ -1,5 +1,5 @@
-import { SEO_CONFIG } from '@/lib/seo-config';
 import { useEffect } from 'react';
+import { SEO_CONFIG } from '@/lib/seo-config';
 
 interface Breadcrumb {
   name: string;
@@ -80,7 +80,7 @@ export function useDocumentHead({
       script.textContent = JSON.stringify(jsonLd);
       document.head.appendChild(script);
     }
-  }, [fullTitle, description, path, ogType, ogImage, breadcrumbs, extraJsonLd]);
+  }, [fullTitle, description, url, ogType, ogImage, breadcrumbs, extraJsonLd]);
 }
 
 function setMeta(name: string, content: string) {
