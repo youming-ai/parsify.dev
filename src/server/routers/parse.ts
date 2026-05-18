@@ -1,21 +1,10 @@
-import { createClient } from 'curl.md';
 import { Hono } from 'hono';
-import { estimateTokens, savingsRatio } from '~/lib/parser/token-estimate';
+import { estimateTokens } from '~/lib/parser/token-estimate';
 import { type ParseError, parseRequestSchema } from '~/schemas/parse';
 
-const FETCH_TIMEOUT_MS = 10_000;
+const JINA_READER_HOST = 'https://r.jina.ai';
+const FETCH_TIMEOUT_MS = 30_000;
 const MAX_MD_BYTES = 5 * 1024 * 1024;
-
-// The real curl.md SDK client.fetch() returns a Response-like object (outputFormat: "text")
-// where the markdown content is retrieved via .text(). The mock in tests returns { markdown, html }
-// directly. The extraction logic below handles both shapes:
-//   - Object with .markdown property (mock / future JSON format)
-//   - Response-like object with .text() method (real SDK)
-//   - Plain string (defensive fallback)
-//
-// Note: curl.md SDK accepts signal nested under options.init.signal, not as a top-level arg.
-// We use AbortController for timeout, but pass the signal via the options shape the SDK expects.
-const client = createClient();
 
 export const parse = new Hono();
 
@@ -35,73 +24,21 @@ parse.post('/', async (c) => {
     );
   }
 
-  const { url } = parsed.data;
+  const { url, objective } = parsed.data;
+
+  const apiKey = process.env['JINA_API_KEY'];
+  const headers: Record<string, string> = { accept: 'text/markdown' };
+  if (apiKey) headers['authorization'] = `Bearer ${apiKey}`;
+  if (objective) headers['x-instruction'] = objective;
+
+  const target = `${JINA_READER_HOST}/${url}`;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
+  let upstream: Response;
   try {
-    // Pass signal nested under options.init as required by the curl.md SDK type signature.
-    // If the signal is not respected by the SDK, the AbortController still fires but won't
-    // interrupt the in-flight request — the timeout will resolve after the request completes.
-    const result = await (
-      client.fetch as (u: string, opts?: Record<string, unknown>) => Promise<unknown>
-    )(url, { options: { init: { signal: controller.signal } } });
-    clearTimeout(timeout);
-
-    let markdown: string;
-    let html: string;
-
-    if (typeof result === 'string') {
-      // Plain string — markdown only, no HTML available
-      markdown = result;
-      html = '';
-    } else if (
-      result !== null &&
-      typeof result === 'object' &&
-      'markdown' in result &&
-      typeof (result as Record<string, unknown>)['markdown'] === 'string'
-    ) {
-      // Mock shape or future JSON format: { markdown, html }
-      markdown = (result as Record<string, unknown>)['markdown'] as string;
-      html =
-        'html' in result && typeof (result as Record<string, unknown>)['html'] === 'string'
-          ? ((result as Record<string, unknown>)['html'] as string)
-          : '';
-    } else if (
-      result !== null &&
-      typeof result === 'object' &&
-      'text' in result &&
-      typeof (result as Record<string, unknown>)['text'] === 'function'
-    ) {
-      // Real SDK Response shape: call .text() to get the markdown string
-      markdown = await (result as { text: () => Promise<string> }).text();
-      html = '';
-    } else {
-      markdown = String(result);
-      html = '';
-    }
-
-    const htmlBytes = new TextEncoder().encode(html).byteLength;
-    const mdBytes = new TextEncoder().encode(markdown).byteLength;
-
-    if (mdBytes > MAX_MD_BYTES) {
-      return c.json<ParseError>(
-        { error: 'TOO_LARGE', message: 'Parsed content exceeds 5 MB' },
-        413
-      );
-    }
-
-    return c.json({
-      url,
-      markdown,
-      htmlBytes,
-      mdBytes,
-      htmlTokens: estimateTokens(html),
-      mdTokens: estimateTokens(markdown),
-      savingsRatio: savingsRatio(htmlBytes, mdBytes),
-      fetchedAt: new Date().toISOString(),
-    });
+    upstream = await fetch(target, { headers, signal: controller.signal });
   } catch (err) {
     clearTimeout(timeout);
     if ((err as Error).name === 'AbortError') {
@@ -109,4 +46,27 @@ parse.post('/', async (c) => {
     }
     return c.json<ParseError>({ error: 'FETCH_FAILED', message: (err as Error).message }, 502);
   }
+  clearTimeout(timeout);
+
+  if (!upstream.ok) {
+    return c.json<ParseError>(
+      { error: 'FETCH_FAILED', message: `Upstream ${upstream.status}` },
+      502
+    );
+  }
+
+  const markdown = await upstream.text();
+  const mdBytes = new TextEncoder().encode(markdown).byteLength;
+
+  if (mdBytes > MAX_MD_BYTES) {
+    return c.json<ParseError>({ error: 'TOO_LARGE', message: 'Parsed content exceeds 5 MB' }, 413);
+  }
+
+  return c.json({
+    url,
+    markdown,
+    mdBytes,
+    mdTokens: estimateTokens(markdown),
+    fetchedAt: new Date().toISOString(),
+  });
 });

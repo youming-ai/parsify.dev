@@ -8,14 +8,14 @@ export function useParse() {
   const [data, setData] = useState<ParseResponse | null>(null);
   const [error, setError] = useState<ParseError | null>(null);
 
-  async function run(url: string) {
+  async function run(url: string, objective?: string) {
     setStatus('loading');
     setError(null);
     try {
       const res = await fetch('/api/parse', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, objective }),
       });
       if (!res.ok) {
         const body = (await res.json()) as ParseError;

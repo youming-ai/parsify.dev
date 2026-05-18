@@ -1,11 +1,8 @@
 import { useState } from 'react';
-import type { ModelId } from '~/lib/parser/models';
 
 type RunArgs = {
   markdown: string;
-  apiKey: string;
   prompt: string;
-  model: ModelId;
 };
 
 export function useAgent() {

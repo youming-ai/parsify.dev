@@ -1,6 +1,6 @@
 import { AppShell } from '~/components/layout/app-shell';
 import '~/styles/app.css';
-import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
+import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router';
 
 function RootComponent() {
   return (
@@ -33,6 +33,7 @@ function RootComponent() {
             if (theme === 'dark') document.documentElement.classList.add('dark');`,
           }}
         />
+        <HeadContent />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <a
@@ -44,6 +45,7 @@ function RootComponent() {
         <AppShell>
           <Outlet />
         </AppShell>
+        <Scripts />
       </body>
     </html>
   );

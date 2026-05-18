@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { estimateTokens, priceFor, savingsRatio } from '~/lib/parser/token-estimate';
+import { estimateTokens, savingsRatio } from '~/lib/parser/token-estimate';
 
 describe('estimateTokens', () => {
   test('returns 0 for empty string', () => {
@@ -32,19 +32,5 @@ describe('savingsRatio', () => {
 
   test('returns 0 when md exceeds html (clamp)', () => {
     expect(savingsRatio(100, 150)).toBe(0);
-  });
-});
-
-describe('priceFor', () => {
-  test('returns null when model is unpriced', () => {
-    expect(priceFor('glm-5.1', 1000, 500)).toBeNull();
-  });
-
-  test('returns null for all currently-unpriced models', () => {
-    // All models are currently null-priced placeholders
-    expect(priceFor('glm-5.1', 1_000_000, 1_000_000)).toBeNull();
-    expect(priceFor('glm-4-plus', 1_000_000, 1_000_000)).toBeNull();
-    expect(priceFor('glm-4-air', 1_000_000, 1_000_000)).toBeNull();
-    expect(priceFor('glm-4-flash', 1_000_000, 1_000_000)).toBeNull();
   });
 });
