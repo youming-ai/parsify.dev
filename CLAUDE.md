@@ -4,9 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current Reality
 
-TanStack Start v1 in **full SSR mode** — this is no longer a static SPA. The product is a single tool: paste a URL → `curl.md` fetches and converts it to LLM-optimized markdown → Zhipu GLM agent runs on the markdown → shows token/cost savings vs. raw HTML.
+TanStack Start v1 in **full SSR mode** — single tool: paste a URL → `r.jina.ai` (Jina Reader) fetches and converts it to LLM-optimized markdown → a DeepSeek `deepseek-v4-flash` agent streams a summary back.
 
-**API layer**: Hono app mounted at `/api/*` via a TanStack Start catch-all route (`src/routes/api/$.ts`). `POST /api/parse` fetches + converts a URL; `POST /api/agent` streams a Zhipu GLM response. Validation via Zod schemas (`src/schemas/`). Logging via pino + hono-pino (see `src/lib/logger.ts`).
+**API layer**: Hono app mounted at `/api/*` via a TanStack Start catch-all route (`src/routes/api/$.ts`).
+- `POST /api/parse` — proxies to Jina Reader. Accepts `{ url, objective? }`. Sets `X-Instruction: <objective>` and `Authorization: Bearer ${JINA_API_KEY}` (if configured). Falls back to anonymous tier without a key.
+- `POST /api/agent` — direct fetch to `https://api.deepseek.com/chat/completions`, OpenAI-compatible SSE. Server reads `DEEPSEEK_API_KEY` from env; returns 500 if missing. SSE frames are parsed and re-emitted as plain text chunks.
+
+Validation via Zod schemas (`src/schemas/`). Logging via pino + hono-pino (`src/lib/logger.ts`).
 
 **Deploy**: Dokploy + Docker. `bun run build` → `dist/server/server.js` + `dist/client/`. Container runs `bun run start`.
 
@@ -42,7 +46,7 @@ Pre-commit (lefthook): Biome `check --write` on staged `.{ts,tsx,js,jsx,json,jso
 src/
 ├── routes/                        # TanStack Router file-based routes
 │   ├── __root.tsx
-│   ├── index.tsx                  # URL→Agent UI
+│   ├── index.tsx                  # Hero + URL form + results + features
 │   ├── 404.tsx
 │   └── api/$.ts                   # Hono catch-all
 ├── router.tsx                     # TanStack Router config + route tree
@@ -51,11 +55,11 @@ src/
 ├── server/
 │   ├── hono.ts                    # Hono app (CORS, pino, rate-limit, routes)
 │   └── routers/
-│       ├── parse.ts               # POST /api/parse
-│       └── agent.ts               # POST /api/agent (streaming)
+│       ├── parse.ts               # POST /api/parse (Jina Reader proxy)
+│       └── agent.ts               # POST /api/agent (DeepSeek SSE proxy)
 ├── schemas/
 │   ├── parse.ts                   # parseRequestSchema (includes SSRF guard)
-│   └── agent.ts                   # agentRequestSchema
+│   └── agent.ts                   # agentRequestSchema (markdown + optional prompt)
 ├── components/
 │   ├── ui/                        # shadcn/ui primitives — REUSE FIRST
 │   ├── layout/                    # app-shell, header, footer, theme-toggle
@@ -65,14 +69,13 @@ src/
 │   └── link.tsx
 ├── lib/
 │   ├── logger.ts                  # pino logger
-│   ├── parser/                    # models.ts, token-estimate.ts,
-│   │                                use-parse.ts, use-agent.ts
+│   ├── parser/                    # token-estimate.ts, use-parse.ts, use-agent.ts
 │   └── icon-map.ts, seo-config.ts, utils.ts
 ├── styles/app.css                 # Tailwind v4 entry
 └── __tests__/
     ├── lib/parser/                # token-estimate tests
     ├── schemas/                   # parse + agent schema tests
-    └── server/                   # parse route handler tests
+    └── server/                    # parse route handler tests
 ```
 
 ### TypeScript strictness — gotcha
@@ -83,12 +86,12 @@ src/
 
 ### Testing
 
-Bun test runner in `node` environment (no DOM). Pure-logic and route-handler tests only; UI components are not unit-tested. Tests live in `src/__tests__/`. Coverage excludes `src/components/ui/**`.
+Bun test runner in `node` environment (no DOM). Pure-logic and route-handler tests only; UI components are not unit-tested. Tests live in `src/__tests__/`. The parse route test mocks `globalThis.fetch` to simulate Jina Reader responses.
 
 ## Working in this repo
 
 - **Reuse `src/components/ui/`** primitives before creating new ones. Use `cn()` from `src/lib/utils.ts` for class merging.
 - **Server code uses `c.var.logger`** — never `console.log` in Hono route handlers. The pino request logger is available as `c.var.logger` after the `pinoLogger` middleware runs.
-- **BYOK key proxy invariant**: The Zhipu API key exists in server memory only for the duration of one request. It must never be logged, persisted, or reused. pino redaction (`*.apiKey`) is defense-in-depth. Do not add any code that stores or echoes the key.
+- **Server-side API keys**: `DEEPSEEK_API_KEY` (required) and `JINA_API_KEY` (optional). Keys come from `process.env` only — never sent from the browser, never logged, never persisted to disk or DB. pino redaction (`*.apiKey`, `*.headers.authorization`) is defense-in-depth.
 - **SSRF guard lives in `src/schemas/parse.ts`** — `parseRequestSchema` rejects private/loopback hosts. Add test coverage in `src/__tests__/schemas/parse.test.ts` whenever the schema changes.
 - **Security rules from `AGENTS.md` apply**: `crypto.subtle` for crypto, never `Math.random()` for security-relevant randomness.
