@@ -10,20 +10,17 @@ import { useParse } from '~/lib/parser/use-parse';
 function Home() {
   const parse = useParse();
   const agent = useAgent();
-  const [submitted, setSubmitted] = useState<FormValues | null>(null);
+  const [url, setUrl] = useState<string | null>(null);
 
   async function handle(v: FormValues) {
-    setSubmitted(v);
-    await parse.run(v.url, v.prompt);
+    setUrl(v.url);
+    await parse.run(v.url);
   }
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only re-fires when parse.data changes
   useEffect(() => {
-    if (parse.status !== 'success' || !parse.data || !submitted) return;
-    agent.run({
-      markdown: parse.data.markdown,
-      prompt: submitted.prompt,
-    });
+    if (parse.status !== 'success' || !parse.data || !url) return;
+    agent.run({ markdown: parse.data.markdown });
   }, [parse.data]);
 
   const isLoading = parse.status === 'loading' || agent.isStreaming;

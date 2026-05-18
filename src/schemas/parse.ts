@@ -22,7 +22,6 @@ export const parseRequestSchema = z.object({
       },
       { message: 'URL must point to a public host' }
     ),
-  objective: z.string().min(1).max(500).optional(),
 });
 
 export type ParseRequest = z.infer<typeof parseRequestSchema>;

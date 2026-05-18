@@ -50,17 +50,6 @@ describe('POST /api/parse', () => {
     expect(called).toContain('https://example.com/article');
   });
 
-  test('forwards objective as X-Instruction header', async () => {
-    const req = new Request('http://localhost/', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ url: 'https://example.com', objective: 'summarise core idea' }),
-    });
-    await parse.fetch(req);
-    const headers = (fetchMock.mock.calls[0]?.[1] as { headers: Record<string, string> }).headers;
-    expect(headers['x-instruction']).toBe('summarise core idea');
-  });
-
   test('attaches Authorization when JINA_API_KEY is set', async () => {
     process.env['JINA_API_KEY'] = 'jina_test_xxx';
     try {

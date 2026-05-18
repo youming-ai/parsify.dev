@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 type RunArgs = {
   markdown: string;
-  prompt: string;
 };
 
 export function useAgent() {
