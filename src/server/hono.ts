@@ -4,6 +4,7 @@ import { secureHeaders } from 'hono/secure-headers';
 import { type Env as PinoEnv, pinoLogger } from 'hono-pino';
 import { rateLimiter } from 'hono-rate-limiter';
 import { logger } from '~/lib/logger';
+import { agent } from '~/server/routers/agent';
 import { parse } from '~/server/routers/parse';
 
 const PUBLIC_ORIGIN = process.env['PUBLIC_ORIGIN'] ?? 'http://localhost:3000';
@@ -28,6 +29,7 @@ app.use(
 app.get('/health', (c) => c.json({ ok: true }));
 
 app.route('/parse', parse);
+app.route('/agent', agent);
 
 app.onError((err, c) => {
   if (c.var.logger) {
