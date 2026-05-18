@@ -17,7 +17,6 @@
     "format": "biome format --write ./src",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
-    "prepare": "lefthook install",
     "clean": "rm -rf node_modules dist .output"
   },
   "dependencies": {
