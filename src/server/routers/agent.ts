@@ -4,7 +4,6 @@ import { type AgentError, agentRequestSchema } from '~/schemas/agent';
 
 const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions';
 const DEEPSEEK_MODEL = 'deepseek-v4-flash';
-const DEFAULT_PROMPT = '请用一段话总结这个网页的核心内容';
 
 export const agent = new Hono<PinoEnv>();
 
@@ -33,8 +32,7 @@ agent.post('/', async (c) => {
     );
   }
 
-  const { markdown } = parsed.data;
-  const prompt = DEFAULT_PROMPT;
+  const { markdown, prompt } = parsed.data;
 
   let upstream: Response;
   try {
