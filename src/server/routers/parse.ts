@@ -85,8 +85,11 @@ parse.post('/', async (c) => {
     const htmlBytes = new TextEncoder().encode(html).byteLength;
     const mdBytes = new TextEncoder().encode(markdown).byteLength;
 
-    if (htmlBytes > MAX_HTML_BYTES) {
-      return c.json<ParseError>({ error: 'TOO_LARGE', message: 'Page exceeds 5 MB' }, 413);
+    if (mdBytes > MAX_HTML_BYTES) {
+      return c.json<ParseError>(
+        { error: 'TOO_LARGE', message: 'Parsed content exceeds 5 MB' },
+        413
+      );
     }
 
     return c.json({

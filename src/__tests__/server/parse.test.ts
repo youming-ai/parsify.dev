@@ -27,6 +27,9 @@ describe('POST /api/parse', () => {
     expect(typeof body['htmlBytes']).toBe('number');
     expect(typeof body['mdBytes']).toBe('number');
     expect(typeof body['savingsRatio']).toBe('number');
+    expect(typeof body['htmlTokens']).toBe('number');
+    expect(typeof body['mdTokens']).toBe('number');
+    expect(typeof body['fetchedAt']).toBe('string');
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -55,5 +58,22 @@ describe('POST /api/parse', () => {
     expect(res.status).toBe(502);
     const body = (await res.json()) as Record<string, unknown>;
     expect(body['error']).toBe('FETCH_FAILED');
+  });
+
+  test('returns TOO_LARGE when parsed content exceeds 5 MB', async () => {
+    const bigMarkdown = 'x'.repeat(5 * 1024 * 1024 + 1);
+    fetchMock.mockImplementationOnce(async () => ({
+      markdown: bigMarkdown,
+      html: '',
+    }));
+    const req = new Request('http://localhost/api/parse', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ url: 'https://example.com' }),
+    });
+    const res = await parse.fetch(req);
+    expect(res.status).toBe(413);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body['error']).toBe('TOO_LARGE');
   });
 });
