@@ -33,8 +33,7 @@
     "node_modules",
     "src/__tests__/**",
     "tests/**",
-    "scripts/**",
     "dist",
-    "server.ts"
+    ".output"
   ]
 }
