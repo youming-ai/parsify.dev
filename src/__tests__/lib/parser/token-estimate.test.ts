@@ -29,6 +29,10 @@ describe('savingsRatio', () => {
   test('returns 0 when html is 0 (avoids divide-by-zero)', () => {
     expect(savingsRatio(0, 0)).toBe(0);
   });
+
+  test('returns 0 when md exceeds html (clamp)', () => {
+    expect(savingsRatio(100, 150)).toBe(0);
+  });
 });
 
 describe('priceFor', () => {
@@ -36,8 +40,11 @@ describe('priceFor', () => {
     expect(priceFor('glm-5.1', 1000, 500)).toBeNull();
   });
 
-  test('returns dollar cost or null for any whitelisted model', () => {
-    const result = priceFor('glm-4-flash', 1_000_000, 1_000_000);
-    expect(result === null || typeof result === 'number').toBe(true);
+  test('returns null for all currently-unpriced models', () => {
+    // All models are currently null-priced placeholders
+    expect(priceFor('glm-5.1', 1_000_000, 1_000_000)).toBeNull();
+    expect(priceFor('glm-4-plus', 1_000_000, 1_000_000)).toBeNull();
+    expect(priceFor('glm-4-air', 1_000_000, 1_000_000)).toBeNull();
+    expect(priceFor('glm-4-flash', 1_000_000, 1_000_000)).toBeNull();
   });
 });

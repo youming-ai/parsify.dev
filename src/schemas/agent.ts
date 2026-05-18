@@ -11,7 +11,12 @@ export const agentRequestSchema = z.object({
     .max(MAX_MARKDOWN_BYTES, 'markdown exceeds 1 MB limit'),
   apiKey: z.string().min(1, 'apiKey is required'),
   prompt: z.string().min(1).default(DEFAULT_PROMPT),
-  model: z.enum(MODEL_IDS as unknown as [string, ...string[]]).default('glm-5.1'),
+  model: z.enum(MODEL_IDS).default('glm-5.1'),
 });
 
 export type AgentRequest = z.infer<typeof agentRequestSchema>;
+
+export type AgentError = {
+  error: 'INVALID_BODY' | 'AGENT_FAILED' | 'RATE_LIMITED';
+  message: string;
+};
