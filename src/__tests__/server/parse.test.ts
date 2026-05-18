@@ -15,7 +15,7 @@ beforeEach(() => fetchMock.mockClear());
 
 describe('POST /api/parse', () => {
   test('returns markdown + sizes for a valid URL', async () => {
-    const req = new Request('http://localhost/api/parse', {
+    const req = new Request('http://localhost/', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ url: 'https://example.com' }),
@@ -34,7 +34,7 @@ describe('POST /api/parse', () => {
   });
 
   test('rejects an invalid URL with INVALID_URL', async () => {
-    const req = new Request('http://localhost/api/parse', {
+    const req = new Request('http://localhost/', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ url: 'not a url' }),
@@ -49,7 +49,7 @@ describe('POST /api/parse', () => {
     fetchMock.mockImplementationOnce(async () => {
       throw new Error('boom');
     });
-    const req = new Request('http://localhost/api/parse', {
+    const req = new Request('http://localhost/', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ url: 'https://example.com' }),
@@ -66,7 +66,7 @@ describe('POST /api/parse', () => {
       markdown: bigMarkdown,
       html: '',
     }));
-    const req = new Request('http://localhost/api/parse', {
+    const req = new Request('http://localhost/', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ url: 'https://example.com' }),

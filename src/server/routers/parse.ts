@@ -4,7 +4,7 @@ import { estimateTokens, savingsRatio } from '~/lib/parser/token-estimate';
 import { type ParseError, parseRequestSchema } from '~/schemas/parse';
 
 const FETCH_TIMEOUT_MS = 10_000;
-const MAX_HTML_BYTES = 5 * 1024 * 1024;
+const MAX_MD_BYTES = 5 * 1024 * 1024;
 
 // The real curl.md SDK client.fetch() returns a Response-like object (outputFormat: "text")
 // where the markdown content is retrieved via .text(). The mock in tests returns { markdown, html }
@@ -17,7 +17,7 @@ const MAX_HTML_BYTES = 5 * 1024 * 1024;
 // We use AbortController for timeout, but pass the signal via the options shape the SDK expects.
 const client = createClient();
 
-export const parse = new Hono().basePath('/api/parse');
+export const parse = new Hono();
 
 parse.post('/', async (c) => {
   let body: unknown;
@@ -85,7 +85,7 @@ parse.post('/', async (c) => {
     const htmlBytes = new TextEncoder().encode(html).byteLength;
     const mdBytes = new TextEncoder().encode(markdown).byteLength;
 
-    if (mdBytes > MAX_HTML_BYTES) {
+    if (mdBytes > MAX_MD_BYTES) {
       return c.json<ParseError>(
         { error: 'TOO_LARGE', message: 'Parsed content exceeds 5 MB' },
         413

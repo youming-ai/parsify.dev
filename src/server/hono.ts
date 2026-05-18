@@ -27,11 +27,7 @@ app.use(
 
 app.get('/health', (c) => c.json({ ok: true }));
 
-// Forward /api/parse* to the parse sub-router (which uses basePath('/api/parse') for
-// direct test access via parse.fetch()). Using app.use() passes the original Request
-// object so the sub-router's basePath matching works correctly.
-app.use('/parse', async (c) => parse.fetch(c.req.raw));
-app.use('/parse/*', async (c) => parse.fetch(c.req.raw));
+app.route('/parse', parse);
 
 app.onError((err, c) => {
   if (c.var.logger) {
