@@ -1,89 +1,105 @@
 # AGENTS.md — Parsify.dev
 
-Privacy-first, browser-side AI/LLM developer tools. SPA built with TanStack Start (React 19 + TanStack Router + Vite 7), served as static files by Bun.
+Single-purpose URL→Agent product. Paste a URL → `curl.md` fetches and converts it to LLM-optimized markdown → Zhipu GLM agent runs on the markdown → shows token/cost savings vs. raw HTML. Built with TanStack Start v1 in full SSR mode, Hono at `/api/*`, deployed via Dokploy + Docker.
 
 ## Essential commands
 
 | Command | What it runs |
 |---|---|
-| `bun run dev` | Vite dev server |
-| `bun run build` | `vite build && bun run scripts/create-shell.ts` (client+SSR bundles, generates SPA shell HTML) |
-| `bun run start` | `bun run server.ts` (Bun static file server) |
+| `bun run dev` | Vite dev server (SSR) |
+| `bun run build` | `vite build` — outputs `dist/server/server.js` + `dist/client/` |
+| `bun run start` | `srvx` serves the built server bundle on port 3000 |
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun test` | Bun test runner (no DOM) |
-| `bun test src/__tests__/lib/llm/<file>.test.ts` | Single test file |
+| `bun test src/__tests__/<path>.test.ts` | Single test file |
 | `bun run lint` | `biome check ./src` |
 | `bun run lint:fix` | `biome check --fix ./src` |
 | `bun run format` | `biome format --write ./src` |
 
-Pre-commit (husky → lint-staged): Biome `check --fix` + `bun test` on staged `.ts(x)`.
+Pre-commit (lefthook): Biome `check --write` on staged `.{ts,tsx,js,jsx,json,jsonc,css,md}` files.
 
 ## Architecture
 
-**No server-side processing of user input** — that's the product invariant. All logic runs in the browser. Provider calls go browser-direct via BYOK. API keys live in component state only (not persisted).
+**TanStack Start v1 in full SSR mode** — server renders pages; no static-only output. TanStack Router handles routing. Vite 7 is the build tool.
 
-SPA mode — single `index.html` shell served by Bun static file server. TanStack Router handles all client-side navigation. No SSR, no server routes.
+**API layer**: Hono app (`src/server/hono.ts`) mounted at `/api/*` via a TanStack Start catch-all route (`src/routes/api/$.ts`). All HTTP methods are forwarded to `app.fetch()`.
+
+**Validation**: Zod schemas in `src/schemas/`:
+- `parseRequestSchema` — validates the `url` field; includes SSRF guard (rejects private/loopback/link-local hosts)
+- `agentRequestSchema` — validates `markdown`, `apiKey`, `prompt`, `model`
+
+**Logging**: pino + hono-pino. Logger configured in `src/lib/logger.ts`. Level controlled by `LOG_LEVEL` env var (default `info`). pino redacts `*.apiKey`, `*.headers.authorization`, `*.headers.cookie`. Always use `c.var.logger` in Hono route handlers — never `console.log`.
+
+**Rate limiting**: in-memory `hono-rate-limiter` on `/api/agent` (20 req / 15 min per IP). Single-container deploy assumption; replace store if multi-instance.
 
 **Tech stack**: TanStack Start + TanStack Router + Vite 7 + React 19 + Tailwind CSS v4 + shadcn/ui + Lucide React + Biome v2 + Bun + TypeScript strict
 
-**2 tools** (after Apr 2026 triage from 21 → 2):
-
-| Tool | Route | Logic module |
-|---|---|---|
-| LLM Cost Calculator | `/ai/cost-calculator` | `cost-calculator.ts` |
-| Prompt Cache Calculator | `/ai/cache-calculator` | `prompt-cache.ts` |
-
 **Route → component pattern:**
 
-- `src/routes/ai/<tool>.tsx` — TanStack Router file-based route using `createFileRoute`, imports React component from `src/components/tools/ai/<tool>.tsx`
-- `src/components/tools/ai/<tool>.tsx` — React component, named export
-- Each route uses `useDocumentHead` (from `src/components/seo/`) for SEO meta tags
-- Model selector in `shared/model-selector.tsx` fetches live model list from OpenRouter API (CORS-permitted)
+- `src/routes/__root.tsx` — root layout (HTML shell, providers)
+- `src/routes/index.tsx` — homepage, imports from `src/components/parser/`
+- `src/routes/api/$.ts` — catch-all; forwards to Hono app
+- `src/server/routers/parse.ts` — `POST /api/parse` handler
+- `src/server/routers/agent.ts` — `POST /api/agent` streaming handler
 
 **Source layout:**
 
 ```
 src/
-├── routes/                    # TanStack Router file-based routes
-│   ├── __root.tsx             # Root layout (HTML shell, providers)
-│   ├── index.tsx              # Homepage
-│   ├── 404.tsx                # 404 page
-│   └── ai/                    # AI tool routes
-│       ├── index.tsx
-│       ├── cost-calculator.tsx
-│       └── cache-calculator.tsx
-├── router.tsx                 # TanStack Router config + route tree
-├── client.tsx                 # Client entry (hydration)
-├── routeTree.gen.ts           # Auto-generated route tree (gitignored)
+├── routes/                        # TanStack Router file-based routes
+│   ├── __root.tsx                 # Root layout (HTML shell, providers)
+│   ├── index.tsx                  # Homepage (URL→Agent UI)
+│   ├── 404.tsx                    # 404 page
+│   └── api/
+│       └── $.ts                   # Hono catch-all (all methods)
+├── router.tsx                     # TanStack Router config + route tree
+├── client.tsx                     # Client entry (hydration)
+├── routeTree.gen.ts               # Auto-generated route tree (gitignored)
+├── server/
+│   ├── hono.ts                    # Hono app (CORS, pino, rate-limit, routes)
+│   └── routers/
+│       ├── parse.ts               # POST /api/parse (curl.md fetch + tokenise)
+│       └── agent.ts               # POST /api/agent (Zhipu GLM streaming)
+├── schemas/
+│   ├── parse.ts                   # parseRequestSchema + ParseResponse types
+│   └── agent.ts                   # agentRequestSchema + AgentError types
 ├── components/
-│   ├── ui/                    # shadcn/ui primitives — REUSE FIRST
-│   ├── layout/                # app-shell, header, footer, theme-toggle
-│   ├── seo/                   # useDocumentHead hook
-│   ├── home/                  # hero-section
-│   ├── link.tsx               # TanStack Router <Link> for internal, <a> for external
-│   └── tools/ai/
-│       ├── shared/            # ModelSelector, MetricCard, RelatedTools
-│       └── <tool>.tsx         # 2 tool components
+│   ├── ui/                        # shadcn/ui primitives — REUSE FIRST
+│   ├── layout/                    # app-shell, header, footer, theme-toggle
+│   ├── seo/                       # head.tsx
+│   ├── parser/                    # url-agent-form, markdown-output,
+│   │                                agent-output, optimization-stats
+│   └── link.tsx                   # TanStack Router <Link> for internal, <a> for external
 ├── lib/
-│   ├── llm/                   # Pure logic (cost-calculator, prompt-cache, live-registry)
+│   ├── logger.ts                  # pino logger (redacts keys/auth/cookie)
+│   ├── parser/                    # models.ts, token-estimate.ts,
+│   │                                use-parse.ts, use-agent.ts
 │   ├── icon-map.ts, seo-config.ts, utils.ts
-├── data/tools-data.ts         # 2-tool registry
-├── hooks/                     # use-live-models, use-selected-model
-├── styles/app.css             # Tailwind v4 entry (@theme, no JS config)
-└── __tests__/lib/llm/         # Per-module Bun tests
+├── styles/app.css                 # Tailwind v4 entry (@theme, no JS config)
+└── __tests__/
+    ├── lib/parser/                # Bun tests: token-estimate
+    ├── schemas/                   # Bun tests: parse schema, agent schema
+    └── server/                   # Bun tests: parse route handler
 ```
 
-**`@/*` → `src/*`** via tsconfig paths and Vite alias.
+**`~/*` → `src/*`** via tsconfig paths and Vite alias.
 
 **Route tree**: `src/routeTree.gen.ts` is auto-generated by TanStack Router — gitignored, regenerated on `bun run dev` or `bun run build`.
 
-**SPA shell**: `scripts/create-shell.ts` generates `dist/client/index.html` post-build.
-
 **Link component**: `src/components/link.tsx` uses TanStack Router `<Link>` for internal routes, plain `<a>` for external.
 
-## Deploy (Hetzner VPS + Dokploy)
+## Deploy (Dokploy + Docker)
 
-Push to `main`. Dokploy triggers Docker build via `Dockerfile` — installs deps with Bun, runs `bun run build`, serves static files from `dist/client/` via `server.ts` (Bun static file server).
+Push to `main`. Dokploy triggers Docker build via `Dockerfile`:
+1. `bun install --frozen-lockfile`
+2. `bun run build` → `dist/server/server.js` + `dist/client/`
+3. `CMD ["bun", "run", "start"]` — `srvx` serves on port 3000
+
+**Required env vars:**
+| Var | Purpose |
+|---|---|
+| `PUBLIC_ORIGIN` | Canonical origin (e.g. `https://parsify.dev`) — used for CORS `origin` |
+| `LOG_LEVEL` | pino log level (optional, default `info`); values: `trace`, `debug`, `info`, `warn`, `error` |
 
 ## Code style (Biome)
 
@@ -94,20 +110,12 @@ Push to `main`. Dokploy triggers Docker build via `Dockerfile` — installs deps
 
 ## Security
 
-- **All user data stays client-side**: localStorage or memory only
-- **API keys**: component state only, never persisted, never sent to any server (browser → provider directly)
-- **No external script loading** for data processing
+**BYOK proxy invariant**: The Zhipu API key is supplied by the user per-request (`agentRequestSchema.apiKey`). It exists in server memory only for the duration of that single request. It is **never** logged, never persisted (no DB, no cache, no file), and never reused. pino redaction (`*.apiKey`) is defense-in-depth, not the primary guard.
+
+- **SSRF guard**: `parseRequestSchema` rejects URLs pointing to private/loopback/link-local hosts (127.x, 10.x, 172.16–31.x, 192.168.x, 169.254.x, ::1). Add validation tests in `src/__tests__/schemas/parse.test.ts` whenever the schema changes.
+- **Rate limiting**: `/api/agent` is rate-limited (20 req / 15 min per IP) to cap key-forwarding abuse.
+- **Logging**: always use `c.var.logger` (hono-pino request logger) in Hono handlers; never `console.log`. pino redacts `*.apiKey`, `*.headers.authorization`, `*.headers.cookie`.
 - **Crypto**: use `crypto.subtle` or Web Crypto API. Never `Math.random()` for security. No custom crypto.
-- **No `dangerouslySetInnerHTML`** without sanitization
-- **No empty catch blocks** — always show user-friendly error state
-- **Coverage**: excludes `src/components/ui/**`
-
-## Adding a new tool (workflow)
-
-1. Add metadata to `src/data/tools-data.ts`
-2. Create pure logic in `src/lib/llm/<tool>.ts`
-3. Create test in `src/__tests__/lib/llm/<tool>.test.ts`
-4. Create React component in `src/components/tools/ai/<tool>.tsx` (named export)
-5. Create route in `src/routes/ai/<tool>.tsx` using `createFileRoute`
-6. Add related tools in `shared/related-tools.tsx`
-7. Verify: `bun run lint && bun run typecheck && bun test`
+- **No `dangerouslySetInnerHTML`** without sanitization (root layout analytics scripts are the only exception; they are static literals, not user input).
+- **No empty catch blocks** — always show user-friendly error state.
+- **Coverage**: excludes `src/components/ui/**`.
