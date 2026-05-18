@@ -40,10 +40,22 @@ agent.post('/', async (c) => {
           content: `${prompt}\n\n--- 网页 markdown 内容如下 ---\n\n${markdown}`,
         },
       ],
+      onError: (event) => {
+        // Catches mid-stream errors that occur after headers are flushed
+        c.var.logger?.warn(
+          {
+            err: {
+              message: event.error instanceof Error ? event.error.message : String(event.error),
+            },
+          },
+          'agent stream error'
+        );
+      },
     });
     return result.toTextStreamResponse();
   } catch (err) {
-    c.var.logger?.warn({ err: { message: (err as Error).message } }, 'agent stream failed');
-    return c.json<AgentError>({ error: 'AGENT_FAILED', message: (err as Error).message }, 502);
+    const message = err instanceof Error ? err.message : String(err);
+    c.var.logger?.warn({ err: { message } }, 'agent stream failed');
+    return c.json<AgentError>({ error: 'AGENT_FAILED', message }, 502);
   }
 });
