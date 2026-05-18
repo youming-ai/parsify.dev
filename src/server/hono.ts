@@ -4,6 +4,7 @@ import { secureHeaders } from 'hono/secure-headers';
 import { type Env as PinoEnv, pinoLogger } from 'hono-pino';
 import { rateLimiter } from 'hono-rate-limiter';
 import { logger } from '~/lib/logger';
+import { parse } from '~/server/routers/parse';
 
 const PUBLIC_ORIGIN = process.env['PUBLIC_ORIGIN'] ?? 'http://localhost:3000';
 
@@ -25,6 +26,12 @@ app.use(
 );
 
 app.get('/health', (c) => c.json({ ok: true }));
+
+// Forward /api/parse* to the parse sub-router (which uses basePath('/api/parse') for
+// direct test access via parse.fetch()). Using app.use() passes the original Request
+// object so the sub-router's basePath matching works correctly.
+app.use('/parse', async (c) => parse.fetch(c.req.raw));
+app.use('/parse/*', async (c) => parse.fetch(c.req.raw));
 
 app.onError((err, c) => {
   if (c.var.logger) {
