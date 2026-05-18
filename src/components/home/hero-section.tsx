@@ -1,11 +1,11 @@
 import { Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { Link } from '@/components/link';
-import { Icon } from '@/components/ui/icon';
-import { Input } from '@/components/ui/input';
-import type { Tool } from '@/data/tools-data';
-import { iconNames } from '@/lib/icon-map';
-import { SEO_CONFIG } from '@/lib/seo-config';
+import { Link } from '~/components/link';
+import { Icon } from '~/components/ui/icon';
+import { Input } from '~/components/ui/input';
+import type { Tool } from '~/data/tools-data';
+import { iconNames } from '~/lib/icon-map';
+import { SEO_CONFIG } from '~/lib/seo-config';
 
 const difficultyColor: Record<string, string> = {
   beginner: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300',

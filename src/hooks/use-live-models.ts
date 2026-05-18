@@ -4,7 +4,7 @@ import {
   type LiveRegistryResult,
   loadCachedRegistry,
   saveCachedRegistry,
-} from '@/lib/llm/live-registry';
+} from '~/lib/llm/live-registry';
 
 interface UseLiveModelsResult {
   data: LiveRegistryResult | null;

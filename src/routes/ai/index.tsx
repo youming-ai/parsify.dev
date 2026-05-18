@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useDocumentHead } from '@/components/seo/head';
-import { AI_TOOLS_CATEGORY, toolsData } from '@/data/tools-data';
+import { useDocumentHead } from '~/components/seo/head';
+import { AI_TOOLS_CATEGORY, toolsData } from '~/data/tools-data';
 
 const tools = toolsData.filter((tool) => tool.category === AI_TOOLS_CATEGORY);
 const title = 'AI & LLM Developer Tools';

@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [tanstackStart(), tailwindcss()],
   resolve: {
     alias: {
-      '@': '/src',
+      '~': '/src',
     },
   },
 });

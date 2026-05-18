@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Label } from '@/components/ui/label';
+import { Label } from '~/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -8,8 +8,8 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useLiveModels } from '@/hooks/use-live-models';
+} from '~/components/ui/select';
+import { useLiveModels } from '~/hooks/use-live-models';
 
 interface ModelSelectorProps {
   value: string;

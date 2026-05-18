@@ -1,15 +1,15 @@
 import { useMemo, useState } from 'react';
-import { CostBreakdown } from '@/components/tools/ai/shared/cost-breakdown';
-import { MetricCard } from '@/components/tools/ai/shared/metric-card';
-import { ModelSelector } from '@/components/tools/ai/shared/model-selector';
-import { RelatedTools } from '@/components/tools/ai/shared/related-tools';
-import { ResultCard } from '@/components/tools/ai/shared/result-card';
-import { ToolPageShell } from '@/components/tools/ai/shared/tool-page-shell';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useSelectedModel } from '@/hooks/use-selected-model';
-import { calculatePromptCache } from '@/lib/llm/prompt-cache';
+import { CostBreakdown } from '~/components/tools/ai/shared/cost-breakdown';
+import { MetricCard } from '~/components/tools/ai/shared/metric-card';
+import { ModelSelector } from '~/components/tools/ai/shared/model-selector';
+import { RelatedTools } from '~/components/tools/ai/shared/related-tools';
+import { ResultCard } from '~/components/tools/ai/shared/result-card';
+import { ToolPageShell } from '~/components/tools/ai/shared/tool-page-shell';
+import { Badge } from '~/components/ui/badge';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import { useSelectedModel } from '~/hooks/use-selected-model';
+import { calculatePromptCache } from '~/lib/llm/prompt-cache';
 
 export function CacheCalculator() {
   const [modelId, setModelId] = useState('gpt-4o');

@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useDocumentHead } from '@/components/seo/head';
-import { CacheCalculator } from '@/components/tools/ai/cache-calculator';
-import { toolsData } from '@/data/tools-data';
-import { softwareApplicationJsonLd } from '@/lib/seo-config';
+import { useDocumentHead } from '~/components/seo/head';
+import { CacheCalculator } from '~/components/tools/ai/cache-calculator';
+import { toolsData } from '~/data/tools-data';
+import { softwareApplicationJsonLd } from '~/lib/seo-config';
 
 const tool = toolsData.find((t) => t.id === 'cache-calculator')!;
 

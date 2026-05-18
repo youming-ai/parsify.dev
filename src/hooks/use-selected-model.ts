@@ -1,5 +1,5 @@
-import { useLiveModels } from '@/hooks/use-live-models';
-import type { LiveModel } from '@/lib/llm/live-registry';
+import { useLiveModels } from '~/hooks/use-live-models';
+import type { LiveModel } from '~/lib/llm/live-registry';
 
 export interface UnifiedModel {
   id: string;

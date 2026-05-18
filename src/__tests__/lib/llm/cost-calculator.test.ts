@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { calculateMonthlyCost } from '@/lib/llm/cost-calculator';
+import { calculateMonthlyCost } from '~/lib/llm/cost-calculator';
 
 describe('calculateMonthlyCost', () => {
   it('calculates standard input and output cost', () => {

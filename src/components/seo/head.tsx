@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { SEO_CONFIG } from '@/lib/seo-config';
+import { SEO_CONFIG } from '~/lib/seo-config';
 
 interface Breadcrumb {
   name: string;

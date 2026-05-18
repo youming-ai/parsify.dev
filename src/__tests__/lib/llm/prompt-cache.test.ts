@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { calculatePromptCache } from '@/lib/llm/prompt-cache';
+import { calculatePromptCache } from '~/lib/llm/prompt-cache';
 
 describe('calculatePromptCache', () => {
   it('returns unavailable when cache prices are missing', () => {

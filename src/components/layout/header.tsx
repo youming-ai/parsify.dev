@@ -1,5 +1,5 @@
 import { Terminal } from 'lucide-react';
-import { Link } from '@/components/link';
+import { Link } from '~/components/link';
 import { ThemeToggle } from './theme-toggle';
 
 export function Header() {

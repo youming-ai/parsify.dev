@@ -1,5 +1,5 @@
-import type { Tool } from '@/data/tools-data';
-import { toolsData } from '@/data/tools-data';
+import type { Tool } from '~/data/tools-data';
+import { toolsData } from '~/data/tools-data';
 
 const relatedToolIds: Record<string, string[]> = {
   'cost-calculator': ['cache-calculator'],

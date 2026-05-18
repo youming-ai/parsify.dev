@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useDocumentHead } from '@/components/seo/head';
-import { CostCalculator } from '@/components/tools/ai/cost-calculator';
-import { toolsData } from '@/data/tools-data';
-import { softwareApplicationJsonLd } from '@/lib/seo-config';
+import { useDocumentHead } from '~/components/seo/head';
+import { CostCalculator } from '~/components/tools/ai/cost-calculator';
+import { toolsData } from '~/data/tools-data';
+import { softwareApplicationJsonLd } from '~/lib/seo-config';
 
 const tool = toolsData.find((t) => t.id === 'cost-calculator')!;
 

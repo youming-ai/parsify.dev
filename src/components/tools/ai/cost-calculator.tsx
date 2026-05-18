@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { CostBreakdown } from '@/components/tools/ai/shared/cost-breakdown';
-import { ModelSelector } from '@/components/tools/ai/shared/model-selector';
-import { ResultCard } from '@/components/tools/ai/shared/result-card';
-import { ToolPageShell } from '@/components/tools/ai/shared/tool-page-shell';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { useSelectedModel } from '@/hooks/use-selected-model';
-import { calculateMonthlyCost } from '@/lib/llm/cost-calculator';
+import { CostBreakdown } from '~/components/tools/ai/shared/cost-breakdown';
+import { ModelSelector } from '~/components/tools/ai/shared/model-selector';
+import { ResultCard } from '~/components/tools/ai/shared/result-card';
+import { ToolPageShell } from '~/components/tools/ai/shared/tool-page-shell';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import { Switch } from '~/components/ui/switch';
+import { useSelectedModel } from '~/hooks/use-selected-model';
+import { calculateMonthlyCost } from '~/lib/llm/cost-calculator';
 
 export function CostCalculator() {
   const [modelId, setModelId] = useState('gpt-4o');

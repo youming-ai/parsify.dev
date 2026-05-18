@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useDocumentHead } from '@/components/seo/head';
+import { useDocumentHead } from '~/components/seo/head';
 
 function NotFoundPage() {
   useDocumentHead({
