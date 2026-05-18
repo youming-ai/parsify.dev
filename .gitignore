@@ -91,3 +91,7 @@ bun.lockb
 src/routeTree.gen.ts
 .output/
 
+
+.dev.vars*
+!.dev.vars.example
+!.env.example
