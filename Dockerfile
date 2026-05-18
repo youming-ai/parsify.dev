@@ -17,4 +17,4 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/package.json ./
 COPY --from=build /app/node_modules ./node_modules
 EXPOSE 3000
-CMD ["bun", "run", "srvx", "serve", "--entry", "./dist/server/server.js", "--port", "3000", "--static", "./dist/client"]
+CMD ["bun", "run", "start"]
