@@ -9,4 +9,15 @@ export default defineConfig({
       '~': '/src',
     },
   },
+  build: {
+    rollupOptions: {
+      onwarn(warning, warn) {
+        // "use client" directives from Radix UI / TanStack packages are safe to ignore
+        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return;
+        // Unused imports inside TanStack Start's own bundles — not our code
+        if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return;
+        warn(warning);
+      },
+    },
+  },
 });
