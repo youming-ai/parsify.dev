@@ -2,8 +2,14 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
 export default defineConfig({
-  plugins: [tanstackStart(), tailwindcss()],
+  plugins: [tanstackStart(), tailwindcss(), cloudflare({
+    viteEnvironment: {
+      name: "ssr"
+    }
+  })],
   resolve: {
     alias: {
       '~': '/src',
