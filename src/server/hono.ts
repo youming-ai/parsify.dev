@@ -13,6 +13,8 @@ app.use('*', secureHeaders());
 app.use('*', cors({ origin: PUBLIC_ORIGIN, credentials: false }));
 app.use('*', pinoLogger({ pino: logger }));
 
+// In-memory store — assumes single-process deploy (Dokploy/Docker single container).
+// Replace with a distributed store if multiple instances are ever deployed.
 app.use(
   '/agent',
   rateLimiter({
@@ -25,6 +27,10 @@ app.use(
 app.get('/health', (c) => c.json({ ok: true }));
 
 app.onError((err, c) => {
-  c.var.logger?.error({ err: { message: err.message, stack: err.stack } }, 'unhandled');
+  if (c.var.logger) {
+    c.var.logger.error({ err: { message: err.message, stack: err.stack } }, 'unhandled');
+  } else {
+    console.error('[onError fallback]', err);
+  }
   return c.json({ error: 'INTERNAL', message: 'Unexpected server error' }, 500);
 });
