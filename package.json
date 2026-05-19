@@ -21,10 +21,6 @@
     "clean": "rm -rf node_modules dist .output"
   },
   "dependencies": {
-    "@radix-ui/react-label": "^2.1.8",
-    "@radix-ui/react-progress": "^1.1.8",
-    "@radix-ui/react-select": "^2.2.6",
-    "@radix-ui/react-switch": "^1.2.6",
     "@tailwindcss/vite": "^4.3.0",
     "@tanstack/react-router": "^1.170.4",
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -34,6 +30,7 @@
     "lucide-react": "^1.16.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+    "react-markdown": "^10.1.0",
     "tailwind-merge": "^2.6.1",
     "tailwindcss": "^4.3.0",
     "zod": "^4.4.3"
@@ -44,7 +41,7 @@
     "@types/node": "^22.19.19",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "5",
+    "@vitejs/plugin-react": "^5.2.0",
     "lefthook": "^2.1.6",
     "typescript": "^6.0.3",
     "vite": "^7.3.3"

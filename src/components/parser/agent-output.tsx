@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 type Props = {
   text: string;
   isStreaming: boolean;
@@ -12,23 +14,35 @@ export function AgentOutput({ text, isStreaming, error }: Props) {
           Agent output
           {isStreaming && <span className="ml-2 text-xs text-muted-foreground">· streaming…</span>}
         </h2>
-        {text && (
-          <button
-            type="button"
-            className="text-xs text-muted-foreground hover:text-foreground"
-            onClick={() => navigator.clipboard.writeText(text)}
-          >
-            Copy
-          </button>
-        )}
+        {text && <CopyButton text={text} />}
       </div>
       {error ? (
         <p className="text-sm text-destructive">{error}</p>
       ) : (
-        <div className="max-h-96 overflow-auto whitespace-pre-wrap text-sm leading-6">
+        <div className="max-h-[40rem] overflow-auto whitespace-pre-wrap text-sm leading-6">
           {text || (isStreaming ? 'Thinking…' : 'No output yet.')}
         </div>
       )}
     </div>
+  );
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+
+  return (
+    <button
+      type="button"
+      className="text-xs text-muted-foreground hover:text-foreground"
+      onClick={handleCopy}
+    >
+      {copied ? 'Copied!' : 'Copy'}
+    </button>
   );
 }

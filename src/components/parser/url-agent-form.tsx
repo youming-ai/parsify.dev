@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 
@@ -12,10 +12,15 @@ export type FormValues = {
 type Props = {
   onSubmit: (v: FormValues) => void;
   disabled?: boolean;
+  initialUrl?: string;
 };
 
-export function URLAgentForm({ onSubmit, disabled }: Props) {
-  const [url, setUrl] = useState('');
+export function URLAgentForm({ onSubmit, disabled, initialUrl = '' }: Props) {
+  const [url, setUrl] = useState(initialUrl);
+
+  useEffect(() => {
+    if (initialUrl) setUrl(initialUrl);
+  }, [initialUrl]);
 
   return (
     <form

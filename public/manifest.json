@@ -1,7 +1,7 @@
 {
-  "name": "Parsify.dev - Online Developer Tools",
+  "name": "Parsify.dev — URL to AI-Ready Markdown",
   "short_name": "Parsify",
-  "description": "Professional online developer tools for JSON processing, code execution, file transformation, and more. Privacy-first, client-side processing with no data sent to servers.",
+  "description": "Paste any URL and get clean, structured Markdown — instantly ready for your AI. Strips ads, navigation, and boilerplate. One-click AI summary included.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f7f7f4",
@@ -25,44 +25,6 @@
       "sizes": "1200x630",
       "type": "image/png",
       "purpose": "any"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "JSON Tools",
-      "short_name": "JSON",
-      "description": "Format, validate, and manipulate JSON data",
-      "url": "/data-format/json-tools",
-      "icons": [
-        {
-          "src": "/icon",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Password Generator",
-      "short_name": "Password",
-      "description": "Generate secure passwords with strength analysis",
-      "url": "/security/password-generator",
-      "icons": [
-        {
-          "src": "/icon",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "URL Parser",
-      "short_name": "URL",
-      "description": "Parse and inspect URLs with query parameters",
-      "url": "/network/url-parser",
-      "icons": [
-        {
-          "src": "/icon",
-          "sizes": "96x96"
-        }
-      ]
     }
   ]
 }

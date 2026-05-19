@@ -5,9 +5,9 @@
 export const SEO_CONFIG = {
   BASE_URL: 'https://parsify.dev',
   SITE_NAME: 'Parsify.dev',
-  DEFAULT_TITLE: 'Parsify.dev - AI & LLM Developer Tools',
+  DEFAULT_TITLE: 'Parsify — URL to AI-Ready Markdown, Instantly',
   DEFAULT_DESCRIPTION:
-    'Privacy-first browser tools for AI agent and LLM developers. Estimate LLM API costs across providers and calculate prompt caching ROI — all processing happens in your browser.',
+    'Paste any URL and get clean, structured Markdown — instantly ready for your AI. Strips ads, navigation, and boilerplate. One-click AI summary included.',
   DEFAULT_OG_IMAGE: 'https://parsify.dev/opengraph-image.png',
   DEFAULT_OG_IMAGE_WIDTH: 1200,
   DEFAULT_OG_IMAGE_HEIGHT: 630,
