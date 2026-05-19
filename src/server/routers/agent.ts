@@ -1,11 +1,11 @@
 import { Hono } from 'hono';
-import type { Env as PinoEnv } from 'hono-pino';
+import { logger } from '~/lib/logger';
 import { type AgentError, agentRequestSchema } from '~/schemas/agent';
 
 const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions';
 const DEEPSEEK_MODEL = 'deepseek-v4-flash';
 
-export const agent = new Hono<PinoEnv>();
+export const agent = new Hono();
 
 agent.post('/', async (c) => {
   let body: unknown;
@@ -23,9 +23,9 @@ agent.post('/', async (c) => {
     );
   }
 
-  const apiKey = process.env['DEEPSEEK_API_KEY'];
+  const apiKey = (c.env as Record<string, string | undefined>)?.['DEEPSEEK_API_KEY'];
   if (!apiKey) {
-    c.var.logger?.error('DEEPSEEK_API_KEY not configured');
+    logger.error('DEEPSEEK_API_KEY not configured');
     return c.json<AgentError>(
       { error: 'CONFIG_ERROR', message: 'Server missing DEEPSEEK_API_KEY' },
       500
@@ -49,30 +49,26 @@ agent.post('/', async (c) => {
           { role: 'system', content: 'You are a precise web-content analyst.' },
           {
             role: 'user',
-            content: `${prompt}\n\n--- 网页 markdown 内容如下 ---\n\n${markdown}`,
+            content: `${prompt}\n\n--- \u7f51\u9875 markdown \u5185\u5bb9\u5982\u4e0b ---\n\n${markdown}`,
           },
         ],
       }),
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    c.var.logger?.warn({ err: { message } }, 'deepseek fetch failed');
+    logger.warn(`deepseek fetch failed: ${message}`);
     return c.json<AgentError>({ error: 'AGENT_FAILED', message }, 502);
   }
 
   if (!upstream.ok || !upstream.body) {
     const errText = await upstream.text().catch(() => '');
-    c.var.logger?.warn(
-      { status: upstream.status, body: errText.slice(0, 500) },
-      'deepseek upstream error'
-    );
+    logger.warn(`deepseek upstream error: ${upstream.status} ${errText.slice(0, 500)}`);
     return c.json<AgentError>(
       { error: 'AGENT_FAILED', message: `Upstream ${upstream.status}` },
       502
     );
   }
 
-  const logger = c.var.logger;
   const upstreamBody = upstream.body;
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -105,14 +101,14 @@ agent.post('/', async (c) => {
                 controller.enqueue(encoder.encode(delta));
               }
             } catch (err) {
-              logger?.warn({ err: { message: (err as Error).message } }, 'sse parse failed');
+              logger.warn(`sse parse failed: ${(err as Error).message}`);
             }
           }
         }
         controller.close();
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        logger?.warn({ err: { message } }, 'stream interrupted');
+        logger.warn(`stream interrupted: ${message}`);
         controller.error(err);
       }
     },

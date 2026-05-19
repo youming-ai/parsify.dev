@@ -12,7 +12,9 @@ TanStack Start v1 in **full SSR mode** — single tool: paste a URL → `r.jina.
 
 Validation via Zod schemas (`src/schemas/`). Logging via pino + hono-pino (`src/lib/logger.ts`).
 
-**Deploy**: Dokploy + Docker. `bun run build` → `dist/server/server.js` + `dist/client/`. Container runs `bun run start`.
+**Rate limiting**: `/api/agent` is capped at 20 req / 15 min per IP (in-memory `hono-rate-limiter`). Expect 429s during stress-testing locally; the store is single-instance, not shared.
+
+**Deploy**: Dokploy + Docker. `bun run build` → `dist/server/server.js` + `dist/client/`. `bun run start` invokes `srvx serve` against the built server bundle (default port `5173`, overridable via `PORT`).
 
 `AGENTS.md` is authoritative for **security rules**, **Biome code-style conventions**, and **env vars**. Read it before changing those areas.
 
@@ -30,6 +32,8 @@ Validation via Zod schemas (`src/schemas/`). Logging via pino + hono-pino (`src/
 | Single test file | `bun test src/__tests__/<path>.test.ts` |
 
 Pre-commit (lefthook): Biome `check --write` on staged `.{ts,tsx,js,jsx,json,jsonc,css,md}` files.
+
+`bun run dev` is Vite (SSR) on `http://localhost:5173`. `bun run build` regenerates `src/routeTree.gen.ts` — don't edit it by hand.
 
 ## Architecture
 

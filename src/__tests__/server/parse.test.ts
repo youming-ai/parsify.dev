@@ -51,19 +51,14 @@ describe('POST /api/parse', () => {
   });
 
   test('attaches Authorization when JINA_API_KEY is set', async () => {
-    process.env['JINA_API_KEY'] = 'jina_test_xxx';
-    try {
-      const req = new Request('http://localhost/', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ url: 'https://example.com' }),
-      });
-      await parse.fetch(req);
-      const headers = (fetchMock.mock.calls[0]?.[1] as { headers: Record<string, string> }).headers;
-      expect(headers['authorization']).toBe('Bearer jina_test_xxx');
-    } finally {
-      delete process.env['JINA_API_KEY'];
-    }
+    const req = new Request('http://localhost/', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ url: 'https://example.com' }),
+    });
+    await parse.fetch(req, { JINA_API_KEY: 'jina_test_xxx' });
+    const headers = (fetchMock.mock.calls[0]?.[1] as { headers: Record<string, string> }).headers;
+    expect(headers['authorization']).toBe('Bearer jina_test_xxx');
   });
 
   test('rejects an invalid URL with INVALID_URL', async () => {

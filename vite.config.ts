@@ -1,23 +1,13 @@
-import { tanstackStart } from '@tanstack/react-start/plugin/vite';
+import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
+import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  plugins: [tanstackStart(), tailwindcss()],
+  plugins: [TanStackRouterVite(), react(), tailwindcss()],
   resolve: {
     alias: {
       '~': '/src',
-    },
-  },
-  build: {
-    rollupOptions: {
-      onwarn(warning, warn) {
-        // "use client" directives from Radix UI / TanStack packages are safe to ignore
-        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return;
-        // Unused imports inside TanStack Start's own bundles — not our code
-        if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return;
-        warn(warning);
-      },
     },
   },
 });

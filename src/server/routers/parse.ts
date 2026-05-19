@@ -26,7 +26,7 @@ parse.post('/', async (c) => {
 
   const { url } = parsed.data;
 
-  const apiKey = process.env['JINA_API_KEY'];
+  const apiKey = (c.env as Record<string, string | undefined>)?.['JINA_API_KEY'];
   const headers: Record<string, string> = { accept: 'text/markdown' };
   if (apiKey) headers['authorization'] = `Bearer ${apiKey}`;
 
