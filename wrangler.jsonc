@@ -1,5 +1,8 @@
 {
   "name": "parsify",
-  "pages_build_output_dir": "dist",
-  "compatibility_date": "2026-05-19"
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-05-19",
+  "assets": {
+    "directory": "dist"
+  }
 }
