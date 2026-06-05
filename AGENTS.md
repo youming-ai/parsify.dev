@@ -1,14 +1,14 @@
 # AGENTS.md — Parsify.dev
 
-Single-purpose URL→Agent product. Paste a URL → **Jina Reader** (`r.jina.ai`) fetches and converts it to LLM-optimized markdown → **DeepSeek** `deepseek-v4-flash` streams a summary. Both API keys live on the server. Built with TanStack Start v1 in full SSR mode, Hono at `/api/*`, deployed via Dokploy + Docker.
+AI-powered SEO analysis tool. Paste a URL → **Jina Reader** (`r.jina.ai`) fetches and converts it to LLM-optimized markdown → **DeepSeek** `deepseek-v4-flash` generates SEO analysis (SEO.md + robots.txt + llm.txt). Both API keys live on the server. Built with TanStack Router (SPA) + Vite 7 + Hono at `/api/*`, deployed via Dokploy + Docker.
 
 ## Essential commands
 
 | Command | What it runs |
 |---|---|
-| `bun run dev` | Vite dev server (SSR) |
-| `bun run build` | `vite build` — outputs `dist/server/server.js` + `dist/client/` |
-| `bun run start` | `srvx` on port `${PORT:-5173}` serving `dist/server/server.js` with `--static ../client` |
+| `bun run dev` | Vite dev server |
+| `bun run build` | `vite build` — outputs `dist/` |
+| `bun run start` | Runs `dist/server/entry.server.js` with Bun |
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun test` | Bun test runner (no DOM) |
 | `bun test src/__tests__/<path>.test.ts` | Single test file |
@@ -24,26 +24,27 @@ Order: `bun run lint` → `bun run typecheck` → `bun run test -- --coverage`. 
 
 ## Architecture
 
-**TanStack Start v1 in full SSR mode** — server renders pages; no static-only output. TanStack Router handles routing. Vite 7 is the build tool.
+**TanStack Router (SPA mode)** — client-side rendered SPA with TanStack Router handling file-based routing. Vite 7 is the build tool.
 
-**Vite config quirk**: `rollupOptions.onwarn` suppresses `MODULE_LEVEL_DIRECTIVE` (Radix/TanStack "use client") and `UNUSED_EXTERNAL_IMPORT` (TanStack Start internals). Don't remove — these are expected.
-
-**API layer**: Hono app (`src/server/hono.ts`) configured with `{ strict: false }` (trailing slashes allowed), `.basePath('/api')`, mounted via a TanStack Start catch-all route (`src/routes/api/$.ts`). All HTTP methods forwarded to `app.fetch()`.
+**API layer**: Hono app (`src/server/hono.ts`) configured with `{ strict: false }` (trailing slashes allowed), `.basePath('/api')`, mounted via a TanStack Router catch-all route (`src/routes/api/$.ts`). All HTTP methods forwarded to `app.fetch()`.
 
 **Server routes:**
 - `GET /api/health` — returns `{ ok: true }`
 - `POST /api/parse` — Jina Reader proxy. Validates URL via Zod (SSRF guard rejects private/loopback/link-local hosts). Forwards user prompt as `X-Instruction`. Accepts optional `objective` (≤500 chars). Enforces 5 MB markdown response limit server-side.
-- `POST /api/agent` — DeepSeek SSE proxy → plain text stream. Validates `markdown` (≤1 MB) and optional `prompt` (default: Chinese `'请用一段话总结这个网页的核心内容'`). Returns 500 if `DEEPSEEK_API_KEY` is missing. Rate-limited: 20 req / 15 min per IP.
+- `POST /api/agent` — DeepSeek SSE proxy. Validates `markdown` (≤1 MB) and optional `prompt` (default: SEO analysis prompt). Supports `outputFormat: 'json'` (default, returns structured SEO analysis) and `outputFormat: 'text'` (streaming plain text). Returns 500 if `DEEPSEEK_API_KEY` is missing.
+- `GET /api/llm.txt` — LLM-optimized description of Parsify SEO Analyzer
+- `GET /api/robots.txt` — Search engine crawler instructions
+- `GET /api/sitemap.xml` — XML sitemap for search engines
 
 **Validation**: Zod 4 schemas in `src/schemas/`. The parse schema has SSRF guard — add test coverage in `src/__tests__/schemas/parse.test.ts` whenever it changes.
 
-**Logging**: pino + hono-pino. Logger configured in `src/lib/logger.ts`. Level controlled by `LOG_LEVEL` env var (default `info`). pino redacts `*.apiKey`, `*.headers.authorization`, `*.headers.cookie`. Always use `c.var.logger` in Hono route handlers — never `console.log`. (The global `onError` handler has a `console.error` fallback when logger is unavailable — that's the only exception.)
+**Logging**: Custom console wrapper with level filtering in `src/lib/logger.ts`. Level controlled by `LOG_LEVEL` env var (default `info`). Includes redaction for `apiKey`, `authorization`, `cookie` patterns. Always use `logger` from `~/lib/logger` — never raw `console.log`.
 
-**Rate limiting**: in-memory `hono-rate-limiter` on `/api/agent` (20 req / 15 min per IP). Single-container deploy assumption; replace store if multi-instance.
+**Rate limiting**: `hono-rate-limiter` on `/api/parse` and `/api/agent` (20 req / 15 min per IP). Single-container deploy assumption; replace store if multi-instance.
 
 ## Tech stack
 
-TanStack Start + TanStack Router + Vite 7 + React 19 + Tailwind CSS v4 + shadcn/ui + Lucide React + Biome v2 + Bun + TypeScript strict + Zod 4 + pino + Hono 4.
+TanStack Router + Vite 7 + React 19 + Tailwind CSS v4 + shadcn/ui + Lucide React + Biome v2 + Bun + TypeScript strict + Zod 4 + Hono 4 + hono-rate-limiter.
 
 ## Source layout
 
@@ -53,33 +54,36 @@ src/
 │   ├── __root.tsx                 # Root layout (HTML shell, providers)
 │   ├── index.tsx                  # Homepage (hero + URL form + results + features)
 │   ├── 404.tsx                    # 404 page
+│   ├── docs.tsx                   # API documentation page
 │   └── api/
 │       └── $.ts                   # Hono catch-all (all methods)
 ├── router.tsx                     # TanStack Router config + route tree
 ├── client.tsx                     # Client entry (hydration)
 ├── routeTree.gen.ts               # Auto-generated by TanStack Router — gitignored
 ├── server/
-│   ├── hono.ts                    # Hono app (CORS, pino, rate-limit, routes)
+│   ├── hono.ts                    # Hono app (CORS, rate-limit, routes)
 │   └── routers/
 │       ├── parse.ts               # POST /api/parse (Jina Reader proxy)
-│       └── agent.ts               # POST /api/agent (DeepSeek SSE proxy)
+│       └── agent.ts               # POST /api/agent (DeepSeek SEO analysis)
 ├── schemas/
 │   ├── parse.ts                   # parseRequestSchema + ParseResponse types
-│   └── agent.ts                   # agentRequestSchema + AgentError types
+│   ├── agent.ts                   # agentRequestSchema + AgentError types
+│   └── seo.ts                     # SEO analysis response types + helpers
 ├── components/
-│   ├── ui/                        # shadcn/ui primitives — REUSE FIRST
+│   ├── ui/                        # shadcn/ui primitives + shared components (copy-button)
 │   ├── layout/                    # app-shell, header, footer, theme-toggle
 │   ├── seo/                       # head.tsx
-│   ├── parser/                    # url-agent-form, markdown-output, agent-output, optimization-stats
+│   ├── parser/                    # url-agent-form, markdown-output, agent-output, optimization-stats, seo-analysis-output, seo-score
 │   └── link.tsx                   # TanStack Router <Link> for internal, <a> for external
 ├── lib/
-│   ├── logger.ts                  # pino logger (redacts keys/auth/cookie)
+│   ├── logger.ts                  # Console logger with redaction and level filtering
 │   ├── parser/                    # token-estimate.ts, use-parse.ts, use-agent.ts
+│   ├── seo-config.ts              # SEO configuration constants
 │   └── utils.ts                   # cn() — use for class merging, don't import clsx/twMerge directly
 ├── styles/app.css                 # Tailwind v4 entry (@theme, no JS config)
 └── __tests__/
     ├── lib/parser/                # Bun tests: token-estimate
-    ├── schemas/                   # Bun tests: parse + agent schema validation
+    ├── schemas/                   # Bun tests: parse + agent + seo schema validation
     └── server/                    # Bun tests: parse route handler (mocks globalThis.fetch)
 ```
 
@@ -89,7 +93,7 @@ src/
 
 - 2-space indent, 100 char width, single quotes, JSX double quotes, semicolons always, trailing commas (ES5), LF
 - `assist.organizeImports: "on"` — imports are auto-organized on save
-- Enabled rules: `noUnusedVariables`/`noUnusedImports` (error), `noLabelWithoutControl` (off), `noForEach`/`useLiteralKeys` (off), `noDangerouslySetInnerHtml` (off), `noNonNullAssertion`/`noArrayIndexKey`/`noAssignInExpressions`/`noExplicitAny`/`noImplicitAnyLet` (off)
+- Enabled rules: `noUnusedVariables`/`noUnusedImports` (error), `noLabelWithoutControl` (off), `noForEach`/`useLiteralKeys` (off), `noNonNullAssertion`/`noArrayIndexKey`/`noAssignInExpressions`/`noExplicitAny`/`noImplicitAnyLet` (off)
 - TypeScript: strict, `noUncheckedIndexedAccess`, `noPropertyAccessFromIndexSignature`
 - `import type` for type-only imports, explicit return types on exported functions
 
@@ -101,109 +105,38 @@ src/
 
 Push to `main`. Docker build (`Dockerfile`):
 1. `bun install --frozen-lockfile`
-2. `bun run build` → `dist/server/server.js` + `dist/client/`
-3. `CMD ["bun", "run", "start"]` — `srvx` on port 5173
+2. `bun run build` → `dist/`
+3. `CMD ["bun", "run", "start"]`
 
 **Required env vars:**
 | Var | Required | Purpose |
 |---|---|---|
-| `PUBLIC_ORIGIN` | yes | Canonical origin — used for CORS `origin` |
+| `PUBLIC_ORIGIN` | yes | Canonical origin — used for CORS `origin` and sitemap/llm.txt/robots.txt |
 | `DEEPSEEK_API_KEY` | yes | `/api/agent` returns 500 without it |
 | `JINA_API_KEY` | no | Without it, `/api/parse` uses anonymous tier (20 RPM) |
-| `LOG_LEVEL` | no | pino level (default `info`): `trace`, `debug`, `info`, `warn`, `error` |
-
-Note: `.env.example` uses `PUBLIC_ORIGIN=http://localhost:3000` but the start command defaults to port 5173.
+| `LOG_LEVEL` | no | Logger level (default `info`): `trace`, `debug`, `info`, `warn`, `error` |
 
 ## Security
 
-**Server-side key invariant**: `DEEPSEEK_API_KEY` and `JINA_API_KEY` are read from `process.env` only. Never sent from browser, never logged, never persisted (no DB, no cache, no file), and never echoed in responses. pino redaction (`*.apiKey`, `*.headers.authorization`, `*.headers.cookie`) is defense-in-depth.
+**Server-side key invariant**: `DEEPSEEK_API_KEY` and `JINA_API_KEY` are read from `process.env` only. Never sent from browser, never logged, never persisted (no DB, no cache, no file), and never echoed in responses. Logger redaction is defense-in-depth.
 
 - **SSRF guard**: `parseRequestSchema` rejects 127.x, 10.x, 172.16–31.x, 192.168.x, 169.254.x, ::1, localhost.
-- **Rate limiting**: `/api/agent` capped at 20 req / 15 min per IP.
-- **Logging**: use `c.var.logger` in Hono handlers; never `console.log`. Never log request bodies (contain scraped markdown).
+- **Rate limiting**: `/api/parse` and `/api/agent` capped at 20 req / 15 min per IP.
+- **Logging**: use `logger` from `~/lib/logger`; never raw `console.log`. Never log request bodies (contain scraped markdown).
 - **Crypto**: use `crypto.subtle` or Web Crypto API. Never `Math.random()` for security.
-- **No `dangerouslySetInnerHTML`** without sanitization (static analytics scripts in root layout are the only exception).
 - **No empty catch blocks** — always show user-friendly error state.
 
-## New Features (2026-05-29)
-
-### LLM & SEO Support
-
-| Endpoint | Purpose |
-|---|---|
-| `GET /api/llm.txt` | LLM-optimized description of Parsify API |
-| `GET /api/robots.txt` | Search engine crawler instructions |
-| `GET /api/sitemap.xml` | XML sitemap for search engines |
-
-- **robots.txt** allows GPTBot, ChatGPT-User, Claude-Web, Anthropic-ai, Google-Extended to access `/llm.txt`
-- **robots.txt** blocks Bytespider, CCBot (bad bots)
-- **llm.txt** provides API documentation in LLM-readable format
-
-### SEO Analysis Tool (2026-06-05)
-
-**Product Repositioning**: Parsify has been repositioned from a URL-to-summary tool to a comprehensive SEO analysis tool.
+## SEO Analysis Feature
 
 **Input**: URL → **Output**: SEO.md + robots.txt + llm.txt
 
-#### SEO.md Document Structure
-
-The SEO.md document follows the DESIGN.md concept but focuses on SEO optimization:
-
-```markdown
----
-domain: example.com
-generatedAt: 2024-01-01T00:00:00Z
-industry: Technology
-targetAudience: Developers
-seoScore: 85
----
-
-# SEO Analysis for example.com
-
-## Overview
-- Site description
-- Primary keywords
-- Competitors
-
-## Technical SEO Analysis
-- Page speed analysis
-- Mobile-friendly assessment
-- Structured data evaluation
-
-## Content SEO Analysis
-- Title structure analysis
-- Keyword density assessment
-- Content quality evaluation
-
-## Meta Tags Analysis
-- Title tag analysis
-- Meta description analysis
-- Open Graph tags
-- Twitter Cards
-
-## Link Structure Analysis
-- Internal links
-- External links
-- Anchor text analysis
-
-## SEO Recommendations
-- High/Medium/Low priority suggestions
-- Implementation steps
-
-## Optimized Content
-- Improved title and description
-- Enhanced markdown content
-```
-
-#### API Changes
-
-**`POST /api/agent`** now supports SEO analysis:
+### API (`POST /api/agent`)
 
 ```typescript
 // Request
 {
-  markdown: string;      // Required: webpage content
-  prompt?: string;       // Optional: custom prompt
+  markdown: string;      // Required: webpage content (≤1 MB)
+  prompt?: string;       // Optional: custom prompt (default: SEO analysis prompt)
   outputFormat?: 'json' | 'text';  // Default: 'json'
 }
 
@@ -215,99 +148,27 @@ seoScore: 85
 }
 ```
 
-#### New Components
+### Components
 
 | Component | File | Purpose |
 |---|---|---|
 | `SeoAnalysisOutput` | `src/components/parser/seo-analysis-output.tsx` | Main SEO analysis display with tabs |
-| `SeoScore` | `src/components/parser/seo-score.tsx` | SEO score visualization components |
+| `SeoScore` | `src/components/parser/seo-score.tsx` | Circular score visualization |
 | `SeoScoreGrid` | `src/components/parser/seo-score.tsx` | Grid display of multiple scores |
 | `SeoScoreBar` | `src/components/parser/seo-score.tsx` | Horizontal score bars |
+| `CopyButton` | `src/components/ui/copy-button.tsx` | Shared copy-to-clipboard button |
 
-#### New Schemas
+### Schemas (`src/schemas/seo.ts`)
 
-| Schema | File | Purpose |
-|---|---|---|
-| `SeoAnalysisResponse` | `src/schemas/seo.ts` | Main SEO analysis response structure |
-| `SeoMdDocument` | `src/schemas/seo.ts` | SEO.md document structure |
-| `SeoFrontmatter` | `src/schemas/seo.ts` | YAML frontmatter structure |
-| `SeoRecommendation` | `src/schemas/seo.ts` | SEO recommendation structure |
+`SeoAnalysisResponse`, `SeoMdDocument`, `SeoFrontmatter`, `SeoRecommendation` — TypeScript interfaces with helper functions (`calculateOverallScore`, `getScoreColorClass`, `formatScore`).
 
-#### Helper Functions
-
-| Function | File | Purpose |
-|---|---|---|
-| `isValidSeoResponse()` | `src/schemas/seo.ts` | Validate SEO analysis response |
-| `calculateOverallScore()` | `src/schemas/seo.ts` | Calculate overall SEO score |
-| `getScoreColorClass()` | `src/schemas/seo.ts` | Get color class for score |
-| `getScoreBgColorClass()` | `src/schemas/seo.ts` | Get background color class for score |
-| `formatScore()` | `src/schemas/seo.ts` | Format score for display |
-| `getPriorityLabel()` | `src/schemas/seo.ts` | Get priority label in Chinese |
-| `getPriorityColorClass()` | `src/schemas/seo.ts` | Get color class for priority |
-
-#### UI Features
-
-1. **Tabbed Interface**: Switch between SEO.md, robots.txt, and llm.txt views
-2. **Score Visualization**: Circular progress bars and grid display for SEO scores
-3. **Score Bars**: Horizontal bars for detailed score breakdown
-4. **Copy & Download**: One-click copy and download for all generated files
-5. **Responsive Design**: Works on desktop and mobile devices
-
-#### Testing
-
-New test files added:
-- `src/__tests__/schemas/seo.test.ts` - Tests for SEO schema functions
-- Updated `src/__tests__/schemas/agent.test.ts` - Tests for new `outputFormat` field
-
-### SSO & API Key Authentication
+### LLM & SEO Endpoints
 
 | Endpoint | Purpose |
 |---|---|
-| `POST /api/auth/register` | Register and get API Key |
-| `POST /api/auth/login` | Login with email + API Key |
-| `POST /api/auth/verify` | Verify API Key validity |
-| `GET /api/auth/me` | Get user info (requires Bearer token) |
+| `GET /api/llm.txt` | LLM-optimized description of Parsify SEO Analyzer API |
+| `GET /api/robots.txt` | Search engine crawler instructions |
+| `GET /api/sitemap.xml` | XML sitemap for search engines |
 
-**Authentication flow:**
-1. User registers with email + name → receives `pk_xxxxx` API Key
-2. User logs in with email + API Key → receives JWT token
-3. API calls can include `Authorization: Bearer pk_xxxxx` header
-4. Server validates API Key and updates usage statistics
-
-**Pages:**
-- `/login` — Login/Register page
-- `/dashboard` — User dashboard with API Key and usage stats
-- `/docs` — API documentation page
-
-**Note:** API Key authentication is optional. The API works without authentication but has stricter rate limits.
-
-### Updated Source Layout
-
-```
-src/
-├── routes/
-│   ├── __root.tsx
-│   ├── index.tsx
-│   ├── 404.tsx
-│   ├── login.tsx           # Login/Register page
-│   ├── dashboard.tsx       # User dashboard
-│   ├── docs.tsx            # API documentation
-│   └── api/
-│       └── $.ts            # Hono catch-all
-├── components/
-│   ├── auth/
-│   │   └── login-form.tsx  # Login form component
-│   └── ...
-├── lib/
-│   ├── auth/
-│   │   └── use-auth.ts     # Authentication hook
-│   └── ...
-├── schemas/
-│   ├── auth.ts             # Auth schemas & token utils
-│   └── ...
-└── server/
-    ├── hono.ts             # Added llm.txt, robots.txt, sitemap.xml routes
-    └── routers/
-        ├── auth.ts         # Authentication routes
-        └── ...
-```
+- **robots.txt** allows GPTBot, ChatGPT-User, Claude-Web, Anthropic-ai, Google-Extended to access `/llm.txt`
+- **robots.txt** blocks Bytespider, CCBot (bad bots)

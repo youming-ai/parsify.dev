@@ -8,7 +8,7 @@ export const Route = createFileRoute('/docs')({
 function DocsPage() {
   useDocumentHead({
     title: 'API 文档 — Parsify',
-    description: 'Parsify API 使用文档',
+    description: 'Parsify SEO Analyzer API 使用文档',
     path: '/docs',
   });
 
@@ -17,21 +17,9 @@ function DocsPage() {
       <div className="space-y-4">
         <h1 className="text-4xl font-bold">API 文档</h1>
         <p className="text-lg text-muted-foreground">
-          使用 Parsify API 将任意网页转换为干净的 Markdown 并生成 AI 摘要
+          使用 Parsify API 将任意网页转换为干净的 Markdown 并生成 SEO 分析报告
         </p>
       </div>
-
-      {/* 认证 */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold border-b pb-2">认证</h2>
-        <p>所有 API 请求都需要在 Header 中携带 API Key：</p>
-        <pre className="rounded-lg bg-muted p-4 text-sm overflow-x-auto">
-          {`Authorization: Bearer YOUR_API_KEY`}
-        </pre>
-        <p className="text-sm text-muted-foreground">
-          API Key 认证是可选的，SEO 分析功能无需认证即可使用
-        </p>
-      </section>
 
       {/* 解析 URL */}
       <section className="space-y-4">
@@ -67,7 +55,6 @@ function DocsPage() {
           <pre className="rounded-lg bg-muted p-4 text-sm overflow-x-auto">
             {`curl -X POST https://parsify.dev/api/parse \\
   -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer pk_xxxxxxxxxxxx" \\
   -d '{"url": "https://example.com/article"}'`}
           </pre>
         </div>
@@ -86,10 +73,10 @@ function DocsPage() {
         </div>
       </section>
 
-      {/* 生成摘要 */}
+      {/* SEO 分析 */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold border-b pb-2">POST /api/agent</h2>
-        <p>使用 AI 生成 Markdown 内容的摘要</p>
+        <p>使用 AI 对网页内容进行全面的 SEO 分析</p>
 
         <div className="space-y-2">
           <h3 className="font-medium">请求参数</h3>
@@ -108,13 +95,19 @@ function DocsPage() {
                   <td className="py-2 font-mono">markdown</td>
                   <td className="py-2">string</td>
                   <td className="py-2">是</td>
-                  <td className="py-2">要摘要的 Markdown 内容（最大 1MB）</td>
+                  <td className="py-2">要分析的 Markdown 内容（最大 1MB）</td>
                 </tr>
                 <tr>
                   <td className="py-2 font-mono">prompt</td>
                   <td className="py-2">string</td>
                   <td className="py-2">否</td>
-                  <td className="py-2">自定义提示词（默认：请用一段话总结这个网页的核心内容）</td>
+                  <td className="py-2">自定义提示词（默认：SEO 分析提示）</td>
+                </tr>
+                <tr>
+                  <td className="py-2 font-mono">outputFormat</td>
+                  <td className="py-2">'json' | 'text'</td>
+                  <td className="py-2">否</td>
+                  <td className="py-2">输出格式（默认：'json'）</td>
                 </tr>
               </tbody>
             </table>
@@ -122,21 +115,56 @@ function DocsPage() {
         </div>
 
         <div className="space-y-2">
-          <h3 className="font-medium">请求示例</h3>
+          <h3 className="font-medium">请求示例（JSON 格式）</h3>
           <pre className="rounded-lg bg-muted p-4 text-sm overflow-x-auto">
             {`curl -X POST https://parsify.dev/api/agent \\
   -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer pk_xxxxxxxxxxxx" \\
   -d '{
     "markdown": "# Article Title\\n\\nContent...",
-    "prompt": "请用一段话总结这个网页的核心内容"
+    "outputFormat": "json"
   }'`}
           </pre>
         </div>
 
         <div className="space-y-2">
-          <h3 className="font-medium">响应</h3>
-          <p className="text-sm">返回纯文本流，内容为 AI 生成的摘要</p>
+          <h3 className="font-medium">响应示例（JSON 格式）</h3>
+          <pre className="rounded-lg bg-muted p-4 text-sm overflow-x-auto">
+            {`{
+  "seoMd": {
+    "frontmatter": {
+      "domain": "example.com",
+      "generatedAt": "2024-01-01T00:00:00Z",
+      "seoScore": 85
+    },
+    "overview": { ... },
+    "technicalSeo": { "score": 80 },
+    "contentSeo": { "score": 85 },
+    "metaTags": { "score": 90 },
+    "linkStructure": { "score": 75 },
+    "recommendations": [ ... ],
+    "optimizedContent": { ... }
+  },
+  "robotsTxt": "# Generated robots.txt",
+  "llmTxt": "# Generated llm.txt"
+}`}
+          </pre>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="font-medium">请求示例（文本格式）</h3>
+          <pre className="rounded-lg bg-muted p-4 text-sm overflow-x-auto">
+            {`curl -X POST https://parsify.dev/api/agent \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "markdown": "# Article Title\\n\\nContent...",
+    "outputFormat": "text"
+  }'`}
+          </pre>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="font-medium">响应（文本格式）</h3>
+          <p className="text-sm">返回纯文本流，内容为 AI 生成的 SEO 分析</p>
         </div>
       </section>
 
@@ -183,13 +211,8 @@ function DocsPage() {
             <tbody>
               <tr>
                 <td className="py-2">400</td>
-                <td className="py-2 font-mono">INVALID_URL</td>
-                <td className="py-2">URL 格式无效或包含私有地址</td>
-              </tr>
-              <tr>
-                <td className="py-2">401</td>
-                <td className="py-2 font-mono">INVALID_API_KEY</td>
-                <td className="py-2">API Key 无效</td>
+                <td className="py-2 font-mono">INVALID_URL / INVALID_BODY</td>
+                <td className="py-2">请求参数无效或包含私有地址</td>
               </tr>
               <tr>
                 <td className="py-2">413</td>
@@ -199,11 +222,16 @@ function DocsPage() {
               <tr>
                 <td className="py-2">429</td>
                 <td className="py-2 font-mono">RATE_LIMITED</td>
-                <td className="py-2">请求过于频繁</td>
+                <td className="py-2">请求过于频繁（20 请求 / 15 分钟）</td>
+              </tr>
+              <tr>
+                <td className="py-2">500</td>
+                <td className="py-2 font-mono">CONFIG_ERROR</td>
+                <td className="py-2">服务端配置缺失（如 DEEPSEEK_API_KEY）</td>
               </tr>
               <tr>
                 <td className="py-2">502</td>
-                <td className="py-2 font-mono">FETCH_FAILED</td>
+                <td className="py-2 font-mono">FETCH_FAILED / AGENT_FAILED</td>
                 <td className="py-2">上游服务请求失败</td>
               </tr>
               <tr>

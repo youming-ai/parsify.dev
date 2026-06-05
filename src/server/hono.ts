@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
+import { rateLimiter } from 'hono-rate-limiter';
 import { logger } from '~/lib/logger';
 import { agent } from '~/server/routers/agent';
 import { parse } from '~/server/routers/parse';
@@ -12,7 +13,7 @@ app.use(
   '*',
   cors({
     origin: (_origin, c) =>
-      (c.env as Record<string, string | undefined>)?.['PUBLIC_ORIGIN'] ?? 'http://localhost:3000',
+      (c.env as Record<string, string | undefined>)?.['PUBLIC_ORIGIN'] ?? 'https://parsify.dev',
     credentials: false,
   })
 );
@@ -30,16 +31,16 @@ app.get('/llm.txt', (c) => {
   const origin =
     (c.env as Record<string, string | undefined>)?.['PUBLIC_ORIGIN'] ?? 'https://parsify.dev';
 
-  const content = `# Parsify — URL to AI-Ready Content
+  const content = `# Parsify — AI-Powered SEO Analyzer
 
 ## About
-Parsify is a URL-to-Agent product that converts any webpage into clean, structured, LLM-optimized markdown.
+Parsify is an AI-powered SEO analysis tool. Paste any URL and get comprehensive SEO analysis including SEO.md document, robots.txt, and llm.txt.
 
 ## How It Works
 1. User submits a URL
 2. Jina Reader fetches and converts the page to clean markdown
-3. DeepSeek LLM generates a streaming summary
-4. Results include token estimates and optimization stats
+3. DeepSeek LLM performs comprehensive SEO analysis
+4. Results include SEO.md, robots.txt, and llm.txt generation
 
 ## API Endpoints
 
@@ -57,14 +58,19 @@ Converts a URL to clean markdown.
 \`\`\`
 
 ### POST /api/agent
-Generates an AI summary from markdown content.
+Generates SEO analysis from markdown content.
 
 **Request:**
 \`\`\`json
-{"markdown": "...", "prompt": "请用一段话总结"}
+{
+  "markdown": "...",
+  "prompt": "请对这个网页进行全面的SEO分析",
+  "outputFormat": "json"
+}
 \`\`\`
 
-**Response:** Streaming plain text
+**Response (JSON):** SEO analysis with seoMd, robotsTxt, llmTxt
+**Response (text):** Streaming plain text
 
 ## Rate Limits
 - /api/parse: 20 requests / 15 min per IP
@@ -168,6 +174,28 @@ app.get('/sitemap.xml', (c) => {
     },
   });
 });
+
+// Rate limit on /parse (20 req / 15 min per IP)
+app.use(
+  '/parse',
+  rateLimiter({
+    limit: 20,
+    windowMs: 15 * 60 * 1000,
+    keyGenerator: (c) =>
+      c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? 'unknown',
+  })
+);
+
+// Rate limit on /agent (20 req / 15 min per IP)
+app.use(
+  '/agent',
+  rateLimiter({
+    limit: 20,
+    windowMs: 15 * 60 * 1000,
+    keyGenerator: (c) =>
+      c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? 'unknown',
+  })
+);
 
 app.route('/parse', parse);
 app.route('/agent', agent);

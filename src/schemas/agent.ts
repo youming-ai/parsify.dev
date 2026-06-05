@@ -15,6 +15,6 @@ export const agentRequestSchema = z.object({
 export type AgentRequest = z.infer<typeof agentRequestSchema>;
 
 export type AgentError = {
-  error: 'INVALID_BODY' | 'AGENT_FAILED' | 'RATE_LIMITED' | 'CONFIG_ERROR' | 'INVALID_API_KEY';
+  error: 'INVALID_BODY' | 'AGENT_FAILED' | 'RATE_LIMITED' | 'CONFIG_ERROR';
   message: string;
 };

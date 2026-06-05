@@ -44,8 +44,8 @@ export function SeoAnalysisOutput({ seoData, isStreaming, error }: SeoAnalysisOu
       await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
+    } catch {
+      // Clipboard API may fail in insecure contexts — silently ignore
     }
   };
 

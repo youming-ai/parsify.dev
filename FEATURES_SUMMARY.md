@@ -1,171 +1,157 @@
-# Parsify 功能扩展总结
+# Parsify SEO Analyzer 功能总结
 
-## 🎯 新增功能概览
+## 🎯 功能概览
 
-### 1. LLM & SEO 优化文件
+Parsify 是一个 AI 驱动的 SEO 分析工具。输入 URL → Jina Reader 抓取内容 → DeepSeek 生成全面的 SEO 分析报告。
 
-| 端点 | 说明 | 用途 |
-|------|------|------|
-| `GET /api/llm.txt` | LLM 友好的 API 文档 | 让 AI 爬虫了解 Parsify API |
-| `GET /api/robots.txt` | 搜索引擎爬虫指令 | 控制爬虫访问权限 |
-| `GET /api/sitemap.xml` | XML 站点地图 | 帮助搜索引擎索引 |
+**输出**: SEO.md + robots.txt + llm.txt
 
-**robots.txt 配置说明：**
-- ✅ 允许：GPTBot, ChatGPT-User, Claude-Web, Anthropic-ai, Google-Extended 访问 `/llm.txt`
-- ❌ 禁止：Bytespider, CCBot（恶意爬虫）
-- ⏱️ 爬虫延迟：1 秒
+## 📡 API 端点
 
-### 2. SSO & API Key 认证系统
+### POST /api/parse
+将 URL 转换为干净的 Markdown 格式。
 
-#### API 端点
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `url` | string | 是 | 要解析的网页 URL |
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/api/auth/register` | POST | 注册并获取 API Key |
-| `/api/auth/login` | POST | 使用邮箱 + API Key 登录 |
-| `/api/auth/verify` | POST | 验证 API Key 有效性 |
-| `/api/auth/me` | GET | 获取用户信息（需要 Bearer token） |
+**响应**: `{ url, markdown, mdBytes, mdTokens, fetchedAt }`
 
-#### 认证流程
+### POST /api/agent
+使用 AI 对网页内容进行全面的 SEO 分析。
 
-```
-1. 注册
-   用户输入邮箱 + 名称 → 服务器生成 pk_xxxxx API Key
-   
-2. 登录
-   用户输入邮箱 + API Key → 服务器返回 JWT token
-   
-3. API 调用
-   请求头添加 Authorization: Bearer pk_xxxxx
-   
-4. 使用统计
-   服务器自动记录 parse/agent 调用次数
-```
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `markdown` | string | 是 | 要分析的 Markdown 内容（≤1MB） |
+| `prompt` | string | 否 | 自定义提示词（默认：SEO 分析提示） |
+| `outputFormat` | `'json' \| 'text'` | 否 | 输出格式（默认：`'json'`） |
 
-#### 前端页面
-
-| 页面 | 路径 | 功能 |
-|------|------|------|
-| 登录/注册 | `/login` | 用户认证入口 |
-| 控制面板 | `/dashboard` | 查看 API Key、使用统计 |
-| API 文档 | `/docs` | 完整的 API 使用文档 |
-
-### 3. 前端集成
-
-#### Header 导航更新
-- 已登录：显示用户名 + 控制面板链接
-- 未登录：显示登录按钮
-
-#### 首页更新
-- 添加「获取 API Key」按钮
-- 添加「API 文档」按钮
-
-## 📁 文件变更清单
-
-### 新增文件
-
-```
-src/
-├── components/
-│   └── auth/
-│       └── login-form.tsx          # 登录表单组件
-├── lib/
-│   └── auth/
-│       └── use-auth.ts             # 认证 Hook
-├── routes/
-│   ├── login.tsx                   # 登录页面
-│   ├── dashboard.tsx               # 控制面板页面
-│   └── docs.tsx                    # API 文档页面
-├── schemas/
-│   └── auth.ts                     # 认证 Schema + Token 工具
-└── server/
-    └── routers/
-        └── auth.ts                 # 认证 API 路由
-```
-
-### 修改文件
-
-```
-src/
-├── routes/
-│   └── index.tsx                   # 添加登录/文档入口
-├── components/
-│   └── layout/
-│       └── header.tsx              # 添加用户菜单
-├── server/
-│   └── hono.ts                     # 添加 llm.txt/robots.txt/sitemap.xml 路由
-└── schemas/
-    ├── parse.ts                    # 添加 INVALID_API_KEY 错误码
-    └── agent.ts                    # 添加 INVALID_API_KEY 错误码
-```
-
-## 🔧 技术实现细节
-
-### API Key 格式
-```
-pk_[48位随机字符]
-示例: pk_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop
-```
-
-### JWT Token 结构
+**响应（JSON 格式）**:
 ```json
 {
-  "header": { "alg": "HS256", "typ": "JWT" },
-  "payload": {
-    "sub": "API Key",
-    "email": "user@example.com",
-    "iat": 1717000000,
-    "exp": 1717604800
-  }
+  "seoMd": {
+    "frontmatter": { "domain": "...", "seoScore": 85 },
+    "overview": { "siteDescription": "...", "primaryKeywords": [...] },
+    "technicalSeo": { "score": 80 },
+    "contentSeo": { "score": 85 },
+    "metaTags": { "score": 90 },
+    "linkStructure": { "score": 75 },
+    "recommendations": [...],
+    "optimizedContent": { "title": "...", "description": "...", "markdown": "..." }
+  },
+  "robotsTxt": "# Generated robots.txt",
+  "llmTxt": "# Generated llm.txt"
 }
 ```
 
-### 使用统计
-```typescript
-{
-  parseCount: number,    // /api/parse 调用次数
-  agentCount: number,    // /api/agent 调用次数
-  lastUsed: string       // ISO 时间戳
-}
-```
+### GET /api/llm.txt
+LLM 友好的 API 文档。
 
-## 🚀 使用示例
+### GET /api/robots.txt
+搜索引擎爬虫指令。
 
-### 注册获取 API Key
-```bash
-curl -X POST https://parsify.dev/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email": "user@example.com", "name": "Test User"}'
-```
+### GET /api/sitemap.xml
+XML 站点地图。
 
-### 使用 API Key 解析 URL
+## 🔒 速率限制
+
+| 端点 | 限流 | 说明 |
+|------|------|------|
+| `/api/parse` | 20 请求 / 15 分钟 | 基于 IP 地址 |
+| `/api/agent` | 20 请求 / 15 分钟 | 基于 IP 地址 |
+
+## 🎨 组件
+
+| 组件 | 文件 | 说明 |
+|------|------|------|
+| `SeoAnalysisOutput` | `src/components/parser/seo-analysis-output.tsx` | SEO 分析结果展示（标签页切换） |
+| `SeoScore` | `src/components/parser/seo-score.tsx` | 圆形评分可视化 |
+| `SeoScoreGrid` | `src/components/parser/seo-score.tsx` | 评分网格 |
+| `SeoScoreBar` | `src/components/parser/seo-score.tsx` | 水平评分条 |
+| `CopyButton` | `src/components/ui/copy-button.tsx` | 共享复制按钮 |
+
+## 📊 使用示例
+
+### 解析 URL
 ```bash
 curl -X POST https://parsify.dev/api/parse \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer pk_xxxxxxxxxxxx" \
   -d '{"url": "https://example.com/article"}'
 ```
 
-### 生成摘要
+### SEO 分析（JSON 格式）
 ```bash
 curl -X POST https://parsify.dev/api/agent \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer pk_xxxxxxxxxxxx" \
-  -d '{"markdown": "# Article...", "prompt": "请总结"}'
+  -d '{"markdown": "# Article...", "outputFormat": "json"}'
 ```
 
-## 📊 当前状态
+### SEO 分析（文本格式）
+```bash
+curl -X POST https://parsify.dev/api/agent \
+  -H "Content-Type: application/json" \
+  -d '{"markdown": "# Article...", "outputFormat": "text"}'
+```
 
-- ✅ 类型检查通过
-- ✅ 所有测试通过 (22 tests)
-- ✅ 构建成功
-- ✅ 开发服务器可运行
+## 🔧 技术细节
 
-## 🔜 后续优化建议
+### 环境变量
+| 变量 | 必需 | 说明 |
+|------|------|------|
+| `PUBLIC_ORIGIN` | 是 | 站点 origin（CORS、sitemap、llm.txt） |
+| `DEEPSEEK_API_KEY` | 是 | DeepSeek API 密钥 |
+| `JINA_API_KEY` | 否 | Jina Reader API 密钥（无则使用匿名层级） |
+| `LOG_LEVEL` | 否 | 日志级别（默认 `info`） |
 
-1. **持久化存储**：将 API Key 和使用统计存储到数据库（如 PostgreSQL/Redis）
-2. **更完善的 JWT**：使用 `jose` 或 `jsonwebtoken` 库实现标准 JWT
-3. **OAuth 集成**：支持 GitHub/Google 第三方登录
-4. **API Key 管理**：支持撤销、重新生成 API Key
-5. **使用配额**：为不同用户设置不同的调用限制
-6. **Webhook 通知**：接近配额限制时发送通知
+### SSRF 防护
+`parseRequestSchema` 拒绝以下地址：
+- 127.x.x.x / localhost
+- 10.x.x.x
+- 172.16-31.x.x
+- 192.168.x.x
+- 169.254.x.x
+- ::1
+
+### 日志脱敏
+Logger 自动脱敏以下模式：
+- `apiKey` / `api_key` 值
+- `authorization` 值
+- `cookie` 值
+- `Bearer` token
+
+## 📁 文件结构
+
+```
+src/
+├── components/parser/
+│   ├── seo-analysis-output.tsx    # SEO 分析结果展示
+│   ├── seo-score.tsx              # 评分可视化组件
+│   ├── url-agent-form.tsx         # URL 输入表单
+│   ├── markdown-output.tsx        # Markdown 输出
+│   ├── agent-output.tsx           # Agent 文本输出（兼容）
+│   └── optimization-stats.tsx     # 优化统计
+├── schemas/
+│   ├── parse.ts                   # Parse schema + SSRF 防护
+│   ├── agent.ts                   # Agent schema
+│   └── seo.ts                     # SEO 分析响应类型 + 辅助函数
+├── server/
+│   ├── hono.ts                    # Hono 应用（CORS、速率限制、路由）
+│   └── routers/
+│       ├── parse.ts               # Jina Reader 代理
+│       └── agent.ts               # DeepSeek SEO 分析
+└── lib/
+    ├── logger.ts                  # 带脱敏的日志工具
+    ├── seo-config.ts              # SEO 配置常量
+    └── parser/
+        ├── token-estimate.ts      # Token 估算
+        ├── use-parse.ts           # Parse hook
+        └── use-agent.ts           # Agent hook
+```
+
+## 🚀 后续优化建议
+
+1. **SEO 分析维度扩展** — 在 SEO schema 中添加新的分析维度
+2. **评分算法优化** — 调整 calculateOverallScore 函数
+3. **UI 组件扩展** — 添加新的可视化组件
+4. **导出格式扩展** — 支持 PDF、JSON 等格式导出
+5. **批量分析** — 支持多 URL 批量分析

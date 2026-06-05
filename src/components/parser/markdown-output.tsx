@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { CopyButton } from '~/components/ui/copy-button';
 
 type Props = { markdown: string };
 
@@ -13,25 +13,5 @@ export function MarkdownOutput({ markdown }: Props) {
         {markdown}
       </pre>
     </div>
-  );
-}
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-
-  function handleCopy() {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  }
-
-  return (
-    <button
-      type="button"
-      className="text-xs text-muted-foreground hover:text-foreground"
-      onClick={handleCopy}
-    >
-      {copied ? 'Copied!' : 'Copy'}
-    </button>
   );
 }

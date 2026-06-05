@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 
-const DEFAULT_PROMPT = '请用一段话总结这个网页的核心内容';
+const DEFAULT_PROMPT = '请对这个网页进行全面的SEO分析，并生成SEO.md文档。';
 
 export type FormValues = {
   url: string;

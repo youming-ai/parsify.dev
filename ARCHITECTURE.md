@@ -4,7 +4,7 @@
 基于AI的SEO分析工具，输入URL后生成SEO.md文档、robots.txt和llm.txt。
 
 ## 技术栈
-- **前端**: TanStack Router + React 19 + Tailwind CSS v4
+- **前端**: TanStack Router (SPA) + React 19 + Tailwind CSS v4
 - **后端**: Hono API + Jina Reader + DeepSeek AI
 - **AI模型**: DeepSeek v4 Flash
 - **验证**: Zod 4
@@ -23,13 +23,11 @@ parsify-dev/
 │   │   ├── schemas/
 │   │   │   ├── agent.test.ts         # Agent schema测试
 │   │   │   ├── parse.test.ts         # Parse schema测试
-│   │   │   └── seo.test.ts           # SEO schema测试 ✨新增
+│   │   │   └── seo.test.ts           # SEO schema测试
 │   │   └── server/
 │   │       └── parse.test.ts         # Parse路由测试
 │   │
 │   ├── components/                   # React组件
-│   │   ├── auth/
-│   │   │   └── login-form.tsx        # 登录表单
 │   │   ├── layout/
 │   │   │   ├── app-shell.tsx         # 应用外壳
 │   │   │   ├── footer.tsx            # 页脚
@@ -37,29 +35,27 @@ parsify-dev/
 │   │   │   └── theme-toggle.tsx      # 主题切换
 │   │   ├── link.tsx                  # 链接组件
 │   │   ├── parser/
-│   │   │   ├── agent-output.tsx      # AI输出组件（保留兼容）
+│   │   │   ├── agent-output.tsx      # AI输出组件
 │   │   │   ├── markdown-output.tsx   # Markdown输出
 │   │   │   ├── optimization-stats.tsx # 优化统计
-│   │   │   ├── seo-analysis-output.tsx # SEO分析输出 ✨新增
-│   │   │   ├── seo-score.tsx         # SEO评分组件 ✨新增
+│   │   │   ├── seo-analysis-output.tsx # SEO分析输出
+│   │   │   ├── seo-score.tsx         # SEO评分组件
 │   │   │   └── url-agent-form.tsx    # URL输入表单
 │   │   ├── seo/
 │   │   │   └── head.tsx              # SEO头部
 │   │   ├── theme-provider.tsx        # 主题提供者
 │   │   └── ui/
 │   │       ├── button.tsx            # 按钮组件
+│   │       ├── copy-button.tsx       # 复制按钮（共享组件）
 │   │       └── input.tsx             # 输入组件
 │   │
 │   ├── lib/                          # 工具库
-│   │   ├── auth/
-│   │   │   └── use-auth.ts           # 认证hook
-│   │   ├── icon-map.ts               # 图标映射
-│   │   ├── logger.ts                 # 日志工具
+│   │   ├── logger.ts                 # 日志工具（带脱敏）
 │   │   ├── parser/
 │   │   │   ├── token-estimate.ts     # Token估算
-│   │   │   ├── use-agent.ts          # Agent hook（已更新）✨
+│   │   │   ├── use-agent.ts          # Agent hook
 │   │   │   └── use-parse.ts          # Parse hook
-│   │   ├── seo-config.ts             # SEO配置（已更新）✨
+│   │   ├── seo-config.ts             # SEO配置常量
 │   │   └── utils.ts                  # 工具函数
 │   │
 │   ├── routes/                       # 路由文件
@@ -67,40 +63,34 @@ parsify-dev/
 │   │   ├── 404.tsx                   # 404页面
 │   │   ├── api/
 │   │   │   └── $.ts                  # API catch-all路由
-│   │   ├── dashboard.tsx             # 仪表板页面
-│   │   ├── docs.tsx                  # 文档页面
-│   │   ├── index.tsx                 # 首页（已更新）✨
-│   │   └── login.tsx                 # 登录页面
+│   │   ├── docs.tsx                  # API文档页面
+│   │   └── index.tsx                 # 首页
 │   │
 │   ├── schemas/                      # Zod schemas
-│   │   ├── agent.ts                  # Agent schema（已更新）✨
-│   │   ├── auth.ts                   # Auth schema
+│   │   ├── agent.ts                  # Agent schema
 │   │   ├── parse.ts                  # Parse schema
-│   │   └── seo.ts                    # SEO schema ✨新增
+│   │   └── seo.ts                    # SEO schema
 │   │
 │   ├── server/                       # 服务器端
-│   │   ├── hono.ts                   # Hono应用配置
+│   │   ├── hono.ts                   # Hono应用配置（含速率限制）
 │   │   └── routers/
-│   │       ├── agent.ts              # Agent路由（已更新）✨
-│   │       ├── auth.ts               # Auth路由
-│   │       └── parse.ts              # Parse路由
+│   │       ├── agent.ts              # Agent路由（DeepSeek SEO分析）
+│   │       └── parse.ts              # Parse路由（Jina Reader代理）
 │   │
 │   ├── client.tsx                    # 客户端入口
 │   ├── router.tsx                    # 路由配置
 │   ├── routeTree.gen.ts              # 路由树（自动生成）
-│   ├── vite-env.d.ts                 # Vite类型定义
-│   └── worker.ts                     # Worker文件
+│   └── styles/
+│       └── app.css                   # Tailwind v4 主题定义
 │
 ├── public/                           # 静态资源
-├── docs/                             # 文档
 ├── .github/                          # GitHub配置
 ├── .husky/                           # Git hooks
-├── AGENTS.md                         # 项目文档（已更新）✨
-├── ARCHITECTURE.md                   # 架构文档 ✨新增
-├── README-SEO.md                     # SEO工具说明 ✨新增
+├── AGENTS.md                         # 项目文档
+├── ARCHITECTURE.md                   # 架构文档
 ├── package.json                      # 项目配置
 ├── tsconfig.json                     # TypeScript配置
-├── vite.config.ts                    # Vite配置
+├── app.config.ts                     # Vite/TanStack配置
 ├── biome.json                        # Biome配置
 └── bun.lock                          # Bun锁文件
 ```
@@ -120,7 +110,7 @@ DeepSeek进行SEO分析（/api/agent）
 结构化展示分析结果
 ```
 
-### 2. 新增组件
+### 2. 组件
 
 #### SeoAnalysisOutput (`src/components/parser/seo-analysis-output.tsx`)
 - 主要SEO分析展示组件
@@ -132,7 +122,10 @@ DeepSeek进行SEO分析（/api/agent）
 - `SeoScoreGrid`: 评分网格展示
 - `SeoScoreBar`: 水平评分条
 
-### 3. 新增Schemas
+#### CopyButton (`src/components/ui/copy-button.tsx`)
+- 共享的复制到剪贴板按钮组件
+
+### 3. Schemas
 
 #### SEO Schema (`src/schemas/seo.ts`)
 - `SeoAnalysisResponse`: SEO分析响应结构
@@ -140,14 +133,23 @@ DeepSeek进行SEO分析（/api/agent）
 - `SeoFrontmatter`: YAML frontmatter结构
 - `SeoRecommendation`: SEO建议结构
 
-### 4. API变更
+### 4. API
+
+#### POST /api/parse
+```typescript
+// 请求
+{ url: string }
+
+// 响应
+{ url: string, markdown: string, mdBytes: number, mdTokens: number, fetchedAt: string }
+```
 
 #### POST /api/agent
 ```typescript
 // 请求
 {
-  markdown: string;           // 必需：网页内容
-  prompt?: string;            // 可选：自定义prompt
+  markdown: string;           // 必需：网页内容（≤1MB）
+  prompt?: string;            // 可选：自定义prompt（默认：SEO分析提示）
   outputFormat?: 'json' | 'text'; // 默认：'json'
 }
 
@@ -161,53 +163,35 @@ DeepSeek进行SEO分析（/api/agent）
 
 ## 数据流
 
-### SEO分析数据流
 ```
-URL输入
-    ↓
-useParse.run(url)
-    ↓
-POST /api/parse → Jina Reader
-    ↓
-返回 { url, markdown, mdBytes, mdTokens, fetchedAt }
-    ↓
-useAgent.run({ markdown, prompt, outputFormat: 'json' })
-    ↓
-POST /api/agent → DeepSeek SEO分析
-    ↓
-返回 SeoAnalysisResponse
-    ↓
-SeoAnalysisOutput组件渲染
-    ↓
-用户查看/下载SEO.md、robots.txt、llm.txt
+URL输入 → useParse.run(url) → POST /api/parse → Jina Reader
+    → 返回 { url, markdown, mdBytes, mdTokens, fetchedAt }
+    → useAgent.run({ markdown, prompt, outputFormat: 'json' })
+    → POST /api/agent → DeepSeek SEO分析
+    → 返回 SeoAnalysisResponse
+    → SeoAnalysisOutput组件渲染
+    → 用户查看/下载SEO.md、robots.txt、llm.txt
 ```
 
 ## 环境变量
 
 ```env
 # 必需
+PUBLIC_ORIGIN=https://parsify.dev
 DEEPSEEK_API_KEY=your_deepseek_api_key
 
 # 可选
 JINA_API_KEY=your_jina_api_key
-PUBLIC_ORIGIN=http://localhost:5173
 LOG_LEVEL=info
 ```
 
 ## 测试覆盖
 
-### 测试文件
-- `src/__tests__/schemas/seo.test.ts` - SEO schema测试 ✨新增
-- `src/__tests__/schemas/agent.test.ts` - Agent schema测试（已更新）
+- `src/__tests__/schemas/seo.test.ts` - SEO schema测试
+- `src/__tests__/schemas/agent.test.ts` - Agent schema测试
 - `src/__tests__/schemas/parse.test.ts` - Parse schema测试
 - `src/__tests__/server/parse.test.ts` - Parse路由测试
 - `src/__tests__/lib/parser/token-estimate.test.ts` - Token估算测试
-
-### 测试命令
-```bash
-bun test                    # 运行所有测试
-bun test src/__tests__/schemas/seo.test.ts  # 运行SEO测试
-```
 
 ## 开发命令
 
@@ -226,22 +210,15 @@ bun run format             # 代码格式化
 
 ### Docker部署
 ```bash
-docker build -t seo-analyzer .
+docker build -t parsify .
 docker run -p 5173:5173 \
+  -e PUBLIC_ORIGIN=https://parsify.dev \
   -e DEEPSEEK_API_KEY=your_key \
   -e JINA_API_KEY=your_key \
-  seo-analyzer
+  parsify
 ```
 
 ### Dokploy部署
 1. 推送代码到main分支
 2. Dokploy自动构建和部署
 3. 配置环境变量
-
-## 扩展点
-
-1. **SEO分析维度扩展** - 在SEO schema中添加新的分析维度
-2. **评分算法优化** - 调整calculateOverallScore函数
-3. **UI组件扩展** - 添加新的可视化组件
-4. **导出格式扩展** - 支持PDF、JSON等格式导出
-5. **批量分析** - 支持多URL批量分析
