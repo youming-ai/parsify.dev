@@ -22,28 +22,28 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
-    "@tanstack/react-router": "^1.170.4",
+    "@tanstack/react-router": "^1.170.11",
     "@tanstack/react-router-devtools": "^1.167.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "hono": "^4.12.19",
-    "lucide-react": "^1.16.0",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "hono": "^4.12.23",
+    "lucide-react": "^1.17.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "tailwind-merge": "^2.6.1",
     "tailwindcss": "^4.3.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.15",
-    "@tanstack/router-plugin": "^1.168.6",
+    "@biomejs/biome": "^2.4.16",
+    "@tanstack/router-plugin": "^1.168.14",
     "@types/node": "^22.19.19",
-    "@types/react": "^19.2.14",
+    "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.2.0",
-    "lefthook": "^2.1.6",
+    "lefthook": "^2.1.9",
     "typescript": "^6.0.3",
-    "vite": "^7.3.3"
+    "vite": "^7.3.5"
   },
   "engines": {
     "node": ">=20"

@@ -7,6 +7,7 @@ describe('agentRequestSchema', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(typeof result.data.prompt).toBe('string');
+      expect(result.data.outputFormat).toBe('json');
     }
   });
 
@@ -19,6 +20,36 @@ describe('agentRequestSchema', () => {
     if (result.success) {
       expect(result.data.prompt).toBe('summarise this');
     }
+  });
+
+  test('accepts outputFormat json', () => {
+    const result = agentRequestSchema.safeParse({
+      markdown: '# Hello',
+      outputFormat: 'json',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.outputFormat).toBe('json');
+    }
+  });
+
+  test('accepts outputFormat text', () => {
+    const result = agentRequestSchema.safeParse({
+      markdown: '# Hello',
+      outputFormat: 'text',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.outputFormat).toBe('text');
+    }
+  });
+
+  test('rejects invalid outputFormat', () => {
+    const r = agentRequestSchema.safeParse({
+      markdown: '# Hello',
+      outputFormat: 'invalid',
+    });
+    expect(r.success).toBe(false);
   });
 
   test('rejects an empty markdown', () => {
