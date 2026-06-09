@@ -9,6 +9,7 @@ export const agentRequestSchema = z.object({
     .min(1, 'markdown must not be empty')
     .max(MAX_MARKDOWN_BYTES, 'markdown exceeds 1 MB limit'),
   prompt: z.string().min(1).default(DEFAULT_PROMPT),
+  outputFormat: z.enum(['json', 'text']).default('json'),
 });
 
 export type AgentRequest = z.infer<typeof agentRequestSchema>;
