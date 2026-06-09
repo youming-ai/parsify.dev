@@ -13,7 +13,7 @@ export function Header() {
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <Globe className="h-3.5 w-3.5" />
           </div>
-          <span>SEO Analyzer</span>
+          <span>Parsify</span>
         </Link>
 
         <div className="flex items-center gap-4">

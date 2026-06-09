@@ -5,11 +5,7 @@ node_modules/
 dist/
 build/
 out/
-.next/
-.vinexr/
-.open-next/
 .wrangler/
-next-env.d.ts
 
 # Environment variables
 .env
@@ -29,7 +25,6 @@ coverage/
 junit.xml
 
 # Bundle Analyzer
-.next/analyze/
 analyze/
 
 # Editor settings
@@ -83,7 +78,7 @@ bun.lockb
 # VSCode workspace settings (keep extensions.json)
 .vscode/settings.json
 .vscode/launch.json
-/# Worktree isolation
+# Worktree isolation
 .worktrees/
 
 # TanStack Start

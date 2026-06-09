@@ -34,12 +34,7 @@ export type ParseResponse = {
   fetchedAt: string;
 };
 
-export type ParseErrorCode =
-  | 'INVALID_URL'
-  | 'FETCH_FAILED'
-  | 'TIMEOUT'
-  | 'TOO_LARGE'
-  | 'INVALID_API_KEY';
+export type ParseErrorCode = 'INVALID_URL' | 'FETCH_FAILED' | 'TIMEOUT' | 'TOO_LARGE';
 
 export type ParseError = {
   error: ParseErrorCode;

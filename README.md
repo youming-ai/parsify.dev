@@ -27,7 +27,7 @@ cp .env.example .env
 bun run dev
 ```
 
-Open http://localhost:3000.
+Open http://localhost:5173.
 
 ## 🏗️ Tech stack
 
@@ -67,6 +67,12 @@ src/
 - **SSRF guard** in `parseRequestSchema` rejects loopback / private / link-local hosts.
 - **Rate limiting** on `/api/agent` (20 req / 15 min per IP) caps DeepSeek-key abuse.
 - pino redacts `*.apiKey`, `*.headers.authorization`, `*.headers.cookie` as defense in depth.
+
+For security vulnerability reports, see [SECURITY.md](SECURITY.md).
+
+## 🤝 Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## 📄 License
 

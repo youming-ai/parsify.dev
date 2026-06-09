@@ -1,18 +1,16 @@
 import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
-import { BookOpen, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from '~/components/link';
 import { AgentOutput } from '~/components/parser/agent-output';
 import { MarkdownOutput } from '~/components/parser/markdown-output';
 import { OptimizationStats } from '~/components/parser/optimization-stats';
-import { SeoAnalysisOutput } from '~/components/parser/seo-analysis-output';
 import { type FormValues, URLAgentForm } from '~/components/parser/url-agent-form';
 import { useDocumentHead } from '~/components/seo/head';
 import { useAgent } from '~/lib/parser/use-agent';
 import { useParse } from '~/lib/parser/use-parse';
 import { SEO_CONFIG } from '~/lib/seo-config';
 
-const DEFAULT_PROMPT = '请对这个网页进行全面的SEO分析，并生成SEO.md文档。';
+const DEFAULT_PROMPT = '请用一段话总结这个网页的核心内容';
 
 function Home() {
   useDocumentHead({
@@ -60,7 +58,6 @@ function Home() {
     agent.run({
       markdown: parse.data.markdown,
       prompt: submitted.prompt,
-      outputFormat: 'json',
     });
   }, [parse.data]);
 
@@ -72,9 +69,9 @@ function Home() {
       <section className="flex flex-col items-center justify-center px-4 py-20 text-center">
         <div className="mx-auto w-full max-w-2xl space-y-8">
           <div className="space-y-4">
-            <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">SEO Analyzer</h1>
+            <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">Parsify</h1>
             <p className="mx-auto max-w-lg text-lg text-muted-foreground">
-              Paste a URL. Get comprehensive SEO analysis with SEO.md, robots.txt, and llm.txt.
+              Paste a URL. Get clean, structured content — noise-free and ready for AI.
             </p>
           </div>
 
@@ -83,9 +80,7 @@ function Home() {
           {isLoading && (
             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span>
-                {parse.status === 'loading' ? 'Fetching and cleaning…' : 'Analyzing SEO…'}
-              </span>
+              <span>{parse.status === 'loading' ? 'Fetching and cleaning…' : 'Summarizing…'}</span>
             </div>
           )}
           {parse.status === 'error' && parse.error && (
@@ -99,15 +94,7 @@ function Home() {
       {parse.data && (
         <section ref={resultsRef} className="mx-auto max-w-5xl space-y-4 px-4 pb-16">
           <OptimizationStats data={parse.data} />
-          {agent.seoData ? (
-            <SeoAnalysisOutput
-              seoData={agent.seoData}
-              isStreaming={agent.isStreaming}
-              error={agent.error}
-            />
-          ) : (
-            <AgentOutput text={agent.text} isStreaming={agent.isStreaming} error={agent.error} />
-          )}
+          <AgentOutput text={agent.text} isStreaming={agent.isStreaming} error={agent.error} />
           <MarkdownOutput markdown={parse.data.markdown} />
         </section>
       )}
@@ -120,27 +107,17 @@ function Home() {
             </p>
             <div className="grid gap-6 sm:grid-cols-3">
               <FeatureCard
-                title="SEO.md Generation"
-                description="Generate comprehensive SEO analysis document inspired by DESIGN.md concept."
+                title="Noise-free content"
+                description="Ads, navbars, footers — all stripped. Only the meaningful content remains."
               />
               <FeatureCard
-                title="Smart robots.txt"
-                description="AI-generated robots.txt based on website content and structure."
+                title="80-95% fewer tokens"
+                description="Clean Markdown is dramatically smaller than raw HTML, saving you money on LLM context."
               />
               <FeatureCard
-                title="LLM-optimized llm.txt"
-                description="Optimized llm.txt for AI crawlers to better understand your site."
+                title="One-step AI summary"
+                description="Optional DeepSeek-powered summary streamed back in real time."
               />
-            </div>
-
-            <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link
-                href="/docs"
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-              >
-                <BookOpen className="h-4 w-4" />
-                API 文档
-              </Link>
             </div>
           </div>
         </section>
