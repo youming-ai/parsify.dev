@@ -2,6 +2,10 @@ name = "parsify-dev"
 main = "src/worker.ts"
 compatibility_date = "2026-05-19"
 
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "placeholder"
+
 [assets]
 directory = "dist"
 
