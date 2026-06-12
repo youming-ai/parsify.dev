@@ -4,7 +4,7 @@ compatibility_date = "2026-05-19"
 
 [[kv_namespaces]]
 binding = "RATE_LIMIT_KV"
-id = "placeholder"
+id = "c239b08869ed4cb6ad6bf46ad131f6eb"
 
 [assets]
 directory = "dist"
