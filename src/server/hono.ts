@@ -1,10 +1,50 @@
+import type { Context, Next } from 'hono';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
-import { rateLimiter } from 'hono-rate-limiter';
 import { logger } from '~/lib/logger';
 import { agent } from '~/server/routers/agent';
 import { parse } from '~/server/routers/parse';
+
+interface RateLimitEntry {
+  count: number;
+  resetTime: number;
+}
+
+function rateLimiter(endpoint: string, limit: number, windowMs: number) {
+  return async (c: Context, next: Next) => {
+    const kv = (c.env as Record<string, unknown>)?.['RATE_LIMIT_KV'] as KVNamespace | undefined;
+    if (!kv) {
+      await next();
+      return;
+    }
+
+    const ip = c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? 'unknown';
+    const key = `rl:${endpoint}:${ip}`;
+    const now = Date.now();
+
+    const raw = await kv.get<RateLimitEntry>(key, 'json');
+    let entry: RateLimitEntry;
+
+    if (!raw || now > raw.resetTime) {
+      entry = { count: 0, resetTime: now + windowMs };
+    } else {
+      entry = raw;
+    }
+
+    entry.count++;
+
+    await kv.put(key, JSON.stringify(entry), {
+      expirationTtl: Math.ceil(windowMs / 1000) + 60,
+    });
+
+    if (entry.count > limit) {
+      return c.json({ error: 'RATE_LIMITED', message: 'Too many requests' }, 429);
+    }
+
+    await next();
+  };
+}
 
 export const app = new Hono({ strict: false }).basePath('/api');
 
@@ -176,26 +216,10 @@ app.get('/sitemap.xml', (c) => {
 });
 
 // Rate limit on /parse (20 req / 15 min per IP)
-app.use(
-  '/parse',
-  rateLimiter({
-    limit: 20,
-    windowMs: 15 * 60 * 1000,
-    keyGenerator: (c) =>
-      c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? 'unknown',
-  })
-);
+app.use('/parse', rateLimiter('parse', 20, 15 * 60 * 1000));
 
 // Rate limit on /agent (20 req / 15 min per IP)
-app.use(
-  '/agent',
-  rateLimiter({
-    limit: 20,
-    windowMs: 15 * 60 * 1000,
-    keyGenerator: (c) =>
-      c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? 'unknown',
-  })
-);
+app.use('/agent', rateLimiter('agent', 20, 15 * 60 * 1000));
 
 app.route('/parse', parse);
 app.route('/agent', agent);

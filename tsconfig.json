@@ -3,6 +3,7 @@
     "ignoreDeprecations": "6.0",
     "target": "ES2022",
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "types": ["@cloudflare/workers-types", "bun-types"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,

@@ -38,6 +38,9 @@ jobs:
       - name: Run lint
         run: bun run lint
 
+      - name: Generate route tree
+        run: bunx @tanstack/router-cli generate
+
       - name: Run typecheck
         run: bun run typecheck
 
