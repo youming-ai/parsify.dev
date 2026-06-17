@@ -45,3 +45,13 @@ export interface OcrEngineConfig {
   /** Minimum box area to keep (default: 10) */
   detMinArea?: number;
 }
+
+/** Result from processing a single PDF page */
+export interface PdfPageResult {
+  /** 1-based page number */
+  pageNumber: number;
+  /** OCR result for this page */
+  ocr: OcrResult;
+  /** Object URL of the rendered page image */
+  imageSrc: string;
+}
