@@ -102,6 +102,7 @@ export async function loadModels(
   onModelLoaded?: (name: ModelName, fromCache: boolean) => void
 ): Promise<LoadedModels> {
   ort.env.wasm.numThreads = 1;
+  ort.env.wasm.wasmPaths = '/ort/';
 
   const loadOne = async (name: ModelName): Promise<ort.InferenceSession> => {
     let buffer = await getCachedModel(name);

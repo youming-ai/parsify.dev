@@ -2,7 +2,7 @@
   "name": "parsify-dev",
   "version": "2.0.0",
   "private": true,
-  "description": "Paste a URL, get clean structured content — instantly ready for your AI.",
+  "description": "Browser-local OCR powered by PaddleOCR PP-OCRv6. Images never leave your device.",
   "homepage": "https://parsify.dev",
   "repository": "https://github.com/youming-ai/parsify.dev",
   "bugs": "https://github.com/youming-ai/parsify.dev/issues",
@@ -33,7 +33,8 @@
     "format": "biome format --write ./src",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
-    "clean": "rm -rf node_modules dist .output"
+    "clean": "rm -rf node_modules dist .output",
+    "postinstall": "mkdir -p public/ort && cp node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm public/ort/"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.1",
