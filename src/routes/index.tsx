@@ -1,140 +1,171 @@
-import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
-import { Loader2 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { AgentOutput } from '~/components/parser/agent-output';
-import { MarkdownOutput } from '~/components/parser/markdown-output';
-import { OptimizationStats } from '~/components/parser/optimization-stats';
-import { type FormValues, URLAgentForm } from '~/components/parser/url-agent-form';
-import { useDocumentHead } from '~/components/seo/head';
-import { useAgent } from '~/lib/parser/use-agent';
-import { useParse } from '~/lib/parser/use-parse';
-import { SEO_CONFIG } from '~/lib/seo-config';
+import { createFileRoute } from '@tanstack/react-router';
+import { Zap } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { EnhanceOutput } from '~/components/ocr/enhance-output';
+import { ImageUpload } from '~/components/ocr/image-upload';
+import { OcrCanvas } from '~/components/ocr/ocr-canvas';
+import { OcrProgressIndicator } from '~/components/ocr/ocr-progress';
+import { OcrResult } from '~/components/ocr/ocr-result';
+import { OcrEngine } from '~/lib/ocr/engine';
+import type { OcrProgress, OcrResult as OcrResultType } from '~/lib/ocr/types';
+import { useEnhance } from '~/lib/ocr/use-enhance';
 
-const DEFAULT_PROMPT = '请用一段话总结这个网页的核心内容';
+export const Route = createFileRoute('/')({
+  component: HomePage,
+});
 
-function Home() {
-  useDocumentHead({
-    title: SEO_CONFIG.DEFAULT_TITLE,
-    description: SEO_CONFIG.DEFAULT_DESCRIPTION,
-    path: '/',
-  });
+const engine = new OcrEngine();
 
-  const search = useSearch({ strict: false }) as { q?: string };
-  const navigate = useNavigate();
-  const parse = useParse();
-  const agent = useAgent();
-  const [submitted, setSubmitted] = useState<FormValues | null>(null);
-  const autoFired = useRef(false);
-  const resultsRef = useRef<HTMLDivElement>(null);
+function HomePage() {
+  const [ocrProgress, setOcrProgress] = useState<OcrProgress | null>(null);
+  const [ocrResult, setOcrResult] = useState<OcrResultType | null>(null);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [highlightedBox, setHighlightedBox] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const enhance = useEnhance();
 
-  const handle = useCallback(
-    async (v: FormValues) => {
-      setSubmitted(v);
-      if (search.q !== v.url) {
-        navigate({ to: '/', search: v.url ? { q: v.url } : undefined, replace: true });
+  const handleImageSelect = useCallback(
+    async (file: File) => {
+      setError(null);
+      setOcrResult(null);
+      enhance.reset();
+      setIsProcessing(true);
+
+      const src = URL.createObjectURL(file);
+      setImageSrc(src);
+
+      try {
+        // Load models if needed
+        if (!engine.isReady) {
+          setOcrProgress({
+            stage: 'loading-models',
+            progress: 0,
+            message: 'Downloading models...',
+          });
+          await engine.load((name, fromCache) => {
+            setOcrProgress({
+              stage: 'loading-models',
+              progress: fromCache ? 0.8 : 0.5,
+              message: `Loaded ${name} model${fromCache ? ' (cached)' : ''}`,
+            });
+          });
+        }
+
+        // Run OCR
+        const result = await engine.recognize(src, setOcrProgress);
+        setOcrResult(result);
+
+        // Auto-send to enhance
+        if (result.boxes.length > 0) {
+          await enhance.run({
+            text: result.text,
+            boxes: result.boxes,
+          });
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'OCR processing failed');
+      } finally {
+        setIsProcessing(false);
+        setOcrProgress(null);
       }
-      await parse.run(v.url);
     },
-    [parse, navigate, search.q]
+    [enhance]
   );
 
-  useEffect(() => {
-    if (autoFired.current) return;
-    const q = search.q?.trim();
-    if (!q) return;
-    autoFired.current = true;
-    handle({ url: q, prompt: DEFAULT_PROMPT });
-  }, [search.q, handle]);
-
-  useEffect(() => {
-    if (parse.data && resultsRef.current) {
-      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, [parse.data]);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only re-fires when parse.data changes
-  useEffect(() => {
-    if (parse.status !== 'success' || !parse.data || !submitted) return;
-    agent.run({
-      markdown: parse.data.markdown,
-      prompt: submitted.prompt,
-    });
-  }, [parse.data]);
-
-  const isLoading = parse.status === 'loading' || agent.isStreaming;
-  const initialUrl = autoFired.current ? (search.q ?? '') : '';
-
   return (
-    <>
-      <section className="flex flex-col items-center justify-center px-4 py-20 text-center">
-        <div className="mx-auto w-full max-w-2xl space-y-8">
-          <div className="space-y-4">
-            <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">Parsify</h1>
-            <p className="mx-auto max-w-lg text-lg text-muted-foreground">
-              Paste a URL. Get clean, structured content — noise-free and ready for AI.
-            </p>
-          </div>
-
-          <URLAgentForm onSubmit={handle} disabled={isLoading} initialUrl={initialUrl} />
-
-          {isLoading && (
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>{parse.status === 'loading' ? 'Fetching and cleaning…' : 'Summarizing…'}</span>
-            </div>
-          )}
-          {parse.status === 'error' && parse.error && (
-            <div className="rounded-lg border border-destructive/50 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-              {parse.error.message}
-            </div>
-          )}
-        </div>
+    <div className="container mx-auto max-w-5xl px-4 py-8">
+      {/* Hero */}
+      <section className="mb-8 text-center">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Parsify OCR</h1>
+        <p className="mt-2 text-muted-foreground">
+          Browser-local OCR powered by PaddleOCR PP-OCRv6. Images never leave your device.
+        </p>
       </section>
 
-      {parse.data && (
-        <section ref={resultsRef} className="mx-auto max-w-5xl space-y-4 px-4 pb-16">
-          <OptimizationStats data={parse.data} />
-          <AgentOutput text={agent.text} isStreaming={agent.isStreaming} error={agent.error} />
-          <MarkdownOutput markdown={parse.data.markdown} />
-        </section>
+      {/* Upload */}
+      <ImageUpload onImageSelect={handleImageSelect} disabled={isProcessing} />
+
+      {/* Progress */}
+      {ocrProgress && (
+        <div className="mt-4">
+          <OcrProgressIndicator progress={ocrProgress} />
+        </div>
       )}
 
-      {!parse.data && (
-        <section className="border-t px-4 py-16">
-          <div className="mx-auto max-w-5xl">
-            <p className="mb-10 text-center text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              What Parsify does
-            </p>
-            <div className="grid gap-6 sm:grid-cols-3">
-              <FeatureCard
-                title="Noise-free content"
-                description="Ads, navbars, footers — all stripped. Only the meaningful content remains."
-              />
-              <FeatureCard
-                title="80-95% fewer tokens"
-                description="Clean Markdown is dramatically smaller than raw HTML, saving you money on LLM context."
-              />
-              <FeatureCard
-                title="One-step AI summary"
-                description="Optional DeepSeek-powered summary streamed back in real time."
-              />
-            </div>
+      {/* Error */}
+      {error && (
+        <div className="mt-4 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+
+      {/* Results */}
+      {ocrResult && imageSrc && (
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+          {/* Left: Image with boxes */}
+          <OcrCanvas
+            imageSrc={imageSrc}
+            boxes={ocrResult.boxes}
+            highlightedIndex={highlightedBox}
+            onBoxClick={(i) => setHighlightedBox(i)}
+          />
+
+          {/* Right: Text results */}
+          <div className="space-y-6">
+            <OcrResult
+              boxes={ocrResult.boxes}
+              highlightedIndex={highlightedBox}
+              onBoxHover={setHighlightedBox}
+            />
+
+            <EnhanceOutput
+              text={enhance.text}
+              isStreaming={enhance.status === 'streaming'}
+              error={enhance.error}
+            />
           </div>
+        </div>
+      )}
+
+      {/* Features */}
+      {!ocrResult && (
+        <section className="mt-12 grid gap-4 sm:grid-cols-3">
+          <FeatureCard
+            icon={<Zap className="h-5 w-5" />}
+            title="Lightning Fast"
+            description="PP-OCRv6 Tiny runs entirely in your browser — no uploads, no waiting."
+          />
+          <FeatureCard
+            icon={<Zap className="h-5 w-5" />}
+            title="Privacy First"
+            description="Images never leave your device. All processing happens locally."
+          />
+          <FeatureCard
+            icon={<Zap className="h-5 w-5" />}
+            title="50+ Languages"
+            description="Recognizes Chinese, English, Japanese, and 46 Latin-script languages."
+          />
         </section>
       )}
-    </>
-  );
-}
-
-function FeatureCard({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="rounded-lg border p-5 space-y-2 text-left">
-      <h3 className="font-semibold">{title}</h3>
-      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
     </div>
   );
 }
 
-export const Route = createFileRoute('/')({
-  component: Home,
-});
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-lg border p-4">
+      <div className="mb-2 text-primary">{icon}</div>
+      <h3 className="font-medium">{title}</h3>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+}
