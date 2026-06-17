@@ -1,11 +1,14 @@
-import { Upload } from 'lucide-react';
+import { ScanText } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
+import { useI18n } from '~/components/i18n-provider';
 import { Button } from '~/components/ui/button';
 import { cn } from '~/lib/utils';
 
 interface ImageUploadProps {
   onImageSelect: (file: File) => void;
   disabled?: boolean;
+  /** 0–1 OCR progress; drives the scan beam over the preview while processing. */
+  scanProgress?: number | null;
   className?: string;
 }
 
@@ -20,23 +23,32 @@ const ACCEPTED_TYPES = [
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 const PDF_MAX_SIZE = 200 * 1024 * 1024; // 200MB
 
-export function ImageUpload({ onImageSelect, disabled, className }: ImageUploadProps) {
+export function ImageUpload({
+  onImageSelect,
+  disabled,
+  scanProgress,
+  className,
+}: ImageUploadProps) {
+  const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const validate = useCallback((file: File): string | null => {
-    if (!ACCEPTED_TYPES.includes(file.type)) {
-      return 'Unsupported format. Please use PNG, JPEG, WebP, BMP, TIFF, or PDF.';
-    }
-    const limit = file.type === 'application/pdf' ? PDF_MAX_SIZE : MAX_SIZE;
-    if (file.size > limit) {
-      const limitMB = file.type === 'application/pdf' ? 200 : 10;
-      return `File too large. Maximum size is ${limitMB}MB.`;
-    }
-    return null;
-  }, []);
+  const validate = useCallback(
+    (file: File): string | null => {
+      if (!ACCEPTED_TYPES.includes(file.type)) {
+        return t('upload.errFormat');
+      }
+      const limit = file.type === 'application/pdf' ? PDF_MAX_SIZE : MAX_SIZE;
+      if (file.size > limit) {
+        const limitMB = file.type === 'application/pdf' ? 200 : 10;
+        return t('upload.errSize', { mb: limitMB });
+      }
+      return null;
+    },
+    [t]
+  );
 
   const handleFile = useCallback(
     (file: File) => {
@@ -81,11 +93,19 @@ export function ImageUpload({ onImageSelect, disabled, className }: ImageUploadP
     if (file) handleFile(file);
   };
 
+  const scanning = scanProgress != null && scanProgress > 0 && scanProgress < 1;
+
   return (
     <div className={cn('w-full', className)}>
       {preview ? (
-        <div className="relative rounded-lg border overflow-hidden">
+        <div className="relative overflow-hidden rounded-lg border bg-surface">
           <img src={preview} alt="Uploaded" className="max-h-[400px] w-full object-contain" />
+          {scanning && (
+            <span
+              className="pointer-events-none absolute inset-x-0 h-0.5 bg-detect shadow-[0_0_12px_2px_var(--color-detect)] transition-[top] duration-300 ease-linear"
+              style={{ top: `${Math.round((scanProgress ?? 0) * 100)}%` }}
+            />
+          )}
           <Button
             variant="secondary"
             size="sm"
@@ -96,18 +116,16 @@ export function ImageUpload({ onImageSelect, disabled, className }: ImageUploadP
             }}
             disabled={disabled}
           >
-            Change image
+            {t('upload.change')}
           </Button>
         </div>
       ) : (
         <button
           type="button"
           className={cn(
-            'flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 transition-colors cursor-pointer',
-            isDragging
-              ? 'border-primary bg-primary/5'
-              : 'border-muted-foreground/25 hover:border-primary/50',
-            disabled && 'opacity-50 cursor-not-allowed'
+            'relative flex w-full flex-col items-center justify-center overflow-hidden rounded-lg border bg-surface p-12 transition-colors',
+            isDragging ? 'border-detect bg-detect/5' : 'border-line hover:border-detect/50',
+            disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
           )}
           onDragOver={(e) => {
             e.preventDefault();
@@ -117,14 +135,23 @@ export function ImageUpload({ onImageSelect, disabled, className }: ImageUploadP
           onDrop={handleDrop}
           onPaste={handlePaste}
           onClick={handleClick}
-          aria-label="Upload image for OCR"
+          aria-label={t('upload.aria')}
         >
-          <Upload className="mb-4 h-10 w-10 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            Drag & drop an image, paste from clipboard, or click to browse
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground/60">
-            PNG, JPEG, WebP, BMP, TIFF — up to 10MB · PDF — up to 200MB
+          {/* scanner-bed registration brackets + idle sweep */}
+          <span className="pointer-events-none absolute left-3 top-3 h-4 w-4 border-l-2 border-t-2 border-detect/70" />
+          <span className="pointer-events-none absolute right-3 top-3 h-4 w-4 border-r-2 border-t-2 border-detect/70" />
+          <span className="pointer-events-none absolute bottom-3 left-3 h-4 w-4 border-b-2 border-l-2 border-detect/70" />
+          <span className="pointer-events-none absolute bottom-3 right-3 h-4 w-4 border-b-2 border-r-2 border-detect/70" />
+          {!disabled && <span className="scan-beam" />}
+
+          <span className="mb-1 font-mono text-[10px] tracking-[0.2em] text-detect">
+            {t('upload.idle')}
+          </span>
+          <ScanText className="mb-3 mt-2 h-9 w-9 text-foreground" strokeWidth={1.5} />
+          <p className="text-sm font-medium text-foreground">{t('upload.drop')}</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">{t('upload.hint')}</p>
+          <p className="mt-3 font-mono text-[11px] text-muted-foreground/70">
+            PNG JPG WEBP BMP TIFF · 10MB &nbsp;·&nbsp; PDF · 200MB
           </p>
         </button>
       )}

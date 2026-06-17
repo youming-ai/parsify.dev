@@ -1,5 +1,7 @@
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, FileImage, Maximize2, Minus, Plus } from 'lucide-react';
+import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
+import { useI18n } from '~/components/i18n-provider';
 import { Button } from '~/components/ui/button';
 import type { TextBox } from '~/lib/ocr/types';
 import { cn } from '~/lib/utils';
@@ -9,7 +11,25 @@ interface OcrCanvasProps {
   boxes: TextBox[];
   highlightedIndex: number | null;
   onBoxClick: (index: number) => void;
+  /** Source file name shown in the pane header. */
+  fileName?: string;
+  /** Source file size in bytes. */
+  fileSize?: number;
+  /** Optional footer content (e.g. PDF page navigation). */
+  pager?: React.ReactNode;
   className?: string;
+}
+
+// Overlay strokes must read over arbitrary photos, so they use the bright
+// detect-green / lock-magenta signals regardless of light/dark theme.
+const DETECT_STROKE = '#8bff5a';
+const LOCK_STROKE = '#ff4d9d';
+const MIN_ZOOM = 0.25;
+const MAX_ZOOM = 4;
+
+function formatSize(bytes: number): string {
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)}MB`;
+  return `${(bytes / 1024).toFixed(2)}KB`;
 }
 
 export function OcrCanvas({
@@ -17,10 +37,15 @@ export function OcrCanvas({
   boxes,
   highlightedIndex,
   onBoxClick,
+  fileName,
+  fileSize,
+  pager,
   className,
 }: OcrCanvasProps) {
+  const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [showOverlay, setShowOverlay] = useState(true);
+  const [zoom, setZoom] = useState(1);
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
@@ -30,8 +55,9 @@ export function OcrCanvas({
       const canvas = canvasRef.current;
       if (!canvas) return;
 
-      const maxW = canvas.parentElement?.clientWidth ?? 800;
-      const scale = Math.min(1, maxW / img.width);
+      const parentW = canvas.parentElement?.clientWidth ?? 800;
+      const baseScale = Math.min(1, parentW / img.width);
+      const scale = baseScale * zoom;
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
 
@@ -45,7 +71,7 @@ export function OcrCanvas({
           const box = boxes[i];
           if (!box) continue;
           const isHighlighted = i === highlightedIndex;
-          ctx.strokeStyle = isHighlighted ? '#ef4444' : '#22c55e';
+          ctx.strokeStyle = isHighlighted ? LOCK_STROKE : DETECT_STROKE;
           ctx.lineWidth = isHighlighted ? 3 : 2;
           ctx.globalAlpha = isHighlighted ? 1 : 0.7;
 
@@ -62,7 +88,7 @@ export function OcrCanvas({
       }
     };
     img.src = imageSrc;
-  }, [imageSrc, boxes, highlightedIndex, showOverlay]);
+  }, [imageSrc, boxes, highlightedIndex, showOverlay, zoom]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current || boxes.length === 0) return;
@@ -82,23 +108,83 @@ export function OcrCanvas({
     }
   };
 
+  const adjustZoom = (delta: number) =>
+    setZoom((z) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.round((z + delta) * 100) / 100)));
+
   return (
-    <div className={cn('relative', className)}>
-      <div className="absolute top-2 right-2 z-10">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => setShowOverlay(!showOverlay)}
-          aria-label={showOverlay ? 'Hide text boxes' : 'Show text boxes'}
-        >
-          {showOverlay ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-        </Button>
+    <div className={cn('flex flex-col overflow-hidden rounded-lg border bg-surface', className)}>
+      {/* Header — source file identity */}
+      <div className="flex items-center justify-between gap-2 border-b bg-surface-2 px-3 py-2">
+        <span className="flex min-w-0 items-center gap-2">
+          <FileImage className="h-4 w-4 shrink-0 text-detect" />
+          <span className="truncate font-mono text-xs text-foreground">{fileName ?? 'source'}</span>
+          {fileSize ? (
+            <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+              {formatSize(fileSize)}
+            </span>
+          ) : null}
+        </span>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="hidden font-mono text-[11px] text-muted-foreground sm:inline">
+            {imageSize.width > 0 ? `${imageSize.width}×${imageSize.height}` : '—'}
+            <span className="mx-1.5 text-detect">·</span>
+            {t('source.boxes', { n: boxes.length })}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2"
+            onClick={() => setShowOverlay(!showOverlay)}
+            aria-label={showOverlay ? t('source.hideBoxes') : t('source.showBoxes')}
+          >
+            {showOverlay ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </Button>
+        </div>
       </div>
-      <canvas
-        ref={canvasRef}
-        onClick={handleCanvasClick}
-        className="w-full rounded-lg border cursor-crosshair"
-      />
+
+      {/* Body — scrollable viewport */}
+      <div className="flex-1 overflow-auto bg-background p-2">
+        <canvas ref={canvasRef} onClick={handleCanvasClick} className="cursor-crosshair rounded" />
+      </div>
+
+      {/* Footer — pager + zoom controls */}
+      <div className="flex items-center justify-between gap-2 border-t bg-surface-2 px-2 py-1.5">
+        <div className="min-w-0">{pager}</div>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            onClick={() => adjustZoom(-0.25)}
+            disabled={zoom <= MIN_ZOOM}
+            aria-label={t('source.zoomOut')}
+          >
+            <Minus className="h-3.5 w-3.5" />
+          </Button>
+          <span className="w-11 text-center font-mono text-[11px] text-muted-foreground">
+            {Math.round(zoom * 100)}%
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            onClick={() => adjustZoom(0.25)}
+            disabled={zoom >= MAX_ZOOM}
+            aria-label={t('source.zoomIn')}
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            onClick={() => setZoom(1)}
+            aria-label={t('source.zoomReset')}
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

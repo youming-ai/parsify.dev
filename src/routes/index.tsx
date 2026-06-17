@@ -1,16 +1,20 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { ChevronLeft, ChevronRight, Zap } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { useI18n } from '~/components/i18n-provider';
 import { EnhanceOutput } from '~/components/ocr/enhance-output';
 import { ImageUpload } from '~/components/ocr/image-upload';
 import { OcrCanvas } from '~/components/ocr/ocr-canvas';
 import { OcrProgressIndicator } from '~/components/ocr/ocr-progress';
 import { OcrResult } from '~/components/ocr/ocr-result';
 import { Button } from '~/components/ui/button';
+import { CopyButton } from '~/components/ui/copy-button';
+import { DetectionFrame } from '~/components/ui/detection-frame';
 import { OcrEngine } from '~/lib/ocr/engine';
 import { renderPdfPages } from '~/lib/ocr/pdf-renderer';
 import type { OcrProgress, OcrResult as OcrResultType, PdfPageResult } from '~/lib/ocr/types';
 import { useEnhance } from '~/lib/ocr/use-enhance';
+import { cn } from '~/lib/utils';
 
 export const Route = createFileRoute('/')({
   component: HomePage,
@@ -28,6 +32,10 @@ function HomePage() {
   const [pdfPageResults, setPdfPageResults] = useState<PdfPageResult[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPdfPages, setTotalPdfPages] = useState(0);
+  const [outputTab, setOutputTab] = useState<'doc' | 'json'>('doc');
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [fileSize, setFileSize] = useState<number | null>(null);
+  const { t } = useI18n();
   const enhance = useEnhance();
 
   const navigateToPage = useCallback(
@@ -49,6 +57,8 @@ function HomePage() {
       setPdfPageResults([]);
       setCurrentPage(0);
       setTotalPdfPages(0);
+      setFileName(file.name);
+      setFileSize(file.size);
       enhance.reset();
       setIsProcessing(true);
 
@@ -139,27 +149,98 @@ function HomePage() {
           }
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'OCR processing failed');
+        setError(err instanceof Error ? err.message : t('error.ocrFailed'));
       } finally {
         setIsProcessing(false);
         setOcrProgress(null);
       }
     },
-    [enhance]
+    [enhance, t]
   );
 
+  const enhanceStreaming = enhance.status === 'streaming';
+  const recognizedText = ocrResult?.text ?? '';
+  const docText = enhance.text || recognizedText;
+  const jsonText = ocrResult
+    ? JSON.stringify(
+        { boxes: ocrResult.boxes, text: ocrResult.text, elapsed: ocrResult.elapsed },
+        null,
+        2
+      )
+    : '';
+  const activeText = outputTab === 'json' ? jsonText : docText;
+
+  const handleDownload = () => {
+    const isJson = outputTab === 'json';
+    const blob = new Blob([activeText], {
+      type: isJson ? 'application/json' : 'text/plain',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = isJson ? 'parsify-result.json' : 'parsify-result.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const pdfPager =
+    pdfPageResults.length > 0 ? (
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 p-0"
+          onClick={() => navigateToPage(currentPage - 1)}
+          disabled={currentPage <= 1}
+          aria-label={t('source.prevPage')}
+        >
+          <ChevronLeft className="h-3.5 w-3.5" />
+        </Button>
+        <span className="font-mono text-[11px] tracking-wider text-muted-foreground">
+          {String(currentPage).padStart(2, '0')}/{String(totalPdfPages).padStart(2, '0')}
+        </span>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 p-0"
+          onClick={() => navigateToPage(currentPage + 1)}
+          disabled={currentPage >= pdfPageResults.length}
+          aria-label={t('source.nextPage')}
+        >
+          <ChevronRight className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    ) : null;
+
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-8">
-      {/* Hero */}
-      <section className="mb-8 text-center">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Parsify OCR</h1>
-        <p className="mt-2 text-muted-foreground">
-          Browser-local OCR powered by PaddleOCR PP-OCRv6. Images never leave your device.
+    <div className="container mx-auto max-w-5xl px-4 py-10 sm:py-14">
+      {/* Hero — the engine reads a word in front of you */}
+      <section className="mb-10">
+        <p className="mb-4 font-mono text-[11px] tracking-[0.22em] text-detect">
+          ◢ {t('hero.eyebrow')}
         </p>
+        <h1 className="font-display text-3xl font-semibold leading-[1.2] tracking-tight sm:text-4xl lg:text-5xl">
+          {t('hero.headPre')}{' '}
+          <DetectionFrame
+            label="99.7%"
+            coord="x:0 y:0"
+            scan="once"
+            className="inline-block align-baseline"
+            contentClassName="px-2 py-0.5"
+          >
+            {t('hero.headWord')}
+          </DetectionFrame>
+          {t('hero.headPost') ? <> {t('hero.headPost')}</> : null}
+        </h1>
+        <p className="mt-5 max-w-xl text-base text-muted-foreground">{t('hero.sub')}</p>
       </section>
 
-      {/* Upload */}
-      <ImageUpload onImageSelect={handleImageSelect} disabled={isProcessing} />
+      {/* Scanner bed */}
+      <ImageUpload
+        onImageSelect={handleImageSelect}
+        disabled={isProcessing}
+        scanProgress={ocrProgress?.progress ?? null}
+      />
 
       {/* Progress */}
       {ocrProgress && (
@@ -170,83 +251,100 @@ function HomePage() {
 
       {/* Error */}
       {error && (
-        <div className="mt-4 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-          {error}
+        <div className="mt-4 flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+          <span className="font-mono text-[11px] tracking-wider">{t('common.error')}</span>
+          <span>{error}</span>
         </div>
       )}
 
-      {/* PDF Page Navigation */}
-      {pdfPageResults.length > 0 && !isProcessing && (
-        <div className="mt-4 flex items-center justify-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateToPage(currentPage - 1)}
-            disabled={currentPage <= 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Page {currentPage} of {totalPdfPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateToPage(currentPage + 1)}
-            disabled={currentPage >= pdfPageResults.length}
-          >
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-
-      {/* Results */}
+      {/* Results — source vs. parsed comparison */}
       {ocrResult && imageSrc && (
         <div className="mt-8 grid gap-6 lg:grid-cols-2">
-          {/* Left: Image with boxes */}
+          {/* Left: source file with detection overlay */}
           <OcrCanvas
             imageSrc={imageSrc}
             boxes={ocrResult.boxes}
             highlightedIndex={highlightedBox}
             onBoxClick={(i) => setHighlightedBox(i)}
+            fileName={fileName ?? undefined}
+            fileSize={fileSize ?? undefined}
+            pager={pdfPager}
+            className="lg:h-[70vh] lg:max-h-[760px]"
           />
 
-          {/* Right: Text results */}
-          <div className="space-y-6">
-            <OcrResult
-              boxes={ocrResult.boxes}
-              highlightedIndex={highlightedBox}
-              onBoxHover={setHighlightedBox}
-            />
+          {/* Right: parsed result */}
+          <div className="flex flex-col overflow-hidden rounded-lg border bg-surface lg:h-[70vh] lg:max-h-[760px]">
+            <div className="flex items-center justify-between gap-2 border-b bg-surface-2 px-3 py-2">
+              <div className="flex items-center gap-1">
+                <OutputTab active={outputTab === 'doc'} onClick={() => setOutputTab('doc')}>
+                  {t('output.doc')}
+                  {enhanceStreaming && (
+                    <span className="ml-1.5 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-detect align-middle" />
+                  )}
+                </OutputTab>
+                <OutputTab active={outputTab === 'json'} onClick={() => setOutputTab('json')}>
+                  {t('output.json')}
+                </OutputTab>
+              </div>
+              <div className="flex items-center gap-2">
+                <CopyButton
+                  text={activeText}
+                  className="font-mono text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={handleDownload}
+                  aria-label={t('common.download')}
+                >
+                  <Download className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
 
-            <EnhanceOutput
-              text={enhance.text}
-              isStreaming={enhance.status === 'streaming'}
-              error={enhance.error}
-            />
+            <div className="flex-1 overflow-auto p-4">
+              {outputTab === 'doc' ? (
+                <div className="space-y-4">
+                  <EnhanceOutput
+                    text={enhance.text}
+                    isStreaming={enhanceStreaming}
+                    error={enhance.error}
+                  />
+                  <div>
+                    <p className="mb-2 font-mono text-[11px] tracking-wider text-muted-foreground">
+                      {t('output.lines', { n: ocrResult.boxes.length })}
+                    </p>
+                    <OcrResult
+                      boxes={ocrResult.boxes}
+                      highlightedIndex={highlightedBox}
+                      onBoxHover={setHighlightedBox}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <pre className="whitespace-pre-wrap break-all font-mono text-xs text-foreground">
+                  {jsonText}
+                </pre>
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Features */}
+      {/* Spec strip — replaces the placeholder feature cards */}
       {!ocrResult && (
-        <section className="mt-12 grid gap-4 sm:grid-cols-3">
-          <FeatureCard
-            icon={<Zap className="h-5 w-5" />}
-            title="Lightning Fast"
-            description="PP-OCRv6 Tiny runs entirely in your browser — no uploads, no waiting."
+        <section className="mt-12 grid overflow-hidden rounded-lg border bg-surface sm:grid-cols-3">
+          <SpecCell label={t('spec.local.label')} description={t('spec.local.desc')} />
+          <SpecCell
+            label={t('spec.model.label')}
+            description={t('spec.model.desc')}
+            className="border-t sm:border-l sm:border-t-0"
           />
-          <FeatureCard
-            icon={<Zap className="h-5 w-5" />}
-            title="Privacy First"
-            description="Images never leave your device. All processing happens locally."
-          />
-          <FeatureCard
-            icon={<Zap className="h-5 w-5" />}
-            title="50+ Languages"
-            description="Recognizes Chinese, English, Japanese, and 46 Latin-script languages."
+          <SpecCell
+            label={t('spec.scripts.label')}
+            description={t('spec.scripts.desc')}
+            className="border-t sm:border-l sm:border-t-0"
           />
         </section>
       )}
@@ -254,19 +352,44 @@ function HomePage() {
   );
 }
 
-function FeatureCard({
-  icon,
-  title,
-  description,
+function OutputTab({
+  active,
+  onClick,
+  children,
 }: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border p-4">
-      <div className="mb-2 text-primary">{icon}</div>
-      <h3 className="font-medium">{title}</h3>
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'rounded px-2.5 py-1 font-mono text-[11px] tracking-wider transition-colors',
+        active ? 'bg-detect text-detect-foreground' : 'text-muted-foreground hover:text-foreground'
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function SpecCell({
+  label,
+  description,
+  className,
+}: {
+  label: string;
+  description: string;
+  className?: string;
+}) {
+  return (
+    <div className={cn('p-5', className)}>
+      <p className="mb-2 flex items-center gap-2 font-display text-[11px] font-semibold tracking-[0.16em] text-foreground">
+        <span className="h-1.5 w-1.5 bg-detect" />
+        {label}
+      </p>
       <p className="text-sm text-muted-foreground">{description}</p>
     </div>
   );

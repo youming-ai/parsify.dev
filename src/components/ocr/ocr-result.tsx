@@ -1,7 +1,4 @@
-import { Download } from 'lucide-react';
-import { useState } from 'react';
-import { Button } from '~/components/ui/button';
-import { CopyButton } from '~/components/ui/copy-button';
+import { useI18n } from '~/components/i18n-provider';
 import type { TextBox } from '~/lib/ocr/types';
 import { cn } from '~/lib/utils';
 
@@ -12,61 +9,46 @@ interface OcrResultProps {
   className?: string;
 }
 
+/**
+ * Per-line recognition view. Each line maps to a detection box, so hovering a
+ * line highlights its region on the source canvas (and vice-versa).
+ */
 export function OcrResult({ boxes, highlightedIndex, onBoxHover, className }: OcrResultProps) {
-  const [text, setText] = useState('');
-
-  const fullText = boxes.map((b) => b.text).join('\n');
-
-  const handleDownload = () => {
-    const blob = new Blob([text || fullText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'ocr-result.txt';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  const { t } = useI18n();
+  if (boxes.length === 0) {
+    return <p className={cn('text-sm text-muted-foreground', className)}>{t('output.noLines')}</p>;
+  }
 
   return (
-    <div className={cn('space-y-3', className)}>
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Recognized Text</h3>
-        <div className="flex gap-2">
-          <CopyButton text={text || fullText} />
-          <Button variant="outline" size="sm" onClick={handleDownload}>
-            <Download className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {boxes.length > 0 && (
-        <ul className="max-h-[200px] space-y-1 overflow-y-auto rounded border p-2 text-xs">
-          {boxes.map((box, i) => (
-            <li
-              key={i}
-              className={cn(
-                'rounded px-2 py-1 transition-colors',
-                i === highlightedIndex ? 'bg-primary/10' : 'hover:bg-muted'
-              )}
-              onMouseEnter={() => onBoxHover(i)}
-              onMouseLeave={() => onBoxHover(null)}
-            >
-              <span className="text-foreground">{box.text}</span>
-              <span className="ml-2 text-muted-foreground">
-                {(box.confidence * 100).toFixed(0)}%
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <textarea
-        value={text || fullText}
-        onChange={(e) => setText(e.target.value)}
-        className="min-h-[200px] w-full rounded-md border bg-muted/50 p-3 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        placeholder="OCR text will appear here..."
-        readOnly={boxes.length === 0}
-      />
-    </div>
+    <ul className={cn('space-y-px', className)}>
+      {boxes.map((box, i) => {
+        const active = i === highlightedIndex;
+        const pct = Math.round(box.confidence * 100);
+        return (
+          <li
+            key={i}
+            className={cn(
+              'flex items-center gap-3 rounded px-2 py-1.5 transition-colors',
+              active ? 'bg-lock/10 ring-1 ring-lock/40' : 'hover:bg-muted'
+            )}
+            onMouseEnter={() => onBoxHover(i)}
+            onMouseLeave={() => onBoxHover(null)}
+          >
+            <span className="min-w-0 flex-1 break-words font-mono text-sm text-foreground">
+              {box.text}
+            </span>
+            <span className="h-1 w-10 shrink-0 overflow-hidden rounded-full bg-muted">
+              <span
+                className={cn('block h-full', active ? 'bg-lock' : 'bg-detect')}
+                style={{ width: `${pct}%` }}
+              />
+            </span>
+            <span className="w-8 shrink-0 text-right font-mono text-[10px] text-muted-foreground">
+              {pct}%
+            </span>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
