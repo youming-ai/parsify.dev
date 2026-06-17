@@ -3,8 +3,7 @@ import { app } from '~/server/hono';
 const PORT = Number(process.env['API_PORT'] || '3001');
 
 const env = {
-  DEEPSEEK_API_KEY: process.env['DEEPSEEK_API_KEY'],
-  JINA_API_KEY: process.env['JINA_API_KEY'],
+  LLM_API_KEY: process.env['LLM_API_KEY'],
   PUBLIC_ORIGIN: process.env['PUBLIC_ORIGIN'] || 'http://localhost:5173',
 };
 

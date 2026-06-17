@@ -10,14 +10,18 @@ const MODEL_FILES: Record<ModelName, string> = {
 };
 
 const DB_NAME = 'parsify-ocr-models';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'models';
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onupgradeneeded = () => {
-      request.result.createObjectStore(STORE_NAME);
+      const db = request.result;
+      if (db.objectStoreNames.contains(STORE_NAME)) {
+        db.deleteObjectStore(STORE_NAME);
+      }
+      db.createObjectStore(STORE_NAME);
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
@@ -48,6 +52,21 @@ async function setCachedModel(name: ModelName, data: ArrayBuffer): Promise<void>
     request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
   });
+}
+
+async function deleteCachedModel(name: ModelName): Promise<void> {
+  try {
+    const db = await openDB();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const request = store.delete(name);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch {
+    // ignore cache deletion failures
+  }
 }
 
 async function fetchModel(
@@ -102,9 +121,13 @@ export async function loadModels(
   onModelLoaded?: (name: ModelName, fromCache: boolean) => void
 ): Promise<LoadedModels> {
   ort.env.wasm.numThreads = 1;
-  ort.env.wasm.wasmPaths = '/ort/';
+  // Vite 7+ refuses to import JS files from /public during dev, so load the
+  // ONNX Runtime wasm loader module directly from node_modules in development.
+  // In production the files are copied to /ort by the postinstall script and
+  // served as static assets from /public.
+  ort.env.wasm.wasmPaths = import.meta.env['DEV'] ? '/node_modules/onnxruntime-web/dist/' : '/ort/';
 
-  const loadOne = async (name: ModelName): Promise<ort.InferenceSession> => {
+  const loadOne = async (name: ModelName, allowRetry = true): Promise<ort.InferenceSession> => {
     let buffer = await getCachedModel(name);
     const fromCache = buffer !== null;
 
@@ -119,11 +142,25 @@ export async function loadModels(
 
     onModelLoaded?.(name, fromCache);
 
-    const session = await ort.InferenceSession.create(buffer, {
-      executionProviders: ['wasm'],
-    });
-
-    return session;
+    try {
+      return await ort.InferenceSession.create(buffer, {
+        executionProviders: ['wasm'],
+      });
+    } catch (err) {
+      // Stale/corrupt cache (e.g. a previous 404 response) can cause protobuf
+      // parse errors. Drop the cached entry and re-fetch once.
+      if (
+        fromCache &&
+        allowRetry &&
+        err instanceof Error &&
+        err.message.includes('protobuf parsing failed')
+      ) {
+        logger.warn(`Cached model ${name} failed protobuf validation; re-fetching`);
+        await deleteCachedModel(name);
+        return loadOne(name, false);
+      }
+      throw err;
+    }
   };
 
   const [det, rec] = await Promise.all([loadOne('det'), loadOne('rec')]);
