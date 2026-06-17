@@ -9,8 +9,16 @@ interface ImageUploadProps {
   className?: string;
 }
 
-const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/bmp', 'image/tiff'];
-const MAX_SIZE = 20 * 1024 * 1024; // 20MB
+const ACCEPTED_TYPES = [
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'image/bmp',
+  'image/tiff',
+  'application/pdf',
+];
+const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const PDF_MAX_SIZE = 200 * 1024 * 1024; // 200MB
 
 export function ImageUpload({ onImageSelect, disabled, className }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -20,10 +28,12 @@ export function ImageUpload({ onImageSelect, disabled, className }: ImageUploadP
 
   const validate = useCallback((file: File): string | null => {
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      return `Unsupported format. Please use PNG, JPEG, WebP, BMP, or TIFF.`;
+      return 'Unsupported format. Please use PNG, JPEG, WebP, BMP, TIFF, or PDF.';
     }
-    if (file.size > MAX_SIZE) {
-      return `File too large. Maximum size is 20MB.`;
+    const limit = file.type === 'application/pdf' ? PDF_MAX_SIZE : MAX_SIZE;
+    if (file.size > limit) {
+      const limitMB = file.type === 'application/pdf' ? 200 : 10;
+      return `File too large. Maximum size is ${limitMB}MB.`;
     }
     return null;
   }, []);
@@ -114,7 +124,7 @@ export function ImageUpload({ onImageSelect, disabled, className }: ImageUploadP
             Drag & drop an image, paste from clipboard, or click to browse
           </p>
           <p className="mt-1 text-xs text-muted-foreground/60">
-            PNG, JPEG, WebP, BMP, TIFF — up to 20MB
+            PNG, JPEG, WebP, BMP, TIFF — up to 10MB · PDF — up to 200MB
           </p>
         </button>
       )}
