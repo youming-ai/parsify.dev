@@ -3,8 +3,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
 import { logger } from '~/lib/logger';
-import { agent } from '~/server/routers/agent';
-import { parse } from '~/server/routers/parse';
+import { enhance } from '~/server/routers/enhance';
 
 interface RateLimitEntry {
   count: number;
@@ -71,50 +70,41 @@ app.get('/llm.txt', (c) => {
   const origin =
     (c.env as Record<string, string | undefined>)?.['PUBLIC_ORIGIN'] ?? 'https://parsify.dev';
 
-  const content = `# Parsify — AI-Powered SEO Analyzer
+  const content = `# Parsify — Browser-Local OCR Tool
 
 ## About
-Parsify is an AI-powered SEO analysis tool. Paste any URL and get comprehensive SEO analysis including SEO.md document, robots.txt, and llm.txt.
+Parsify is a browser-local OCR recognition tool powered by PaddleOCR PP-OCRv6 Tiny. Images never leave the user's device — all OCR processing happens locally in the browser using ONNX Runtime Web.
 
 ## How It Works
-1. User submits a URL
-2. Jina Reader fetches and converts the page to clean markdown
-3. DeepSeek LLM performs comprehensive SEO analysis
-4. Results include SEO.md, robots.txt, and llm.txt generation
+1. User uploads an image (drag & drop, paste, or file picker)
+2. PP-OCRv6 Tiny runs in the browser via ONNX Runtime Web (WASM)
+3. Three-stage pipeline: text detection → direction classification → text recognition
+4. Optional: OCR results sent to /api/enhance for LLM post-processing
 
 ## API Endpoints
 
-### POST /api/parse
-Converts a URL to clean markdown.
-
-**Request:**
-\`\`\`json
-{"url": "https://example.com/article"}
-\`\`\`
-
-**Response:**
-\`\`\`json
-{"url": "...", "markdown": "...", "mdBytes": 12345, "mdTokens": 3200}
-\`\`\`
-
-### POST /api/agent
-Generates SEO analysis from markdown content.
+### POST /api/enhance
+LLM post-processing of OCR text (text correction, formatting, structuring).
 
 **Request:**
 \`\`\`json
 {
-  "markdown": "...",
-  "prompt": "请对这个网页进行全面的SEO分析",
-  "outputFormat": "json"
+  "text": "OCR extracted text",
+  "boxes": [{"points": [[0,0],[100,0],[100,30],[0,30]], "text": "Hello", "confidence": 0.95}],
+  "prompt": "optional custom prompt"
 }
 \`\`\`
 
-**Response (JSON):** SEO analysis with seoMd, robotsTxt, llmTxt
-**Response (text):** Streaming plain text
+**Response:** SSE stream with enhanced text
+
+## Features
+- 100% client-side OCR — images never leave the browser
+- 50+ language support (Chinese, English, Japanese, 46 Latin-script languages)
+- PP-OCRv6 Tiny: only 1.5MB, runs on any device
+- LLM-enhanced text correction via /api/enhance
 
 ## Rate Limits
-- /api/parse: 20 requests / 15 min per IP
-- /api/agent: 20 requests / 15 min per IP
+- /api/enhance: 20 requests / 15 min per IP
 
 ## Contact
 Website: ${origin}
@@ -215,14 +205,10 @@ app.get('/sitemap.xml', (c) => {
   });
 });
 
-// Rate limit on /parse (20 req / 15 min per IP)
-app.use('/parse', rateLimiter('parse', 20, 15 * 60 * 1000));
+// Rate limit on /enhance (20 req / 15 min per IP)
+app.use('/enhance', rateLimiter('enhance', 20, 15 * 60 * 1000));
 
-// Rate limit on /agent (20 req / 15 min per IP)
-app.use('/agent', rateLimiter('agent', 20, 15 * 60 * 1000));
-
-app.route('/parse', parse);
-app.route('/agent', agent);
+app.route('/enhance', enhance);
 
 app.onError((err, c) => {
   logger.error(`unhandled: ${err.message}`);
