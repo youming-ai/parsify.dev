@@ -26,12 +26,6 @@
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* SEO score colors */
-  --color-seo-excellent: hsl(142 71% 45%);
-  --color-seo-good: hsl(221 83% 53%);
-  --color-seo-fair: hsl(38 92% 50%);
-  --color-seo-poor: hsl(0 84% 60%);
-
   --color-dark-background: hsl(40 30% 6%);
   --color-dark-foreground: hsl(0 0% 98%);
   --color-dark-card: hsl(40 25% 8%);
