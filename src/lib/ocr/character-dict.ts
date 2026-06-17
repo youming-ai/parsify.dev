@@ -188,15 +188,36 @@ export const CHARACTER_DICT: string[] = [
 
 /**
  * Load the full PP-OCR character dictionary from a static file.
- * Falls back to the embedded subset if the file is not available.
+ * Falls back to the embedded subset if the file is missing or invalid.
+ *
+ * Dev/SPA servers answer 200 with index.html for missing static files, so a
+ * 200 response is not enough — we must reject HTML and implausibly short
+ * payloads, otherwise CTC decoding would index into garbage "characters".
  */
 export async function loadFullDictionary(baseUrl = '/models/pp-ocrv6-tiny'): Promise<string[]> {
   try {
-    const response = await fetch(`${baseUrl}/ppocr_keys_v1.txt`);
+    const response = await fetch(`${baseUrl}/ppocrv6_tiny_dict.txt`);
     if (!response.ok) return CHARACTER_DICT;
+
+    const contentType = response.headers.get('content-type') ?? '';
     const text = await response.text();
-    const chars = text.split('\n').filter((line) => line.length > 0);
-    return ['', ...chars, ' ']; // blank at index 0, space at last index
+    if (contentType.includes('text/html') || /^\s*<(?:!doctype|html)/i.test(text)) {
+      return CHARACTER_DICT;
+    }
+
+    // Match PaddleOCR's CTCLabelDecode exactly: each line is one character
+    // entry kept verbatim (including the full-width space at U+3000); only the
+    // trailing newline is dropped — internal blank lines, if any, are real
+    // entries and must NOT be filtered, or every later index would shift.
+    // CTC blank occupies index 0; the half-width space is appended last.
+    const lines = text.replace(/\r\n/g, '\n').split('\n');
+    if (lines.length > 0 && lines[lines.length - 1] === '') lines.pop();
+
+    // A real PP-OCR dictionary has thousands of single-character entries; a
+    // handful of lines means we fetched something that isn't a dictionary.
+    if (lines.length < 100) return CHARACTER_DICT;
+
+    return ['', ...lines, ' '];
   } catch {
     return CHARACTER_DICT;
   }

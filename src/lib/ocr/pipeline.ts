@@ -86,16 +86,10 @@ export class OcrPipeline {
       return { boxes: [], text: '', elapsed: performance.now() - startTime };
     }
 
-    // Scale boxes back to original image coordinates
-    const scaledBoxes = detectedBoxes.map((box) => ({
-      ...box,
-      points: box.points.map((p) => [
-        Math.round((p[0] ?? 0) / scale),
-        Math.round((p[1] ?? 0) / scale),
-      ]),
-    }));
-
-    const sortedBoxes = sortBoxes(scaledBoxes);
+    // Recognition runs on the resized pixel buffer, so cropping must use the
+    // detection (resized) coordinates. Boxes are scaled back to original-image
+    // coordinates only for the returned result (used for the canvas overlay).
+    const sortedBoxes = sortBoxes(detectedBoxes);
 
     // Stage 2 & 3: Classification + Recognition for each box
     this.report('classifying', 0.5, `Recognizing ${sortedBoxes.length} text regions...`);
@@ -114,7 +108,11 @@ export class OcrPipeline {
       try {
         const { text, confidence } = await this.recognizeBox(pixels, width, height, box.points);
         if (text.trim().length > 0) {
-          textBoxes.push({ points: box.points, text, confidence });
+          const points = box.points.map((p) => [
+            Math.round((p[0] ?? 0) / scale),
+            Math.round((p[1] ?? 0) / scale),
+          ]);
+          textBoxes.push({ points, text, confidence });
         }
       } catch (err) {
         logger.warn(`Failed to recognize box ${i}: ${err}`);

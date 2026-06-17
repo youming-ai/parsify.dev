@@ -14,18 +14,15 @@ export interface ResizeResult {
  */
 export function resizeImage(srcWidth: number, srcHeight: number, maxDimension = 960): ResizeResult {
   const maxSide = Math.max(srcWidth, srcHeight);
-  if (maxSide <= maxDimension) {
-    return {
-      width: srcWidth,
-      height: srcHeight,
-      scale: 1,
-    };
-  }
-
-  const scale = maxDimension / maxSide;
+  // Only downscale when larger than the limit, but ALWAYS snap to a multiple of
+  // 32: the DBNet detector downsamples by 32, and non-aligned input sizes make
+  // its skip-connection feature maps mismatch ("Shape mismatch ... {…,55,…} !=
+  // {…,56,…}") and OrtRun fails. Small images hit this too, so round in both cases.
+  const scale = maxSide > maxDimension ? maxDimension / maxSide : 1;
+  const snap = (v: number) => Math.max(32, Math.round((v * scale) / 32) * 32);
   return {
-    width: Math.round((srcWidth * scale) / 32) * 32,
-    height: Math.round((srcHeight * scale) / 32) * 32,
+    width: snap(srcWidth),
+    height: snap(srcHeight),
     scale,
   };
 }
@@ -76,9 +73,12 @@ export function imageToPixels(
 }
 
 /**
- * Apply normalization to pixel data in CHW format.
- * Expects raw pixel values [0, 255]; normalizes to [0, 1] first, then applies mean/std.
- * Default mean/std is identity (just /255 normalization).
+ * Apply normalization to detection model input in CHW format.
+ * Expects pixel values already in [0, 1] (as produced by `imageToPixels`), then
+ * applies optional per-channel mean/std. Default mean/std is identity, so the
+ * input passes through unchanged. NOTE: do not divide by 255 here — the input
+ * is already normalized; doing so again yields a near-black image and breaks
+ * detection.
  */
 export function normalizeForDet(
   data: Float32Array,
@@ -90,8 +90,8 @@ export function normalizeForDet(
 
   for (let c = 0; c < 3; c++) {
     for (let i = 0; i < pixels; i++) {
-      const normalized = (data[c * pixels + i] ?? 0) / 255; // Normalize to [0, 1]
-      result[c * pixels + i] = (normalized - (mean[c] ?? 0)) / (std[c] ?? 1);
+      const value = data[c * pixels + i] ?? 0; // already in [0, 1]
+      result[c * pixels + i] = (value - (mean[c] ?? 0)) / (std[c] ?? 1);
     }
   }
 

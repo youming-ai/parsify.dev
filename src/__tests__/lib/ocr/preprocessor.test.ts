@@ -2,11 +2,13 @@ import { describe, expect, it } from 'bun:test';
 import { normalizeForDet, normalizeForRec, resizeImage } from '~/lib/ocr/preprocessor';
 
 describe('resizeImage', () => {
-  it('returns dimensions unchanged if within maxDimension', () => {
+  it('keeps scale 1 within maxDimension but snaps dimensions to multiples of 32', () => {
     const result = resizeImage(800, 600, 960);
-    expect(result.width).toBe(800);
-    expect(result.height).toBe(600);
+    expect(result.width).toBe(800); // already a multiple of 32
+    expect(result.height).toBe(608); // 600 snapped up to the nearest multiple of 32
     expect(result.scale).toBe(1);
+    expect(result.width % 32).toBe(0);
+    expect(result.height % 32).toBe(0);
   });
 
   it('scales down wide images to maxDimension', () => {
@@ -31,19 +33,19 @@ describe('resizeImage', () => {
 });
 
 describe('normalizeForDet', () => {
-  it('normalizes pixel values to [0, 1] range', () => {
-    const input = new Float32Array([0, 128, 255, 0, 128, 255, 0, 128, 255]);
+  it('passes [0, 1] values through unchanged with identity mean/std', () => {
+    // Input is already in [0, 1] (as produced by imageToPixels).
+    const input = new Float32Array([0, 0.5, 1, 0, 0.5, 1, 0, 0.5, 1]);
     const result = normalizeForDet(input);
     expect(result[0]).toBeCloseTo(0);
-    expect(result[1]).toBeCloseTo(128 / 255);
+    expect(result[1]).toBeCloseTo(0.5);
     expect(result[2]).toBeCloseTo(1);
   });
 
-  it('applies mean and std normalization', () => {
-    const input = new Float32Array([127.5, 127.5, 127.5]);
+  it('applies mean and std normalization to [0, 1] input', () => {
+    const input = new Float32Array([0.5, 0.5, 0.5]);
     const result = normalizeForDet(input, [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]);
-    // After /255: [0.5, 0.5, 0.5]
-    // After (x - mean) / std: [(0.5-0.485)/0.229, (0.5-0.456)/0.224, (0.5-0.406)/0.225]
+    // (x - mean) / std: [(0.5-0.485)/0.229, (0.5-0.456)/0.224, (0.5-0.406)/0.225]
     expect(result[0]).toBeCloseTo((0.5 - 0.485) / 0.229, 3);
     expect(result[1]).toBeCloseTo((0.5 - 0.456) / 0.224, 3);
     expect(result[2]).toBeCloseTo((0.5 - 0.406) / 0.225, 3);
