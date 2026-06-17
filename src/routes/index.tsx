@@ -32,8 +32,8 @@ function HomePage() {
 
   const navigateToPage = useCallback(
     (page: number) => {
-      if (page < 1 || page > pdfPageResults.length) return;
       const result = pdfPageResults[page - 1];
+      if (!result) return;
       setCurrentPage(page);
       setImageSrc(result.imageSrc);
       setOcrResult(result.ocr);
@@ -83,15 +83,17 @@ function HomePage() {
           // Process each page
           const results: PdfPageResult[] = [];
           for (let i = 0; i < pages.length; i++) {
-            setImageSrc(pages[i]);
+            const pageSrc = pages[i];
+            if (!pageSrc) continue;
+            setImageSrc(pageSrc);
             setCurrentPage(i + 1);
             setOcrProgress({
               stage: 'detecting',
               progress: (i + 0.5) / pages.length,
               message: `Processing page ${i + 1}/${pages.length}...`,
             });
-            const ocr = await engine.recognize(pages[i], setOcrProgress);
-            results.push({ pageNumber: i + 1, ocr, imageSrc: pages[i] });
+            const ocr = await engine.recognize(pageSrc, setOcrProgress);
+            results.push({ pageNumber: i + 1, ocr, imageSrc: pageSrc });
             setPdfPageResults([...results]);
             setOcrResult(ocr);
           }
