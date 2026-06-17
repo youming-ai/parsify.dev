@@ -89,13 +89,13 @@ async function fetchModel(
 
 export interface LoadedModels {
   det: ort.InferenceSession;
-  cls: ort.InferenceSession;
+  cls: ort.InferenceSession | null;
   rec: ort.InferenceSession;
 }
 
 /**
- * Load all three PP-OCRv6 models. Checks IndexedDB cache first,
- * falls back to network fetch. Caches after download.
+ * Load PP-OCRv6 models (det + rec required, cls optional).
+ * Checks IndexedDB cache first, falls back to network fetch.
  */
 export async function loadModels(
   baseUrl = '/models/pp-ocrv6-tiny',
@@ -126,7 +126,15 @@ export async function loadModels(
     return session;
   };
 
-  const [det, cls, rec] = await Promise.all([loadOne('det'), loadOne('cls'), loadOne('rec')]);
+  const [det, rec] = await Promise.all([loadOne('det'), loadOne('rec')]);
+
+  // cls model is optional — PP-OCRv6 tiny may not include it
+  let cls: ort.InferenceSession | null = null;
+  try {
+    cls = await loadOne('cls');
+  } catch {
+    logger.info('cls model not available, skipping classification step');
+  }
 
   return { det, cls, rec };
 }
