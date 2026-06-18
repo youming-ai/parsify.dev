@@ -10,8 +10,7 @@ import { OcrResult } from '~/components/ocr/ocr-result';
 import { Button } from '~/components/ui/button';
 import { CopyButton } from '~/components/ui/copy-button';
 import { DetectionFrame } from '~/components/ui/detection-frame';
-import { OcrEngine } from '~/lib/ocr/engine';
-import { renderPdfPages } from '~/lib/ocr/pdf-renderer';
+import type { OcrEngine } from '~/lib/ocr/engine';
 import type { OcrProgress, OcrResult as OcrResultType, PdfPageResult } from '~/lib/ocr/types';
 import { useEnhance } from '~/lib/ocr/use-enhance';
 import { cn } from '~/lib/utils';
@@ -21,7 +20,7 @@ export const Route = createFileRoute('/')({
   component: HomePage,
 });
 
-const engine = new OcrEngine();
+let engine: OcrEngine | null = null;
 
 function HomePage() {
   const [ocrProgress, setOcrProgress] = useState<OcrProgress | null>(null);
@@ -96,7 +95,11 @@ function HomePage() {
 
       const isPdf = file.type === 'application/pdf';
       const ensureModels = async () => {
-        if (engine.isReady) return;
+        if (!engine) {
+          const { OcrEngine } = await import('~/lib/ocr/engine');
+          engine = new OcrEngine();
+        }
+        if (engine.isReady) return engine;
         setOcrProgress({
           stage: 'loading-models',
           progress: 0,
@@ -109,12 +112,12 @@ function HomePage() {
             message: `Loaded ${name} model${fromCache ? ' (cached)' : ''}`,
           });
         });
+        return engine;
       };
 
       try {
         if (isPdf) {
-          await ensureModels();
-
+          const loadedEngine = await ensureModels();
           const controller = new AbortController();
           renderAbortRef.current = controller;
 
@@ -122,6 +125,7 @@ function HomePage() {
           // then the next is rendered — bounding peak memory regardless of page
           // count, and letting an upload mid-flight be cancelled.
           const results: PdfPageResult[] = [];
+          const { renderPdfPages } = await import('~/lib/ocr/pdf-renderer');
           await renderPdfPages(file, {
             signal: controller.signal,
             onPage: async ({ pageNumber, imageSrc, totalPages, pagesToRender }) => {
@@ -137,7 +141,7 @@ function HomePage() {
                 progress: (pageNumber - 0.5) / pagesToRender,
                 message: `Processing page ${pageNumber}/${pagesToRender}...`,
               });
-              const ocr = await engine.recognize(imageSrc, setOcrProgress);
+              const ocr = await loadedEngine.recognize(imageSrc, setOcrProgress);
               results.push({ pageNumber, ocr, imageSrc });
               setPdfPageResults([...results]);
               setOcrResult(ocr);
@@ -148,9 +152,8 @@ function HomePage() {
           objectUrlsRef.current.push(src);
           setImageSrc(src);
 
-          await ensureModels();
-
-          const result = await engine.recognize(src, setOcrProgress);
+          const loadedEngine = await ensureModels();
+          const result = await loadedEngine.recognize(src, setOcrProgress);
           setOcrResult(result);
         }
       } catch (err) {
