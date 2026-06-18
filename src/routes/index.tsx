@@ -33,6 +33,11 @@ function HomePage() {
   const [pdfPageResults, setPdfPageResults] = useState<PdfPageResult[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPdfPages, setTotalPdfPages] = useState(0);
+  // Set when a PDF has more pages than we render, so the partial result is
+  // never silently mistaken for a complete scan.
+  const [pdfTruncated, setPdfTruncated] = useState<{ rendered: number; total: number } | null>(
+    null
+  );
   const [outputTab, setOutputTab] = useState<'doc' | 'json'>('doc');
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileSize, setFileSize] = useState<number | null>(null);
@@ -83,6 +88,7 @@ function HomePage() {
       setPdfPageResults([]);
       setCurrentPage(0);
       setTotalPdfPages(0);
+      setPdfTruncated(null);
       setFileName(file.name);
       setFileSize(file.size);
       enhance.reset();
@@ -121,6 +127,9 @@ function HomePage() {
             onPage: async ({ pageNumber, imageSrc, totalPages, pagesToRender }) => {
               objectUrlsRef.current.push(imageSrc);
               setTotalPdfPages(totalPages);
+              if (totalPages > pagesToRender) {
+                setPdfTruncated({ rendered: pagesToRender, total: totalPages });
+              }
               setImageSrc(imageSrc);
               setCurrentPage(pageNumber);
               setOcrProgress({
@@ -275,6 +284,18 @@ function HomePage() {
         <div className="mt-4 flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
           <span className="font-mono text-[11px] tracking-wider">{t('common.error')}</span>
           <span>{error}</span>
+        </div>
+      )}
+
+      {/* Partial-PDF warning — surfaced so truncated output isn't mistaken for a full scan */}
+      {pdfTruncated && (
+        <div className="mt-4 flex items-start gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-amber-700 text-sm dark:text-amber-400">
+          <span>
+            {t('upload.truncated', {
+              rendered: pdfTruncated.rendered,
+              total: pdfTruncated.total,
+            })}
+          </span>
         </div>
       )}
 

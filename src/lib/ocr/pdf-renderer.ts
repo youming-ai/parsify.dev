@@ -2,8 +2,11 @@ import type { PDFDocumentProxy } from 'pdfjs-dist';
 import * as pdfjsLib from 'pdfjs-dist';
 import { logger } from '~/lib/logger';
 
-// Configure worker — use CDN for pdfjs worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+// Serve the pdf.js worker from our own origin (copied into /public by the
+// postinstall step) rather than a third-party CDN, so PDF OCR is not broken by
+// CSP rules, locked-down networks, or a CDN outage, and the worker version is
+// guaranteed to match the bundled pdfjs-dist.
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
 // Default page ceiling. Each rendered page holds a PNG blob URL alive for the
 // page navigator, so an unbounded cap (the previous 1000) let a single large

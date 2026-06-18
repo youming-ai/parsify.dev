@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { type EnhanceRequest, enhanceRequestSchema } from '~/schemas/enhance';
+import { type EnhanceRequest, enhanceRequestSchema, MAX_BOXES } from '~/schemas/enhance';
 
 describe('enhanceRequestSchema', () => {
   const validRequest: EnhanceRequest = {
@@ -81,5 +81,22 @@ describe('enhanceRequestSchema', () => {
       prompt: '',
     });
     expect(result.success).toBe(true);
+  });
+
+  it('rejects more than MAX_BOXES boxes', () => {
+    const box = validRequest.boxes[0];
+    const result = enhanceRequestSchema.safeParse({
+      ...validRequest,
+      boxes: Array.from({ length: MAX_BOXES + 1 }, () => box),
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a box whose text exceeds the per-box cap', () => {
+    const result = enhanceRequestSchema.safeParse({
+      ...validRequest,
+      boxes: [{ ...validRequest.boxes[0], text: 'a'.repeat(4001) }],
+    });
+    expect(result.success).toBe(false);
   });
 });

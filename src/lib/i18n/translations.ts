@@ -16,6 +16,8 @@ const en = {
   'upload.aria': 'Upload an image or PDF to scan',
   'upload.errFormat': 'Unsupported format. Please use PNG, JPEG, WebP, BMP, TIFF, or PDF.',
   'upload.errSize': 'File too large. Maximum size is {mb}MB.',
+  'upload.truncated':
+    'Only the first {rendered} of {total} pages were processed. The result is incomplete.',
 
   'spec.local.label': 'ON-DEVICE',
   'spec.local.desc': 'OCR runs in your browser. Files are never uploaded.',
@@ -80,6 +82,7 @@ const zh: Record<TranslationKey, string> = {
   'upload.aria': '上传图片或 PDF 进行扫描',
   'upload.errFormat': '不支持的格式。请使用 PNG、JPEG、WebP、BMP、TIFF 或 PDF。',
   'upload.errSize': '文件过大，最大 {mb}MB。',
+  'upload.truncated': '仅处理了前 {rendered} 页（共 {total} 页），结果不完整。',
 
   'spec.local.label': '本地运行',
   'spec.local.desc': 'OCR 在浏览器中运行。文件绝不上传。',

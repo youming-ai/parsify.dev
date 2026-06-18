@@ -6,9 +6,22 @@ import { type EnhanceError, enhanceRequestSchema } from '~/schemas/enhance';
 const DEFAULT_LLM_URL = 'https://api.deepseek.com/chat/completions';
 const DEFAULT_LLM_MODEL = 'deepseek-v4-flash';
 
+// Reject oversized bodies before spending CPU/memory parsing them. The valid
+// payload (≤100KB text + bounded boxes) fits comfortably under this; anything
+// larger is rejected at the door instead of being JSON-parsed and Zod-walked.
+const MAX_BODY_BYTES = 2 * 1024 * 1024;
+
 export const enhance = new Hono();
 
 enhance.post('/', async (c) => {
+  const contentLength = Number(c.req.header('content-length') ?? '0');
+  if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
+    return c.json<EnhanceError>(
+      { code: 'PAYLOAD_TOO_LARGE', message: 'Request body too large' },
+      413
+    );
+  }
+
   let body: unknown;
   try {
     body = await c.req.json();

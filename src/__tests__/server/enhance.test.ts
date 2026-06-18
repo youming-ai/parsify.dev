@@ -43,6 +43,21 @@ describe('POST /enhance', () => {
     expect(body.code).toBe('INVALID_REQUEST');
   });
 
+  it('returns 413 when Content-Length exceeds the body limit', async () => {
+    const app = createApp();
+    const res = await app.request('/enhance', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': String(3 * 1024 * 1024),
+      },
+      body: JSON.stringify(validBody),
+    });
+    expect(res.status).toBe(413);
+    const body = await res.json();
+    expect(body.code).toBe('PAYLOAD_TOO_LARGE');
+  });
+
   it('returns 400 for missing text', async () => {
     const app = createApp();
     const res = await app.request('/enhance', {
