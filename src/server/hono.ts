@@ -74,14 +74,14 @@ app.get('/llm.txt', (c) => {
   const origin =
     (c.env as Record<string, string | undefined>)?.['PUBLIC_ORIGIN'] ?? 'https://parsify.dev';
 
-  const content = `# Parsify — Browser-Local OCR Tool
+  const content = `# Parsify — Your Files Never Leave Your Device
 
 ## About
-Parsify is a browser-local OCR recognition tool powered by PaddleOCR PP-OCRv6 Tiny. Files stay on the user's device — OCR processing happens locally in the browser using ONNX Runtime Web. Optional AI cleanup sends extracted text only when requested.
+Parsify is a privacy-first on-device OCR tool powered by PaddleOCR PP-OCRv6. Extract text from images and PDFs — files stay in your browser. OCR processing runs locally via ONNX Runtime Web (WASM). Optional AI cleanup sends only extracted text when you request it.
 
 ## How It Works
-1. User uploads an image (drag & drop, paste, or file picker)
-2. PP-OCRv6 Tiny runs in the browser via ONNX Runtime Web (WASM)
+1. User uploads an image or PDF (drag & drop, paste, or file picker)
+2. PP-OCRv6 runs in the browser via ONNX Runtime Web (WASM) — no server upload
 3. Three-stage pipeline: text detection → direction classification → text recognition
 4. Optional: user-triggered OCR text is sent to /api/enhance for LLM post-processing
 
@@ -102,10 +102,15 @@ LLM post-processing of OCR text (text correction, formatting, structuring).
 **Response:** SSE stream with enhanced text
 
 ## Features
-- Client-side OCR — source files never leave the browser
+- On-device OCR — files never leave your browser
 - 50+ language support (Chinese, English, Japanese, 46 Latin-script languages)
-- PP-OCRv6 Tiny: only 1.5MB, runs on any device
-- Optional LLM-enhanced text correction via /api/enhance
+- PP-OCRv6: accurate text recognition, runs on any device via WASM
+- Image and PDF support
+- Optional AI cleanup via /api/enhance (sends only extracted text, never source files)
+
+## Privacy
+- OCR runs entirely in-browser — no file uploads to any server
+- AI cleanup is opt-in and sends only the extracted text, not your source files
 
 ## Rate Limits
 - /api/enhance: 20 requests / 60s per IP
