@@ -1,6 +1,8 @@
 import { app } from '~/server/hono';
 
-export { RateLimiterDO } from '~/server/rate-limiter';
+interface RateLimit {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
+}
 
 interface Env {
   LLM_API_KEY?: string;
@@ -10,7 +12,7 @@ interface Env {
   JINA_API_KEY?: string;
   PUBLIC_ORIGIN?: string;
   LOG_LEVEL?: string;
-  RATE_LIMITER?: DurableObjectNamespace;
+  RATE_LIMITER?: RateLimit;
   ASSETS?: Fetcher;
 }
 

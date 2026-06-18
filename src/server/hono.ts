@@ -5,41 +5,36 @@ import { secureHeaders } from 'hono/secure-headers';
 import { logger } from '~/lib/logger';
 import { enhance } from '~/server/routers/enhance';
 
-interface RateLimitResult {
-  allowed: boolean;
-  remaining: number;
-  resetTime: number;
+interface RateLimitBinding {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
 }
 
-interface RateLimiterStub {
-  limit(maxRequests: number, windowMs: number): Promise<RateLimitResult>;
-}
-
-interface RateLimiterNamespace {
-  getByName(name: string): RateLimiterStub;
-}
+// Window length (seconds) configured on the [[ratelimits]] binding in
+// wrangler.toml. Used only to set a Retry-After hint on 429 responses.
+const RATE_LIMIT_PERIOD_SECONDS = 60;
 
 /**
- * Per-IP fixed-window limiter backed by the RATE_LIMITER Durable Object, which
- * serializes the counter for each key and guarantees atomic increments. When
- * the binding is absent (local dev, Docker/bun runtime, tests) the middleware
- * degrades to a no-op rather than failing open with a broken counter.
+ * Per-IP limiter backed by Cloudflare's native Rate Limiting binding, which is
+ * atomic and managed by the edge — no read-modify-write race like the previous
+ * KV counter. When the binding is absent (local dev, Docker/bun runtime, tests)
+ * the middleware degrades to a no-op. The limit/period live on the binding
+ * config; this middleware only supplies the per-client key.
  */
-function rateLimiter(endpoint: string, limit: number, windowMs: number) {
+function rateLimiter(endpoint: string) {
   return async (c: Context, next: Next) => {
-    const namespace = (c.env as Record<string, unknown>)?.['RATE_LIMITER'] as
-      | RateLimiterNamespace
+    const limiter = (c.env as Record<string, unknown>)?.['RATE_LIMITER'] as
+      | RateLimitBinding
       | undefined;
-    if (!namespace?.getByName) {
+    if (!limiter?.limit) {
       await next();
       return;
     }
 
     const ip = c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? 'unknown';
 
-    let result: RateLimitResult;
+    let success: boolean;
     try {
-      result = await namespace.getByName(`${endpoint}:${ip}`).limit(limit, windowMs);
+      ({ success } = await limiter.limit({ key: `${endpoint}:${ip}` }));
     } catch (err) {
       // Never let a limiter failure take down the endpoint.
       logger.error(`rate limiter error: ${(err as Error).message}`);
@@ -47,9 +42,8 @@ function rateLimiter(endpoint: string, limit: number, windowMs: number) {
       return;
     }
 
-    if (!result.allowed) {
-      const retryAfter = Math.max(0, Math.ceil((result.resetTime - Date.now()) / 1000));
-      c.header('Retry-After', String(retryAfter));
+    if (!success) {
+      c.header('Retry-After', String(RATE_LIMIT_PERIOD_SECONDS));
       return c.json({ error: 'RATE_LIMITED', message: 'Too many requests' }, 429);
     }
 
@@ -116,7 +110,7 @@ LLM post-processing of OCR text (text correction, formatting, structuring).
 - Optional LLM-enhanced text correction via /api/enhance
 
 ## Rate Limits
-- /api/enhance: 20 requests / 15 min per IP
+- /api/enhance: 20 requests / 60s per IP
 
 ## Contact
 Website: ${origin}
@@ -217,8 +211,9 @@ app.get('/sitemap.xml', (c) => {
   });
 });
 
-// Rate limit on /enhance (20 req / 15 min per IP)
-app.use('/enhance', rateLimiter('enhance', 20, 15 * 60 * 1000));
+// Rate limit on /enhance (per-IP; limit/period configured on the
+// [[ratelimits]] binding in wrangler.toml — currently 20 req / 60s)
+app.use('/enhance', rateLimiter('enhance'));
 
 app.route('/enhance', enhance);
 
