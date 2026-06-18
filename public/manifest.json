@@ -1,11 +1,11 @@
 {
-  "name": "Parsify.dev — URL to AI-Ready Markdown",
+  "name": "Parsify",
   "short_name": "Parsify",
-  "description": "Paste any URL and get clean, structured Markdown — instantly ready for your AI. Strips ads, navigation, and boilerplate. One-click AI summary included.",
+  "description": "On-device OCR powered by PaddleOCR PP-OCRv6. Extract text from images and PDFs — files stay in your browser. Optional AI cleanup sends only extracted text when you request it.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f7f7f4",
-  "theme_color": "#18181b",
+  "background_color": "#0a0d14",
+  "theme_color": "#0a0d14",
   "orientation": "portrait",
   "categories": ["developer", "tools", "productivity", "utilities"],
   "icons": [
