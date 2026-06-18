@@ -2,12 +2,18 @@ name = "parsify-dev"
 main = "src/worker.ts"
 compatibility_date = "2026-05-19"
 
-[[kv_namespaces]]
-binding = "RATE_LIMIT_KV"
-id = "c239b08869ed4cb6ad6bf46ad131f6eb"
+[[durable_objects.bindings]]
+name = "RATE_LIMITER"
+class_name = "RateLimiterDO"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RateLimiterDO"]
 
 [assets]
+binding = "ASSETS"
 directory = "dist/client"
+not_found_handling = "single-page-application"
 
 [observability]
 enabled = false

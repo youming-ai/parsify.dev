@@ -5,39 +5,51 @@ import { secureHeaders } from 'hono/secure-headers';
 import { logger } from '~/lib/logger';
 import { enhance } from '~/server/routers/enhance';
 
-interface RateLimitEntry {
-  count: number;
+interface RateLimitResult {
+  allowed: boolean;
+  remaining: number;
   resetTime: number;
 }
 
+interface RateLimiterStub {
+  limit(maxRequests: number, windowMs: number): Promise<RateLimitResult>;
+}
+
+interface RateLimiterNamespace {
+  getByName(name: string): RateLimiterStub;
+}
+
+/**
+ * Per-IP fixed-window limiter backed by the RATE_LIMITER Durable Object, which
+ * serializes the counter for each key and guarantees atomic increments. When
+ * the binding is absent (local dev, Docker/bun runtime, tests) the middleware
+ * degrades to a no-op rather than failing open with a broken counter.
+ */
 function rateLimiter(endpoint: string, limit: number, windowMs: number) {
   return async (c: Context, next: Next) => {
-    const kv = (c.env as Record<string, unknown>)?.['RATE_LIMIT_KV'] as KVNamespace | undefined;
-    if (!kv) {
+    const namespace = (c.env as Record<string, unknown>)?.['RATE_LIMITER'] as
+      | RateLimiterNamespace
+      | undefined;
+    if (!namespace?.getByName) {
       await next();
       return;
     }
 
     const ip = c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? 'unknown';
-    const key = `rl:${endpoint}:${ip}`;
-    const now = Date.now();
 
-    const raw = await kv.get<RateLimitEntry>(key, 'json');
-    let entry: RateLimitEntry;
-
-    if (!raw || now > raw.resetTime) {
-      entry = { count: 0, resetTime: now + windowMs };
-    } else {
-      entry = raw;
+    let result: RateLimitResult;
+    try {
+      result = await namespace.getByName(`${endpoint}:${ip}`).limit(limit, windowMs);
+    } catch (err) {
+      // Never let a limiter failure take down the endpoint.
+      logger.error(`rate limiter error: ${(err as Error).message}`);
+      await next();
+      return;
     }
 
-    entry.count++;
-
-    await kv.put(key, JSON.stringify(entry), {
-      expirationTtl: Math.ceil(windowMs / 1000) + 60,
-    });
-
-    if (entry.count > limit) {
+    if (!result.allowed) {
+      const retryAfter = Math.max(0, Math.ceil((result.resetTime - Date.now()) / 1000));
+      c.header('Retry-After', String(retryAfter));
       return c.json({ error: 'RATE_LIMITED', message: 'Too many requests' }, 429);
     }
 

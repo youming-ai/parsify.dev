@@ -1,5 +1,7 @@
 import { app } from '~/server/hono';
 
+export { RateLimiterDO } from '~/server/rate-limiter';
+
 interface Env {
   LLM_API_KEY?: string;
   LLM_API_BASE_URL?: string;
@@ -8,8 +10,8 @@ interface Env {
   JINA_API_KEY?: string;
   PUBLIC_ORIGIN?: string;
   LOG_LEVEL?: string;
-  RATE_LIMIT_KV: KVNamespace;
-  ASSETS: Fetcher;
+  RATE_LIMITER?: DurableObjectNamespace;
+  ASSETS?: Fetcher;
 }
 
 export default {
@@ -21,9 +23,15 @@ export default {
       return app.fetch(request, env);
     }
 
-    // SPA fallback: serve index.html for non-file routes
-    // (actual static files like robots.txt, sitemap.xml are served
-    //  automatically by Cloudflare's assets system before reaching the worker)
-    return env.ASSETS.fetch(new Request(`${url.origin}/index.html`, request));
+    // Everything else is a static asset or an SPA route. The `ASSETS` binding
+    // (configured in wrangler.toml with single-page-application not-found
+    // handling) serves real files and falls back to index.html for client
+    // routes. Guard against a missing binding so a misconfiguration surfaces as
+    // a clear 500 instead of a `Cannot read properties of undefined` crash.
+    if (!env.ASSETS) {
+      return new Response('Static asset binding is not configured', { status: 500 });
+    }
+
+    return env.ASSETS.fetch(request);
   },
 };

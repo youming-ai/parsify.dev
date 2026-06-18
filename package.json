@@ -27,7 +27,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "bun src/prod-server.ts",
-    "deploy": "wrangler deploy",
+    "deploy": "bun run build && wrangler deploy",
     "lint": "biome check ./src",
     "lint:fix": "biome check --fix ./src",
     "format": "biome format --write ./src",

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { ChevronLeft, ChevronRight, Download, Sparkles } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useI18n } from '~/components/i18n-provider';
 import { EnhanceOutput } from '~/components/ocr/enhance-output';
 import { ImageUpload } from '~/components/ocr/image-upload';
@@ -39,6 +39,26 @@ function HomePage() {
   const { t } = useI18n();
   const enhance = useEnhance();
 
+  // Object URLs we created (PDF pages + single images). Tracked so they can be
+  // revoked when a new file is loaded or the component unmounts, instead of
+  // leaking one blob per page for the lifetime of the tab.
+  const objectUrlsRef = useRef<string[]>([]);
+  // Lets an in-flight PDF render be cancelled when a new file is selected.
+  const renderAbortRef = useRef<AbortController | null>(null);
+
+  const releaseObjectUrls = useCallback(() => {
+    for (const url of objectUrlsRef.current) URL.revokeObjectURL(url);
+    objectUrlsRef.current = [];
+  }, []);
+
+  useEffect(
+    () => () => {
+      renderAbortRef.current?.abort();
+      releaseObjectUrls();
+    },
+    [releaseObjectUrls]
+  );
+
   const navigateToPage = useCallback(
     (page: number) => {
       const result = pdfPageResults[page - 1];
@@ -53,6 +73,11 @@ function HomePage() {
 
   const handleImageSelect = useCallback(
     async (file: File) => {
+      // Cancel any in-flight PDF render and release the previous file's blobs
+      // before we start, so memory does not accumulate across uploads.
+      renderAbortRef.current?.abort();
+      releaseObjectUrls();
+
       setError(null);
       setOcrResult(null);
       setPdfPageResults([]);
@@ -64,82 +89,71 @@ function HomePage() {
       setIsProcessing(true);
 
       const isPdf = file.type === 'application/pdf';
+      const ensureModels = async () => {
+        if (engine.isReady) return;
+        setOcrProgress({
+          stage: 'loading-models',
+          progress: 0,
+          message: 'Loading OCR models...',
+        });
+        await engine.load((name, fromCache) => {
+          setOcrProgress({
+            stage: 'loading-models',
+            progress: fromCache ? 0.8 : 0.5,
+            message: `Loaded ${name} model${fromCache ? ' (cached)' : ''}`,
+          });
+        });
+      };
 
       try {
         if (isPdf) {
-          setOcrProgress({
-            stage: 'loading-models',
-            progress: 0,
-            message: 'Rendering PDF pages...',
-          });
-          const { pages, totalPages } = await renderPdfPages(file);
-          setTotalPdfPages(totalPages);
+          await ensureModels();
 
-          // Load models if needed
-          if (!engine.isReady) {
-            setOcrProgress({
-              stage: 'loading-models',
-              progress: 0.1,
-              message: 'Loading OCR models...',
-            });
-            await engine.load((name, fromCache) => {
-              setOcrProgress({
-                stage: 'loading-models',
-                progress: fromCache ? 0.8 : 0.5,
-                message: `Loaded ${name}`,
-              });
-            });
-          }
+          const controller = new AbortController();
+          renderAbortRef.current = controller;
 
-          // Process each page
+          // Render and OCR one page at a time: each page is rendered, scanned,
+          // then the next is rendered — bounding peak memory regardless of page
+          // count, and letting an upload mid-flight be cancelled.
           const results: PdfPageResult[] = [];
-          for (let i = 0; i < pages.length; i++) {
-            const pageSrc = pages[i];
-            if (!pageSrc) continue;
-            setImageSrc(pageSrc);
-            setCurrentPage(i + 1);
-            setOcrProgress({
-              stage: 'detecting',
-              progress: (i + 0.5) / pages.length,
-              message: `Processing page ${i + 1}/${pages.length}...`,
-            });
-            const ocr = await engine.recognize(pageSrc, setOcrProgress);
-            results.push({ pageNumber: i + 1, ocr, imageSrc: pageSrc });
-            setPdfPageResults([...results]);
-            setOcrResult(ocr);
-          }
+          await renderPdfPages(file, {
+            signal: controller.signal,
+            onPage: async ({ pageNumber, imageSrc, totalPages, pagesToRender }) => {
+              objectUrlsRef.current.push(imageSrc);
+              setTotalPdfPages(totalPages);
+              setImageSrc(imageSrc);
+              setCurrentPage(pageNumber);
+              setOcrProgress({
+                stage: 'detecting',
+                progress: (pageNumber - 0.5) / pagesToRender,
+                message: `Processing page ${pageNumber}/${pagesToRender}...`,
+              });
+              const ocr = await engine.recognize(imageSrc, setOcrProgress);
+              results.push({ pageNumber, ocr, imageSrc });
+              setPdfPageResults([...results]);
+              setOcrResult(ocr);
+            },
+          });
         } else {
           const src = URL.createObjectURL(file);
+          objectUrlsRef.current.push(src);
           setImageSrc(src);
 
-          // Load models if needed
-          if (!engine.isReady) {
-            setOcrProgress({
-              stage: 'loading-models',
-              progress: 0,
-              message: 'Downloading models...',
-            });
-            await engine.load((name, fromCache) => {
-              setOcrProgress({
-                stage: 'loading-models',
-                progress: fromCache ? 0.8 : 0.5,
-                message: `Loaded ${name} model${fromCache ? ' (cached)' : ''}`,
-              });
-            });
-          }
+          await ensureModels();
 
-          // Run OCR
           const result = await engine.recognize(src, setOcrProgress);
           setOcrResult(result);
         }
       } catch (err) {
+        // A cancelled render is expected when the user picks another file.
+        if (err instanceof Error && err.name === 'AbortError') return;
         setError(err instanceof Error ? err.message : t('error.ocrFailed'));
       } finally {
         setIsProcessing(false);
         setOcrProgress(null);
       }
     },
-    [enhance, t]
+    [enhance, releaseObjectUrls, t]
   );
 
   const buildEnhanceRequest = useCallback((): EnhanceRequest | null => {
