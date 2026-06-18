@@ -37,24 +37,47 @@ export function useEnhance() {
 
       const decoder = new TextDecoder();
       let accumulated = '';
+      let buffer = '';
+
+      const processEvent = (event: string) => {
+        let eventName = 'message';
+        const dataLines: string[] = [];
+
+        for (const line of event.split(/\r?\n/)) {
+          if (line.startsWith('event:')) {
+            eventName = line.slice(6).trim();
+          } else if (line.startsWith('data: ')) {
+            dataLines.push(line.slice(6));
+          } else if (line.startsWith('data:')) {
+            dataLines.push(line.slice(5));
+          }
+        }
+
+        const data = dataLines.join('\n');
+        if (eventName === 'error') {
+          const parsed = JSON.parse(data) as { message?: string };
+          throw new Error(parsed.message ?? 'LLM request failed');
+        }
+
+        if (eventName === 'done' || !data) return;
+
+        accumulated += data;
+        setState({ status: 'streaming', text: accumulated, error: null });
+      };
 
       for (;;) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        // Parse SSE data lines
-        const lines = chunk.split('\n');
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data.trim()) {
-              accumulated += data;
-              setState({ status: 'streaming', text: accumulated, error: null });
-            }
-          }
-        }
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split(/\r?\n\r?\n/);
+        buffer = events.pop() ?? '';
+
+        for (const event of events) processEvent(event);
       }
+
+      buffer += decoder.decode();
+      if (buffer.trim()) processEvent(buffer);
 
       setState({ status: 'done', text: accumulated, error: null });
     } catch (err) {

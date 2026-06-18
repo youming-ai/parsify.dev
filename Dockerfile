@@ -16,5 +16,7 @@ ENV PORT=5173
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/package.json ./
 COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/src ./src
+COPY --from=build /app/tsconfig.json ./
 EXPOSE 5173
 CMD ["bun", "run", "start"]

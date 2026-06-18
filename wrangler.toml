@@ -7,7 +7,7 @@ binding = "RATE_LIMIT_KV"
 id = "c239b08869ed4cb6ad6bf46ad131f6eb"
 
 [assets]
-directory = "dist"
+directory = "dist/client"
 
 [observability]
 enabled = false

@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => ({
     tailwindcss(),
   ],
   resolve: {
+    conditions: ['onnxruntime-web-use-extern-wasm'],
     alias: {
       '~': '/src',
     },

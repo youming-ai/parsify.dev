@@ -8,8 +8,8 @@ import type { OcrEngineConfig, OcrProgress, OcrResult } from './types';
  * Usage:
  * ```ts
  * const engine = new OcrEngine();
- * await engine.load((progress) => console.log(progress));
- * const result = await engine.recognize(imageUrl, (progress) => console.log(progress));
+ * await engine.load((progress) => logger.debug(JSON.stringify(progress)));
+ * const result = await engine.recognize(imageUrl, (progress) => logger.debug(JSON.stringify(progress)));
  * ```
  */
 export class OcrEngine {

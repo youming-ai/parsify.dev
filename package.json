@@ -26,7 +26,7 @@
     "dev:ui": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "bun dist/server/entry.server.js",
+    "start": "bun src/prod-server.ts",
     "deploy": "wrangler deploy",
     "lint": "biome check ./src",
     "lint:fix": "biome check --fix ./src",
@@ -34,7 +34,7 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "clean": "rm -rf node_modules dist .output",
-    "postinstall": "mkdir -p public/ort && cp node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.jsep.mjs node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.jsep.wasm node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm public/ort/"
+    "postinstall": "mkdir -p public/ort && cp node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.mjs node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm public/ort/"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.1",

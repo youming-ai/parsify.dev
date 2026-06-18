@@ -7,7 +7,7 @@ const en = {
   'hero.headWord': 'IMAGE',
   'hero.headPost': '',
   'hero.sub':
-    'On-device OCR powered by PaddleOCR PP-OCRv6. Images and PDFs are recognized right in your browser — never uploaded, never stored.',
+    'On-device OCR powered by PaddleOCR PP-OCRv6. Files stay in your browser; optional AI cleanup only sends extracted text when you request it.',
 
   'upload.idle': 'SCANNER · IDLE',
   'upload.drop': 'Drop an image to scan',
@@ -18,7 +18,7 @@ const en = {
   'upload.errSize': 'File too large. Maximum size is {mb}MB.',
 
   'spec.local.label': 'ON-DEVICE',
-  'spec.local.desc': 'Runs entirely in your browser. Zero uploads, zero servers.',
+  'spec.local.desc': 'OCR runs in your browser. Files are never uploaded.',
   'spec.model.label': 'PP-OCRv6',
   'spec.model.desc': "PaddleOCR's latest models — tiny, fast, cached after first load.",
   'spec.scripts.label': '50+ SCRIPTS',
@@ -47,6 +47,8 @@ const en = {
   'output.json': 'JSON',
   'output.lines': 'LINES · {n}',
   'output.ai': 'AI CLEANUP',
+  'output.enhance': 'AI cleanup',
+  'output.enhancing': 'Cleaning...',
   'output.streaming': 'streaming…',
   'output.aiWaiting': 'Waiting for response…',
   'output.aiError': 'AI ERROR',
@@ -69,7 +71,7 @@ const zh: Record<TranslationKey, string> = {
   'hero.headWord': '图像',
   'hero.headPost': '中提取文字',
   'hero.sub':
-    '基于 PaddleOCR PP-OCRv6 的本地 OCR。图片与 PDF 全部在你的浏览器中识别——绝不上传、绝不存储。',
+    '基于 PaddleOCR PP-OCRv6 的本地 OCR。文件保留在浏览器中；只有当你主动请求 AI 整理时，才会发送提取后的文字。',
 
   'upload.idle': '扫描器 · 待机',
   'upload.drop': '拖入图片开始扫描',
@@ -80,7 +82,7 @@ const zh: Record<TranslationKey, string> = {
   'upload.errSize': '文件过大，最大 {mb}MB。',
 
   'spec.local.label': '本地运行',
-  'spec.local.desc': '完全在浏览器中运行。零上传、零服务器。',
+  'spec.local.desc': 'OCR 在浏览器中运行。文件绝不上传。',
   'spec.model.label': 'PP-OCRv6',
   'spec.model.desc': 'PaddleOCR 最新模型——小巧、快速，首次加载后缓存。',
   'spec.scripts.label': '50+ 种文字',
@@ -109,6 +111,8 @@ const zh: Record<TranslationKey, string> = {
   'output.json': 'JSON',
   'output.lines': '逐行识别 · {n}',
   'output.ai': 'AI 整理',
+  'output.enhance': 'AI 整理',
+  'output.enhancing': '整理中...',
   'output.streaming': '生成中…',
   'output.aiWaiting': '等待响应…',
   'output.aiError': 'AI 错误',

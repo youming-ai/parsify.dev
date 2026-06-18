@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
 import { Hono } from 'hono';
 import { enhance } from '~/server/routers/enhance';
 
@@ -24,7 +24,25 @@ const validBody = {
   ],
 };
 
+const originalFetch = globalThis.fetch;
+
 describe('POST /enhance', () => {
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('returns 400 for malformed JSON', async () => {
+    const app = createApp();
+    const res = await app.request('/enhance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{',
+    });
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.code).toBe('INVALID_REQUEST');
+  });
+
   it('returns 400 for missing text', async () => {
     const app = createApp();
     const res = await app.request('/enhance', {
@@ -68,5 +86,47 @@ describe('POST /enhance', () => {
     expect(res.status).toBe(500);
     const body = await res.json();
     expect(body.code).toBe('CONFIG_ERROR');
+  });
+
+  it('streams LLM deltas when LLM_API_KEY is configured', async () => {
+    globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body));
+      expect(body.model).toBe('deepseek-v4-flash');
+      expect(init?.headers).toEqual(
+        expect.objectContaining({
+          authorization: 'Bearer test-key',
+          'content-type': 'application/json',
+        })
+      );
+
+      return new Response(
+        [
+          'data: {"choices":[{"delta":{"content":"Hello"}}]}',
+          '',
+          'data: {"choices":[{"delta":{"content":" world"}}]}',
+          '',
+          'data: [DONE]',
+          '',
+        ].join('\n'),
+        { headers: { 'content-type': 'text/event-stream' } }
+      );
+    }) as typeof fetch;
+
+    const app = createApp();
+    const res = await app.request(
+      '/enhance',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(validBody),
+      },
+      { LLM_API_KEY: 'test-key' }
+    );
+
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain('data: Hello');
+    expect(body).toContain('data:  world');
+    expect(body).toContain('event: done');
   });
 });

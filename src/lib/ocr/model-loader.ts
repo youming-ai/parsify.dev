@@ -1,4 +1,4 @@
-import * as ort from 'onnxruntime-web';
+import * as ort from 'onnxruntime-web/wasm';
 import { logger } from '~/lib/logger';
 
 export type ModelName = 'det' | 'cls' | 'rec';
@@ -123,8 +123,7 @@ export async function loadModels(
   ort.env.wasm.numThreads = 1;
   // Vite 7+ refuses to import JS files from /public during dev, so load the
   // ONNX Runtime wasm loader module directly from node_modules in development.
-  // In production the files are copied to /ort by the postinstall script and
-  // served as static assets from /public.
+  // In production the non-JSEP WASM files are copied to /ort by postinstall.
   ort.env.wasm.wasmPaths = import.meta.env['DEV'] ? '/node_modules/onnxruntime-web/dist/' : '/ort/';
 
   const loadOne = async (name: ModelName, allowRetry = true): Promise<ort.InferenceSession> => {

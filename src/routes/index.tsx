@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Sparkles } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { useI18n } from '~/components/i18n-provider';
 import { EnhanceOutput } from '~/components/ocr/enhance-output';
@@ -15,6 +15,7 @@ import { renderPdfPages } from '~/lib/ocr/pdf-renderer';
 import type { OcrProgress, OcrResult as OcrResultType, PdfPageResult } from '~/lib/ocr/types';
 import { useEnhance } from '~/lib/ocr/use-enhance';
 import { cn } from '~/lib/utils';
+import type { EnhanceRequest } from '~/schemas/enhance';
 
 export const Route = createFileRoute('/')({
   component: HomePage,
@@ -107,15 +108,6 @@ function HomePage() {
             setPdfPageResults([...results]);
             setOcrResult(ocr);
           }
-
-          // Aggregate all text for enhance
-          const allText = results
-            .map((r) => `--- Page ${r.pageNumber} ---\n${r.ocr.text}`)
-            .join('\n\n');
-          const allBoxes = results.flatMap((r) => r.ocr.boxes);
-          if (allBoxes.length > 0) {
-            await enhance.run({ text: allText, boxes: allBoxes });
-          }
         } else {
           const src = URL.createObjectURL(file);
           setImageSrc(src);
@@ -139,14 +131,6 @@ function HomePage() {
           // Run OCR
           const result = await engine.recognize(src, setOcrProgress);
           setOcrResult(result);
-
-          // Auto-send to enhance
-          if (result.boxes.length > 0) {
-            await enhance.run({
-              text: result.text,
-              boxes: result.boxes,
-            });
-          }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : t('error.ocrFailed'));
@@ -158,9 +142,32 @@ function HomePage() {
     [enhance, t]
   );
 
+  const buildEnhanceRequest = useCallback((): EnhanceRequest | null => {
+    if (pdfPageResults.length > 0) {
+      const text = pdfPageResults
+        .map((r) => `--- Page ${r.pageNumber} ---\n${r.ocr.text}`)
+        .join('\n\n');
+      const boxes = pdfPageResults.flatMap((r) => r.ocr.boxes);
+      return text.trim() && boxes.length > 0 ? { text, boxes } : null;
+    }
+
+    if (!ocrResult || ocrResult.boxes.length === 0 || !ocrResult.text.trim()) {
+      return null;
+    }
+
+    return { text: ocrResult.text, boxes: ocrResult.boxes };
+  }, [ocrResult, pdfPageResults]);
+
+  const handleEnhance = useCallback(async () => {
+    const request = buildEnhanceRequest();
+    if (!request) return;
+    await enhance.run(request);
+  }, [buildEnhanceRequest, enhance]);
+
   const enhanceStreaming = enhance.status === 'streaming';
   const recognizedText = ocrResult?.text ?? '';
   const docText = enhance.text || recognizedText;
+  const canEnhance = buildEnhanceRequest() !== null && !isProcessing && !enhanceStreaming;
   const jsonText = ocrResult
     ? JSON.stringify(
         { boxes: ocrResult.boxes, text: ocrResult.text, elapsed: ocrResult.elapsed },
@@ -287,6 +294,16 @@ function HomePage() {
                 </OutputTab>
               </div>
               <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1.5 px-2 font-mono text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={handleEnhance}
+                  disabled={!canEnhance}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>{enhanceStreaming ? t('output.enhancing') : t('output.enhance')}</span>
+                </Button>
                 <CopyButton
                   text={activeText}
                   className="font-mono text-[11px] text-muted-foreground transition-colors hover:text-foreground"

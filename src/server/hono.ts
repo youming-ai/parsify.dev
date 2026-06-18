@@ -73,13 +73,13 @@ app.get('/llm.txt', (c) => {
   const content = `# Parsify — Browser-Local OCR Tool
 
 ## About
-Parsify is a browser-local OCR recognition tool powered by PaddleOCR PP-OCRv6 Tiny. Images never leave the user's device — all OCR processing happens locally in the browser using ONNX Runtime Web.
+Parsify is a browser-local OCR recognition tool powered by PaddleOCR PP-OCRv6 Tiny. Files stay on the user's device — OCR processing happens locally in the browser using ONNX Runtime Web. Optional AI cleanup sends extracted text only when requested.
 
 ## How It Works
 1. User uploads an image (drag & drop, paste, or file picker)
 2. PP-OCRv6 Tiny runs in the browser via ONNX Runtime Web (WASM)
 3. Three-stage pipeline: text detection → direction classification → text recognition
-4. Optional: OCR results sent to /api/enhance for LLM post-processing
+4. Optional: user-triggered OCR text is sent to /api/enhance for LLM post-processing
 
 ## API Endpoints
 
@@ -98,10 +98,10 @@ LLM post-processing of OCR text (text correction, formatting, structuring).
 **Response:** SSE stream with enhanced text
 
 ## Features
-- 100% client-side OCR — images never leave the browser
+- Client-side OCR — source files never leave the browser
 - 50+ language support (Chinese, English, Japanese, 46 Latin-script languages)
 - PP-OCRv6 Tiny: only 1.5MB, runs on any device
-- LLM-enhanced text correction via /api/enhance
+- Optional LLM-enhanced text correction via /api/enhance
 
 ## Rate Limits
 - /api/enhance: 20 requests / 15 min per IP
