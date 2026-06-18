@@ -46,3 +46,11 @@ jobs:
 
       - name: Run tests
         run: bun run test -- --coverage
+
+      - name: Build client
+        run: bun run build
+
+      - name: Validate Cloudflare Worker package
+        # Validate the Worker package is well-formed. `versions upload --dry-run`
+        # checks the same packaging step as production `wrangler deploy`.
+        run: bunx wrangler versions upload --dry-run --outdir /tmp/worker-dist

@@ -3,22 +3,22 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-    <title>SEO Analyzer — Parsify | URL to SEO Analysis, Instantly</title>
-    <meta name="description" content="Paste any URL and get comprehensive SEO analysis with SEO.md, robots.txt, and llm.txt. AI-powered SEO optimization for your website." />
+    <title>Parsify OCR — Browser-Local Text Recognition</title>
+    <meta name="description" content="Browser-local OCR powered by PaddleOCR PP-OCRv6. Extract text instantly while files stay on your device. Optional AI cleanup sends extracted text only when requested." />
     <link rel="canonical" href="https://parsify.dev/" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#18181b" />
+    <meta name="theme-color" content="#0a0d14" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Martian+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="SEO Analyzer — Parsify | URL to SEO Analysis" />
-    <meta property="og:description" content="Paste any URL and get comprehensive SEO analysis with SEO.md, robots.txt, and llm.txt. AI-powered SEO optimization." />
+    <meta property="og:title" content="Parsify OCR — Browser-Local Text Recognition" />
+    <meta property="og:description" content="Browser-local OCR powered by PaddleOCR PP-OCRv6. Extract text instantly while files stay on your device." />
     <meta property="og:url" content="https://parsify.dev/" />
     <meta property="og:site_name" content="Parsify.dev" />
     <meta property="og:locale" content="en_US" />
@@ -27,8 +27,8 @@
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@parsifydev" />
-    <meta name="twitter:title" content="SEO Analyzer — Parsify | URL to SEO Analysis" />
-    <meta name="twitter:description" content="Paste any URL and get comprehensive SEO analysis with SEO.md, robots.txt, and llm.txt." />
+    <meta name="twitter:title" content="Parsify OCR — Browser-Local Text Recognition" />
+    <meta name="twitter:description" content="Browser-local OCR powered by PaddleOCR PP-OCRv6. Extract text instantly while files stay on your device." />
     <meta name="twitter:image" content="https://parsify.dev/opengraph-image.png" />
     <script>
       (function(c,l,a,r,i,t,y){
@@ -41,14 +41,19 @@
       var stored = localStorage.getItem('parsify-theme');
       var theme = stored !== null ? stored : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       if (theme === 'dark') document.documentElement.classList.add('dark');
+
+      var storedLang = localStorage.getItem('parsify-lang');
+      var lang = (storedLang === 'en' || storedLang === 'zh') ? storedLang
+        : ((navigator.language || '').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en');
+      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
     </script>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "Parsify SEO Analyzer",
+      "name": "Parsify OCR",
       "url": "https://parsify.dev",
-      "description": "Paste any URL and get comprehensive SEO analysis with SEO.md, robots.txt, and llm.txt. AI-powered SEO optimization.",
+      "description": "Browser-local OCR powered by PaddleOCR PP-OCRv6. Extract text instantly while files stay on your device.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Web",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },

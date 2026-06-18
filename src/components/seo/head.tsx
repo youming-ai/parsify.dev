@@ -1,5 +1,14 @@
 import { useEffect } from 'react';
-import { SEO_CONFIG } from '~/lib/seo-config';
+
+const SITE_CONFIG = {
+  BASE_URL: 'https://parsify.dev',
+  SITE_NAME: 'Parsify',
+  DEFAULT_LOCALE: 'en_US',
+  TWITTER_HANDLE: '@parsifydev',
+  DEFAULT_OG_IMAGE: 'https://parsify.dev/opengraph-image.png',
+  DEFAULT_OG_IMAGE_WIDTH: 1200,
+  DEFAULT_OG_IMAGE_HEIGHT: 630,
+};
 
 interface Breadcrumb {
   name: string;
@@ -22,14 +31,14 @@ export function useDocumentHead({
   description,
   path,
   ogType = 'website',
-  ogImage = SEO_CONFIG.DEFAULT_OG_IMAGE,
+  ogImage = SITE_CONFIG.DEFAULT_OG_IMAGE,
   appendSiteName = true,
   breadcrumbs,
   extraJsonLd,
 }: HeadProps) {
   const fullTitle =
     appendSiteName && !title.includes('Parsify.dev') ? `${title} | Parsify.dev` : title;
-  const url = new URL(path, SEO_CONFIG.BASE_URL).toString();
+  const url = new URL(path, SITE_CONFIG.BASE_URL).toString();
 
   useEffect(() => {
     document.title = fullTitle;
@@ -40,13 +49,13 @@ export function useDocumentHead({
     setMetaProperty('og:description', description);
     setMetaProperty('og:type', ogType);
     setMetaProperty('og:url', url);
-    setMetaProperty('og:site_name', SEO_CONFIG.SITE_NAME);
-    setMetaProperty('og:locale', SEO_CONFIG.DEFAULT_LOCALE);
+    setMetaProperty('og:site_name', SITE_CONFIG.SITE_NAME);
+    setMetaProperty('og:locale', SITE_CONFIG.DEFAULT_LOCALE);
     setMetaProperty('og:image', ogImage);
-    setMetaProperty('og:image:width', String(SEO_CONFIG.DEFAULT_OG_IMAGE_WIDTH));
-    setMetaProperty('og:image:height', String(SEO_CONFIG.DEFAULT_OG_IMAGE_HEIGHT));
+    setMetaProperty('og:image:width', String(SITE_CONFIG.DEFAULT_OG_IMAGE_WIDTH));
+    setMetaProperty('og:image:height', String(SITE_CONFIG.DEFAULT_OG_IMAGE_HEIGHT));
     setMetaName('twitter:card', 'summary_large_image');
-    setMetaName('twitter:site', SEO_CONFIG.TWITTER_HANDLE);
+    setMetaName('twitter:site', SITE_CONFIG.TWITTER_HANDLE);
     setMetaName('twitter:title', fullTitle);
     setMetaName('twitter:description', description);
     setMetaName('twitter:image', ogImage);
@@ -61,7 +70,7 @@ export function useDocumentHead({
           '@type': 'ListItem',
           position: idx + 1,
           name: crumb.name,
-          item: new URL(crumb.url, SEO_CONFIG.BASE_URL).toString(),
+          item: new URL(crumb.url, SITE_CONFIG.BASE_URL).toString(),
         })),
       });
     }

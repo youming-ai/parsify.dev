@@ -4,9 +4,15 @@ import react from '@vitejs/plugin-react';
 import { cloudflare } from '@cloudflare/vite-plugin';
 import { defineConfig } from 'vite';
 
-export default defineConfig({
-  plugins: [cloudflare(), TanStackRouterVite(), react(), tailwindcss()],
+export default defineConfig(({ mode }) => ({
+  plugins: [
+    ...(mode !== 'development' ? [cloudflare()] : []),
+    TanStackRouterVite(),
+    react(),
+    tailwindcss(),
+  ],
   resolve: {
+    conditions: ['onnxruntime-web-use-extern-wasm'],
     alias: {
       '~': '/src',
     },
@@ -19,4 +25,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

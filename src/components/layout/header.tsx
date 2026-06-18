@@ -1,5 +1,5 @@
-import { Globe } from 'lucide-react';
 import { Link } from '~/components/link';
+import { LanguageToggle } from './language-toggle';
 import { ThemeToggle } from './theme-toggle';
 
 export function Header() {
@@ -8,15 +8,21 @@ export function Header() {
       <div className="mx-auto flex h-14 max-w-screen-2xl items-center justify-between px-6 lg:px-8">
         <Link
           href="/"
-          className="flex items-center gap-2 font-bold tracking-tight transition-opacity hover:opacity-80"
+          className="group flex items-center gap-2.5 transition-opacity hover:opacity-80"
         >
-          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Globe className="h-3.5 w-3.5" />
-          </div>
-          <span>Parsify</span>
+          {/* Detection-bracket mark: a glyph caught in the engine's sights */}
+          <span className="relative grid h-6 w-6 place-items-center">
+            <span className="pointer-events-none absolute left-0 top-0 h-2 w-2 border-l-2 border-t-2 border-detect" />
+            <span className="pointer-events-none absolute right-0 top-0 h-2 w-2 border-r-2 border-t-2 border-detect" />
+            <span className="pointer-events-none absolute bottom-0 left-0 h-2 w-2 border-b-2 border-l-2 border-detect" />
+            <span className="pointer-events-none absolute bottom-0 right-0 h-2 w-2 border-b-2 border-r-2 border-detect" />
+            <span className="h-2 w-2 bg-detect" />
+          </span>
+          <span className="font-display text-sm font-semibold tracking-[0.18em]">PARSIFY</span>
         </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <LanguageToggle />
           <ThemeToggle />
         </div>
       </div>

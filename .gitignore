@@ -84,5 +84,6 @@ bun.lockb
 # TanStack Start
 .vinxi/
 src/routeTree.gen.ts
-.output/
-
+# Generated assets
+public/pdf.worker.min.mjs
+public/ort/

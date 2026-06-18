@@ -3,42 +3,45 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
 import { logger } from '~/lib/logger';
-import { agent } from '~/server/routers/agent';
-import { parse } from '~/server/routers/parse';
+import { enhance } from '~/server/routers/enhance';
 
-interface RateLimitEntry {
-  count: number;
-  resetTime: number;
+interface RateLimitBinding {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
 }
 
-function rateLimiter(endpoint: string, limit: number, windowMs: number) {
+// Window length (seconds) configured on the [[ratelimits]] binding in
+// wrangler.toml. Used only to set a Retry-After hint on 429 responses.
+const RATE_LIMIT_PERIOD_SECONDS = 60;
+
+/**
+ * Per-IP limiter backed by Cloudflare's native Rate Limiting binding, which is
+ * atomic and managed by the edge — no read-modify-write race like the previous
+ * KV counter. When the binding is absent (local dev, Docker/bun runtime, tests)
+ * the middleware degrades to a no-op. The limit/period live on the binding
+ * config; this middleware only supplies the per-client key.
+ */
+function rateLimiter(endpoint: string) {
   return async (c: Context, next: Next) => {
-    const kv = (c.env as Record<string, unknown>)?.['RATE_LIMIT_KV'] as KVNamespace | undefined;
-    if (!kv) {
+    const limiter = (c.env as Record<string, unknown>)?.['RATE_LIMITER'] as
+      | RateLimitBinding
+      | undefined;
+    if (!limiter?.limit) {
       await next();
       return;
     }
 
     const ip = c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? 'unknown';
-    const key = `rl:${endpoint}:${ip}`;
-    const now = Date.now();
 
-    const raw = await kv.get<RateLimitEntry>(key, 'json');
-    let entry: RateLimitEntry;
-
-    if (!raw || now > raw.resetTime) {
-      entry = { count: 0, resetTime: now + windowMs };
-    } else {
-      entry = raw;
+    let success: boolean;
+    try {
+      ({ success } = await limiter.limit({ key: `${endpoint}:${ip}` }));
+    } catch (err) {
+      logger.error(`rate limiter error: ${(err as Error).message}`);
+      return c.json({ error: 'RATE_LIMIT_UNAVAILABLE', message: 'Rate limiter unavailable' }, 503);
     }
 
-    entry.count++;
-
-    await kv.put(key, JSON.stringify(entry), {
-      expirationTtl: Math.ceil(windowMs / 1000) + 60,
-    });
-
-    if (entry.count > limit) {
+    if (!success) {
+      c.header('Retry-After', String(RATE_LIMIT_PERIOD_SECONDS));
       return c.json({ error: 'RATE_LIMITED', message: 'Too many requests' }, 429);
     }
 
@@ -71,50 +74,41 @@ app.get('/llm.txt', (c) => {
   const origin =
     (c.env as Record<string, string | undefined>)?.['PUBLIC_ORIGIN'] ?? 'https://parsify.dev';
 
-  const content = `# Parsify — AI-Powered SEO Analyzer
+  const content = `# Parsify — Browser-Local OCR Tool
 
 ## About
-Parsify is an AI-powered SEO analysis tool. Paste any URL and get comprehensive SEO analysis including SEO.md document, robots.txt, and llm.txt.
+Parsify is a browser-local OCR recognition tool powered by PaddleOCR PP-OCRv6 Tiny. Files stay on the user's device — OCR processing happens locally in the browser using ONNX Runtime Web. Optional AI cleanup sends extracted text only when requested.
 
 ## How It Works
-1. User submits a URL
-2. Jina Reader fetches and converts the page to clean markdown
-3. DeepSeek LLM performs comprehensive SEO analysis
-4. Results include SEO.md, robots.txt, and llm.txt generation
+1. User uploads an image (drag & drop, paste, or file picker)
+2. PP-OCRv6 Tiny runs in the browser via ONNX Runtime Web (WASM)
+3. Three-stage pipeline: text detection → direction classification → text recognition
+4. Optional: user-triggered OCR text is sent to /api/enhance for LLM post-processing
 
 ## API Endpoints
 
-### POST /api/parse
-Converts a URL to clean markdown.
-
-**Request:**
-\`\`\`json
-{"url": "https://example.com/article"}
-\`\`\`
-
-**Response:**
-\`\`\`json
-{"url": "...", "markdown": "...", "mdBytes": 12345, "mdTokens": 3200}
-\`\`\`
-
-### POST /api/agent
-Generates SEO analysis from markdown content.
+### POST /api/enhance
+LLM post-processing of OCR text (text correction, formatting, structuring).
 
 **Request:**
 \`\`\`json
 {
-  "markdown": "...",
-  "prompt": "请对这个网页进行全面的SEO分析",
-  "outputFormat": "json"
+  "text": "OCR extracted text",
+  "boxes": [{"points": [[0,0],[100,0],[100,30],[0,30]], "text": "Hello", "confidence": 0.95}],
+  "prompt": "optional custom prompt"
 }
 \`\`\`
 
-**Response (JSON):** SEO analysis with seoMd, robotsTxt, llmTxt
-**Response (text):** Streaming plain text
+**Response:** SSE stream with enhanced text
+
+## Features
+- Client-side OCR — source files never leave the browser
+- 50+ language support (Chinese, English, Japanese, 46 Latin-script languages)
+- PP-OCRv6 Tiny: only 1.5MB, runs on any device
+- Optional LLM-enhanced text correction via /api/enhance
 
 ## Rate Limits
-- /api/parse: 20 requests / 15 min per IP
-- /api/agent: 20 requests / 15 min per IP
+- /api/enhance: 20 requests / 60s per IP
 
 ## Contact
 Website: ${origin}
@@ -215,14 +209,11 @@ app.get('/sitemap.xml', (c) => {
   });
 });
 
-// Rate limit on /parse (20 req / 15 min per IP)
-app.use('/parse', rateLimiter('parse', 20, 15 * 60 * 1000));
+// Rate limit on /enhance (per-IP; limit/period configured on the
+// [[ratelimits]] binding in wrangler.toml — currently 20 req / 60s)
+app.use('/enhance', rateLimiter('enhance'));
 
-// Rate limit on /agent (20 req / 15 min per IP)
-app.use('/agent', rateLimiter('agent', 20, 15 * 60 * 1000));
-
-app.route('/parse', parse);
-app.route('/agent', agent);
+app.route('/enhance', enhance);
 
 app.onError((err, c) => {
   logger.error(`unhandled: ${err.message}`);
