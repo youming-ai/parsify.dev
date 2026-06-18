@@ -133,8 +133,12 @@ export async function loadModels(
     if (!buffer) {
       logger.info(`Downloading model: ${name}`);
       buffer = await fetchModel(name, baseUrl);
-      await setCachedModel(name, buffer);
-      logger.info(`Cached model: ${name} (${(buffer.byteLength / 1024).toFixed(1)}KB)`);
+      try {
+        await setCachedModel(name, buffer);
+        logger.info(`Cached model: ${name} (${(buffer.byteLength / 1024).toFixed(1)}KB)`);
+      } catch (cacheErr) {
+        logger.warn(`Failed to cache model ${name}: ${(cacheErr as Error).message}`);
+      }
     } else {
       logger.info(`Loaded model from cache: ${name}`);
     }

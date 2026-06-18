@@ -36,10 +36,8 @@ function rateLimiter(endpoint: string) {
     try {
       ({ success } = await limiter.limit({ key: `${endpoint}:${ip}` }));
     } catch (err) {
-      // Never let a limiter failure take down the endpoint.
       logger.error(`rate limiter error: ${(err as Error).message}`);
-      await next();
-      return;
+      return c.json({ error: 'RATE_LIMIT_UNAVAILABLE', message: 'Rate limiter unavailable' }, 503);
     }
 
     if (!success) {

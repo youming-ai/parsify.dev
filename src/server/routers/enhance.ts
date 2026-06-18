@@ -104,7 +104,28 @@ enhance.post('/', async (c) => {
 
       for (;;) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          // Flush any remaining bytes in the decoder
+          buffer += decoder.decode();
+          // Process any remaining complete lines in the buffer
+          if (buffer.trim()) {
+            const data = buffer.trim();
+            if (data.startsWith('data:')) {
+              const payload = data.slice(5).trim();
+              if (payload && payload !== '[DONE]') {
+                const delta = parseDelta(payload);
+                if (delta) {
+                  await stream.writeSSE({
+                    event: 'message',
+                    data: delta,
+                    id: String(Date.now()),
+                  });
+                }
+              }
+            }
+          }
+          break;
+        }
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
