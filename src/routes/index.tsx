@@ -20,7 +20,13 @@ export const Route = createFileRoute('/')({
   component: HomePage,
 });
 
-let engine: OcrEngine | null = null;
+let enginePromise: Promise<OcrEngine> | null = null;
+const getEngine = (): Promise<OcrEngine> => {
+  if (!enginePromise) {
+    enginePromise = import('~/lib/ocr/engine').then(({ OcrEngine }) => new OcrEngine());
+  }
+  return enginePromise;
+};
 
 function HomePage() {
   const [ocrProgress, setOcrProgress] = useState<OcrProgress | null>(null);
@@ -95,24 +101,21 @@ function HomePage() {
 
       const isPdf = file.type === 'application/pdf';
       const ensureModels = async () => {
-        if (!engine) {
-          const { OcrEngine } = await import('~/lib/ocr/engine');
-          engine = new OcrEngine();
-        }
-        if (engine.isReady) return engine;
+        const loadedEngine = await getEngine();
+        if (loadedEngine.isReady) return loadedEngine;
         setOcrProgress({
           stage: 'loading-models',
           progress: 0,
           message: 'Loading OCR models...',
         });
-        await engine.load((name, fromCache) => {
+        await loadedEngine.load((name, fromCache) => {
           setOcrProgress({
             stage: 'loading-models',
             progress: fromCache ? 0.8 : 0.5,
             message: `Loaded ${name} model${fromCache ? ' (cached)' : ''}`,
           });
         });
-        return engine;
+        return loadedEngine;
       };
 
       try {
