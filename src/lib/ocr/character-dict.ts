@@ -197,11 +197,19 @@ export const CHARACTER_DICT: string[] = [
 export async function loadFullDictionary(baseUrl = '/models/pp-ocrv6-tiny'): Promise<string[]> {
   try {
     const response = await fetch(`${baseUrl}/ppocrv6_tiny_dict.txt`);
-    if (!response.ok) return CHARACTER_DICT;
+    if (!response.ok) {
+      console.warn(
+        `[OCR] Dictionary fetch failed (${response.status}), using embedded subset — text output may be degraded`
+      );
+      return CHARACTER_DICT;
+    }
 
     const contentType = response.headers.get('content-type') ?? '';
     const text = await response.text();
     if (contentType.includes('text/html') || /^\s*<(?:!doctype|html)/i.test(text)) {
+      console.warn(
+        '[OCR] Dictionary endpoint returned HTML instead of text, using embedded subset — text output may be degraded'
+      );
       return CHARACTER_DICT;
     }
 
@@ -215,10 +223,18 @@ export async function loadFullDictionary(baseUrl = '/models/pp-ocrv6-tiny'): Pro
 
     // A real PP-OCR dictionary has thousands of single-character entries; a
     // handful of lines means we fetched something that isn't a dictionary.
-    if (lines.length < 100) return CHARACTER_DICT;
+    if (lines.length < 100) {
+      console.warn(
+        `[OCR] Dictionary file has only ${lines.length} entries (expected 1000+), using embedded subset — text output may be degraded`
+      );
+      return CHARACTER_DICT;
+    }
 
     return ['', ...lines, ' '];
   } catch {
+    console.warn(
+      '[OCR] Dictionary fetch failed, using embedded subset — text output may be degraded'
+    );
     return CHARACTER_DICT;
   }
 }

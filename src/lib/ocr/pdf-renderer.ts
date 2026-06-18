@@ -67,9 +67,8 @@ export async function renderPdfPages(
 
   const arrayBuffer = await file.arrayBuffer();
   const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-  const pdf: PDFDocumentProxy = await loadingTask.promise;
-
   try {
+    const pdf: PDFDocumentProxy = await loadingTask.promise;
     const totalPages = pdf.numPages;
     const pagesToRender = Math.min(totalPages, maxPages);
 

@@ -34,6 +34,7 @@ export function ImageUpload({
   const [isDragging, setIsDragging] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isPdf, setIsPdf] = useState(false);
 
   const validate = useCallback(
     (file: File): string | null => {
@@ -58,6 +59,7 @@ export function ImageUpload({
         return;
       }
       setError(null);
+      setIsPdf(file.type === 'application/pdf');
       setPreview(URL.createObjectURL(file));
       onImageSelect(file);
     },
@@ -99,7 +101,30 @@ export function ImageUpload({
     <div className={cn('w-full', className)}>
       {preview ? (
         <div className="relative overflow-hidden rounded-lg border bg-surface">
-          <img src={preview} alt="Uploaded" className="max-h-[400px] w-full object-contain" />
+          {isPdf ? (
+            <div className="flex h-[400px] w-full items-center justify-center bg-muted">
+              <div className="text-center">
+                <svg
+                  className="mx-auto h-12 w-12 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  role="img"
+                  aria-label="PDF document"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                  />
+                </svg>
+                <p className="mt-2 text-sm text-muted-foreground">PDF Document</p>
+              </div>
+            </div>
+          ) : (
+            <img src={preview} alt="Uploaded" className="max-h-[400px] w-full object-contain" />
+          )}
           {scanning && (
             <span
               className="pointer-events-none absolute inset-x-0 h-0.5 bg-detect shadow-[0_0_12px_2px_var(--color-detect)] transition-[top] duration-300 ease-linear"

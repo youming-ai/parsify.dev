@@ -53,13 +53,21 @@ export class OcrPipeline {
     this.dict = await loadFullDictionary();
   }
 
+  setDict(dict: string[]) {
+    this.dict = dict;
+  }
+
   async process(imageSource: string): Promise<OcrResult> {
     const startTime = performance.now();
 
     // Load and preprocess image
     this.report('detecting', 0.1, 'Loading image...');
     const img = await loadImage(imageSource);
-    const { width, height, scale } = resizeImage(img.width, img.height, this.config.maxDimension);
+    const { width, height, scaleX, scaleY } = resizeImage(
+      img.width,
+      img.height,
+      this.config.maxDimension
+    );
     const { data: pixels } = imageToPixels(img, width, height);
 
     // Stage 1: Detection
@@ -109,8 +117,8 @@ export class OcrPipeline {
         const { text, confidence } = await this.recognizeBox(pixels, width, height, box.points);
         if (text.trim().length > 0) {
           const points = box.points.map((p) => [
-            Math.round((p[0] ?? 0) / scale),
-            Math.round((p[1] ?? 0) / scale),
+            Math.round((p[0] ?? 0) / scaleX),
+            Math.round((p[1] ?? 0) / scaleY),
           ]);
           textBoxes.push({ points, text, confidence });
         }

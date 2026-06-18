@@ -6,7 +6,12 @@
 export interface ResizeResult {
   width: number;
   height: number;
+  /** Legacy single scale (maxDimension / maxSide). */
   scale: number;
+  /** Actual horizontal scale after snapping. */
+  scaleX: number;
+  /** Actual vertical scale after snapping. */
+  scaleY: number;
 }
 
 /**
@@ -20,9 +25,15 @@ export function resizeImage(srcWidth: number, srcHeight: number, maxDimension = 
   // {…,56,…}") and OrtRun fails. Small images hit this too, so round in both cases.
   const scale = maxSide > maxDimension ? maxDimension / maxSide : 1;
   const snap = (v: number) => Math.max(32, Math.round((v * scale) / 32) * 32);
+  const width = snap(srcWidth);
+  const height = snap(srcHeight);
+  // Return the actual per-axis scale so downstream coordinate remapping
+  // accounts for snapping (which can shift dimensions by up to 31px).
   return {
-    width: snap(srcWidth),
-    height: snap(srcHeight),
+    width,
+    height,
+    scaleX: width / srcWidth,
+    scaleY: height / srcHeight,
     scale,
   };
 }
@@ -119,7 +130,7 @@ export function normalizeForRec(
 
   // Resize by re-drawing to canvas at target height
   const scale = targetHeight / srcHeight;
-  const newWidth = Math.round(width * scale);
+  const newWidth = Math.max(1, Math.round(width * scale));
   const pixels = newWidth * targetHeight;
   const result = new Float32Array(3 * pixels);
 

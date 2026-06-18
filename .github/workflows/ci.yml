@@ -51,7 +51,6 @@ jobs:
         run: bun run build
 
       - name: Validate Cloudflare Worker package
-        # Mirror the production deploy command (wrangler versions upload) so CI
-        # catches packaging/migration issues (e.g. a DO migration that versions
-        # upload rejects) before they fail a real deploy.
+        # Validate the Worker package is well-formed. `versions upload --dry-run`
+        # checks the same packaging step as production `wrangler deploy`.
         run: bunx wrangler versions upload --dry-run --outdir /tmp/worker-dist

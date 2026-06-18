@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { ChevronLeft, ChevronRight, Download, Sparkles } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useI18n } from '~/components/i18n-provider';
 import { EnhanceOutput } from '~/components/ocr/enhance-output';
 import { ImageUpload } from '~/components/ocr/image-upload';
@@ -196,7 +196,13 @@ function HomePage() {
   const enhanceStreaming = enhance.status === 'streaming';
   const recognizedText = ocrResult?.text ?? '';
   const docText = enhance.text || recognizedText;
-  const canEnhance = buildEnhanceRequest() !== null && !isProcessing && !enhanceStreaming;
+  const hasOcrData = useMemo(() => {
+    if (pdfPageResults.length > 0) {
+      return pdfPageResults.some((r) => r.ocr.text.trim() && r.ocr.boxes.length > 0);
+    }
+    return !!(ocrResult && ocrResult.boxes.length > 0 && ocrResult.text.trim());
+  }, [ocrResult, pdfPageResults]);
+  const canEnhance = hasOcrData && !isProcessing && !enhanceStreaming;
   const jsonText = ocrResult
     ? JSON.stringify(
         { boxes: ocrResult.boxes, text: ocrResult.text, elapsed: ocrResult.elapsed },

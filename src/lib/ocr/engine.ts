@@ -7,15 +7,17 @@ import type { OcrEngineConfig, OcrProgress, OcrResult } from './types';
  *
  * Usage:
  * ```ts
+ * import { OcrEngine } from './engine';
  * const engine = new OcrEngine();
- * await engine.load((progress) => logger.debug(JSON.stringify(progress)));
- * const result = await engine.recognize(imageUrl, (progress) => logger.debug(JSON.stringify(progress)));
+ * await engine.load();
+ * const result = await engine.recognize(imageUrl, (progress) => console.log(progress));
  * ```
  */
 export class OcrEngine {
   private models: LoadedModels | null = null;
   private config: Required<OcrEngineConfig>;
   private loading: Promise<void> | null = null;
+  private dict: string[] | null = null;
 
   constructor(config?: OcrEngineConfig) {
     this.config = {
@@ -41,8 +43,11 @@ export class OcrEngine {
     if (this.models) return;
     if (this.loading) return this.loading;
 
-    this.loading = loadModels(this.config.modelBaseUrl, onModelLoaded).then((models) => {
+    this.loading = loadModels(this.config.modelBaseUrl, onModelLoaded).then(async (models) => {
       this.models = models;
+      // Pre-load the character dictionary once so every recognize() call skips the fetch.
+      const { loadFullDictionary } = await import('./character-dict');
+      this.dict = await loadFullDictionary(this.config.modelBaseUrl);
     });
 
     try {
@@ -61,7 +66,7 @@ export class OcrEngine {
     imageSource: string,
     onProgress?: (progress: OcrProgress) => void
   ): Promise<OcrResult> {
-    if (!this.models) {
+    if (!this.models || !this.dict) {
       throw new Error('OCR engine not loaded. Call engine.load() first.');
     }
 
@@ -73,7 +78,7 @@ export class OcrEngine {
       detMinArea: this.config.detMinArea,
     });
 
-    await pipeline.init();
+    pipeline.setDict(this.dict);
     return pipeline.process(imageSource);
   }
 }

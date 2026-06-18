@@ -69,12 +69,10 @@ async function staticResponse(pathname: string): Promise<Response> {
     'content-type': MIME_TYPES[extension] ?? 'application/octet-stream',
   });
 
-  if (
-    pathname.startsWith('/assets/') ||
-    pathname.startsWith('/models/') ||
-    pathname.startsWith('/ort/')
-  ) {
+  if (pathname.startsWith('/assets/')) {
     headers.set('cache-control', 'public, max-age=31536000, immutable');
+  } else if (pathname.startsWith('/models/') || pathname.startsWith('/ort/')) {
+    headers.set('cache-control', 'public, max-age=86400, must-revalidate');
   } else {
     headers.set('cache-control', 'no-cache');
   }
