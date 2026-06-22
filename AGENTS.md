@@ -99,7 +99,7 @@ Vercel Geist Light (`vercel.com/design.md`) is the canonical design token source
 
 Typography: Geist Sans (sans-serif body/UI) + Geist Mono (code/data/corner tags). Loaded via Google Fonts `<link>` in `index.html`.
 
-Dark theme: follow-up spec (read `vercel.com/design.dark.md`). The `theme-toggle.tsx` is a deprecated no-op placeholder.
+Dark theme: Geist Dark (`vercel.com/design.dark.md`) implemented via `.dark` selector on `<html>`. The `theme-toggle.tsx` toggles between light and dark.
 
 ## Code style (Biome)
 

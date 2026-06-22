@@ -1,5 +1,6 @@
 import { Link } from '~/components/link';
 import { LanguageToggle } from './language-toggle';
+import { ThemeToggle } from './theme-toggle';
 
 export function Header() {
   return (
@@ -22,6 +23,7 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <LanguageToggle />
+          <ThemeToggle />
         </div>
       </div>
     </header>
