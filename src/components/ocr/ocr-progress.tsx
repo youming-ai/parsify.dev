@@ -33,15 +33,15 @@ export function OcrProgressIndicator({ progress, className }: OcrProgressProps) 
   const stageKey = STAGE_KEY[progress.stage];
 
   return (
-    <div className={cn('w-full space-y-3 rounded-lg border bg-surface p-4', className)}>
+    <div className={cn('w-full space-y-3 rounded-lg border bg-card p-4', className)}>
       <div className="flex items-center justify-between font-mono text-xs">
         <span className="text-foreground">{stageKey ? t(stageKey) : progress.message}</span>
-        <span className="text-detect">{pct}%</span>
+        <span className="text-blue-700">{pct}%</span>
       </div>
 
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
         <div
-          className="h-full rounded-full bg-detect transition-all duration-300"
+          className="h-full rounded-full bg-blue-700 transition-all duration-300"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -54,14 +54,14 @@ export function OcrProgressIndicator({ progress, className }: OcrProgressProps) 
               <span
                 className={cn(
                   'h-1.5 w-1.5 shrink-0 rounded-full',
-                  state === 'active' && 'animate-pulse bg-detect',
-                  state === 'done' && 'bg-detect',
+                  state === 'active' && 'animate-pulse bg-blue-700',
+                  state === 'done' && 'bg-foreground',
                   state === 'pending' && 'bg-muted-foreground/30'
                 )}
               />
               <span
                 className={cn(
-                  state === 'active' && 'text-detect',
+                  state === 'active' && 'text-blue-700',
                   state === 'done' && 'text-foreground',
                   state === 'pending' && 'text-muted-foreground/40'
                 )}

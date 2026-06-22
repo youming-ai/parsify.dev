@@ -258,10 +258,10 @@ function HomePage() {
     <div className="container mx-auto max-w-5xl px-4 py-10 sm:py-14">
       {/* Hero — the engine reads a word in front of you */}
       <section className="mb-10">
-        <p className="mb-4 font-mono text-[11px] tracking-[0.22em] text-detect">
+        <p className="mb-4 font-mono text-[11px] tracking-[0.22em] text-muted-foreground">
           ◢ {t('hero.eyebrow')}
         </p>
-        <h1 className="font-display text-3xl font-semibold leading-[1.2] tracking-tight sm:text-4xl lg:text-5xl">
+        <h1 className="font-mono text-3xl font-semibold leading-[1.2] tracking-tight sm:text-4xl lg:text-5xl">
           {t('hero.headPre')}{' '}
           <DetectionFrame
             label="99.7%"
@@ -327,13 +327,13 @@ function HomePage() {
           />
 
           {/* Right: parsed result */}
-          <div className="flex flex-col overflow-hidden rounded-lg border bg-surface lg:h-[70vh] lg:max-h-[760px]">
-            <div className="flex items-center justify-between gap-2 border-b bg-surface-2 px-3 py-2">
+          <div className="flex flex-col overflow-hidden rounded-lg border bg-card lg:h-[70vh] lg:max-h-[760px]">
+            <div className="flex items-center justify-between gap-2 border-b bg-muted px-3 py-2">
               <div className="flex items-center gap-1">
                 <OutputTab active={outputTab === 'doc'} onClick={() => setOutputTab('doc')}>
                   {t('output.doc')}
                   {enhanceStreaming && (
-                    <span className="ml-1.5 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-detect align-middle" />
+                    <span className="ml-1.5 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-blue-700 align-middle" />
                   )}
                 </OutputTab>
                 <OutputTab active={outputTab === 'json'} onClick={() => setOutputTab('json')}>
@@ -398,7 +398,7 @@ function HomePage() {
 
       {/* Spec strip — replaces the placeholder feature cards */}
       {!ocrResult && (
-        <section className="mt-12 grid overflow-hidden rounded-lg border bg-surface sm:grid-cols-3">
+        <section className="mt-12 grid overflow-hidden rounded-lg border bg-card sm:grid-cols-3">
           <SpecCell label={t('spec.local.label')} description={t('spec.local.desc')} />
           <SpecCell
             label={t('spec.model.label')}
@@ -431,7 +431,7 @@ function OutputTab({
       onClick={onClick}
       className={cn(
         'rounded px-2.5 py-1 font-mono text-[11px] tracking-wider transition-colors',
-        active ? 'bg-detect text-detect-foreground' : 'text-muted-foreground hover:text-foreground'
+        active ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'
       )}
     >
       {children}
@@ -450,8 +450,8 @@ function SpecCell({
 }) {
   return (
     <div className={cn('p-5', className)}>
-      <p className="mb-2 flex items-center gap-2 font-display text-[11px] font-semibold tracking-[0.16em] text-foreground">
-        <span className="h-1.5 w-1.5 bg-detect" />
+      <p className="mb-2 flex items-center gap-2 font-mono text-[11px] font-semibold tracking-[0.16em] text-foreground">
+        <span className="h-1.5 w-1.5 bg-foreground" />
         {label}
       </p>
       <p className="text-sm text-muted-foreground">{description}</p>

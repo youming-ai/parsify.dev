@@ -22,7 +22,7 @@ export function LanguageToggle() {
           className={cn(
             'rounded px-2 py-0.5 font-mono text-[11px] tracking-wider transition-colors',
             lang === opt.value
-              ? 'bg-detect text-detect-foreground'
+              ? 'bg-foreground text-background'
               : 'text-muted-foreground hover:text-foreground'
           )}
         >

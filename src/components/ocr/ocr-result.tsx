@@ -29,7 +29,7 @@ export function OcrResult({ boxes, highlightedIndex, onBoxHover, className }: Oc
             key={i}
             className={cn(
               'flex items-center gap-3 rounded px-2 py-1.5 transition-colors',
-              active ? 'bg-lock/10 ring-1 ring-lock/40' : 'hover:bg-muted'
+              active ? 'bg-foreground/10 ring-1 ring-foreground/20' : 'hover:bg-muted'
             )}
             onMouseEnter={() => onBoxHover(i)}
             onMouseLeave={() => onBoxHover(null)}
@@ -39,7 +39,7 @@ export function OcrResult({ boxes, highlightedIndex, onBoxHover, className }: Oc
             </span>
             <span className="h-1 w-10 shrink-0 overflow-hidden rounded-full bg-muted">
               <span
-                className={cn('block h-full', active ? 'bg-lock' : 'bg-detect')}
+                className={cn('block h-full', active ? 'bg-foreground' : 'bg-blue-700')}
                 style={{ width: `${pct}%` }}
               />
             </span>

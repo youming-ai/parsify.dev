@@ -1,55 +1,237 @@
 @import 'tailwindcss';
 
 /*
- * Parsify OCR — "Detection" machine-vision instrument theme.
- * Two-signal accent system grounded in the OCR overlay itself:
- *   detect (green) = detected boxes / scan beam / idle state
- *   lock   (magenta) = active / selected / focused box
- * Light values are the defaults below; `.dark` overrides them.
+ * Parsify — Vercel Geist Design System (Light Theme).
+ * Token source: https://vercel.com/design.md
+ * Structure:
+ *   Layer 1: shadcn/ui semantic tokens (consumed by ui/ primitives)
+ *   Layer 2: Full Geist palette (gray, gray-alpha, accent scales, P3)
+ *   Layer 3: Geometry, motion, typography, elevation
+ * Dark theme: Geist Dark (/design.dark.md) via `.dark` on <html>.
  */
 @theme {
-  /* surfaces — cool platen, never warm cream */
-  --color-background: #eef1f6;
-  --color-foreground: #0e1320;
-  --color-surface: #ffffff;
-  --color-surface-2: #f4f6fa;
+  /* ── Layer 1: shadcn semantic tokens ───────────────────── */
+  --color-background: #ffffff;
+  --color-foreground: #171717;
   --color-card: #ffffff;
-  --color-card-foreground: #0e1320;
+  --color-card-foreground: #171717;
   --color-popover: #ffffff;
-  --color-popover-foreground: #0e1320;
-
-  /* signal: detect (green) drives primary actions */
-  --color-primary: #0ea84a;
-  --color-primary-foreground: #04130a;
-  --color-detect: #0ea84a;
-  --color-detect-foreground: #04130a;
-
-  /* signal: lock (magenta) = active / selected */
-  --color-lock: #d6207a;
-  --color-lock-foreground: #ffffff;
-
-  --color-secondary: #e2e7ef;
-  --color-secondary-foreground: #0e1320;
-  --color-muted: #e2e7ef;
-  --color-muted-foreground: #5a6678;
-  --color-accent: #e2e7ef;
-  --color-accent-foreground: #0e1320;
-  --color-destructive: #dc2626;
+  --color-popover-foreground: #171717;
+  --color-primary: #171717;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f2f2f2;
+  --color-secondary-foreground: #171717;
+  --color-muted: #fafafa;
+  --color-muted-foreground: #4d4d4d;
+  --color-accent: #f2f2f2;
+  --color-accent-foreground: #171717;
+  --color-destructive: #ea001d;
   --color-destructive-foreground: #ffffff;
+  --color-border: #00000014;
+  --color-input: #00000014;
+  --color-ring: #006bff;
 
-  --color-border: #d6dce6;
-  --color-line: #d6dce6;
-  --color-input: #d6dce6;
-  --color-ring: #0ea84a;
+  /* ── Layer 2: Geist gray scale ─────────────────────────── */
+  --color-gray-100: #f2f2f2;
+  --color-gray-200: #ebebeb;
+  --color-gray-300: #e6e6e6;
+  --color-gray-400: #eaeaea;
+  --color-gray-500: #c9c9c9;
+  --color-gray-600: #a8a8a8;
+  --color-gray-700: #8f8f8f;
+  --color-gray-800: #7d7d7d;
+  --color-gray-900: #4d4d4d;
+  --color-gray-1000: #171717;
 
-  /* sharp, instrument-grade radii */
-  --radius-lg: 0.5rem;
-  --radius-md: 0.375rem;
-  --radius-sm: 0.25rem;
+  /* ── Layer 2: Geist gray-alpha (translucent) ───────────── */
+  --color-gray-alpha-100: #0000000d;
+  --color-gray-alpha-200: #00000015;
+  --color-gray-alpha-300: #0000001a;
+  --color-gray-alpha-400: #00000014;
+  --color-gray-alpha-500: #00000036;
+  --color-gray-alpha-600: #0000003d;
+  --color-gray-alpha-700: #00000070;
+  --color-gray-alpha-800: #00000082;
+  --color-gray-alpha-900: #000000b3;
+  --color-gray-alpha-1000: #000000e8;
 
-  --font-display: 'Martian Mono', 'JetBrains Mono', monospace;
-  --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  /* ── Layer 2: Geist accent — blue ──────────────────────── */
+  --color-blue-100: #f0f7ff;
+  --color-blue-200: #e9f4ff;
+  --color-blue-300: #dfefff;
+  --color-blue-400: #cae7ff;
+  --color-blue-500: #94ccff;
+  --color-blue-600: #48aeff;
+  --color-blue-700: #006bff;
+  --color-blue-800: #0059ec;
+  --color-blue-900: #005ff2;
+  --color-blue-1000: #002359;
+
+  /* ── Layer 2: Geist accent — red ───────────────────────── */
+  --color-red-100: #ffeeef;
+  --color-red-200: #ffe8ea;
+  --color-red-300: #ffe3e4;
+  --color-red-400: #ffd7d6;
+  --color-red-500: #ffb1b3;
+  --color-red-600: #ff676d;
+  --color-red-700: #fc0035;
+  --color-red-800: #ea001d;
+  --color-red-900: #d8001b;
+  --color-red-1000: #47000c;
+
+  /* ── Layer 2: Geist accent — amber ─────────────────────── */
+  --color-amber-100: #fff6de;
+  --color-amber-200: #fff4cf;
+  --color-amber-300: #fff1c1;
+  --color-amber-400: #ffdc73;
+  --color-amber-500: #ffc543;
+  --color-amber-600: #ffa600;
+  --color-amber-700: #ffae00;
+  --color-amber-800: #ff9300;
+  --color-amber-900: #aa4d00;
+  --color-amber-1000: #561900;
+
+  /* ── Layer 2: Geist accent — green ─────────────────────── */
+  --color-green-100: #ecfdec;
+  --color-green-200: #e5fce7;
+  --color-green-300: #d3fad1;
+  --color-green-400: #b9f5bc;
+  --color-green-500: #82eb8d;
+  --color-green-600: #4ce15e;
+  --color-green-700: #28a948;
+  --color-green-800: #279141;
+  --color-green-900: #107d32;
+  --color-green-1000: #003a00;
+
+  /* ── Layer 2: Geist accent — teal ──────────────────────── */
+  --color-teal-100: #defffb;
+  --color-teal-200: #ddfef6;
+  --color-teal-300: #ccf9f1;
+  --color-teal-400: #b1f7ec;
+  --color-teal-500: #52f0db;
+  --color-teal-600: #00e3c4;
+  --color-teal-700: #00ac96;
+  --color-teal-800: #00927f;
+  --color-teal-900: #007f70;
+  --color-teal-1000: #003f34;
+
+  /* ── Layer 2: Geist accent — purple ────────────────────── */
+  --color-purple-100: #faf0ff;
+  --color-purple-200: #f9f0ff;
+  --color-purple-300: #f6e8ff;
+  --color-purple-400: #f2d9ff;
+  --color-purple-500: #dfa7ff;
+  --color-purple-600: #c979ff;
+  --color-purple-700: #a000f8;
+  --color-purple-800: #8500d1;
+  --color-purple-900: #7d00cc;
+  --color-purple-1000: #2f004e;
+
+  /* ── Layer 2: Geist accent — pink ──────────────────────── */
+  --color-pink-100: #ffe8f6;
+  --color-pink-200: #ffe8f3;
+  --color-pink-300: #ffdfeb;
+  --color-pink-400: #ffd3e1;
+  --color-pink-500: #fdb3cc;
+  --color-pink-600: #f97ea7;
+  --color-pink-700: #f22782;
+  --color-pink-800: #e4106e;
+  --color-pink-900: #c41562;
+  --color-pink-1000: #460523;
+
+  /* ── Layer 3: Geometry ─────────────────────────────────── */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* ── Layer 3: Typography ───────────────────────────────── */
+  --font-sans: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* ── Layer 3: Elevation ────────────────────────────────── */
+  --shadow-raised: 0 2px 2px rgba(0, 0, 0, 0.04);
+  --shadow-popover: 0 1px 1px rgba(0, 0, 0, 0.02),
+    0 4px 8px -4px rgba(0, 0, 0, 0.04),
+    0 16px 24px -8px rgba(0, 0, 0, 0.06);
+  --shadow-modal: 0 1px 1px rgba(0, 0, 0, 0.02),
+    0 8px 16px -4px rgba(0, 0, 0, 0.04),
+    0 24px 32px -8px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Layer 2: P3 wide-gamut accent variants (oklch) ──────── */
+/* sRGB hex above is the fallback. P3 displays get richer color. */
+:root {
+  --color-blue-100-p3: oklch(97.32% 0.0141 251.56);
+  --color-blue-200-p3: oklch(96.29% 0.0195 250.59);
+  --color-blue-300-p3: oklch(94.58% 0.0293 249.85);
+  --color-blue-400-p3: oklch(91.58% 0.0473 245.12);
+  --color-blue-500-p3: oklch(82.75% 0.0979 248.48);
+  --color-blue-600-p3: oklch(73.08% 0.1583 248.13);
+  --color-blue-700-p3: oklch(57.61% 0.2508 258.23);
+  --color-blue-800-p3: oklch(51.51% 0.2399 257.85);
+  --color-blue-900-p3: oklch(53.18% 0.2399 256.99);
+  --color-blue-1000-p3: oklch(26.67% 0.1099 254.34);
+  --color-red-100-p3: oklch(96.5% 0.0223 13.09);
+  --color-red-200-p3: oklch(95.41% 0.0299 14.25);
+  --color-red-300-p3: oklch(94.33% 0.0369 15.01);
+  --color-red-400-p3: oklch(91.51% 0.0471 19.8);
+  --color-red-500-p3: oklch(84.47% 0.1018 17.71);
+  --color-red-600-p3: oklch(71.12% 0.1881 21.22);
+  --color-red-700-p3: oklch(62.56% 0.2524 23.03);
+  --color-red-800-p3: oklch(58.19% 0.2482 25.15);
+  --color-red-900-p3: oklch(54.99% 0.232 25.29);
+  --color-red-1000-p3: oklch(24.8% 0.1041 18.86);
+  --color-amber-100-p3: oklch(97.48% 0.0331 85.79);
+  --color-amber-200-p3: oklch(96.81% 0.0495 90.24);
+  --color-amber-300-p3: oklch(95.93% 0.0636 90.52);
+  --color-amber-400-p3: oklch(91.02% 0.1322 88.25);
+  --color-amber-500-p3: oklch(86.55% 0.1583 79.63);
+  --color-amber-600-p3: oklch(80.25% 0.1953 73.59);
+  --color-amber-700-p3: oklch(81.87% 0.1969 76.46);
+  --color-amber-800-p3: oklch(77.21% 0.1991 64.28);
+  --color-amber-900-p3: oklch(52.79% 0.1496 54.65);
+  --color-amber-1000-p3: oklch(30.83% 0.099 45.48);
+  --color-green-100-p3: oklch(97.59% 0.0289 145.42);
+  --color-green-200-p3: oklch(96.92% 0.037 147.15);
+  --color-green-300-p3: oklch(94.6% 0.0674 144.23);
+  --color-green-400-p3: oklch(91.49% 0.0976 146.24);
+  --color-green-500-p3: oklch(85.45% 0.1627 146.3);
+  --color-green-600-p3: oklch(80.25% 0.214 145.18);
+  --color-green-700-p3: oklch(64.58% 0.1746 147.27);
+  --color-green-800-p3: oklch(57.81% 0.1507 147.5);
+  --color-green-900-p3: oklch(51.75% 0.1453 147.65);
+  --color-green-1000-p3: oklch(29.15% 0.1197 147.38);
+  --color-teal-100-p3: oklch(97.72% 0.0359 186.7);
+  --color-teal-200-p3: oklch(97.06% 0.0347 180.66);
+  --color-teal-300-p3: oklch(94.92% 0.0478 182.07);
+  --color-teal-400-p3: oklch(92.76% 0.0718 183.78);
+  --color-teal-500-p3: oklch(86.88% 0.1344 182.42);
+  --color-teal-600-p3: oklch(81.5% 0.161 178.96);
+  --color-teal-700-p3: oklch(64.92% 0.1572 181.95);
+  --color-teal-800-p3: oklch(57.53% 0.1392 181.66);
+  --color-teal-900-p3: oklch(52.08% 0.1251 182.93);
+  --color-teal-1000-p3: oklch(32.11% 0.0788 179.82);
+  --color-purple-100-p3: oklch(96.65% 0.0244 312.19);
+  --color-purple-200-p3: oklch(96.73% 0.0228 309.8);
+  --color-purple-300-p3: oklch(94.85% 0.0364 310.15);
+  --color-purple-400-p3: oklch(91.77% 0.0614 312.82);
+  --color-purple-500-p3: oklch(81.26% 0.1409 310.8);
+  --color-purple-600-p3: oklch(72.07% 0.2083 308.19);
+  --color-purple-700-p3: oklch(55.5% 0.3008 306.12);
+  --color-purple-800-p3: oklch(48.58% 0.2638 305.73);
+  --color-purple-900-p3: oklch(47.18% 0.2579 304);
+  --color-purple-1000-p3: oklch(23.96% 0.13 305.66);
+  --color-pink-100-p3: oklch(95.69% 0.0359 344.62);
+  --color-pink-200-p3: oklch(95.71% 0.0321 353.14);
+  --color-pink-300-p3: oklch(93.83% 0.0451 356.29);
+  --color-pink-400-p3: oklch(91.12% 0.0573 358.82);
+  --color-pink-500-p3: oklch(84.28% 0.0915 356.99);
+  --color-pink-600-p3: oklch(74.33% 0.1547 0.24);
+  --color-pink-700-p3: oklch(63.52% 0.238 1.01);
+  --color-pink-800-p3: oklch(59.51% 0.2339 4.21);
+  --color-pink-900-p3: oklch(53.5% 0.2058 2.84);
+  --color-pink-1000-p3: oklch(26% 0.0977 359);
 }
 
 @layer base {
@@ -60,61 +242,154 @@
   body {
     font-family: var(--font-sans);
     background-color: var(--color-background);
-    background-image: radial-gradient(
-      color-mix(in srgb, var(--color-line) 55%, transparent) 1px,
-      transparent 1px
-    );
-    background-size: 28px 28px;
     color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
   }
 
+  :focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-background), 0 0 0 4px var(--color-ring);
+  }
+
+  /* ── Geist Dark Theme (design.dark.md) ─────────────────── */
   .dark {
-    --color-background: #0a0d14;
-    --color-foreground: #e6eaf2;
-    --color-surface: #11151f;
-    --color-surface-2: #161b27;
-    --color-card: #11151f;
-    --color-card-foreground: #e6eaf2;
-    --color-popover: #11151f;
-    --color-popover-foreground: #e6eaf2;
+    /* Layer 1: shadcn semantic */
+    --color-background: #000000;
+    --color-foreground: #ededed;
+    --color-card: #000000;
+    --color-card-foreground: #ededed;
+    --color-popover: #000000;
+    --color-popover-foreground: #ededed;
+    --color-primary: #ededed;
+    --color-primary-foreground: #000000;
+    --color-secondary: #1a1a1a;
+    --color-secondary-foreground: #ededed;
+    --color-muted: #000000;
+    --color-muted-foreground: #a0a0a0;
+    --color-accent: #1a1a1a;
+    --color-accent-foreground: #ededed;
+    --color-destructive: #e2162a;
+    --color-destructive-foreground: #ffffff;
+    --color-border: #ffffff24;
+    --color-input: #ffffff24;
+    --color-ring: #47a8ff;
 
-    --color-primary: #8bff5a;
-    --color-primary-foreground: #06140a;
-    --color-detect: #8bff5a;
-    --color-detect-foreground: #06140a;
+    /* Layer 2: Geist gray scale (dark) */
+    --color-gray-100: #1a1a1a;
+    --color-gray-200: #1f1f1f;
+    --color-gray-300: #292929;
+    --color-gray-400: #2e2e2e;
+    --color-gray-500: #454545;
+    --color-gray-600: #878787;
+    --color-gray-700: #8f8f8f;
+    --color-gray-800: #7d7d7d;
+    --color-gray-900: #a0a0a0;
+    --color-gray-1000: #ededed;
 
-    --color-lock: #ff4d9d;
-    --color-lock-foreground: #1a0610;
+    /* Layer 2: Geist gray-alpha (dark, white-based translucent) */
+    --color-gray-alpha-100: #ffffff12;
+    --color-gray-alpha-200: #ffffff17;
+    --color-gray-alpha-300: #ffffff21;
+    --color-gray-alpha-400: #ffffff24;
+    --color-gray-alpha-500: #ffffff3d;
+    --color-gray-alpha-600: #ffffff82;
+    --color-gray-alpha-700: #ffffff8a;
+    --color-gray-alpha-800: #ffffff78;
+    --color-gray-alpha-900: #ffffff9c;
+    --color-gray-alpha-1000: #ffffffeb;
 
-    --color-secondary: #1b212e;
-    --color-secondary-foreground: #e6eaf2;
-    --color-muted: #161b27;
-    --color-muted-foreground: #8a94a7;
-    --color-accent: #1b212e;
-    --color-accent-foreground: #e6eaf2;
-    --color-destructive: #ff5c5c;
-    --color-destructive-foreground: #140404;
+    /* Layer 2: Geist accent — blue (dark) */
+    --color-blue-100: #06193a;
+    --color-blue-200: #022248;
+    --color-blue-300: #002f62;
+    --color-blue-400: #003674;
+    --color-blue-500: #00418b;
+    --color-blue-600: #0090ff;
+    --color-blue-700: #006efe;
+    --color-blue-800: #005be7;
+    --color-blue-900: #47a8ff;
+    --color-blue-1000: #eaf6ff;
 
-    --color-border: #232a38;
-    --color-line: #232a38;
-    --color-input: #232a38;
-    --color-ring: #8bff5a;
+    /* Layer 2: Geist accent — red (dark) */
+    --color-red-100: #330a11;
+    --color-red-200: #440d13;
+    --color-red-300: #5d0e17;
+    --color-red-400: #6f101b;
+    --color-red-500: #88151f;
+    --color-red-600: #f32e40;
+    --color-red-700: #f13242;
+    --color-red-800: #e2162a;
+    --color-red-900: #ff565f;
+    --color-red-1000: #ffe9ed;
+
+    /* Layer 2: Geist accent — amber (dark) */
+    --color-amber-100: #2a1700;
+    --color-amber-200: #361900;
+    --color-amber-300: #502800;
+    --color-amber-400: #5b3000;
+    --color-amber-500: #703e00;
+    --color-amber-600: #ed9a00;
+    --color-amber-700: #ffae00;
+    --color-amber-800: #ff9300;
+    --color-amber-900: #ff9300;
+    --color-amber-1000: #fff3d5;
+
+    /* Layer 2: Geist accent — green (dark) */
+    --color-green-100: #002608;
+    --color-green-200: #00320b;
+    --color-green-300: #003a0e;
+    --color-green-400: #004615;
+    --color-green-500: #006717;
+    --color-green-600: #00952d;
+    --color-green-700: #00ac3a;
+    --color-green-800: #009432;
+    --color-green-900: #00ca50;
+    --color-green-1000: #d8ffe4;
+
+    /* Layer 2: Geist accent — teal (dark) */
+    --color-teal-100: #00231b;
+    --color-teal-200: #002b22;
+    --color-teal-300: #003d34;
+    --color-teal-400: #004035;
+    --color-teal-500: #006354;
+    --color-teal-600: #009e86;
+    --color-teal-700: #00aa95;
+    --color-teal-800: #00927f;
+    --color-teal-900: #00cfb7;
+    --color-teal-1000: #cbfff5;
+
+    /* Layer 2: Geist accent — purple (dark) */
+    --color-purple-100: #290c33;
+    --color-purple-200: #341142;
+    --color-purple-300: #47185e;
+    --color-purple-400: #541a76;
+    --color-purple-500: #642290;
+    --color-purple-600: #9440d5;
+    --color-purple-700: #9440d5;
+    --color-purple-800: #7d2bba;
+    --color-purple-900: #c472fb;
+    --color-purple-1000: #fbecff;
+
+    /* Layer 2: Geist accent — pink (dark) */
+    --color-pink-100: #310d1e;
+    --color-pink-200: #420c25;
+    --color-pink-300: #571032;
+    --color-pink-400: #5d0c34;
+    --color-pink-500: #76063f;
+    --color-pink-600: #ba0056;
+    --color-pink-700: #f12b82;
+    --color-pink-800: #e7006d;
+    --color-pink-900: #ff4d8d;
+    --color-pink-1000: #ffe9f4;
+
+    /* Layer 3: Elevation (dark — heavier shadows) */
+    --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.16);
   }
 }
 
-/* ── Signature: the scan beam ─────────────────────────────── */
-@keyframes scan-y {
-  0% {
-    top: 4%;
-  }
-  100% {
-    top: 96%;
-  }
-}
-
+/* ── Scan beam — single-pass reveal ──────────────────────── */
 @keyframes scan-once {
   0% {
     top: 0%;
@@ -132,7 +407,6 @@
   }
 }
 
-.scan-beam,
 .scan-beam-once {
   position: absolute;
   left: 0;
@@ -142,23 +416,15 @@
   background: linear-gradient(
     90deg,
     transparent,
-    var(--color-detect) 25%,
-    var(--color-detect) 75%,
+    var(--color-ring) 25%,
+    var(--color-ring) 75%,
     transparent
   );
-  box-shadow: 0 0 10px 1px color-mix(in srgb, var(--color-detect) 70%, transparent);
-}
-
-.scan-beam {
-  animation: scan-y 2.6s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
-}
-
-.scan-beam-once {
+  box-shadow: 0 0 10px 1px color-mix(in srgb, var(--color-ring) 70%, transparent);
   animation: scan-once 1.1s ease-out 0.15s 1 both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scan-beam,
   .scan-beam-once {
     animation: none;
     opacity: 0;
