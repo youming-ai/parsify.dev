@@ -20,10 +20,10 @@ interface OcrCanvasProps {
   className?: string;
 }
 
-// Overlay strokes must read over arbitrary photos, so they use the bright
-// detect-green / lock-magenta signals regardless of light/dark theme.
-const DETECT_STROKE = '#8bff5a';
-const LOCK_STROKE = '#ff4d9d';
+// Overlay strokes use blue-700 (ring) regardless of theme. State is
+// carried by lineWidth and alpha, not hue — per Geist single-accent philosophy.
+const DETECT_STROKE = '#006bff';
+const LOCK_STROKE = '#006bff';
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 4;
 
@@ -112,11 +112,11 @@ export function OcrCanvas({
     setZoom((z) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.round((z + delta) * 100) / 100)));
 
   return (
-    <div className={cn('flex flex-col overflow-hidden rounded-lg border bg-surface', className)}>
+    <div className={cn('flex flex-col overflow-hidden rounded-lg border bg-card', className)}>
       {/* Header — source file identity */}
-      <div className="flex items-center justify-between gap-2 border-b bg-surface-2 px-3 py-2">
+      <div className="flex items-center justify-between gap-2 border-b bg-muted px-3 py-2">
         <span className="flex min-w-0 items-center gap-2">
-          <FileImage className="h-4 w-4 shrink-0 text-detect" />
+          <FileImage className="h-4 w-4 shrink-0 text-muted-foreground" />
           <span className="truncate font-mono text-xs text-foreground">{fileName ?? 'source'}</span>
           {fileSize ? (
             <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
@@ -127,7 +127,7 @@ export function OcrCanvas({
         <div className="flex shrink-0 items-center gap-2">
           <span className="hidden font-mono text-[11px] text-muted-foreground sm:inline">
             {imageSize.width > 0 ? `${imageSize.width}×${imageSize.height}` : '—'}
-            <span className="mx-1.5 text-detect">·</span>
+            <span className="mx-1.5 text-muted-foreground">·</span>
             {t('source.boxes', { n: boxes.length })}
           </span>
           <Button
@@ -148,7 +148,7 @@ export function OcrCanvas({
       </div>
 
       {/* Footer — pager + zoom controls */}
-      <div className="flex items-center justify-between gap-2 border-t bg-surface-2 px-2 py-1.5">
+      <div className="flex items-center justify-between gap-2 border-t bg-muted px-2 py-1.5">
         <div className="min-w-0">{pager}</div>
         <div className="flex shrink-0 items-center gap-0.5">
           <Button

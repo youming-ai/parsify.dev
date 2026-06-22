@@ -100,7 +100,7 @@ export function ImageUpload({
   return (
     <div className={cn('w-full', className)}>
       {preview ? (
-        <div className="relative overflow-hidden rounded-lg border bg-surface">
+        <div className="relative overflow-hidden rounded-lg border bg-card">
           {isPdf ? (
             <div className="flex h-[400px] w-full items-center justify-center bg-muted">
               <div className="text-center">
@@ -127,7 +127,7 @@ export function ImageUpload({
           )}
           {scanning && (
             <span
-              className="pointer-events-none absolute inset-x-0 h-0.5 bg-detect shadow-[0_0_12px_2px_var(--color-detect)] transition-[top] duration-300 ease-linear"
+              className="pointer-events-none absolute inset-x-0 h-0.5 bg-ring shadow-[0_0_12px_2px_var(--color-ring)] transition-[top] duration-300 ease-linear"
               style={{ top: `${Math.round((scanProgress ?? 0) * 100)}%` }}
             />
           )}
@@ -148,8 +148,10 @@ export function ImageUpload({
         <button
           type="button"
           className={cn(
-            'relative flex w-full flex-col items-center justify-center overflow-hidden rounded-lg border bg-surface p-12 transition-colors',
-            isDragging ? 'border-detect bg-detect/5' : 'border-line hover:border-detect/50',
+            'relative flex w-full flex-col items-center justify-center overflow-hidden rounded-lg border bg-card p-12 transition-colors',
+            isDragging
+              ? 'border-foreground bg-foreground/5'
+              : 'border-border hover:border-foreground/50',
             disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
           )}
           onDragOver={(e) => {
@@ -163,13 +165,13 @@ export function ImageUpload({
           aria-label={t('upload.aria')}
         >
           {/* scanner-bed registration brackets + idle sweep */}
-          <span className="pointer-events-none absolute left-3 top-3 h-4 w-4 border-l-2 border-t-2 border-detect/70" />
-          <span className="pointer-events-none absolute right-3 top-3 h-4 w-4 border-r-2 border-t-2 border-detect/70" />
-          <span className="pointer-events-none absolute bottom-3 left-3 h-4 w-4 border-b-2 border-l-2 border-detect/70" />
-          <span className="pointer-events-none absolute bottom-3 right-3 h-4 w-4 border-b-2 border-r-2 border-detect/70" />
-          {!disabled && <span className="scan-beam" />}
+          <span className="pointer-events-none absolute left-3 top-3 h-4 w-4 border-l-2 border-t-2 border-foreground/70" />
+          <span className="pointer-events-none absolute right-3 top-3 h-4 w-4 border-r-2 border-t-2 border-foreground/70" />
+          <span className="pointer-events-none absolute bottom-3 left-3 h-4 w-4 border-b-2 border-l-2 border-foreground/70" />
+          <span className="pointer-events-none absolute bottom-3 right-3 h-4 w-4 border-b-2 border-r-2 border-foreground/70" />
+          {/* Looping scan beam removed per Geist motion guidelines */}
 
-          <span className="mb-1 font-mono text-[10px] tracking-[0.2em] text-detect">
+          <span className="mb-1 font-mono text-[10px] tracking-[0.2em] text-muted-foreground">
             {t('upload.idle')}
           </span>
           <ScanText className="mb-3 mt-2 h-9 w-9 text-foreground" strokeWidth={1.5} />

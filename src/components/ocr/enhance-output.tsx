@@ -29,13 +29,13 @@ export function EnhanceOutput({ text, isStreaming, error, className }: EnhanceOu
   if (!isStreaming && !text) return null;
 
   return (
-    <div className={cn('rounded-md border border-detect/30 bg-detect/5 p-3', className)}>
+    <div className={cn('rounded-md border border-blue-700/30 bg-blue-700/5 p-3', className)}>
       <div className="mb-2 flex items-center justify-between">
-        <span className="flex items-center gap-1.5 font-display text-[11px] font-medium tracking-[0.14em] text-detect">
+        <span className="flex items-center gap-1.5 font-mono text-[11px] font-medium tracking-[0.14em] text-blue-700">
           <Sparkles className="h-3.5 w-3.5" />
           {t('output.ai')}
           {isStreaming && (
-            <span className="ml-1 h-1.5 w-1.5 animate-pulse rounded-full bg-detect" />
+            <span className="ml-1 h-1.5 w-1.5 animate-pulse rounded-full bg-blue-700" />
           )}
         </span>
         {text && <CopyButton text={text} />}
