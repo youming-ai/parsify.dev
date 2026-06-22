@@ -44,7 +44,7 @@ Order: `bun run lint` → `bun run typecheck` → `bun run test -- --coverage`. 
 
 ## Tech stack
 
-TanStack Router + Vite 7 + React 19 + Tailwind CSS v4 + shadcn/ui + Lucide React + Biome v2 + Bun + TypeScript strict + Zod 4 + Hono 4 + hono-rate-limiter.
+TanStack Router + Vite 7 + React 19 + Tailwind CSS v4 + shadcn/ui + Vercel Geist (Sans + Mono) + Lucide React + Biome v2 + Bun + TypeScript strict + Zod 4 + Hono 4 + hono-rate-limiter.
 
 ## Source layout
 
@@ -88,6 +88,18 @@ src/
 ```
 
 **`~/*` → `src/*`** via tsconfig paths and Vite alias.
+
+## Design tokens
+
+Vercel Geist Light (`vercel.com/design.md`) is the canonical design token source. `src/styles/app.css` defines a two-layer `@theme` block:
+
+- **Layer 1 — shadcn semantic:** `--color-background`, `--color-foreground`, `--color-primary`, `--color-ring`, etc. All `ui/` primitives read these.
+- **Layer 2 — Full Geist palette:** `gray-100..1000`, `gray-alpha-100..1000`, plus `blue`, `red`, `amber`, `green`, `teal`, `purple`, `pink` accent scales (each `100..1000`) with P3 wide-gamut oklch variants. Use directly via Tailwind utilities (`bg-blue-700`, `text-gray-900`, etc.).
+- **Layer 3 — Geometry/motion/elevation:** `--radius-sm` (6px, controls), `--radius-md` (12px, menus), `--radius-lg` (16px, fullscreen), `--shadow-raised`/`popover`/`modal`, `--font-sans` (Geist), `--font-mono` (Geist Mono).
+
+Typography: Geist Sans (sans-serif body/UI) + Geist Mono (code/data/corner tags). Loaded via Google Fonts `<link>` in `index.html`.
+
+Dark theme: follow-up spec (read `vercel.com/design.dark.md`). The `theme-toggle.tsx` is a deprecated no-op placeholder.
 
 ## Code style (Biome)
 
