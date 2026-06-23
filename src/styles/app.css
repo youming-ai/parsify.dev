@@ -433,6 +433,12 @@
   box-shadow: 0 0 10px 1px color-mix(in srgb, var(--color-ring) 70%, transparent);
 }
 
+.dark .scan-beam,
+.dark .scan-beam-once {
+  box-shadow: 0 0 16px 3px color-mix(in srgb, var(--color-ring) 90%, transparent),
+              0 0 6px 1px var(--color-ring);
+}
+
 .scan-beam {
   animation: scan-y 2.6s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
 }
