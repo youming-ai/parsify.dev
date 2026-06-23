@@ -23,8 +23,8 @@ const en = {
   'spec.local.desc': 'OCR runs entirely in your browser. Files are never uploaded to any server.',
   'spec.model.label': 'PP-OCRv6',
   'spec.model.desc': "PaddleOCR's latest models — tiny, fast, cached after first load.",
-  'spec.scripts.label': '50+ SCRIPTS',
-  'spec.scripts.desc': 'Chinese, English, Japanese and 46 Latin-script languages.',
+  'spec.scripts.label': 'CHINESE / ENGLISH',
+  'spec.scripts.desc': 'Optimized for Chinese and English, including numbers and symbols.',
 
   'progress.loading-models': 'Loading models',
   'progress.detecting': 'Detecting text',
@@ -88,8 +88,8 @@ const zh: Record<TranslationKey, string> = {
   'spec.local.desc': 'OCR 完全在您的浏览器中运行。文件永远不会上传到任何服务器。',
   'spec.model.label': 'PP-OCRv6',
   'spec.model.desc': 'PaddleOCR 最新模型——小巧、快速，首次加载后缓存。',
-  'spec.scripts.label': '50+ 种文字',
-  'spec.scripts.desc': '中文、英文、日文及 46 种拉丁文字语言。',
+  'spec.scripts.label': '中英文支持',
+  'spec.scripts.desc': '专为中英文设计，支持数字与常用符号。',
 
   'progress.loading-models': '加载模型',
   'progress.detecting': '检测文字',
