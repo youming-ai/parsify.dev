@@ -278,11 +278,7 @@ function HomePage() {
       </section>
 
       {/* Scanner bed */}
-      <ImageUpload
-        onImageSelect={handleImageSelect}
-        disabled={isProcessing}
-        scanProgress={ocrProgress?.progress ?? null}
-      />
+      <ImageUpload onImageSelect={handleImageSelect} disabled={isProcessing} />
 
       {/* Progress */}
       {ocrProgress && (

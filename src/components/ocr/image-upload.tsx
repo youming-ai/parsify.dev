@@ -7,8 +7,6 @@ import { cn } from '~/lib/utils';
 interface ImageUploadProps {
   onImageSelect: (file: File) => void;
   disabled?: boolean;
-  /** 0–1 OCR progress; drives the scan beam over the preview while processing. */
-  scanProgress?: number | null;
   className?: string;
 }
 
@@ -23,12 +21,7 @@ const ACCEPTED_TYPES = [
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 const PDF_MAX_SIZE = 200 * 1024 * 1024; // 200MB
 
-export function ImageUpload({
-  onImageSelect,
-  disabled,
-  scanProgress,
-  className,
-}: ImageUploadProps) {
+export function ImageUpload({ onImageSelect, disabled, className }: ImageUploadProps) {
   const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -95,8 +88,6 @@ export function ImageUpload({
     if (file) handleFile(file);
   };
 
-  const scanning = scanProgress != null && scanProgress > 0 && scanProgress < 1;
-
   return (
     <div className={cn('w-full', className)}>
       {preview ? (
@@ -125,12 +116,7 @@ export function ImageUpload({
           ) : (
             <img src={preview} alt="Uploaded" className="max-h-[400px] w-full object-contain" />
           )}
-          {scanning && (
-            <span
-              className="pointer-events-none absolute inset-x-0 h-0.5 bg-ring shadow-[0_0_12px_2px_var(--color-ring)] transition-[top] duration-300 ease-linear"
-              style={{ top: `${Math.round((scanProgress ?? 0) * 100)}%` }}
-            />
-          )}
+          {disabled && <span className="scan-beam" />}
           <Button
             variant="secondary"
             size="sm"
