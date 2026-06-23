@@ -389,7 +389,16 @@
   }
 }
 
-/* ── Scan beam — single-pass reveal ──────────────────────── */
+/* ── Scan beam ───────────────────────────────────────────── */
+@keyframes scan-y {
+  0% {
+    top: 4%;
+  }
+  100% {
+    top: 96%;
+  }
+}
+
 @keyframes scan-once {
   0% {
     top: 0%;
@@ -407,6 +416,7 @@
   }
 }
 
+.scan-beam,
 .scan-beam-once {
   position: absolute;
   left: 0;
@@ -421,10 +431,18 @@
     transparent
   );
   box-shadow: 0 0 10px 1px color-mix(in srgb, var(--color-ring) 70%, transparent);
+}
+
+.scan-beam {
+  animation: scan-y 2.6s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
+}
+
+.scan-beam-once {
   animation: scan-once 1.1s ease-out 0.15s 1 both;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .scan-beam,
   .scan-beam-once {
     animation: none;
     opacity: 0;

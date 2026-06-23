@@ -103,7 +103,7 @@ LLM post-processing of OCR text (text correction, formatting, structuring).
 
 ## Features
 - On-device OCR — files never leave your browser
-- 50+ language support (Chinese, English, Japanese, 46 Latin-script languages)
+- Chinese & English language support (optimized for Chinese, English, numbers, and symbols)
 - PP-OCRv6: accurate text recognition, runs on any device via WASM
 - Image and PDF support
 - Optional AI cleanup via /api/enhance (sends only extracted text, never source files)
