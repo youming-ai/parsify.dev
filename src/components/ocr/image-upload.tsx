@@ -169,7 +169,7 @@ export function ImageUpload({
           <span className="pointer-events-none absolute right-3 top-3 h-4 w-4 border-r-2 border-t-2 border-foreground/70" />
           <span className="pointer-events-none absolute bottom-3 left-3 h-4 w-4 border-b-2 border-l-2 border-foreground/70" />
           <span className="pointer-events-none absolute bottom-3 right-3 h-4 w-4 border-b-2 border-r-2 border-foreground/70" />
-          {/* Looping scan beam removed per Geist motion guidelines */}
+          {!disabled && <span className="scan-beam" />}
 
           <span className="mb-1 font-mono text-[10px] tracking-[0.2em] text-muted-foreground">
             {t('upload.idle')}
